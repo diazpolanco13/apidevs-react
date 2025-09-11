@@ -1,0 +1,113 @@
+{
+  "_meta": {
+    "template_version": 0
+  },
+  "fixtures": [
+    {
+      "name": "prod_apidevs_trading",
+      "path": "/v1/products",
+      "method": "post",
+      "params": {
+        "name": "APIDevs Trading Indicators",
+        "description": "Acceso completo a 18 indicadores VIP, 2 scanners, comunidad Discord, alertas Telegram, mentorías semanales y soporte 24/7",
+        "metadata": {
+          "index": 0,
+          "features": "18 Indicadores VIP, 2 Scanners (160 CRIPTOS), 2 Scanners (160 MULTIMARKET), Activación inmediata, Comunidad VIP Discord, Alertas Telegram y Discord, Mentorías semanales, Soporte técnico 24/7"
+        }
+      }
+    },
+    {
+      "name": "price_apidevs_monthly",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${prod_apidevs_trading:id}",
+        "currency": "usd",
+        "billing_scheme": "per_unit",
+        "unit_amount": 2350,
+        "recurring": {
+          "interval": "month",
+          "interval_count": 1
+        },
+        "metadata": {
+          "plan_name": "Plan Mensual",
+          "original_price": "5000",
+          "discount": "53%"
+        }
+      }
+    },
+    {
+      "name": "price_apidevs_semiannual",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${prod_apidevs_trading:id}",
+        "currency": "usd",
+        "billing_scheme": "per_unit",
+        "unit_amount": 13800,
+        "recurring": {
+          "interval": "month",
+          "interval_count": 6
+        },
+        "metadata": {
+          "plan_name": "Plan Semestral",
+          "original_price": "30000",
+          "discount": "54%",
+          "savings": "Ahorra 54%"
+        }
+      }
+    },
+    {
+      "name": "price_apidevs_annual",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${prod_apidevs_trading:id}",
+        "currency": "usd",
+        "billing_scheme": "per_unit",
+        "unit_amount": 24900,
+        "recurring": {
+          "interval": "year",
+          "interval_count": 1
+        },
+        "metadata": {
+          "plan_name": "Plan Anual",
+          "original_price": "60000",
+          "discount": "58.5%",
+          "savings": "Ahorra 58.5%"
+        }
+      }
+    },
+    {
+      "name": "prod_apidevs_lifetime",
+      "path": "/v1/products",
+      "method": "post",
+      "params": {
+        "name": "APIDevs Trading Indicators - Lifetime",
+        "description": "Acceso completo y exclusivo a todas nuestras herramientas y recursos premium sin tarifas mensuales ni anuales, para siempre!",
+        "metadata": {
+          "index": 1,
+          "type": "lifetime",
+          "features": "Acceso completo y exclusivo, Sin pagos recurrentes, Para siempre"
+        }
+      }
+    },
+    {
+      "name": "price_apidevs_lifetime",
+      "path": "/v1/prices",
+      "method": "post",
+      "params": {
+        "product": "${prod_apidevs_lifetime:id}",
+        "currency": "usd",
+        "billing_scheme": "per_unit",
+        "unit_amount": 99900,
+        "metadata": {
+          "plan_name": "Lifetime Plan",
+          "original_price": "150000",
+          "discount": "33%",
+          "payment_options": "10 cuotas de $99"
+        }
+      }
+    }
+  ]
+}

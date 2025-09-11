@@ -28,7 +28,7 @@ body {
     'Helvetica', sans-serif;
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;
-  @apply text-white bg-zinc-800 antialiased;
+  @apply text-white bg-apidevs-dark antialiased;
 }
 
 body {
@@ -56,4 +56,17 @@ p a {
 
 .height-screen-helper {
   min-height: calc(100vh - 80px);
+}
+
+/* Custom animations and utilities */
+@layer utilities {
+  .text-shadow-primary {
+    text-shadow: 0 0 10px rgba(201, 217, 46, 0.5);
+  }
+  
+  .backdrop-blur-glass {
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    background: rgba(26, 26, 26, 0.8);
+  }
 }

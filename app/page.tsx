@@ -1,3 +1,4 @@
+import Hero from '@/components/ui/Hero';
 import Pricing from '@/components/ui/Pricing/Pricing';
 import { createClient } from '@/utils/supabase/server';
 import {
@@ -6,7 +7,7 @@ import {
   getUser
 } from '@/utils/supabase/queries';
 
-export default async function PricingPage() {
+export default async function HomePage() {
   const supabase = createClient();
   const [user, products, subscription] = await Promise.all([
     getUser(supabase),
@@ -15,10 +16,17 @@ export default async function PricingPage() {
   ]);
 
   return (
-    <Pricing
-      user={user}
-      products={products ?? []}
-      subscription={subscription}
-    />
+    <main className="min-h-screen bg-apidevs-dark">
+      <Hero />
+      
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20">
+        <Pricing
+          user={user}
+          products={products ?? []}
+          subscription={subscription}
+        />
+      </section>
+    </main>
   );
 }

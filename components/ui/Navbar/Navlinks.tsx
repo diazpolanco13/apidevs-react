@@ -21,9 +21,21 @@ export default function Navlinks({ user }: NavlinksProps) {
         <Link href="/" className={s.logo} aria-label="Logo">
           <Logo />
         </Link>
-        <nav className="ml-6 space-x-2 lg:block">
+        <nav className="ml-6 space-x-6 lg:block">
           <Link href="/" className={s.link}>
-            Pricing
+            Inicio
+          </Link>
+          <Link href="/nosotros" className={s.link}>
+            Nosotros
+          </Link>
+          <Link href="/tutoriales" className={s.link}>
+            Tutoriales
+          </Link>
+          <Link href="/tienda" className={s.link}>
+            Tienda
+          </Link>
+          <Link href="/blog" className={s.link}>
+            Blog
           </Link>
           {user && (
             <Link href="/account" className={s.link}>
@@ -42,7 +54,7 @@ export default function Navlinks({ user }: NavlinksProps) {
           </form>
         ) : (
           <Link href="/signin" className={s.link}>
-            Sign In
+            Iniciar sesión
           </Link>
         )}
       </div>
