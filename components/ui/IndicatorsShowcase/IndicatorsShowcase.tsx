@@ -77,7 +77,7 @@ export default function IndicatorsShowcase({
   };
 
   return (
-    <section className="relative min-h-[70vh] bg-apidevs-dark overflow-hidden">
+    <section className="relative bg-apidevs-dark overflow-hidden py-8 lg:py-16">
       {/* Background Effects Superiores */}
       <BackgroundEffects variant="showcase" />
       
@@ -270,14 +270,11 @@ export default function IndicatorsShowcase({
           </div>
           
           {/* Subtle Info Badge */}
-          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-apidevs-primary text-black px-4 py-2 rounded-full text-sm font-bold shadow-primary-lg animate-float">
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-apidevs-primary text-black px-4 py-2 rounded-full text-sm font-bold shadow-primary-lg animate-float">
             ⚡ Indicadores Potenciados por IA
           </div>
         </div>
       </div>
-      
-      {/* Smooth Transition Gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-b from-transparent to-apidevs-dark pointer-events-none"></div>
     </section>
   );
 }
