@@ -67,8 +67,15 @@ export default function Hero() {
 
   return (
     <section className="relative bg-apidevs-dark overflow-hidden">
-      {/* Background Effects */}
-      <BackgroundEffects variant="hero" />
+      {/* Background Effects con partículas integradas */}
+      <BackgroundEffects variant="hero" showParticles={true} />
+      
+      {/* TEST: Puntos de espaciado en verde neón */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div className="absolute top-10 left-10 w-4 h-4 bg-apidevs-primary rounded-full animate-pulse"></div>
+        <div className="absolute top-20 right-20 w-3 h-3 bg-apidevs-primary rounded-full animate-bounce"></div>
+        <div className="absolute bottom-20 left-20 w-5 h-5 bg-apidevs-primary rounded-full animate-spin"></div>
+      </div>
 
       <div className="relative container mx-auto px-4 pt-24 pb-16 lg:pt-32 lg:pb-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">

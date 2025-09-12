@@ -1,12 +1,16 @@
+import CSSParticles from '@/components/ui/SpaceParticles/CSSParticles';
+
 interface BackgroundEffectsProps {
   variant?: 'hero' | 'section' | 'minimal';
   showGrid?: boolean;
+  showParticles?: boolean;
   className?: string;
 }
 
 export default function BackgroundEffects({ 
   variant = 'section', 
   showGrid = true,
+  showParticles = true,
   className = ''
 }: BackgroundEffectsProps) {
   const getEffectsByVariant = () => {
@@ -58,9 +62,25 @@ export default function BackgroundEffects({
     }
   };
 
+  const getParticleVariant = () => {
+    switch (variant) {
+      case 'hero':
+        return 'stars';
+      case 'section':
+        return 'nebula';
+      case 'minimal':
+        return 'minimal';
+      default:
+        return 'stars';
+    }
+  };
+
   return (
     <div className={`absolute inset-0 overflow-hidden pointer-events-none ${className}`}>
       {getEffectsByVariant()}
+      {showParticles && (
+        <CSSParticles variant={getParticleVariant()} />
+      )}
     </div>
   );
 }
