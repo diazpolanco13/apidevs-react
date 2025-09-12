@@ -8,7 +8,7 @@
   box-sizing: inherit;
 }
 
-*:focus:not(ol) {
+*:focus:not(ol):not(.logo *) {
   @apply outline-none ring-2 ring-pink-500 ring-opacity-50;
 }
 
@@ -68,5 +68,19 @@ p a {
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     background: rgba(26, 26, 26, 0.8);
+  }
+  
+  /* Eliminar focus morado por defecto */
+  button:focus,
+  a:focus:not(.logo),
+  [tabindex]:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(201, 217, 46, 0.5) !important;
+  }
+  
+  /* Logo sin focus */
+  a.logo:focus {
+    outline: none !important;
+    box-shadow: none !important;
   }
 }
