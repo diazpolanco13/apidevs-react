@@ -60,6 +60,9 @@ export default function AIBenefits() {
 
   return (
     <section className="relative py-16 lg:py-20 bg-apidevs-dark overflow-hidden">
+      {/* Smooth Transition from Previous Section */}
+      <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-apidevs-dark to-transparent pointer-events-none"></div>
+      
       {/* Background Effects */}
       <BackgroundEffects variant="section" />
 

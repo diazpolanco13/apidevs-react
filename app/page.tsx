@@ -1,4 +1,5 @@
 import Hero from '@/components/ui/Hero';
+import IndicatorsShowcase from '@/components/ui/IndicatorsShowcase';
 import AIBenefits from '@/components/ui/AIBenefits';
 import Pricing from '@/components/ui/Pricing/Pricing';
 import { createClient } from '@/utils/supabase/server';
@@ -19,6 +20,10 @@ export default async function HomePage() {
   return (
     <main className="bg-apidevs-dark">
       <Hero />
+      
+      {/* Indicators Showcase - MATA-LUXALGO */}
+      <IndicatorsShowcase />
+      
       <AIBenefits />
       
       {/* Pricing Section */}
