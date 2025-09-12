@@ -1,23 +1,76 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Button from '@/components/ui/Button';
+import BackgroundEffects from '@/components/ui/BackgroundEffects';
+
+// Hook para animación de conteo
+function useCountAnimation(end: number, duration: number = 2000, start: number = 0) {
+  const [count, setCount] = useState(start);
+  const [isVisible, setIsVisible] = useState(false);
+  const elementRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isVisible) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (elementRef.current) {
+      observer.observe(elementRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    let startTime: number;
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      
+      // Easing function para suavizar la animación
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      const currentCount = Math.floor(start + (end - start) * easeOutQuart);
+      
+      setCount(currentCount);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [isVisible, end, duration, start]);
+
+  return { count, elementRef };
+}
 
 export default function Hero() {
   const [isVisible, setIsVisible] = useState(false);
+  
+  // Hooks para animaciones de conteo con diferentes delays
+  const indicadores = useCountAnimation(25, 2000);
+  const usuarios = useCountAnimation(7000, 2500);
+  const seguidores = useCountAnimation(4000, 2200);
+  const puntos = useCountAnimation(7900, 2800);
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
   return (
-    <section className="relative min-h-screen bg-apidevs-dark overflow-hidden">
+    <section className="relative bg-apidevs-dark overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-20 [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-apidevs-primary/5 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-apidevs-primary/3 rounded-full blur-3xl animate-float [animation-delay:3s]" />
+      <BackgroundEffects variant="hero" />
 
-      <div className="relative container mx-auto px-4 pt-24 pb-20 lg:pt-32 lg:pb-32">
+      <div className="relative container mx-auto px-4 pt-24 pb-16 lg:pt-32 lg:pb-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
           <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -48,46 +101,66 @@ export default function Hero() {
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 py-8">
               {/* Indicadores */}
-              <div className="bg-apidevs-gray/80 backdrop-blur-sm border border-apidevs-primary/30 rounded-2xl p-4 text-center hover:border-apidevs-primary/60 transition-all duration-300">
+              <div 
+                ref={indicadores.elementRef}
+                className="bg-apidevs-gray/80 backdrop-blur-sm border border-apidevs-primary/30 rounded-2xl p-4 text-center hover:border-apidevs-primary/60 hover:shadow-primary-sm hover:scale-105 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-700"
+              >
                 <div className="flex items-center justify-center mb-2">
                   <svg className="w-6 h-6 text-apidevs-primary mr-2" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
                   </svg>
                 </div>
-                <div className="text-2xl lg:text-3xl font-bold text-apidevs-primary mb-1">+25</div>
+                <div className="text-2xl lg:text-3xl font-bold text-apidevs-primary mb-1">
+                  +{indicadores.count.toLocaleString()}
+                </div>
                 <div className="text-sm text-gray-400">Indicadores</div>
               </div>
 
               {/* Usuarios */}
-              <div className="bg-apidevs-gray/80 backdrop-blur-sm border border-apidevs-primary/30 rounded-2xl p-4 text-center hover:border-apidevs-primary/60 transition-all duration-300">
+              <div 
+                ref={usuarios.elementRef}
+                className="bg-apidevs-gray/80 backdrop-blur-sm border border-apidevs-primary/30 rounded-2xl p-4 text-center hover:border-apidevs-primary/60 hover:shadow-primary-sm hover:scale-105 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:100ms]"
+              >
                 <div className="flex items-center justify-center mb-2">
                   <svg className="w-6 h-6 text-apidevs-primary mr-2" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M16 7c0-2.21-1.79-4-4-4S8 4.79 8 7s1.79 4 4 4 4-1.79 4-4zm-4 6c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z"/>
                   </svg>
                 </div>
-                <div className="text-2xl lg:text-3xl font-bold text-apidevs-primary mb-1">+3,500</div>
+                <div className="text-2xl lg:text-3xl font-bold text-apidevs-primary mb-1">
+                  +{usuarios.count.toLocaleString()}
+                </div>
                 <div className="text-sm text-gray-400">Usuarios</div>
               </div>
 
               {/* Seguidores */}
-              <div className="bg-apidevs-gray/80 backdrop-blur-sm border border-apidevs-primary/30 rounded-2xl p-4 text-center hover:border-apidevs-primary/60 transition-all duration-300">
+              <div 
+                ref={seguidores.elementRef}
+                className="bg-apidevs-gray/80 backdrop-blur-sm border border-apidevs-primary/30 rounded-2xl p-4 text-center hover:border-apidevs-primary/60 hover:shadow-primary-sm hover:scale-105 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:200ms]"
+              >
                 <div className="flex items-center justify-center mb-2">
                   <svg className="w-6 h-6 text-apidevs-primary mr-2" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                   </svg>
                 </div>
-                <div className="text-2xl lg:text-3xl font-bold text-apidevs-primary mb-1">+4,000</div>
+                <div className="text-2xl lg:text-3xl font-bold text-apidevs-primary mb-1">
+                  +{seguidores.count.toLocaleString()}
+                </div>
                 <div className="text-sm text-gray-400">Seguidores</div>
               </div>
 
               {/* Puntos Scripts */}
-              <div className="bg-apidevs-gray/80 backdrop-blur-sm border border-apidevs-primary/30 rounded-2xl p-4 text-center hover:border-apidevs-primary/60 transition-all duration-300">
+              <div 
+                ref={puntos.elementRef}
+                className="bg-apidevs-gray/80 backdrop-blur-sm border border-apidevs-primary/30 rounded-2xl p-4 text-center hover:border-apidevs-primary/60 hover:shadow-primary-sm hover:scale-105 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:300ms]"
+              >
                 <div className="flex items-center justify-center mb-2">
                   <svg className="w-6 h-6 text-apidevs-primary mr-2" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                   </svg>
                 </div>
-                <div className="text-2xl lg:text-3xl font-bold text-apidevs-primary mb-1">+7,900</div>
+                <div className="text-2xl lg:text-3xl font-bold text-apidevs-primary mb-1">
+                  +{puntos.count.toLocaleString()}
+                </div>
                 <div className="text-sm text-gray-400">Puntos Scripts</div>
               </div>
             </div>

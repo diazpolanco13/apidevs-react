@@ -1,4 +1,5 @@
 import Hero from '@/components/ui/Hero';
+import AIBenefits from '@/components/ui/AIBenefits';
 import Pricing from '@/components/ui/Pricing/Pricing';
 import { createClient } from '@/utils/supabase/server';
 import {
@@ -16,8 +17,9 @@ export default async function HomePage() {
   ]);
 
   return (
-    <main className="min-h-screen bg-apidevs-dark">
+    <main className="bg-apidevs-dark">
       <Hero />
+      <AIBenefits />
       
       {/* Pricing Section */}
       <section id="pricing" className="py-20">
