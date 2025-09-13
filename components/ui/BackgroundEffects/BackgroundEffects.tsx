@@ -1,7 +1,7 @@
 import CSSParticles from '@/components/ui/SpaceParticles/CSSParticles';
 
 interface BackgroundEffectsProps {
-  variant?: 'hero' | 'section' | 'minimal';
+  variant?: 'hero' | 'section' | 'minimal' | 'showcase';
   showGrid?: boolean;
   showParticles?: boolean;
   className?: string;
@@ -54,6 +54,23 @@ export default function BackgroundEffects({
             {/* Minimal blobs */}
             <div className="absolute top-1/2 right-1/3 w-72 h-72 bg-apidevs-primary/2 rounded-full blur-3xl animate-float [animation-delay:4s]" />
             <div className="absolute bottom-1/4 left-1/4 w-56 h-56 bg-apidevs-primary/3 rounded-full blur-3xl animate-float-reverse [animation-delay:1s]" />
+          </>
+        );
+      
+      case 'showcase':
+        return (
+          <>
+            {/* Intense grid for showcase */}
+            {showGrid && (
+              <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-15 [mask-image:radial-gradient(ellipse_at_center,white,rgba(255,255,255,0))]" />
+            )}
+            {/* Dramatic showcase blobs */}
+            <div className="absolute top-1/4 left-1/6 w-[500px] h-[500px] bg-apidevs-primary/8 rounded-full blur-3xl animate-float" />
+            <div className="absolute bottom-1/4 right-1/6 w-[400px] h-[400px] bg-apidevs-primary/6 rounded-full blur-3xl animate-float-reverse [animation-delay:2s]" />
+            <div className="absolute top-2/3 left-1/2 w-[300px] h-[300px] bg-apidevs-primary/10 rounded-full blur-3xl animate-float [animation-delay:4s]" />
+            <div className="absolute top-1/6 right-1/3 w-[200px] h-[200px] bg-apidevs-primary/5 rounded-full blur-3xl animate-float-reverse [animation-delay:1s]" />
+            {/* Additional dramatic effects */}
+            <div className="absolute inset-0 bg-gradient-to-t from-apidevs-dark/50 via-transparent to-apidevs-dark/30" />
           </>
         );
       

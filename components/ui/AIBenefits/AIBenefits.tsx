@@ -60,6 +60,7 @@ export default function AIBenefits() {
 
   return (
     <section className="relative py-16 lg:py-20 bg-apidevs-dark overflow-hidden">
+      
       {/* Background Effects */}
       <BackgroundEffects variant="section" />
 

@@ -6,8 +6,17 @@ import { PropsWithChildren, Suspense } from 'react';
 import { getURL } from '@/utils/helpers';
 import 'styles/main.css';
 
-const title = 'Next.js Subscription Starter';
-const description = 'Brought to you by Vercel, Stripe, and Supabase.';
+// Importar fuentes de Google Fonts
+import { Work_Sans } from 'next/font/google';
+
+const workSans = Work_Sans({
+  subsets: ['latin'],
+  variable: '--font-work-sans',
+  weight: ['300', '400', '500', '600', '700']
+});
+
+const title = 'APIDevs Trading Platform - Indicadores VIP de Trading';
+const description = 'Plataforma líder en indicadores de trading con 18 herramientas VIP, scanners de 160 criptos, comunidad Discord y alertas en tiempo real.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(getURL()),
@@ -21,8 +30,13 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
-    <html lang="en">
-      <body className="bg-black">
+    <html lang="es">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Jeko:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+      </head>
+      <body className={`bg-apidevs-dark ${workSans.variable} font-sans`}>
         <Navbar />
         <main
           id="skip"

@@ -18,7 +18,9 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ['var(--font-sans)', ...fontFamily.sans]
+        sans: ['var(--font-work-sans)', 'Work Sans', ...fontFamily.sans],
+        'work-sans': ['var(--font-work-sans)', 'Work Sans'],
+        'jeko': ['Jeko', 'system-ui', ...fontFamily.sans] // Para títulos (se añadirá via CDN)
       },
       colors: {
         // Colores personalizados APIDevs - Brand Book 2024
@@ -59,13 +61,34 @@ module.exports = {
         'float': {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-10px)' }
+        },
+        'float-reverse': {
+          '0%, 100%': { transform: 'translateY(-10px)' },
+          '50%': { transform: 'translateY(0px)' }
+        },
+        'spin-slow': {
+          'from': { transform: 'rotate(0deg)' },
+          'to': { transform: 'rotate(360deg)' }
+        },
+        'gradient': {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center'
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center'
+          }
         }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'glow': 'glow 2s ease-in-out infinite',
-        'float': 'float 6s ease-in-out infinite'
+        'float': 'float 6s ease-in-out infinite',
+        'float-reverse': 'float-reverse 6s ease-in-out infinite',
+        'spin-slow': 'spin-slow 20s linear infinite',
+        'gradient': 'gradient 8s ease infinite'
       }
     }
   },
