@@ -12,9 +12,9 @@ import {
 export default async function Account() {
   const supabase = createClient();
   const [user, userDetails, subscription] = await Promise.all([
-    getUser(supabase),
-    getUserDetails(supabase),
-    getSubscription(supabase)
+    getUser(supabase as any),
+    getUserDetails(supabase as any),
+    getSubscription(supabase as any)
   ]);
 
   if (!user) {

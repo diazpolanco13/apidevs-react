@@ -20,7 +20,7 @@ module.exports = {
       fontFamily: {
         sans: ['var(--font-work-sans)', 'Work Sans', ...fontFamily.sans],
         'work-sans': ['var(--font-work-sans)', 'Work Sans'],
-        'jeko': ['Jeko', 'system-ui', ...fontFamily.sans] // Para títulos (se añadirá via CDN)
+        'orbitron': ['Orbitron', 'system-ui', ...fontFamily.sans] // Para títulos futuristas
       },
       colors: {
         // Colores personalizados APIDevs - Brand Book 2024
