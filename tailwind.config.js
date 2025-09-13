@@ -65,6 +65,20 @@ module.exports = {
         'float-reverse': {
           '0%, 100%': { transform: 'translateY(-10px)' },
           '50%': { transform: 'translateY(0px)' }
+        },
+        'spin-slow': {
+          'from': { transform: 'rotate(0deg)' },
+          'to': { transform: 'rotate(360deg)' }
+        },
+        'gradient': {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center'
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center'
+          }
         }
       },
       animation: {
@@ -72,7 +86,9 @@ module.exports = {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'glow': 'glow 2s ease-in-out infinite',
         'float': 'float 6s ease-in-out infinite',
-        'float-reverse': 'float-reverse 6s ease-in-out infinite'
+        'float-reverse': 'float-reverse 6s ease-in-out infinite',
+        'spin-slow': 'spin-slow 20s linear infinite',
+        'gradient': 'gradient 8s ease infinite'
       }
     }
   },
