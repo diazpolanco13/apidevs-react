@@ -25,7 +25,7 @@ export default function Navlinks({ user }: NavlinksProps) {
   }, []);
 
   return (
-    <div className="relative flex flex-row justify-between py-4 align-center md:py-6">
+    <div className="relative flex flex-row justify-between items-center h-16 md:h-20">
       {/* Mobile Menu Button - Ahora al principio */}
       <button
         className="lg:hidden flex items-center px-3 py-2 border rounded text-gray-300 border-gray-400 hover:text-apidevs-primary hover:border-apidevs-primary mr-4"
