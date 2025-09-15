@@ -39,39 +39,26 @@ export default function CustomerPortalForm({ subscription }: Props) {
 
   const handleStripePortalRequest = async () => {
     setIsSubmitting(true);
-    const redirectUrl = await createStripePortal(currentPath);
-    setIsSubmitting(false);
-    return router.push(redirectUrl);
+    try {
+      const redirectUrl = await createStripePortal(currentPath);
+      return router.push(redirectUrl);
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+      // For now, redirect to pricing page as fallback
+      return router.push('/#pricing');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Card
-      title="Your Plan"
-      description={
-        subscription
-          ? `You are currently on the ${subscription?.prices?.products?.name} plan.`
-          : 'You are not currently subscribed to any plan.'
-      }
-      footer={
-        <div className="flex flex-col items-start justify-between sm:flex-row sm:items-center">
-          <p className="pb-4 sm:pb-0">Manage your subscription on Stripe.</p>
-          <Button
-            variant="slim"
-            onClick={handleStripePortalRequest}
-            loading={isSubmitting}
-          >
-            Open customer portal
-          </Button>
-        </div>
-      }
+    <Button
+      variant="slim"
+      onClick={handleStripePortalRequest}
+      loading={isSubmitting}
+      className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 rounded-2xl transition-all"
     >
-      <div className="mt-8 mb-4 text-xl font-semibold">
-        {subscription ? (
-          `${subscriptionPrice}/${subscription?.prices?.interval}`
-        ) : (
-          <Link href="/">Choose your plan</Link>
-        )}
-      </div>
-    </Card>
+      {isSubmitting ? 'Abriendo...' : 'Gestionar Suscripción'}
+    </Button>
   );
 }

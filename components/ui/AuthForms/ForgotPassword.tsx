@@ -29,54 +29,85 @@ export default function ForgotPassword({
   };
 
   return (
-    <div className="my-8">
+    <div>
+      {/* Instructions */}
+      <div className="mb-6 p-4 bg-gradient-to-r from-blue-500/10 to-apidevs-primary/10 rounded-lg border border-blue-500/20">
+        <p className="text-sm text-gray-300">
+          📧 <strong>Recupera tu acceso:</strong> Ingresa tu email y te enviaremos un enlace seguro para restablecer tu contraseña.
+        </p>
+      </div>
+
       <form
         noValidate={true}
-        className="mb-4"
+        className="space-y-4"
         onSubmit={(e) => handleSubmit(e)}
       >
-        <div className="grid gap-2">
-          <div className="grid gap-1">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              placeholder="name@example.com"
-              type="email"
-              name="email"
-              autoCapitalize="none"
-              autoComplete="email"
-              autoCorrect="off"
-              className="w-full p-3 rounded-md bg-zinc-800"
-            />
-          </div>
-          <Button
-            variant="slim"
-            type="submit"
-            className="mt-1"
-            loading={isSubmitting}
-            disabled={disableButton}
-          >
-            Send Email
-          </Button>
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
+            Email de tu cuenta
+          </label>
+          <input
+            id="email"
+            placeholder="tu@ejemplo.com"
+            type="email"
+            name="email"
+            autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect="off"
+            className="w-full p-3 rounded-lg bg-gray-900/50 border border-gray-700 text-white placeholder-gray-400 focus:border-apidevs-primary focus:ring-2 focus:ring-apidevs-primary/20 focus:outline-none transition-all"
+          />
         </div>
+        
+        <Button
+          variant="slim"
+          type="submit"
+          className="w-full mt-6 bg-gradient-to-r from-blue-500 to-apidevs-primary hover:from-apidevs-primary hover:to-blue-500 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105"
+          loading={isSubmitting}
+          disabled={disableButton}
+        >
+          {isSubmitting ? 'Enviando enlace...' : 'Enviar Enlace de Recuperación'}
+        </Button>
       </form>
-      <p>
-        <Link href="/signin/password_signin" className="font-light text-sm">
-          Sign in with email and password
-        </Link>
-      </p>
-      {allowEmail && (
-        <p>
-          <Link href="/signin/email_signin" className="font-light text-sm">
-            Sign in via magic link
-          </Link>
+      
+      <div className="mt-6 text-center space-y-3">
+        <div className="pt-4 border-t border-gray-700">
+          <p className="text-gray-400 text-sm mb-4">¿Recordaste tu contraseña?</p>
+          <div className="space-y-2">
+            <Link 
+              href="/signin/password_signin" 
+              className="block text-apidevs-primary hover:text-green-400 transition-colors text-sm font-medium"
+            >
+              Iniciar sesión con email y contraseña
+            </Link>
+            
+            {allowEmail && (
+              <Link 
+                href="/signin/email_signin" 
+                className="block text-gray-300 hover:text-white transition-colors text-sm"
+              >
+                Iniciar sesión con enlace mágico
+              </Link>
+            )}
+            
+            <div className="pt-3 border-t border-gray-700/50">
+              <p className="text-gray-400 text-sm mb-2">¿No tienes cuenta?</p>
+              <Link 
+                href="/signin/signup" 
+                className="text-apidevs-primary hover:text-green-400 transition-colors text-sm font-medium"
+              >
+                Crear cuenta gratis
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Security Note */}
+      <div className="mt-6 p-3 bg-gray-800/30 rounded-lg border border-gray-700/50">
+        <p className="text-xs text-gray-400 text-center">
+          🔒 <strong>Seguro:</strong> El enlace expirará en 1 hora por tu seguridad. Revisa tu carpeta de spam si no lo recibes.
         </p>
-      )}
-      <p>
-        <Link href="/signin/signup" className="font-light text-sm">
-          Don't have an account? Sign up
-        </Link>
-      </p>
+      </div>
     </div>
   );
 }

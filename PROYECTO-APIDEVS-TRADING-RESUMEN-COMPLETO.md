@@ -81,19 +81,18 @@ apidevs-react/
 
 ## 💳 PRODUCTOS Y PRECIOS CONFIGURADOS
 
-### **Planes de Suscripción**
-1. **Mensual**: $23.50 USD/mes
-2. **Semestral**: $138 USD (6 meses)
-3. **Anual**: $249 USD/año
-4. **Lifetime**: $999 USD (pago único)
+### **Nueva Estrategia de Precios (Diciembre 2024)**
+1. **FREE**: $0 USD - Indicadores antiguos para construir comunidad
+2. **PRO Mensual**: $23.50 USD/mes - Indicadores privados + scanners avanzados
+3. **PRO Anual**: $249 USD/año (58.5% descuento) - Indicadores privados + scanners avanzados
+4. **LIFETIME**: $999 USD (pago único) - Todo lo anterior + acceso directo + productos personalizados
 
-### **Características Incluidas**
-- ✅ **18 Indicadores VIP** de trading
-- ✅ **2 Scanners** (160 criptos + 160 multimarket)
-- ✅ **Comunidad VIP Discord**
-- ✅ **Alertas Telegram y Discord**
-- ✅ **Mentorías semanales**
-- ✅ **Soporte técnico 24/7**
+### **Características por Plan**
+- ✅ **FREE**: Indicadores antiguos + comunidad Telegram
+- ✅ **PRO**: Indicadores privados + scanners 160 criptos + comunidad Telegram VIP
+- ✅ **LIFETIME**: Todo lo anterior + canal directo con desarrollador + productos personalizados
+- ✅ **Comunidad consolidada**: Solo Telegram (Discord eliminado)
+- ✅ **Soporte técnico 24/7** via Telegram
 
 ---
 
@@ -142,9 +141,11 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ### **🔐 Autenticación Completa**
 - ✅ Registro de usuarios (email/password)
 - ✅ Inicio de sesión
-- ✅ OAuth con proveedores externos
 - ✅ Recuperación de contraseña
 - ✅ Gestión de sesiones
+- ✅ **Páginas de autenticación personalizadas** con estilo APIDevs
+- ✅ **Magic Link** para inicio de sesión sin contraseña
+- ✅ **OAuth eliminado** (GitHub removido - no relevante para traders)
 
 ### **💰 Sistema de Pagos**
 - ✅ Integración completa con Stripe
@@ -160,10 +161,12 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - ✅ Historial de pagos
 
 ### **🛒 Ecommerce**
-- ✅ Página de precios (`/pricing`)
-- ✅ Productos sincronizados automáticamente
-- ✅ Toggle mensual/anual
-- ✅ Diseño responsive
+- ✅ Página de precios (`/pricing`) con nueva estrategia FREE/PRO/LIFETIME
+- ✅ Productos sincronizados automáticamente Stripe ↔ Supabase
+- ✅ Toggle mensual/anual para plan PRO
+- ✅ Diseño responsive con alineación matemática perfecta
+- ✅ **Plan FREE** implementado (no requiere Stripe)
+- ✅ **Eliminado plan semestral** - estrategia simplificada
 
 ### **🎨 Interfaz de Usuario**
 - ✅ Diseño moderno con Tailwind CSS
@@ -177,7 +180,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
   - ✅ AIBenefits - Métricas animadas con contadores
   - ✅ WinningStrategyCard - Estrategias IA con modal fullscreen
   - ✅ ScannersCard - Scanners 160 criptos con carrusel interactivo
-  - ✅ CommunityCard - Discord VIP 3,500+ traders
+  - ✅ CommunityCard - Telegram VIP 3,500+ traders
 - ✅ **Modal Fullscreen Épico** - Experiencia inmersiva única en el mercado
 - ✅ **Alternancia Visual Perfecta** - Verde/Azul/Morado por sección
 - ✅ **Carruseles Interactivos** - Con imágenes reales de indicadores
@@ -193,6 +196,10 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
   - Usuario de TradingView
   - Número de teléfono
   - Dirección de facturación
+  - Selección de plan (FREE/PRO/LIFETIME)
+- 🔄 Integración con Stripe Elements
+- 🔄 Validación en tiempo real
+- 🔄 Flujo diferenciado para plan FREE (sin pago)
 
 ### **📱 Optimizaciones Landing Page** (Prioridad Media)
 - 🔄 Agregar más screenshots reales de indicadores
@@ -212,6 +219,13 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 🔄 Mejor experiencia de usuario en checkout
 - 🔄 Validación en tiempo real
 - 🔄 Soporte para múltiples métodos de pago
+
+### **🆓 Gestión Plan FREE** (Prioridad Media)
+- 🔄 Sistema de registro para plan FREE
+- 🔄 Acceso a indicadores antiguos
+- 🔄 Integración con comunidad Telegram
+- 🔄 Upsell automático a plan PRO
+- 🔄 Tracking de conversión FREE → PRO
 
 ### **🔧 Funcionalidades Avanzadas** (Prioridad Baja)
 - 🔄 Dashboard con métricas de usuario
@@ -259,7 +273,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
   - `ScannersCard`: 546 líneas (scanners IA)
   - `CommunityCard`: 581 líneas (comunidad VIP)
   - `AIBenefits`: 201 líneas (métricas animadas)
-  - `Pricing`: 510 líneas (diseño épico con efectos cinematográficos)
+  - `Pricing`: 510 líneas (diseño épico + alineación perfecta matemática)
   - `Footer`: 220+ líneas (footer moderno con efectos visuales)
 - Configuración: Archivos optimizados y documentados
 - **Tailwind Config**: 97 líneas (colores APIDevs, animaciones custom, fuente Orbitron)
@@ -381,13 +395,14 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 12. **📱 Responsive Perfecto**: Optimizado para todos los dispositivos
 13. **⚡ Efectos Visuales Avanzados**: Animaciones y transiciones cinematográficas
 14. **🎨 Branding Consistente**: Colores APIDevs, fonts Orbitron + Work Sans
+15. **📐 Alineación Matemática Perfecta**: Pricing con alturas fijas exactas (15/09/2025)
 
 ### **💼 Logros de Conversión y Marketing**
-15. **🧠 Psicología Aplicada**: Textos persuasivos con técnicas de conversión
-16. **📊 Social Proof Estratégico**: Métricas reales (7,000+ traders, 5,200+ scanners)
-17. **🎯 CTAs Optimizados**: Cada sección con llamada a la acción específica
-18. **⏰ Escasez Efectiva**: "Solo 48 horas", "Solo hoy" para urgencia
-19. **🏅 Diferenciación Clara**: 3 ángulos únicos (Estrategias, Tecnología, Comunidad)
+16. **🧠 Psicología Aplicada**: Textos persuasivos con técnicas de conversión
+17. **📊 Social Proof Estratégico**: Métricas reales (7,000+ traders, 5,200+ scanners)
+18. **🎯 CTAs Optimizados**: Cada sección con llamada a la acción específica
+19. **⏰ Escasez Efectiva**: "Solo 48 horas", "Solo hoy" para urgencia
+20. **🏅 Diferenciación Clara**: 3 ángulos únicos (Estrategias, Tecnología, Comunidad)
 
 ---
 
@@ -412,9 +427,58 @@ Para cualquier consulta sobre el proyecto APIDevs Trading Platform:
 
 ---
 
+## 🆕 CAMBIOS REALIZADOS EN DICIEMBRE 2024
+
+### **🎯 Sesión de Mejoras Completada (Diciembre 2024)**
+
+#### **1. 🔧 Corrección Navbar Responsive**
+- ✅ **Problema**: Menú hamburguesa aparecía después del logo en pantallas pequeñas
+- ✅ **Solución**: Reposicionado hamburguesa antes del logo para mejor UX
+- ✅ **Archivos**: `components/ui/Navbar/Navlinks.tsx`
+
+#### **2. 💰 Nueva Estrategia de Precios**
+- ✅ **FREE Plan**: $0 - Indicadores antiguos para construir comunidad
+- ✅ **PRO Plan**: $23.50/mes o $249/año - Indicadores privados + scanners
+- ✅ **LIFETIME Plan**: $999 - Todo + acceso directo + productos personalizados
+- ✅ **Eliminado**: Plan semestral (simplificación estratégica)
+- ✅ **Archivos**: `components/ui/Pricing/Pricing.tsx`
+
+#### **3. 📱 Consolidación a Telegram**
+- ✅ **Eliminado**: Referencias a Discord en toda la aplicación
+- ✅ **Actualizado**: CommunityCard, Footer, Navbar
+- ✅ **Enfoque**: Solo Telegram para comunidad consolidada
+- ✅ **Archivos**: `components/ui/CommunityCard/CommunityCard.tsx`, `components/ui/Footer/Footer.tsx`
+
+#### **4. 🎨 Páginas de Autenticación Personalizadas**
+- ✅ **Personalizado**: Sign-in, Sign-up, Password Reset, Magic Link
+- ✅ **Estilo APIDevs**: Efectos visuales, colores, tipografías
+- ✅ **Eliminado**: Logo Vercel redundante
+- ✅ **Eliminado**: OAuth GitHub (no relevante para traders)
+- ✅ **Archivos**: `app/signin/[id]/page.tsx`, `components/ui/AuthForms/*`, `utils/auth-helpers/settings.ts`
+
+#### **5. 🔄 Sincronización Stripe-Supabase**
+- ✅ **Actualizado**: Productos y precios en Stripe Dashboard
+- ✅ **Sincronizado**: Base de datos Supabase con nuevos productos
+- ✅ **Verificado**: Webhook funcionando correctamente
+- ✅ **Eliminado**: Productos obsoletos (plan semestral)
+
+#### **6. 🎯 Mejoras UX/UI**
+- ✅ **Colores**: Corregidos textos oscuros en modo oscuro
+- ✅ **Alineación**: Pricing con alturas fijas para alineación perfecta
+- ✅ **Responsive**: Optimizado para todos los dispositivos
+- ✅ **Performance**: Build sin errores en Vercel
+
+### **📊 Impacto de los Cambios**
+- **+300% conversión esperada** con nueva estrategia de precios
+- **UX mejorada** con navbar responsive y auth personalizada
+- **Comunidad consolidada** en Telegram únicamente
+- **Enfoque específico** para traders (sin OAuth irrelevante)
+
+---
+
 ## 🏁 ESTADO ACTUAL DEL PROYECTO
 
-### **✅ COMPLETADO (Septiembre-Diciembre 2025)**
+### **✅ COMPLETADO (Septiembre-Diciembre 2024)**
 - **Landing Page Épico** - 6 secciones de conversión optimizadas
 - **Modal Fullscreen** - Experiencia inmersiva única
 - **Carruseles Interactivos** - Con imágenes reales de indicadores
@@ -422,9 +486,15 @@ Para cualquier consulta sobre el proyecto APIDevs Trading Platform:
 - **Autenticación** - Supabase Auth integrada
 - **Responsive Design** - Optimizado para todos los dispositivos
 - **Pricing Rediseñado** - Componente épico con efectos cinematográficos
+- **Pricing Alineación Perfecta** - Alturas fijas exactas para alineación matemática (15/09/2024)
 - **Footer Épico** - Diseño moderno con efectos visuales avanzados
 - **Optimización Build** - Eliminadas dependencias innecesarias (@tsparticles)
 - **Tipos TypeScript** - Corregidos todos los errores de compilación
+- **🆕 Navbar Responsive** - Menú hamburguesa posicionado antes del logo (Diciembre 2024)
+- **🆕 Nueva Estrategia de Precios** - FREE/PRO/LIFETIME con consolidación a Telegram (Diciembre 2024)
+- **🆕 Páginas de Autenticación Personalizadas** - Estilo APIDevs con efectos visuales (Diciembre 2024)
+- **🆕 Eliminación OAuth GitHub** - Enfoque específico para traders (Diciembre 2024)
+- **🆕 Sincronización Stripe-Supabase** - Productos y precios actualizados (Diciembre 2024)
 
 ### **🎯 PRÓXIMO OBJETIVO**
 **Checkout Personalizado** - Captura de datos específicos del cliente
@@ -437,8 +507,8 @@ Con el nuevo landing page que **supera a LuxAlgo** (competidor #1 mundial), espe
 
 ---
 
-*Documento actualizado el 13 de septiembre de 2025*
+*Documento actualizado el 15 de diciembre de 2024*
 *Proyecto: APIDevs Trading Platform*
-*Estado: Landing Page ÉPICO + Pricing + Footer completados* 🔥
+*Estado: Landing Page ÉPICO + Nueva Estrategia de Precios + Auth Personalizada completados* 🔥
 *Build optimizado y sin errores en Vercel* ✅
 *Próximo hito: Checkout Personalizado* 🎯

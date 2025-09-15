@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import { getErrorRedirect, getStatusRedirect } from '@/utils/helpers';
+import { checkOnboardingStatus } from '@/utils/auth-helpers/onboarding';
 
 export async function GET(request: NextRequest) {
   // The `/auth/callback` route is required for the server-side auth flow implemented
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
   if (code) {
     const supabase = createClient();
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error, data } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
       return NextResponse.redirect(
@@ -22,6 +23,21 @@ export async function GET(request: NextRequest) {
           "Sorry, we weren't able to log you in. Please try again."
         )
       );
+    }
+
+    // Check if user needs onboarding
+    if (data.user) {
+      const { completed } = await checkOnboardingStatus(data.user.id);
+      
+      if (!completed) {
+        return NextResponse.redirect(
+          getStatusRedirect(
+            `${requestUrl.origin}/onboarding`,
+            'Welcome!',
+            'Complete your profile to get started.'
+          )
+        );
+      }
     }
   }
 
