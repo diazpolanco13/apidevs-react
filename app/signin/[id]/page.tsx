@@ -1,4 +1,3 @@
-import Logo from '@/components/icons/Logo';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -22,11 +21,45 @@ export default async function SignIn({
   searchParams
 }: {
   params: { id: string };
-  searchParams: { disable_button: boolean };
+  searchParams: { disable_button?: boolean; plan?: string };
 }) {
   const { allowOauth, allowEmail, allowPassword } = getAuthTypes();
   const viewTypes = getViewTypes();
   const redirectMethod = getRedirectMethod();
+  
+  // Get selected plan from URL params
+  const selectedPlan = searchParams.plan;
+  
+  // Plan information
+  const getPlanInfo = (plan: string | undefined) => {
+    switch (plan) {
+      case 'free':
+        return {
+          name: 'Plan FREE',
+          price: 'Gratis',
+          color: 'text-green-400',
+          benefits: ['5 Indicadores clásicos', 'Telegram Community', 'Tutoriales básicos']
+        };
+      case 'pro':
+        return {
+          name: 'Plan PRO',
+          price: 'Desde $39/mes',
+          color: 'text-blue-400',
+          benefits: ['18 Indicadores avanzados', 'Scanners únicos', 'Telegram VIP', 'Mentorías semanales']
+        };
+      case 'lifetime':
+        return {
+          name: 'Plan LIFETIME',
+          price: '$999 único',
+          color: 'text-purple-400',
+          benefits: ['Todo lo anterior + Premium', 'Telegram personal', 'Productos personalizados', 'Acceso de por vida']
+        };
+      default:
+        return null;
+    }
+  };
+  
+  const planInfo = getPlanInfo(selectedPlan);
 
   // Declare 'viewProp' and initialize with the default value
   let viewProp: string;
@@ -55,57 +88,122 @@ export default async function SignIn({
   }
 
   return (
-    <div className="flex justify-center height-screen-helper">
-      <div className="flex flex-col justify-between max-w-lg p-3 m-auto w-80 ">
-        <div className="flex justify-center pb-12 ">
-          <Logo width="64px" height="64px" />
-        </div>
-        <Card
-          title={
-            viewProp === 'forgot_password'
-              ? 'Reset Password'
-              : viewProp === 'update_password'
-                ? 'Update Password'
-                : viewProp === 'signup'
-                  ? 'Sign Up'
-                  : 'Sign In'
-          }
-        >
-          {viewProp === 'password_signin' && (
-            <PasswordSignIn
-              allowEmail={allowEmail}
-              redirectMethod={redirectMethod}
-            />
-          )}
-          {viewProp === 'email_signin' && (
-            <EmailSignIn
-              allowPassword={allowPassword}
-              redirectMethod={redirectMethod}
-              disableButton={searchParams.disable_button}
-            />
-          )}
-          {viewProp === 'forgot_password' && (
-            <ForgotPassword
-              allowEmail={allowEmail}
-              redirectMethod={redirectMethod}
-              disableButton={searchParams.disable_button}
-            />
-          )}
-          {viewProp === 'update_password' && (
-            <UpdatePassword redirectMethod={redirectMethod} />
-          )}
-          {viewProp === 'signup' && (
-            <SignUp allowEmail={allowEmail} redirectMethod={redirectMethod} />
-          )}
-          {viewProp !== 'update_password' &&
-            viewProp !== 'signup' &&
-            allowOauth && (
-              <>
-                <Separator text="Third-party sign-in" />
-                <OauthSignIn />
-              </>
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.1),transparent_70%)]"></div>
+      
+      {/* Grid Pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(34,197,94,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(34,197,94,0.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+      
+      {/* Floating Particles */}
+      <div className="absolute top-20 left-20 w-2 h-2 bg-apidevs-primary rounded-full animate-pulse"></div>
+      <div className="absolute top-40 right-32 w-1 h-1 bg-green-400 rounded-full animate-ping"></div>
+      <div className="absolute bottom-32 left-16 w-3 h-3 bg-apidevs-primary/50 rounded-full animate-bounce"></div>
+      
+      <div className="relative z-10 flex justify-center items-center min-h-screen p-4">
+        <div className="w-full max-w-md">
+          {/* Welcome Section */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-apidevs-primary to-white mb-4">
+              {viewProp === 'signup' 
+                ? 'Únete a la Comunidad' 
+                : 'Bienvenido de vuelta'
+              }
+            </h1>
+            <p className="text-gray-400 text-lg">
+              {viewProp === 'signup' 
+                ? 'Más de 3,500 traders exitosos confían en nosotros' 
+                : 'Accede a tu cuenta de trading profesional'
+              }
+            </p>
+            
+            {/* Plan Selected Badge */}
+            {planInfo && viewProp === 'signup' && (
+              <div className="mt-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-apidevs-primary/20 to-green-400/20 rounded-full border border-apidevs-primary/30">
+                <span className="text-sm">
+                  <span className="text-gray-300">Plan seleccionado: </span>
+                  <span className={`font-semibold ${planInfo.color}`}>
+                    {planInfo.name}
+                  </span>
+                  <span className="text-gray-400 ml-2">({planInfo.price})</span>
+                </span>
+              </div>
             )}
-        </Card>
+          </div>
+
+          {/* Auth Card */}
+          <div className="bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-8 shadow-2xl">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-white mb-2">
+                {viewProp === 'forgot_password'
+                  ? 'Restablecer Contraseña'
+                  : viewProp === 'update_password'
+                    ? 'Actualizar Contraseña'
+                    : viewProp === 'signup'
+                      ? 'Crear Cuenta'
+                      : 'Iniciar Sesión'
+                }
+              </h2>
+              <p className="text-gray-400 text-sm">
+                {viewProp === 'signup' 
+                  ? 'Accede a indicadores profesionales y únete a nuestra comunidad VIP'
+                  : 'Ingresa tus credenciales para acceder a tu cuenta'
+                }
+              </p>
+            </div>
+            {viewProp === 'password_signin' && (
+              <PasswordSignIn
+                allowEmail={allowEmail}
+                redirectMethod={redirectMethod}
+              />
+            )}
+            {viewProp === 'email_signin' && (
+              <EmailSignIn
+                allowPassword={allowPassword}
+                redirectMethod={redirectMethod}
+                disableButton={searchParams.disable_button}
+              />
+            )}
+            {viewProp === 'forgot_password' && (
+              <ForgotPassword
+                allowEmail={allowEmail}
+                redirectMethod={redirectMethod}
+                disableButton={searchParams.disable_button}
+              />
+            )}
+            {viewProp === 'update_password' && (
+              <UpdatePassword redirectMethod={redirectMethod} />
+            )}
+            {viewProp === 'signup' && (
+              <SignUp 
+                allowEmail={allowEmail} 
+                redirectMethod={redirectMethod} 
+                selectedPlan={selectedPlan}
+                planInfo={planInfo}
+              />
+            )}
+            {viewProp !== 'update_password' &&
+              viewProp !== 'signup' &&
+              allowOauth && (
+                <>
+                  <Separator text="O continúa con" />
+                  <OauthSignIn />
+                </>
+              )}
+          </div>
+          
+          {/* Footer */}
+          <div className="mt-8 text-center text-gray-500 text-sm">
+            <p>© 2024 APIDevs Trading. Todos los derechos reservados.</p>
+            <p className="mt-2">
+              ¿Necesitas ayuda? {' '}
+              <a href="mailto:support@apidevs.io" className="text-apidevs-primary hover:text-green-400 transition-colors">
+                Contáctanos
+              </a>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -194,7 +194,7 @@ export async function signUp(formData: FormData) {
       error.message
     );
   } else if (data.session) {
-    redirectPath = getStatusRedirect('/', 'Success!', 'You are now signed in.');
+    redirectPath = getStatusRedirect('/onboarding', 'Success!', 'You are now signed in. Complete your profile to continue.');
   } else if (
     data.user &&
     data.user.identities &&
