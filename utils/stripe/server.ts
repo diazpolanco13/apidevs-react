@@ -22,6 +22,7 @@ export async function checkoutWithStripe(
   price: Price,
   redirectPath: string = '/account'
 ): Promise<CheckoutResponse> {
+  console.log('checkoutWithStripe called with price:', price);
   try {
     // Get the user from Supabase auth
     const supabase = createClient();
@@ -84,11 +85,12 @@ export async function checkoutWithStripe(
     }
 
     // Create a checkout session in Stripe
+    console.log('Creating Stripe session with params:', JSON.stringify(params, null, 2));
     let session;
     try {
       session = await stripe.checkout.sessions.create(params);
     } catch (err) {
-      console.error(err);
+      console.error('Stripe checkout session error:', err);
       throw new Error('Unable to create checkout session.');
     }
 

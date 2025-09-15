@@ -5,7 +5,7 @@ export async function checkOnboardingStatus(userId: string) {
   
   const { data: profile, error } = await supabase
     .from('users')
-    .select('onboarding_completed, tradingview_username, full_name, country, city')
+    .select('onboarding_completed, tradingview_username, full_name, country, city, phone, postal_code, address, timezone')
     .eq('id', userId)
     .single();
 

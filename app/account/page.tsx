@@ -1,6 +1,8 @@
 import CustomerPortalForm from '@/components/ui/AccountForms/CustomerPortalForm';
 import EmailForm from '@/components/ui/AccountForms/EmailForm';
 import NameForm from '@/components/ui/AccountForms/NameForm';
+import EditProfileClient from './EditProfileClient';
+import EditLocationClient from './EditLocationClient';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { checkOnboardingStatus } from '@/utils/auth-helpers/onboarding';
@@ -50,68 +52,50 @@ export default async function Account() {
       <div className="max-w-6xl mx-auto px-4 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
-          {/* Trading Profile Card */}
-          <div className="bg-gradient-to-br from-apidevs-primary/10 to-green-400/10 backdrop-blur-xl border border-apidevs-primary/30 rounded-3xl p-8">
+          {/* Editable Profile Card */}
+          <div className="bg-gradient-to-br from-apidevs-primary/10 to-blue-500/10 backdrop-blur-xl border border-apidevs-primary/30 rounded-3xl p-8">
             <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-full flex items-center justify-center mr-4">
-                <TrendingUp className="w-6 h-6 text-black" />
+              <div className="w-12 h-12 bg-gradient-to-r from-apidevs-primary to-blue-500 rounded-full flex items-center justify-center mr-4">
+                <User className="w-6 h-6 text-black" />
               </div>
-              <h2 className="text-2xl font-bold text-white">Perfil de Trading</h2>
+              <h2 className="text-2xl font-bold text-white">Perfil de Usuario</h2>
+              <div className="ml-auto">
+                <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
+                  <CheckCircle className="w-4 h-4 inline mr-1" />
+                  Verificado
+                </span>
+              </div>
             </div>
             
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-black/30 rounded-2xl">
-                <div className="flex items-center">
-                  <TrendingUp className="w-5 h-5 text-apidevs-primary mr-3" />
-                  <span className="text-gray-300">TradingView</span>
-                </div>
-                <span className="text-white font-semibold">{profile?.tradingview_username}</span>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-black/30 rounded-2xl">
-                <div className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
-                  <span className="text-gray-300">Estado</span>
-                </div>
-                <span className="text-green-400 font-semibold">Verificado</span>
-              </div>
-            </div>
+            <EditProfileClient 
+              userId={user.id}
+              initialData={{
+                full_name: profile?.full_name || '',
+                tradingview_username: profile?.tradingview_username || ''
+              }}
+            />
           </div>
 
-          {/* Personal Info Card */}
-          <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-xl border border-blue-500/30 rounded-3xl p-8">
+          {/* Location Info Card */}
+          <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 rounded-3xl p-8">
             <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-4">
-                <User className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-4">
+                <MapPin className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-white">Información Personal</h2>
+              <h2 className="text-2xl font-bold text-white">Ubicación</h2>
             </div>
             
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-black/30 rounded-2xl">
-                <div className="flex items-center">
-                  <User className="w-5 h-5 text-blue-400 mr-3" />
-                  <span className="text-gray-300">Nombre</span>
-                </div>
-                <span className="text-white font-semibold">{profile?.full_name}</span>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-black/30 rounded-2xl">
-                <div className="flex items-center">
-                  <MapPin className="w-5 h-5 text-blue-400 mr-3" />
-                  <span className="text-gray-300">Ubicación</span>
-                </div>
-                <span className="text-white font-semibold">{profile?.city}, {profile?.country}</span>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-black/30 rounded-2xl">
-                <div className="flex items-center">
-                  <Phone className="w-5 h-5 text-blue-400 mr-3" />
-                  <span className="text-gray-300">Teléfono</span>
-                </div>
-                <span className="text-white font-semibold">{profile?.phone || 'No registrado'}</span>
-              </div>
-            </div>
+            <EditLocationClient 
+              userId={user.id}
+              initialData={{
+                country: profile?.country || '',
+                city: profile?.city || '',
+                phone: profile?.phone || '',
+                postal_code: profile?.postal_code || '',
+                address: profile?.address || '',
+                timezone: profile?.timezone || ''
+              }}
+            />
           </div>
 
           {/* Subscription Card */}
