@@ -137,7 +137,14 @@ export default function EditLocationForm({ userId, initialData, onUpdate }: Edit
     try {
       const supabase = createClient();
       
-      const updateData = {
+      const updateData: {
+        country: string;
+        city: string;
+        phone: string | null;
+        postal_code: string | null;
+        address: string | null;
+        timezone: string;
+      } = {
         country: tempData.country.trim(),
         city: tempData.city.trim(),
         phone: tempData.phone.trim() || null,
