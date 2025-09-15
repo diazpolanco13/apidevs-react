@@ -124,25 +124,25 @@ export default function EditProfileForm({ userId, initialData, onUpdate }: EditP
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* TradingView Username */}
-      <div className="flex items-center justify-between p-4 bg-black/30 rounded-2xl">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-black/30 rounded-2xl space-y-2 sm:space-y-0">
         <div className="flex items-center">
           <TrendingUp className="w-5 h-5 text-apidevs-primary mr-3" />
-          <span className="text-gray-300">TradingView</span>
+          <span className="text-gray-300 font-medium">TradingView</span>
         </div>
         
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
           {isEditing === 'tradingview' ? (
-            <div className="flex items-center space-x-2">
-              <div className="flex flex-col">
+            <div className="flex flex-col sm:flex-row sm:items-start space-y-2 sm:space-y-0 sm:space-x-2 w-full">
+              <div className="flex flex-col flex-1">
                 <input
                   type="text"
                   value={tempData.tradingview_username}
                   onChange={(e) => handleInputChange('tradingview', e.target.value)}
                   className={`px-3 py-2 bg-gray-800 border rounded-2xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 ${
                     errors.tradingview ? 'border-red-500' : 'border-gray-600'
-                  }`}
+                  } w-full sm:min-w-[200px]`}
                   placeholder="usuario_tradingview"
                   disabled={isSubmitting}
                 />
@@ -150,25 +150,32 @@ export default function EditProfileForm({ userId, initialData, onUpdate }: EditP
                   <span className="text-red-400 text-xs mt-1">{errors.tradingview}</span>
                 )}
               </div>
-              <Button
-                variant="slim"
+              <div className="flex items-center space-x-2 justify-end sm:justify-start">
+              <button
                 onClick={handleSave}
-                loading={isSubmitting}
-                className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                disabled={isSubmitting}
+                title="Guardar cambios"
+                className="flex items-center justify-center min-w-[44px] h-[44px] bg-gradient-to-r from-apidevs-primary to-green-400 hover:from-green-400 hover:to-apidevs-primary disabled:from-gray-600 disabled:to-gray-700 text-black font-semibold rounded-2xl shadow-xl transition-all duration-300 transform hover:scale-110 disabled:hover:scale-100 disabled:cursor-not-allowed border border-green-300/30 hover:border-green-200/50 hover:shadow-apidevs-primary/30"
               >
-                <Check className="w-4 h-4" />
-              </Button>
+                {isSubmitting ? (
+                  <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                ) : (
+                  <Check className="w-5 h-5" />
+                )}
+              </button>
               <button
                 onClick={handleCancel}
                 disabled={isSubmitting}
-                className="px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400 text-white rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                title="Cancelar edición"
+                className="flex items-center justify-center min-w-[44px] h-[44px] bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 disabled:opacity-50 text-white rounded-2xl shadow-xl transition-all duration-300 transform hover:scale-110 disabled:hover:scale-100 disabled:cursor-not-allowed border border-gray-500/30 hover:border-gray-400/50 hover:shadow-gray-500/20"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
+              </div>
             </div>
           ) : (
             <div className="flex items-center space-x-2">
-              <span className="text-white font-semibold">{formData.tradingview_username}</span>
+              <span className="text-white font-semibold break-all sm:break-normal">{formData.tradingview_username}</span>
               <button
                 onClick={() => handleStartEdit('tradingview')}
                 className="p-2 text-gray-400 hover:text-apidevs-primary transition-colors"
@@ -182,23 +189,23 @@ export default function EditProfileForm({ userId, initialData, onUpdate }: EditP
       </div>
 
       {/* Full Name */}
-      <div className="flex items-center justify-between p-4 bg-black/30 rounded-2xl">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-black/30 rounded-2xl space-y-2 sm:space-y-0">
         <div className="flex items-center">
           <User className="w-5 h-5 text-blue-400 mr-3" />
-          <span className="text-gray-300">Nombre</span>
+          <span className="text-gray-300 font-medium">Nombre</span>
         </div>
         
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
           {isEditing === 'name' ? (
-            <div className="flex items-center space-x-2">
-              <div className="flex flex-col">
+            <div className="flex flex-col sm:flex-row sm:items-start space-y-2 sm:space-y-0 sm:space-x-2 w-full">
+              <div className="flex flex-col flex-1">
                 <input
                   type="text"
                   value={tempData.full_name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   className={`px-3 py-2 bg-gray-800 border rounded-2xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
                     errors.name ? 'border-red-500' : 'border-gray-600'
-                  }`}
+                  } w-full sm:min-w-[200px]`}
                   placeholder="Tu nombre completo"
                   disabled={isSubmitting}
                 />
@@ -206,25 +213,32 @@ export default function EditProfileForm({ userId, initialData, onUpdate }: EditP
                   <span className="text-red-400 text-xs mt-1">{errors.name}</span>
                 )}
               </div>
-              <Button
-                variant="slim"
+              <div className="flex items-center space-x-2 justify-end sm:justify-start">
+              <button
                 onClick={handleSave}
-                loading={isSubmitting}
-                className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                disabled={isSubmitting}
+                title="Guardar nombre"
+                className="flex items-center justify-center min-w-[44px] h-[44px] bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-cyan-500 hover:to-blue-400 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold rounded-2xl shadow-xl transition-all duration-300 transform hover:scale-110 disabled:hover:scale-100 disabled:cursor-not-allowed border border-blue-400/30 hover:border-cyan-300/50 hover:shadow-blue-500/30"
               >
-                <Check className="w-4 h-4" />
-              </Button>
+                {isSubmitting ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  <Check className="w-5 h-5" />
+                )}
+              </button>
               <button
                 onClick={handleCancel}
                 disabled={isSubmitting}
-                className="px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400 text-white rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                title="Cancelar edición"
+                className="flex items-center justify-center min-w-[44px] h-[44px] bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 disabled:opacity-50 text-white rounded-2xl shadow-xl transition-all duration-300 transform hover:scale-110 disabled:hover:scale-100 disabled:cursor-not-allowed border border-gray-500/30 hover:border-gray-400/50 hover:shadow-gray-500/20"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
+              </div>
             </div>
           ) : (
             <div className="flex items-center space-x-2">
-              <span className="text-white font-semibold">{formData.full_name}</span>
+              <span className="text-white font-semibold break-all sm:break-normal">{formData.full_name}</span>
               <button
                 onClick={() => handleStartEdit('name')}
                 className="p-2 text-gray-400 hover:text-blue-400 transition-colors"

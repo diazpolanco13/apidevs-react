@@ -62,19 +62,33 @@ export const createClient = (request: NextRequest) => {
 
 export const updateSession = async (request: NextRequest) => {
   try {
-    // This `try/catch` block is only here for the interactive tutorial.
-    // Feel free to remove once you have Supabase connected.
     const { supabase, response } = createClient(request);
 
     // This will refresh session if expired - required for Server Components
     // https://supabase.com/docs/guides/auth/server-side/nextjs
-    await supabase.auth.getUser();
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    // Handle refresh token errors gracefully
+    if (error && error.message?.includes('refresh_token_not_found')) {
+      // Clear the invalid session cookies
+      const clearedResponse = NextResponse.next({
+        request: {
+          headers: request.headers
+        }
+      });
+      
+      // Clear auth cookies for this project
+      clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token');
+      clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token.0');
+      clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token.1');
+      
+      return clearedResponse;
+    }
 
     return response;
   } catch (e) {
-    // If you are here, a Supabase client could not be created!
-    // This is likely because you have not set up environment variables.
-    // Check out http://localhost:3000 for Next Steps.
+    console.error('Supabase middleware error:', e);
+    // Return clean response if there's any error
     return NextResponse.next({
       request: {
         headers: request.headers

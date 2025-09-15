@@ -52,13 +52,12 @@ export default function CustomerPortalForm({ subscription }: Props) {
   };
 
   return (
-    <Button
-      variant="slim"
+    <button
       onClick={handleStripePortalRequest}
-      loading={isSubmitting}
-      className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 rounded-2xl transition-all"
+      disabled={isSubmitting}
+      className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold rounded-2xl transition-all transform hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed text-center"
     >
       {isSubmitting ? 'Abriendo...' : 'Gestionar Suscripción'}
-    </Button>
+    </button>
   );
 }

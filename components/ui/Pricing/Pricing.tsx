@@ -229,7 +229,15 @@ export default function Pricing({ user, products, subscription }: Props) {
                 <Button
                   variant="slim"
                   type="button"
-                  onClick={() => router.push('/signin/signup?plan=free')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (!user) {
+                      router.push('/signin/signup?plan=free');
+                    } else {
+                      // Si el usuario ya está logueado, redirigir a account
+                      router.push('/account');
+                    }
+                  }}
                   className="w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-apidevs-primary hover:to-green-500 text-white font-bold py-5 rounded-3xl transition-all duration-300 shadow-xl hover:shadow-apidevs-primary/30 h-[60px]"
                 >
                   Comenzar Gratis
@@ -319,8 +327,15 @@ export default function Pricing({ user, products, subscription }: Props) {
                 <Button
                   variant="slim"
                   type="button"
-                  loading={priceIdLoading === finalProPrice.id}
-                  onClick={() => yearlyPrice ? handleStripeCheckout(finalProPrice) : router.push('/signin/signup?plan=pro')}
+                  loading={priceIdLoading === (billingInterval === 'monthly' ? monthlyPrice?.id : yearlyPrice?.id)}
+                  onClick={() => {
+                    const selectedPrice = billingInterval === 'monthly' ? monthlyPrice : yearlyPrice;
+                    if (selectedPrice) {
+                      handleStripeCheckout(selectedPrice);
+                    } else {
+                      router.push('/signin/signup?plan=pro');
+                    }
+                  }}
                   className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-5 rounded-3xl transition-all duration-300 shadow-2xl hover:shadow-blue-500/50 transform hover:scale-105 h-[60px]"
                 >
                   <Zap className="w-5 h-5 inline mr-2" />

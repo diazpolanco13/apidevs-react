@@ -67,8 +67,8 @@ export default function EditLocationForm({ userId, initialData, onUpdate }: Edit
       setStates(State.getStatesOfCountry(country.isoCode));
       setCities([]);
       
-      // Auto-detect timezone based on country
-      const timezone = moment.tz.guess() || 'UTC';
+      // Use client-side timezone detection only after mount
+      const timezone = typeof window !== 'undefined' ? moment.tz.guess() || 'UTC' : 'UTC';
       
       setTempData(prev => ({
         ...prev,
@@ -223,22 +223,27 @@ export default function EditLocationForm({ userId, initialData, onUpdate }: Edit
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white">Editar Ubicación</h3>
-        <div className="flex space-x-2">
-          <Button
-            variant="slim"
+        <div className="flex space-x-3">
+          <button
             onClick={handleSave}
-            loading={isSubmitting}
-            className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white rounded-2xl shadow-lg transition-all transform hover:scale-105"
+            disabled={isSubmitting}
+            title="Guardar ubicación"
+            className="flex items-center justify-center px-6 py-3 min-h-[44px] bg-gradient-to-r from-purple-600 to-pink-500 hover:from-pink-500 hover:to-purple-400 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold rounded-2xl shadow-xl transition-all duration-300 transform hover:scale-110 disabled:hover:scale-100 disabled:cursor-not-allowed border border-purple-400/30 hover:border-pink-300/50 hover:shadow-purple-500/30"
           >
-            <Check className="w-4 h-4 mr-2" />
+            {isSubmitting ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+            ) : (
+              <Check className="w-5 h-5 mr-2" />
+            )}
             Guardar
-          </Button>
+          </button>
           <button
             onClick={handleCancel}
             disabled={isSubmitting}
-            className="px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400 text-white rounded-2xl shadow-lg transition-all transform hover:scale-105"
+            title="Cancelar edición"
+            className="flex items-center justify-center px-6 py-3 min-h-[44px] bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 disabled:opacity-50 text-white font-semibold rounded-2xl shadow-xl transition-all duration-300 transform hover:scale-110 disabled:hover:scale-100 disabled:cursor-not-allowed border border-gray-500/30 hover:border-gray-400/50 hover:shadow-gray-500/20"
           >
-            <X className="w-4 h-4 mr-2" />
+            <X className="w-5 h-5 mr-2" />
             Cancelar
           </button>
         </div>
@@ -251,6 +256,7 @@ export default function EditLocationForm({ userId, initialData, onUpdate }: Edit
           <select
             value={selectedCountry?.isoCode || ''}
             onChange={(e) => handleCountryChange(e.target.value)}
+            title="Seleccionar país"
             className={`w-full p-3 bg-gray-800 border rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${
               errors.country ? 'border-red-500' : 'border-gray-600'
             }`}
@@ -275,6 +281,7 @@ export default function EditLocationForm({ userId, initialData, onUpdate }: Edit
             <select
               value={selectedState?.isoCode || ''}
               onChange={(e) => handleStateChange(e.target.value)}
+              title="Seleccionar estado o provincia"
               className="w-full p-3 bg-gray-800 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               disabled={isSubmitting}
             >
@@ -295,6 +302,7 @@ export default function EditLocationForm({ userId, initialData, onUpdate }: Edit
             <select
               value={tempData.city}
               onChange={(e) => handleCityChange(e.target.value)}
+              title="Seleccionar ciudad"
               className={`w-full p-3 bg-gray-800 border rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${
                 errors.city ? 'border-red-500' : 'border-gray-600'
               }`}
