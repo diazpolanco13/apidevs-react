@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
+import { checkOnboardingStatus } from '@/utils/auth-helpers/onboarding';
 import Onboarding from '@/components/ui/Onboarding';
 
 export default async function OnboardingPage({
@@ -19,13 +20,9 @@ export default async function OnboardingPage({
   }
 
   // Check if user already completed onboarding
-  const { data: profile } = await supabase
-    .from('users')
-    .select('onboarding_completed, tradingview_username')
-    .eq('id', user.id)
-    .single();
+  const { completed } = await checkOnboardingStatus(user.id);
 
-  if (profile?.onboarding_completed) {
+  if (completed) {
     redirect(searchParams.redirect || '/account');
   }
 
