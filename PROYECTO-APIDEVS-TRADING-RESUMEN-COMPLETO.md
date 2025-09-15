@@ -81,10 +81,10 @@ apidevs-react/
 
 ## 💳 PRODUCTOS Y PRECIOS CONFIGURADOS
 
-### **Nueva Estrategia de Precios (Diciembre 2024)**
-1. **FREE**: $0 USD - Indicadores antiguos para construir comunidad
-2. **PRO Mensual**: $23.50 USD/mes - Indicadores privados + scanners avanzados
-3. **PRO Anual**: $249 USD/año (58.5% descuento) - Indicadores privados + scanners avanzados
+### **Estrategia de Precios Actualizada (Septiembre 2025)**
+1. **FREE**: $0 USD - Indicadores clásicos para construir comunidad
+2. **PRO Mensual**: $39 USD/mes - 18 indicadores VIP + scanners 160 criptos
+3. **PRO Anual**: $390 USD/año - 18 indicadores VIP + scanners 160 criptos
 4. **LIFETIME**: $999 USD (pago único) - Todo lo anterior + acceso directo + productos personalizados
 
 ### **Características por Plan**
@@ -146,6 +146,9 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - ✅ **Páginas de autenticación personalizadas** con estilo APIDevs
 - ✅ **Magic Link** para inicio de sesión sin contraseña
 - ✅ **OAuth eliminado** (GitHub removido - no relevante para traders)
+- ✅ **Sistema de Onboarding Crítico** (Septiembre 2025)
+- ✅ **Captura obligatoria** de usuario TradingView
+- ✅ **Onboarding de 3 pasos** con validación en tiempo real
 
 ### **💰 Sistema de Pagos**
 - ✅ Integración completa con Stripe
@@ -155,8 +158,12 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - ✅ Stripe Customer Portal
 
 ### **👤 Gestión de Usuarios**
-- ✅ Página de perfil (`/account`)
-- ✅ Actualización de datos personales
+- ✅ Página de perfil (`/account`) completamente renovada
+- ✅ **Edición inline** de TradingView username y nombre
+- ✅ **Edición completa de ubicación** con geolocalización avanzada
+- ✅ **Sistema de países/ciudades** con country-state-city library
+- ✅ **Campos adicionales**: teléfono, código postal, dirección, timezone
+- ✅ **Actualización instantánea** sin recargar página
 - ✅ Gestión de suscripciones
 - ✅ Historial de pagos
 
@@ -191,12 +198,13 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ## 🚧 FUNCIONALIDADES PENDIENTES
 
 ### **🛒 Checkout Personalizado** (Prioridad Alta)
-- 🔄 Captura de datos específicos:
-  - País y ciudad del cliente
-  - Usuario de TradingView
-  - Número de teléfono
-  - Dirección de facturación
-  - Selección de plan (FREE/PRO/LIFETIME)
+- ✅ ~~Captura de datos específicos~~ **COMPLETADO** (Septiembre 2025):
+  - ✅ País y ciudad del cliente
+  - ✅ Usuario de TradingView (CRÍTICO)
+  - ✅ Número de teléfono
+  - ✅ Dirección de facturación completa
+  - ✅ Código postal y timezone
+- ❌ **PROBLEMA CRÍTICO**: Error Stripe checkout "No such price"
 - 🔄 Integración con Stripe Elements
 - 🔄 Validación en tiempo real
 - 🔄 Flujo diferenciado para plan FREE (sin pago)
@@ -396,13 +404,16 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 13. **⚡ Efectos Visuales Avanzados**: Animaciones y transiciones cinematográficas
 14. **🎨 Branding Consistente**: Colores APIDevs, fonts Orbitron + Work Sans
 15. **📐 Alineación Matemática Perfecta**: Pricing con alturas fijas exactas (15/09/2025)
+16. **👤 Sistema de Onboarding Épico**: 3 pasos con captura crítica TradingView (15/09/2025)
+17. **✏️ Edición Inline Avanzada**: Perfil completo editable con actualización instantánea (15/09/2025)
+18. **🌍 Geolocalización Inteligente**: Country-state-city con timezone automático (15/09/2025)
 
 ### **💼 Logros de Conversión y Marketing**
-16. **🧠 Psicología Aplicada**: Textos persuasivos con técnicas de conversión
-17. **📊 Social Proof Estratégico**: Métricas reales (7,000+ traders, 5,200+ scanners)
-18. **🎯 CTAs Optimizados**: Cada sección con llamada a la acción específica
-19. **⏰ Escasez Efectiva**: "Solo 48 horas", "Solo hoy" para urgencia
-20. **🏅 Diferenciación Clara**: 3 ángulos únicos (Estrategias, Tecnología, Comunidad)
+19. **🧠 Psicología Aplicada**: Textos persuasivos con técnicas de conversión
+20. **📊 Social Proof Estratégico**: Métricas reales (7,000+ traders, 5,200+ scanners)
+21. **🎯 CTAs Optimizados**: Cada sección con llamada a la acción específica
+22. **⏰ Escasez Efectiva**: "Solo 48 horas", "Solo hoy" para urgencia
+23. **🏅 Diferenciación Clara**: 3 ángulos únicos (Estrategias, Tecnología, Comunidad)
 
 ---
 
@@ -478,7 +489,7 @@ Para cualquier consulta sobre el proyecto APIDevs Trading Platform:
 
 ## 🏁 ESTADO ACTUAL DEL PROYECTO
 
-### **✅ COMPLETADO (Septiembre-Diciembre 2024)**
+### **✅ COMPLETADO (Septiembre-Diciembre 2025)**
 - **Landing Page Épico** - 6 secciones de conversión optimizadas
 - **Modal Fullscreen** - Experiencia inmersiva única
 - **Carruseles Interactivos** - Con imágenes reales de indicadores
@@ -486,18 +497,24 @@ Para cualquier consulta sobre el proyecto APIDevs Trading Platform:
 - **Autenticación** - Supabase Auth integrada
 - **Responsive Design** - Optimizado para todos los dispositivos
 - **Pricing Rediseñado** - Componente épico con efectos cinematográficos
-- **Pricing Alineación Perfecta** - Alturas fijas exactas para alineación matemática (15/09/2024)
+- **Pricing Alineación Perfecta** - Alturas fijas exactas para alineación matemática (15/09/2025)
 - **Footer Épico** - Diseño moderno con efectos visuales avanzados
 - **Optimización Build** - Eliminadas dependencias innecesarias (@tsparticles)
 - **Tipos TypeScript** - Corregidos todos los errores de compilación
-- **🆕 Navbar Responsive** - Menú hamburguesa posicionado antes del logo (Diciembre 2024)
-- **🆕 Nueva Estrategia de Precios** - FREE/PRO/LIFETIME con consolidación a Telegram (Diciembre 2024)
-- **🆕 Páginas de Autenticación Personalizadas** - Estilo APIDevs con efectos visuales (Diciembre 2024)
-- **🆕 Eliminación OAuth GitHub** - Enfoque específico para traders (Diciembre 2024)
-- **🆕 Sincronización Stripe-Supabase** - Productos y precios actualizados (Diciembre 2024)
+- **🆕 Sistema de Onboarding Crítico** - Captura obligatoria TradingView (15/09/2025)
+- **🆕 Edición Completa de Perfil** - Inline editing con geolocalización avanzada (15/09/2025)
+- **🆕 Base de Datos Extendida** - Campos: phone, postal_code, address, timezone (15/09/2025)
+- **🆕 Página Account Renovada** - Diseño unificado sin duplicados (15/09/2025)
+- **🆕 Librerías Integradas** - country-state-city, moment-timezone (15/09/2025)
 
 ### **🎯 PRÓXIMO OBJETIVO**
-**Checkout Personalizado** - Captura de datos específicos del cliente
+**Resolver Error Stripe Checkout** - Discrepancia de claves API entre MCP y aplicación
+
+### **🐛 PROBLEMA CRÍTICO PENDIENTE**
+- **Error**: "No such price" en checkout Stripe
+- **Estado**: Precios existen en Stripe y Supabase pero checkout falla
+- **Debugging**: Logs completos agregados para investigación
+- **Hipótesis**: Discrepancia entre claves API MCP vs aplicación
 
 ### **📈 IMPACTO ESPERADO**
 Con el nuevo landing page que **supera a LuxAlgo** (competidor #1 mundial), esperamos:
@@ -507,8 +524,60 @@ Con el nuevo landing page que **supera a LuxAlgo** (competidor #1 mundial), espe
 
 ---
 
-*Documento actualizado el 15 de diciembre de 2024*
+## 🆕 AVANCES DEL 15 DE SEPTIEMBRE DE 2025
+
+### **🎯 SESIÓN DE DESARROLLO COMPLETADA**
+
+#### **1. 🚀 Sistema de Onboarding Crítico**
+- ✅ **Base de datos extendida** con campos: tradingview_username, phone, country, city, postal_code, address, timezone, onboarding_completed
+- ✅ **Componente Onboarding** de 3 pasos con validación en tiempo real
+- ✅ **Captura obligatoria** de usuario TradingView para TODOS los usuarios
+- ✅ **Flujo integrado** en autenticación: Registro → Onboarding → Account
+- ✅ **Protección de rutas** - imposible saltarse el onboarding
+
+#### **2. ✏️ Sistema de Edición Completa de Perfil**
+- ✅ **Edición inline** de TradingView username con validación única
+- ✅ **Edición inline** de nombre completo
+- ✅ **Actualización instantánea** sin recargar página
+- ✅ **Botones mejorados** con gradientes y efectos hover
+
+#### **3. 🌍 Geolocalización Avanzada**
+- ✅ **Librería country-state-city** integrada
+- ✅ **moment-timezone** para manejo de zonas horarias
+- ✅ **Cascada inteligente** país → estado → ciudad
+- ✅ **Auto-detección de timezone** basado en país
+- ✅ **Campos completos**: país, ciudad, teléfono, código postal, dirección
+
+#### **4. 🎨 Página Account Renovada**
+- ✅ **Layout responsive** arreglado (2 columnas)
+- ✅ **Diseño unificado** con branding APIDevs
+- ✅ **Eliminados duplicados** de versión anterior
+- ✅ **Tarjetas organizadas**: Perfil Usuario, Ubicación, Suscripción
+
+#### **5. 📊 Datos Capturados Exitosamente**
+- ✅ **TradingView**: diazpolanco1985 (actualizado)
+- ✅ **Nombre**: Carlos Eduardo Diaz
+- ✅ **Ubicación**: Doral, United States
+- ✅ **Contacto**: +17863029780
+- ✅ **Dirección**: 4720 nw 102nd AVE APTP 107, 33178
+
+### **🐛 PROBLEMA CRÍTICO IDENTIFICADO**
+- ❌ **Error Stripe Checkout**: "No such price" persiste
+- 🔍 **Discrepancia**: MCP Stripe funciona, aplicación falla
+- 🔍 **Investigación**: Debugging completo agregado
+- 📋 **Para mañana**: Verificar variables de entorno y claves API
+
+### **📈 IMPACTO DE LOS AVANCES**
+- **Usuario TradingView capturado siempre** (objetivo crítico cumplido)
+- **Sistema completo de gestión de usuarios** implementado
+- **Base sólida** para integración TradingView API
+- **Datos de facturación completos** para checkout personalizado
+
+---
+
+*Documento actualizado el 15 de septiembre de 2025*
 *Proyecto: APIDevs Trading Platform*
-*Estado: Landing Page ÉPICO + Nueva Estrategia de Precios + Auth Personalizada completados* 🔥
+*Estado: Onboarding + Edición Perfil + Geolocalización completados* 🔥
 *Build optimizado y sin errores en Vercel* ✅
-*Próximo hito: Checkout Personalizado* 🎯
+*Problema pendiente: Error Stripe checkout* ⚠️
+*Próximo hito: Resolver discrepancia claves API Stripe* 🎯
