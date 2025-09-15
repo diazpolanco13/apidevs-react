@@ -58,7 +58,7 @@ export default function Footer() {
               <a 
                 href="#" 
                 className="text-gray-400 hover:text-apidevs-primary transition-colors"
-                aria-label="Discord"
+                aria-label="Telegram"
               >
                 <MessageCircle className="w-5 h-5" />
               </a>
@@ -134,7 +134,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center text-gray-400 text-sm">
                 <MessageCircle className="w-4 h-4 mr-2 text-apidevs-primary" />
-                Discord 24/7
+                Telegram 24/7
               </li>
             </ul>
             

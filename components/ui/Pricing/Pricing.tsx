@@ -37,6 +37,7 @@ type BillingInterval = 'lifetime' | 'year' | 'month';
 export default function Pricing({ user, products, subscription }: Props) {
   const router = useRouter();
   const [priceIdLoading, setPriceIdLoading] = useState<string>();
+  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('yearly');
   const currentPath = usePathname();
 
   // Filtrar productos de prueba y obtener solo los productos principales
@@ -113,6 +114,18 @@ export default function Pricing({ user, products, subscription }: Props) {
   // Usar el precio mock si no hay precio real
   const finalLifetimePrice = lifetimePrice || lifetimePriceMock;
 
+  // Mock para PRO cuando no hay yearlyPrice
+  const proPriceMock = !yearlyPrice ? {
+    id: 'price_pro_mock',
+    unit_amount: 39000, // $390.00 anual
+    currency: 'usd',
+    interval: 'year',
+    interval_count: 1,
+    product_id: 'prod_pro_mock'
+  } as Price : yearlyPrice;
+
+  const finalProPrice = yearlyPrice || proPriceMock;
+
   if (!mainProduct) {
     return (
       <section className="bg-apidevs-dark">
@@ -147,198 +160,157 @@ export default function Pricing({ user, products, subscription }: Props) {
           Elige tu plan
         </h1>
         
-        <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-          Accede a nuestra comunidad exclusiva en Discord donde traders profesionales comparten estrategias en tiempo real, 
-          reciben memorias personalizadas y obtienen alertas VIP antes que nadie.
+        <p className="text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed">
+          Únete a nuestra comunidad exclusiva en Telegram donde traders profesionales comparten estrategias en tiempo real, 
+          reciben alertas VIP y acceden a herramientas de trading de próxima generación.
         </p>
+
+        {/* Toggle Billing Interval */}
+        <div className="mt-12 flex justify-center">
+          <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-2 inline-flex">
+            <button
+              onClick={() => setBillingInterval('monthly')}
+              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                billingInterval === 'monthly'
+                  ? 'bg-gray-700 text-white shadow-lg'
+                  : 'text-gray-300 hover:text-gray-100'
+              }`}
+            >
+              Mensual
+            </button>
+            <button
+              onClick={() => setBillingInterval('yearly')}
+              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${
+                billingInterval === 'yearly'
+                  ? 'bg-gradient-to-r from-apidevs-primary to-green-400 text-black shadow-lg'
+                  : 'text-gray-300 hover:text-gray-100'
+              }`}
+            >
+              Anual
+              <span className="absolute -top-2 -right-2 bg-apidevs-primary text-black text-xs px-2 py-0.5 rounded-full font-bold">
+                -16%
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Plans Grid */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           
-          {/* Plan Mensual */}
-          {monthlyPrice && (
-            <div className="group relative h-full">
-              {/* Glow effect on hover */}
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-apidevs-primary/50 to-green-500/50 rounded-3xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+          {/* Plan FREE */}
+          <div className="group relative h-full">
+            {/* Glow effect on hover */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-apidevs-primary/30 to-green-500/30 rounded-3xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+            
+            <div className="relative h-full flex flex-col bg-gradient-to-b from-gray-900/90 to-black/90 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 hover:border-apidevs-primary/30 transition-all duration-500 hover:transform hover:scale-105">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-white mb-3">PLAN FREE</h3>
+                <div className="inline-flex items-center px-3 py-1 bg-apidevs-primary/10 rounded-full">
+                  <Clock className="w-4 h-4 text-apidevs-primary mr-2" />
+                  <span className="text-sm text-apidevs-primary">Inicia Gratis</span>
+                </div>
+              </div>
               
-              <div className="relative h-full flex flex-col bg-gradient-to-b from-gray-900/90 to-black/90 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 hover:border-apidevs-primary/50 transition-all duration-500 hover:transform hover:scale-105">
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-3">PLAN MENSUAL</h3>
-                  <div className="inline-flex items-center px-3 py-1 bg-gray-800/50 rounded-full">
-                    <Clock className="w-4 h-4 text-apidevs-primary mr-2" />
-                    <span className="text-sm text-gray-300">Inicia Ahora</span>
-                  </div>
+              <div className="text-center mb-8">
+                <div className="text-gray-400 line-through text-sm mb-2">$29</div>
+                <div className="flex items-baseline justify-center">
+                  <span className="text-5xl font-bold text-white">$0</span>
+                  <span className="text-gray-200 ml-2">/Siempre</span>
                 </div>
-                
-                <div className="text-center mb-8">
-                  <div className="text-gray-500 line-through text-sm mb-2">$50</div>
-                  <div className="flex items-baseline justify-center">
-                    <span className="text-5xl font-bold text-white">${((monthlyPrice.unit_amount || 0) / 100).toFixed(0)}</span>
-                    <span className="text-lg text-gray-400 ml-2">.50</span>
-                    <span className="text-gray-400 ml-2">/Mes</span>
-                  </div>
-                </div>
+              </div>
 
-                <Button
-                  variant="slim"
-                  type="button"
-                  loading={priceIdLoading === monthlyPrice.id}
-                  onClick={() => handleStripeCheckout(monthlyPrice)}
-                  className="w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-apidevs-primary hover:to-green-500 text-white font-bold py-4 rounded-2xl mb-8 transition-all duration-300 shadow-xl hover:shadow-apidevs-primary/30"
-                >
-                  Suscríbete
-                </Button>
+              <Button
+                variant="slim"
+                type="button"
+                onClick={() => router.push('/signin/signup?plan=free')}
+                className="w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-apidevs-primary hover:to-green-500 text-white font-bold py-4 rounded-2xl mb-8 transition-all duration-300 shadow-xl hover:shadow-apidevs-primary/30"
+              >
+                Comenzar Gratis
+              </Button>
 
                 <div className="space-y-4 mt-auto">
                   <div className="flex items-start">
                     <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">18 Indicadores [VIP]</span>
+                    <span className="text-gray-200 text-sm">5 Indicadores clásicos</span>
                   </div>
                   <div className="flex items-start">
                     <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">2 Scanners [160 CRIPTOS]</span>
+                    <span className="text-gray-200 text-sm">Telegram Community</span>
                   </div>
                   <div className="flex items-start">
                     <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">2 Scanners [160 MULTIMARKET]</span>
+                    <span className="text-gray-200 text-sm">Tutoriales básicos</span>
                   </div>
                   <div className="flex items-start">
                     <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">Activación inmediata (3 a 10 minutos)</span>
+                    <span className="text-gray-200 text-sm">Alertas básicas (2-3 por semana)</span>
                   </div>
                   <div className="flex items-start">
                     <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">Acceso a nuestra comunidad VIP en Discord</span>
+                    <span className="text-gray-200 text-sm">Documentación completa</span>
                   </div>
                   <div className="flex items-start">
                     <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">Grupo de Alertas [Telegram y Discord]</span>
-                  </div>
-                  <div className="flex items-start">
-                    <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">Mentorías cada semana</span>
-                  </div>
-                  <div className="flex items-start">
-                    <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">Soporte técnico 24/7</span>
+                    <span className="text-gray-200 text-sm">Acceso inmediato</span>
                   </div>
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Plan Semestral */}
-          {semiannualPrice && (
-            <div className="group relative h-full">
-              {/* Glow effect on hover */}
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/50 to-cyan-500/50 rounded-3xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
-              
-              <div className="relative h-full flex flex-col bg-gradient-to-b from-gray-900/90 to-black/90 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 hover:border-blue-500/50 transition-all duration-500 hover:transform hover:scale-105">
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-3">PLAN SEMESTRAL</h3>
-                  <div className="inline-flex items-center px-3 py-1 bg-blue-900/30 rounded-full">
-                    <TrendingUp className="w-4 h-4 text-blue-400 mr-2" />
-                    <span className="text-sm text-blue-300">Ahorra 54%</span>
-                  </div>
-                </div>
-                
-                <div className="text-center mb-8">
-                  <div className="text-gray-500 line-through text-sm mb-2">$300</div>
-                  <div className="flex items-baseline justify-center">
-                    <span className="text-5xl font-bold text-white">${((semiannualPrice.unit_amount || 0) / 100).toFixed(0)}</span>
-                    <span className="text-gray-400 ml-2">/6 Meses</span>
-                  </div>
-                </div>
-
-                <Button
-                  variant="slim"
-                  type="button"
-                  loading={priceIdLoading === semiannualPrice.id}
-                  onClick={() => handleStripeCheckout(semiannualPrice)}
-                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-4 rounded-2xl mb-8 transition-all duration-300 shadow-xl hover:shadow-blue-500/30"
-                >
-                  Suscríbete
-                </Button>
-
-                <div className="space-y-4 mt-auto">
-                  <div className="flex items-start">
-                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">18 Indicadores [VIP]</span>
-                  </div>
-                  <div className="flex items-start">
-                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">2 Scanners [160 CRIPTOS]</span>
-                  </div>
-                  <div className="flex items-start">
-                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">2 Scanners [160 MULTIMARKET]</span>
-                  </div>
-                  <div className="flex items-start">
-                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">Activación inmediata (3 a 10 minutos)</span>
-                  </div>
-                  <div className="flex items-start">
-                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">Acceso a nuestra comunidad VIP en Discord</span>
-                  </div>
-                  <div className="flex items-start">
-                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">Grupo de Alertas [Telegram y Discord]</span>
-                  </div>
-                  <div className="flex items-start">
-                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">Mentorías cada semana</span>
-                  </div>
-                  <div className="flex items-start">
-                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">Soporte técnico 24/7</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Plan Anual - DESTACADO */}
-          {yearlyPrice && (
-            <div className="group relative h-full z-10">
+          {/* Plan PRO - POPULAR */}
+          <div className="group relative h-full z-10">
               {/* Badge MÁS POPULAR */}
               <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 z-20">
-                <div className="bg-gradient-to-r from-apidevs-primary to-green-400 text-black px-6 py-2 rounded-full font-bold text-sm shadow-lg animate-pulse">
+                <div className="bg-gradient-to-r from-blue-500 to-cyan-400 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg animate-pulse">
                   <Star className="w-4 h-4 inline mr-1" />
-                  MÁS POPULAR
+                  POPULAR
                 </div>
               </div>
               
               {/* Glow effect permanente */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-apidevs-primary via-green-400 to-apidevs-primary rounded-3xl blur-lg opacity-75 animate-pulse"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 rounded-3xl blur-lg opacity-75 animate-pulse"></div>
               
-              <div className="relative h-full flex flex-col bg-gradient-to-b from-apidevs-primary/10 to-black/95 backdrop-blur-xl border-2 border-apidevs-primary rounded-3xl p-8 shadow-2xl">
+              <div className="relative h-full flex flex-col bg-gradient-to-b from-blue-500/10 to-black/95 backdrop-blur-xl border-2 border-blue-500 rounded-3xl p-8 shadow-2xl">
                 <div className="text-center mb-8 mt-6">
-                  <h3 className="text-3xl font-bold text-white mb-3">PLAN ANUAL</h3>
-                  <div className="inline-flex items-center px-4 py-2 bg-apidevs-primary/20 rounded-full">
-                    <Award className="w-5 h-5 text-apidevs-primary mr-2" />
-                    <span className="text-sm text-apidevs-primary font-semibold">Ahorra 58.5%</span>
+                  <h3 className="text-3xl font-bold text-white mb-3">PLAN PRO</h3>
+                  <div className="inline-flex items-center px-4 py-2 bg-blue-500/20 rounded-full">
+                    <Award className="w-5 h-5 text-blue-400 mr-2" />
+                    <span className="text-sm text-blue-300 font-semibold">Para Traders Serios</span>
                   </div>
                 </div>
                 
                 <div className="text-center mb-8">
-                  <div className="text-gray-500 line-through text-sm mb-2">$600</div>
-                  <div className="flex items-baseline justify-center">
-                    <span className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-apidevs-primary to-green-400">
-                      ${((yearlyPrice.unit_amount || 0) / 100).toFixed(0)}
-                    </span>
-                    <span className="text-gray-300 ml-2">/Año</span>
+                  <div className="text-gray-400 line-through text-sm mb-2">
+                    {billingInterval === 'monthly' ? '$49' : '$468'}
                   </div>
+                  <div className="flex items-baseline justify-center">
+                    <span className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
+                      ${billingInterval === 'monthly' ? '39' : '390'}
+                    </span>
+                    <span className="text-gray-200 ml-2">
+                      {billingInterval === 'monthly' ? '/mes' : '/año'}
+                    </span>
+                  </div>
+                  {billingInterval === 'yearly' && (
+                    <div className="mt-2 text-sm text-blue-300 font-medium">
+                      Equivale a $32.50/mes • Ahorra $78 (16%)
+                    </div>
+                  )}
+                  {billingInterval === 'monthly' && (
+                    <div className="mt-2 text-sm text-gray-300">
+                      Facturación mensual
+                    </div>
+                  )}
                 </div>
 
                 <Button
                   variant="slim"
                   type="button"
-                  loading={priceIdLoading === yearlyPrice.id}
-                  onClick={() => handleStripeCheckout(yearlyPrice)}
-                  className="w-full bg-gradient-to-r from-apidevs-primary to-green-400 hover:from-green-400 hover:to-apidevs-primary text-black font-bold py-5 rounded-2xl mb-8 transition-all duration-300 shadow-2xl hover:shadow-apidevs-primary/50 transform hover:scale-105"
+                  loading={priceIdLoading === finalProPrice.id}
+                  onClick={() => yearlyPrice ? handleStripeCheckout(finalProPrice) : router.push('/signin/signup?plan=pro')}
+                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-5 rounded-2xl mb-8 transition-all duration-300 shadow-2xl hover:shadow-blue-500/50 transform hover:scale-105"
                 >
                   <Zap className="w-5 h-5 inline mr-2" />
                   Suscríbete Ahora
@@ -346,99 +318,118 @@ export default function Pricing({ user, products, subscription }: Props) {
 
                 <div className="space-y-4 mt-auto">
                   <div className="flex items-start">
-                    <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-200 text-sm font-medium">18 Indicadores [VIP]</span>
+                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">18 Indicadores avanzados</span>
                   </div>
                   <div className="flex items-start">
-                    <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-200 text-sm font-medium">2 Scanners [160 CRIPTOS]</span>
+                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">Scanners únicos (160 criptos)</span>
                   </div>
                   <div className="flex items-start">
-                    <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-200 text-sm font-medium">2 Scanners [160 MULTIMARKET]</span>
+                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">Scanners multimarket (160)</span>
                   </div>
                   <div className="flex items-start">
-                    <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-200 text-sm font-medium">Activación inmediata (3 a 10 minutos)</span>
+                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">Telegram VIP (Grupo privado)</span>
                   </div>
                   <div className="flex items-start">
-                    <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-200 text-sm font-medium">Acceso a nuestra comunidad VIP en Discord</span>
+                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">Alertas premium tiempo real</span>
                   </div>
                   <div className="flex items-start">
-                    <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-200 text-sm font-medium">Grupo de Alertas [Telegram y Discord]</span>
+                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">Mentorías semanales</span>
                   </div>
                   <div className="flex items-start">
-                    <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-gray-200 text-sm font-medium">Mentorías cada semana</span>
-                  </div>
-                  <div className="flex items-start">
-                    <Check className="w-5 h-5 text-apidevs-primary mt-0.5 mr-3 flex-shrink-0" />
+                    <Check className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
                     <span className="text-gray-200 text-sm font-medium">Soporte técnico 24/7</span>
                   </div>
                 </div>
               </div>
             </div>
-          )}
 
-        </div>
-
-        {/* Plan Lifetime - Fila separada */}
-        {finalLifetimePrice && (
-          <div className="max-w-5xl mx-auto mt-12 px-4 sm:px-6 lg:px-8">
-            <div className="group relative">
-              {/* Glow effect on hover */}
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-3xl blur opacity-50 group-hover:opacity-100 transition duration-500"></div>
+          {/* Plan LIFETIME - EXCLUSIVO */}
+          <div className="group relative h-full">
+              {/* Badge EXCLUSIVO */}
+              <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 z-20">
+                <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg">
+                  <Shield className="w-4 h-4 inline mr-1" />
+                  EXCLUSIVO
+                </div>
+              </div>
               
-              <div className="relative bg-gradient-to-b from-purple-900/20 to-black/90 backdrop-blur-xl border border-purple-500/30 rounded-3xl p-8 lg:p-10 hover:border-purple-400/50 transition-all duration-500">
-                <div className="grid lg:grid-cols-2 gap-8 items-center">
-                  {/* Columna izquierda - Info */}
-                  <div>
-                    <div className="mb-6">
-                      <div className="inline-flex items-center px-4 py-2 bg-purple-900/30 rounded-full mb-4">
-                        <Shield className="w-4 h-4 text-purple-400 mr-2" />
-                        <span className="text-sm font-semibold text-purple-300">LIFETIME PLAN</span>
-                      </div>
-                      <h3 className="text-3xl font-bold text-white mb-3">
-                        ¿Estás listo para llevar tu trading al siguiente nivel sin preocuparte por pagos recurrentes?
-                      </h3>
-                      <p className="text-purple-300 text-base leading-relaxed">
-                        Con nuestro Plan de por vida de APIDevs, obtienes acceso completo y exclusivo a todas 
-                        nuestras herramientas y recursos premium sin tarifas mensuales ni anuales, ¡para siempre!
-                      </p>
-                    </div>
+              {/* Glow effect on hover */}
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/50 to-pink-500/50 rounded-3xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+              
+              <div className="relative h-full flex flex-col bg-gradient-to-b from-purple-900/20 to-black/90 backdrop-blur-xl border border-purple-500/30 rounded-3xl p-8 hover:border-purple-400/50 transition-all duration-500 hover:transform hover:scale-105">
+                <div className="text-center mb-8 mt-6">
+                  <h3 className="text-3xl font-bold text-white mb-3">PLAN LIFETIME</h3>
+                  <div className="inline-flex items-center px-4 py-2 bg-purple-500/20 rounded-full">
+                    <Award className="w-5 h-5 text-purple-400 mr-2" />
+                    <span className="text-sm text-purple-300 font-semibold">Acceso de por vida</span>
                   </div>
+                </div>
+                
+                <div className="text-center mb-8">
+                  <div className="text-gray-400 line-through text-sm mb-2">$1,999</div>
+                  <div className="flex items-baseline justify-center">
+                    <span className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+                      ${finalLifetimePrice ? ((finalLifetimePrice.unit_amount || 0) / 100).toFixed(0) : '1299'}
+                    </span>
+                    <span className="text-gray-200 ml-2">/Único</span>
+                  </div>
+                  <div className="mt-2 text-sm text-purple-300 font-medium">
+                    10 cuotas de $129 disponibles
+                  </div>
+                </div>
 
-                  {/* Columna derecha - Precio y CTA */}
-                  <div className="text-center lg:text-right">
-                    <div className="mb-6">
-                      <div className="text-gray-500 line-through text-lg mb-2">$1500</div>
-                      <div className="flex items-baseline justify-center lg:justify-end">
-                        <span className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-                          ${((finalLifetimePrice.unit_amount || 0) / 100).toFixed(0)}
-                        </span>
-                      </div>
-                      <div className="mt-2">
-                        <span className="text-sm text-purple-300">en 10 cuotas de $99</span>
-                      </div>
-                    </div>
+                <Button
+                  variant="slim"
+                  type="button"
+                  loading={priceIdLoading === finalLifetimePrice.id}
+                  onClick={() => lifetimePrice ? handleStripeCheckout(finalLifetimePrice) : router.push('/signin/signup?plan=lifetime')}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-5 rounded-2xl mb-8 transition-all duration-300 shadow-2xl hover:shadow-purple-500/50 transform hover:scale-105"
+                >
+                  <Shield className="w-5 h-5 inline mr-2" />
+                  Acceso Exclusivo
+                </Button>
 
-                    <Button
-                      variant="slim"
-                      type="button"
-                      loading={priceIdLoading === finalLifetimePrice.id}
-                      onClick={() => handleStripeCheckout(finalLifetimePrice)}
-                      className="w-full lg:w-auto px-12 bg-gradient-to-r from-apidevs-primary to-green-400 hover:from-green-400 hover:to-apidevs-primary text-black font-bold py-5 rounded-2xl transition-all duration-300 shadow-xl hover:shadow-apidevs-primary/30"
-                    >
-                      Comprar Ahora
-                    </Button>
+                <div className="space-y-4 mt-auto">
+                  <div className="flex items-start">
+                    <Check className="w-5 h-5 text-purple-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">Todo lo anterior + Premium</span>
+                  </div>
+                  <div className="flex items-start">
+                    <Check className="w-5 h-5 text-purple-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">Telegram personal (Chat directo)</span>
+                  </div>
+                  <div className="flex items-start">
+                    <Check className="w-5 h-5 text-purple-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">Productos personalizados</span>
+                  </div>
+                  <div className="flex items-start">
+                    <Check className="w-5 h-5 text-purple-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">Consultoría 1-on-1 mensual</span>
+                  </div>
+                  <div className="flex items-start">
+                    <Check className="w-5 h-5 text-purple-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">Beta access exclusivo</span>
+                  </div>
+                  <div className="flex items-start">
+                    <Check className="w-5 h-5 text-purple-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">Configuraciones personalizadas</span>
+                  </div>
+                  <div className="flex items-start">
+                    <Check className="w-5 h-5 text-purple-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <span className="text-gray-200 text-sm font-medium">Acceso de por vida garantizado</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+
+        </div>
+
 
         {/* Garantía - Sección épica */}
         <div className="mt-16 relative">
@@ -475,7 +466,7 @@ export default function Pricing({ user, products, subscription }: Props) {
                       30 Días.
                     </span>
                   </h3>
-                  <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                  <p className="text-gray-200 text-lg leading-relaxed mb-6">
                     Nuestros planes conceden acceso a todos nuestros servicios y herramientas. Si en 30 días no te 
                     encuentras satisfecho con tu suscripción te devolvemos tu dinero. También puedes cancelar tu 
                     suscripción en cualquier momento con un solo clic desde tu cuenta de usuario. Aprende más en nuestra{' '}
@@ -486,15 +477,15 @@ export default function Pricing({ user, products, subscription }: Props) {
                   <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                     <div className="inline-flex items-center px-4 py-2 bg-black/50 border border-gray-700 rounded-full">
                       <Shield className="w-4 h-4 text-apidevs-primary mr-2" />
-                      <span className="text-sm text-gray-300">100% Riesgo Cero</span>
+                      <span className="text-sm text-gray-200">100% Riesgo Cero</span>
                     </div>
                     <div className="inline-flex items-center px-4 py-2 bg-black/50 border border-gray-700 rounded-full">
                       <Star className="w-4 h-4 text-yellow-500 mr-2" />
-                      <span className="text-sm text-gray-300">3,500+ Traders</span>
+                      <span className="text-sm text-gray-200">3,500+ Traders</span>
                     </div>
                     <div className="inline-flex items-center px-4 py-2 bg-black/50 border border-gray-700 rounded-full">
                       <Zap className="w-4 h-4 text-apidevs-primary mr-2" />
-                      <span className="text-sm text-gray-300">Cancelación Inmediata</span>
+                      <span className="text-sm text-gray-200">Cancelación Inmediata</span>
                     </div>
                   </div>
                 </div>

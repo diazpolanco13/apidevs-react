@@ -26,6 +26,18 @@ export default function Navlinks({ user }: NavlinksProps) {
 
   return (
     <div className="relative flex flex-row justify-between py-4 align-center md:py-6">
+      {/* Mobile Menu Button - Ahora al principio */}
+      <button
+        className="lg:hidden flex items-center px-3 py-2 border rounded text-gray-300 border-gray-400 hover:text-apidevs-primary hover:border-apidevs-primary mr-4"
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        aria-label="Abrir menú de navegación"
+        title="Menú"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
       <div className="flex items-center flex-1">
         <Link href="/" className={`${s.logo} focus:outline-none`} aria-label="APIDevs Trading">
           <APIDevsLogo width={160} height={40} />
@@ -55,7 +67,7 @@ export default function Navlinks({ user }: NavlinksProps) {
                 </Link>
                 <Link href="/alertas" className="block px-4 py-2 text-sm text-gray-300 hover:bg-apidevs-primary/10 hover:text-apidevs-primary transition-colors">
                   <div className="font-medium">Alertas</div>
-                  <div className="text-xs text-gray-400">Telegram + Discord</div>
+                  <div className="text-xs text-gray-400">Telegram premium</div>
                 </Link>
                 <Link href="/backtesting" className="block px-4 py-2 text-sm text-gray-300 hover:bg-apidevs-primary/10 hover:text-apidevs-primary transition-colors">
                   <div className="font-medium">Backtesting</div>
@@ -89,7 +101,7 @@ export default function Navlinks({ user }: NavlinksProps) {
                 </Link>
                 <Link href="/comunidad" className="block px-4 py-2 text-sm text-gray-300 hover:bg-apidevs-primary/10 hover:text-apidevs-primary transition-colors">
                   <div className="font-medium">Comunidad</div>
-                  <div className="text-xs text-gray-400">Discord VIP</div>
+                  <div className="text-xs text-gray-400">Telegram VIP</div>
                 </Link>
               </div>
             </div>
@@ -99,18 +111,6 @@ export default function Navlinks({ user }: NavlinksProps) {
             Precios
           </Link>
         </nav>
-
-        {/* Mobile Menu Button */}
-        <button
-          className="lg:hidden flex items-center px-3 py-2 border rounded text-gray-300 border-gray-400 hover:text-apidevs-primary hover:border-apidevs-primary"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Abrir menú de navegación"
-          title="Menú"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
       </div>
 
       {/* Mobile Menu */}
