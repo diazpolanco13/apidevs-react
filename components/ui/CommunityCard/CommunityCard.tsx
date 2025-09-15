@@ -300,7 +300,7 @@ export default function CommunityCard({
 
                   {/* Description */}
                   <p className="text-lg text-gray-300 leading-relaxed">
-                    Accede a nuestra comunidad exclusiva en Discord donde traders profesionales comparten estrategias en tiempo real, reciben mentorías personalizadas y obtienen alertas VIP antes que nadie.
+                    Únete a nuestra comunidad exclusiva en Telegram donde traders profesionales comparten estrategias en tiempo real, reciben mentorías personalizadas y obtienen alertas VIP antes que nadie.
                   </p>
 
                   {/* Benefits List */}
