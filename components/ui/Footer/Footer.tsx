@@ -107,8 +107,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-gray-400 hover:text-apidevs-primary transition-colors text-sm">
-                  Términos de Uso
+                <Link href="/terminos" className="text-gray-400 hover:text-apidevs-primary transition-colors text-sm">
+                  Términos y Condiciones
                 </Link>
               </li>
               <li>
@@ -130,7 +130,7 @@ export default function Footer() {
             <ul className="space-y-3 mb-6">
               <li className="flex items-center text-gray-400 text-sm">
                 <Mail className="w-4 h-4 mr-2 text-apidevs-primary" />
-                soporte@apidevs.com
+                info@apidevs.io
               </li>
               <li className="flex items-center text-gray-400 text-sm">
                 <MessageCircle className="w-4 h-4 mr-2 text-apidevs-primary" />

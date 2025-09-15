@@ -22,5 +22,4 @@
 
 .logo {
   @apply cursor-pointer rounded-full transform duration-100 ease-in-out flex items-center;
-  margin-top: -2px;
 }
