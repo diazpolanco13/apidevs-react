@@ -86,7 +86,7 @@ export default function Onboarding({ user, redirectPath = '/account' }: Onboardi
       const supabase = createClient();
       
       // Update user profile with onboarding data
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('users')
         .update({
           tradingview_username: formData.tradingview_username.trim(),
