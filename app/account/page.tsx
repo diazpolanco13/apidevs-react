@@ -5,7 +5,7 @@ import EditProfileClient from './EditProfileClient';
 import EditLocationClient from './EditLocationClient';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
-import { checkOnboardingStatus } from '@/utils/auth-helpers/onboarding';
+import { checkOnboardingStatus, type UserProfile } from '@/utils/auth-helpers/onboarding';
 import {
   getUserDetails,
   getSubscription,
@@ -32,6 +32,11 @@ export default async function Account() {
     return redirect('/onboarding');
   }
 
+  // Ensure profile exists
+  if (!profile) {
+    return redirect('/onboarding');
+  }
+
   return (
     <section className="min-h-screen bg-gradient-to-b from-apidevs-dark via-black to-apidevs-dark">
       {/* Header */}
@@ -41,7 +46,7 @@ export default async function Account() {
             <User className="w-10 h-10 text-black" />
           </div>
           <h1 className="text-4xl font-extrabold text-white sm:text-center sm:text-6xl mb-4">
-            ¡Bienvenido, {profile?.full_name?.split(' ')[0] || 'Trader'}!
+            ¡Bienvenido, {profile.full_name?.split(' ')[0] || 'Trader'}!
           </h1>
           <p className="max-w-2xl m-auto mt-5 text-xl text-gray-200 sm:text-center sm:text-2xl">
             Tu cuenta está configurada y lista para el trading profesional
@@ -70,8 +75,8 @@ export default async function Account() {
             <EditProfileClient 
               userId={user.id}
               initialData={{
-                full_name: profile?.full_name || '',
-                tradingview_username: profile?.tradingview_username || ''
+                full_name: profile.full_name || '',
+                tradingview_username: profile.tradingview_username || ''
               }}
             />
           </div>
@@ -88,12 +93,12 @@ export default async function Account() {
             <EditLocationClient 
               userId={user.id}
               initialData={{
-                country: profile?.country || '',
-                city: profile?.city || '',
-                phone: profile?.phone || '',
-                postal_code: profile?.postal_code || '',
-                address: profile?.address || '',
-                timezone: profile?.timezone || ''
+                country: profile.country || '',
+                city: profile.city || '',
+                phone: profile.phone || '',
+                postal_code: profile.postal_code || '',
+                address: profile.address || '',
+                timezone: profile.timezone || ''
               }}
             />
           </div>
@@ -189,7 +194,7 @@ export default async function Account() {
             <div>
               <h3 className="text-xl font-semibold text-white mb-2">¡Configuración Completa!</h3>
               <p className="text-gray-300">
-                Tu perfil está listo. Ahora puedes acceder a todos nuestros indicadores de trading usando tu usuario de TradingView: <span className="text-apidevs-primary font-semibold">{profile?.tradingview_username}</span>
+                Tu perfil está listo. Ahora puedes acceder a todos nuestros indicadores de trading usando tu usuario de TradingView: <span className="text-apidevs-primary font-semibold">{profile.tradingview_username}</span>
               </p>
             </div>
           </div>
