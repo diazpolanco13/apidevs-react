@@ -137,26 +137,17 @@ export default function EditLocationForm({ userId, initialData, onUpdate }: Edit
     try {
       const supabase = createClient();
       
-      const updateData: {
-        country: string;
-        city: string;
-        phone: string | null;
-        postal_code: string | null;
-        address: string | null;
-        timezone: string;
-      } = {
-        country: tempData.country.trim(),
-        city: tempData.city.trim(),
-        phone: tempData.phone.trim() || null,
-        postal_code: tempData.postal_code.trim() || null,
-        address: tempData.address.trim() || null,
-        timezone: tempData.timezone || 'UTC'
-      };
-
-      const { error } = await supabase
+      const { error } = (await (supabase as any)
         .from('users')
-        .update(updateData)
-        .eq('id', userId);
+        .update({
+          country: tempData.country.trim(),
+          city: tempData.city.trim(),
+          phone: tempData.phone.trim() || null,
+          postal_code: tempData.postal_code.trim() || null,
+          address: tempData.address.trim() || null,
+          timezone: tempData.timezone || 'UTC'
+        })
+        .eq('id', userId));
 
       if (error) throw error;
 
