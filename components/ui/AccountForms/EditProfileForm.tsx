@@ -83,7 +83,7 @@ export default function EditProfileForm({ userId, initialData, onUpdate }: EditP
         ? { full_name: tempData.full_name.trim() }
         : { tradingview_username: tempData.tradingview_username.trim() };
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await (supabase as any)
         .from('users')
         .update(updateData)
         .eq('id', userId);
