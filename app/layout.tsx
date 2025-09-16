@@ -25,6 +25,20 @@ export const metadata: Metadata = {
   openGraph: {
     title: title,
     description: description
+  },
+  icons: {
+    icon: [
+      { url: '/favicon_io/favicon.ico' },
+      { url: '/favicon_io/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon_io/favicon-32x32.png', sizes: '32x32', type: 'image/png' }
+    ],
+    apple: [
+      { url: '/favicon_io/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
+    ],
+    other: [
+      { rel: 'android-chrome-192x192', url: '/favicon_io/android-chrome-192x192.png' },
+      { rel: 'android-chrome-512x512', url: '/favicon_io/android-chrome-512x512.png' }
+    ]
   }
 };
 
@@ -35,6 +49,8 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        <link rel="manifest" href="/favicon_io/site.webmanifest" />
+        <meta name="theme-color" content="#00ff88" />
       </head>
       <body className={`bg-apidevs-dark ${workSans.variable} font-sans`}>
         <Navbar />
