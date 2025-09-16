@@ -102,7 +102,7 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Legal</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/privacy" className="text-gray-400 hover:text-apidevs-primary transition-colors text-sm">
+                <Link href="/privacidad" className="text-gray-400 hover:text-apidevs-primary transition-colors text-sm">
                   Política de Privacidad
                 </Link>
               </li>
@@ -112,8 +112,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/refund" className="text-gray-400 hover:text-apidevs-primary transition-colors text-sm">
-                  Política de Reembolso
+                <Link href="/disclaimer" className="text-gray-400 hover:text-apidevs-primary transition-colors text-sm">
+                  Descargo de Responsabilidad
                 </Link>
               </li>
               <li>
