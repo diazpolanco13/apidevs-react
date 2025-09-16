@@ -235,6 +235,44 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 🔄 Upsell automático a plan PRO
 - 🔄 Tracking de conversión FREE → PRO
 
+### **📝 Blog con Sanity CMS** (Prioridad Alta - EN DESARROLLO)
+- 🔄 **Setup Sanity Studio** - CMS headless moderno
+- 🔄 **Subdominio blog.apidevs.io** - Separación de infraestructura
+- 🔄 **Schemas optimizados** - Contenido rico para trading
+- 🔄 **Dark/Light mode** - Con memoria localStorage
+- 🔄 **SEO avanzado** - Metadata dinámica, JSON-LD, sitemap
+- 🔄 **Filtros multi-nivel** - Por categoría, indicador, timeframe, mercado
+- 🔄 **Search inteligente** - Búsqueda semántica con Algolia
+- 🔄 **Preview de indicadores** - Mini charts interactivos
+- 🔄 **Series de contenido** - Tutoriales paso a paso
+- 🔄 **CTAs contextuales** - Conversión blog → suscripción
+- 🔄 **Analytics avanzado** - Tracking de engagement
+
+#### **Plan de Implementación Blog (Diciembre 2024)**
+**Fase 1: Setup Básico (Semana 1)**
+- Configurar Sanity Studio con schemas personalizados
+- Crear proyecto Next.js para blog.apidevs.io
+- Implementar diseño base con toggle dark/light
+- Configurar deployment en Vercel
+
+**Fase 2: Contenido y SEO (Semana 2)**
+- Crear 10 artículos piloto sobre indicadores
+- Optimizar metadata y structured data
+- Implementar categorías: Technical Analysis, Strategies, AI & Technology
+- Setup de autores y perfiles
+
+**Fase 3: Features Avanzadas (Semana 3)**
+- Integrar búsqueda con Algolia/Meilisearch
+- Implementar filtros multi-nivel
+- Añadir preview de indicadores con lightweight-charts
+- Sistema de series de contenido
+
+**Fase 4: Optimización (Continua)**
+- A/B testing de CTAs
+- Análisis de métricas de conversión
+- Content calendar mensual
+- Mejora continua basada en analytics
+
 ### **🔧 Funcionalidades Avanzadas** (Prioridad Baja)
 - 🔄 Dashboard con métricas de usuario
 - 🔄 Sistema de notificaciones push
@@ -891,3 +929,4 @@ Con este MVP completamente funcional que **supera a LuxAlgo**:
 *🌍 **GEOLOCALIZACIÓN Y VALIDACIÓN AVANZADA** 🌍*
 *💰 **PRICING PSICOLÓGICO IMPLEMENTADO** 💰*
 *📄 **PÁGINAS LEGALES COMPLETAS** 📄*
+*📝 **BLOG CON SANITY CMS EN DESARROLLO** 📝*
