@@ -6,6 +6,8 @@ import Button from '@/components/ui/Button';
 import { MapPin, Edit3, Check, X, Phone, Mail } from 'lucide-react';
 import { Country, State, City } from 'country-state-city';
 import moment from 'moment-timezone';
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 interface LocationData {
   country: string;
@@ -105,8 +107,8 @@ export default function EditLocationForm({ userId, initialData, onUpdate }: Edit
       newErrors.city = 'La ciudad es requerida';
     }
 
-    if (tempData.phone && !/^\+?[\d\s\-\(\)]+$/.test(tempData.phone)) {
-      newErrors.phone = 'Formato de teléfono inválido';
+    if (tempData.phone && !isValidPhoneNumber(tempData.phone)) {
+      newErrors.phone = 'El número de teléfono no es válido';
     }
 
     if (tempData.postal_code && !/^[\w\s\-]+$/.test(tempData.postal_code)) {
@@ -332,25 +334,7 @@ export default function EditLocationForm({ userId, initialData, onUpdate }: Edit
           )}
         </div>
 
-        {/* Phone */}
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Teléfono</label>
-          <input
-            type="tel"
-            value={tempData.phone}
-            onChange={(e) => handleInputChange('phone', e.target.value)}
-            className={`w-full p-3 bg-gray-800 border rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${
-              errors.phone ? 'border-red-500' : 'border-gray-600'
-            }`}
-            placeholder="+1 234 567 8900"
-            disabled={isSubmitting}
-          />
-          {errors.phone && (
-            <span className="text-red-400 text-xs mt-1">{errors.phone}</span>
-          )}
-        </div>
-
-        {/* Postal Code */}
+        {/* Postal Code - Movido aquí para estar junto a Ciudad */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">Código Postal</label>
           <input
@@ -365,6 +349,26 @@ export default function EditLocationForm({ userId, initialData, onUpdate }: Edit
           />
           {errors.postal_code && (
             <span className="text-red-400 text-xs mt-1">{errors.postal_code}</span>
+          )}
+        </div>
+
+        {/* Phone - Ahora ocupa toda la línea */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">Teléfono</label>
+          <div className={`phone-input-container ${errors.phone ? 'error' : ''}`}>
+            <PhoneInput
+              placeholder="Ingresa tu número de teléfono"
+              value={tempData.phone}
+              onChange={(value) => setTempData(prev => ({ ...prev, phone: value || '' }))}
+              defaultCountry={selectedCountry?.isoCode as any}
+              international
+              countryCallingCodeEditable={false}
+              className="w-full"
+              disabled={isSubmitting}
+            />
+          </div>
+          {errors.phone && (
+            <span className="text-red-400 text-xs mt-1">{errors.phone}</span>
           )}
         </div>
 

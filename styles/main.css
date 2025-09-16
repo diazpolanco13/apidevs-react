@@ -2,6 +2,83 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Estilos personalizados para PhoneInput - APIDevs Theme */
+.phone-input-container .PhoneInput {
+  display: flex !important;
+  width: 100% !important;
+}
+
+/* Input principal del teléfono */
+.phone-input-container .PhoneInputInput {
+  flex: 1 !important;
+  padding: 1rem !important;
+  background: rgba(17, 24, 39, 0.5) !important;
+  border: 1px solid rgb(55, 65, 81) !important;
+  border-left: none !important;
+  border-radius: 0 1rem 1rem 0 !important;
+  color: white !important;
+  font-size: 1rem !important;
+  transition: all 0.3s ease !important;
+  outline: none !important;
+}
+
+.phone-input-container .PhoneInputInput:focus {
+  border-color: #c9d92e !important;
+  box-shadow: 0 0 0 2px rgba(201, 217, 46, 0.1) !important;
+}
+
+.phone-input-container .PhoneInputInput::placeholder {
+  color: rgb(156, 163, 175) !important;
+}
+
+/* Selector de país */
+.phone-input-container .PhoneInputCountrySelect {
+  padding: 1rem 0.75rem !important;
+  background: rgba(17, 24, 39, 0.5) !important;
+  border: 1px solid rgb(55, 65, 81) !important;
+  border-right: none !important;
+  border-radius: 1rem 0 0 1rem !important;
+  color: white !important;
+  outline: none !important;
+  transition: all 0.3s ease !important;
+  min-width: 80px !important;
+}
+
+.phone-input-container .PhoneInputCountrySelect:focus {
+  border-color: #c9d92e !important;
+  box-shadow: 0 0 0 2px rgba(201, 217, 46, 0.1) !important;
+}
+
+/* Flecha del selector */
+.phone-input-container .PhoneInputCountrySelectArrow {
+  color: rgb(156, 163, 175) !important;
+  margin-left: 0.5rem !important;
+}
+
+/* Bandera del país */
+.phone-input-container .PhoneInputCountryIcon {
+  margin-right: 0.5rem !important;
+}
+
+/* Estados de error */
+.phone-input-container.error .PhoneInputInput,
+.phone-input-container.error .PhoneInputCountrySelect {
+  border-color: rgb(239, 68, 68) !important;
+}
+
+/* Estados deshabilitado */
+.phone-input-container .PhoneInputInput:disabled,
+.phone-input-container .PhoneInputCountrySelect:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+/* Hover effects */
+.phone-input-container .PhoneInputInput:hover:not(:disabled),
+.phone-input-container .PhoneInputCountrySelect:hover:not(:disabled) {
+  border-color: rgb(75, 85, 99) !important;
+}
+
 *,
 *:before,
 *:after {

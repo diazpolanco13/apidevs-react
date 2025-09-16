@@ -28,7 +28,6 @@ export default async function OnboardingPage({
 
   return (
     <Onboarding 
-      user={user} 
       redirectPath={searchParams.redirect || '/account'} 
     />
   );

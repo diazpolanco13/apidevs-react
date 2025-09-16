@@ -9,14 +9,10 @@ import {
   ToastViewport
 } from '@/components/ui/Toasts/toast';
 import { useToast } from '@/components/ui/Toasts/use-toast';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export function Toaster() {
   const { toast, toasts } = useToast();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   // Prevent hydration mismatch by only running client-side
@@ -26,6 +22,10 @@ export function Toaster() {
 
   useEffect(() => {
     if (!mounted) return;
+    
+    // Use native browser APIs instead of Next.js hooks to avoid SSR issues
+    const searchParams = new URLSearchParams(window.location.search);
+    const pathname = window.location.pathname;
     
     const status = searchParams.get('status');
     const status_description = searchParams.get('status_description');
@@ -42,7 +42,7 @@ export function Toaster() {
       });
       
       // Clear search params to prevent toast showing again
-      const newSearchParams = new URLSearchParams(searchParams.toString());
+      const newSearchParams = new URLSearchParams(window.location.search);
       const paramsToRemove = [
         'error',
         'status',
@@ -51,9 +51,14 @@ export function Toaster() {
       ];
       paramsToRemove.forEach((param) => newSearchParams.delete(param));
       const redirectPath = `${pathname}?${newSearchParams.toString()}`;
-      router.replace(redirectPath, { scroll: false });
+      window.history.replaceState({}, '', redirectPath);
     }
-  }, [mounted, searchParams, pathname, router, toast]);
+  }, [mounted, toast]);
+
+  // Don't render anything until mounted to prevent hydration issues
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <ToastProvider>

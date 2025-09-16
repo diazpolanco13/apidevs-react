@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import { User, TrendingUp, MapPin, Phone, CheckCircle } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
+import { Country, State, City } from 'country-state-city';
+import moment from 'moment-timezone';
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 interface OnboardingProps {
-  user: any;
   redirectPath?: string;
 }
 
@@ -16,11 +19,16 @@ interface OnboardingData {
   full_name: string;
   phone: string;
   country: string;
+  state: string;
   city: string;
+  postal_code: string;
+  timezone: string;
 }
 
-export default function Onboarding({ user, redirectPath = '/account' }: OnboardingProps) {
+export default function Onboarding({ redirectPath = '/account' }: OnboardingProps) {
   const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<OnboardingData>({
@@ -28,10 +36,126 @@ export default function Onboarding({ user, redirectPath = '/account' }: Onboardi
     full_name: '',
     phone: '',
     country: '',
-    city: ''
+    state: '',
+    city: '',
+    postal_code: '',
+    timezone: ''
   });
 
   const [errors, setErrors] = useState<Partial<OnboardingData>>({});
+  
+  // Estados para los selectores de ubicación
+  const [countries, setCountries] = useState<any[]>([]);
+  const [states, setStates] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<any>(null);
+  const [selectedState, setSelectedState] = useState<any>(null);
+
+  // Obtener usuario del lado cliente para evitar hidratación
+  useEffect(() => {
+    const getUser = async () => {
+      const supabase = createClient();
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error || !user) {
+        router.push('/signin');
+        return;
+      }
+      
+      setUser(user);
+      setIsLoading(false);
+    };
+
+    getUser();
+  }, [router]);
+
+  // Cargar países al montar el componente
+  useEffect(() => {
+    const allCountries = Country.getAllCountries();
+    setCountries(allCountries);
+  }, []);
+
+  // Manejar cambio de país
+  const handleCountryChange = (countryCode: string) => {
+    const country = countries.find(c => c.isoCode === countryCode);
+    setSelectedCountry(country);
+    setSelectedState(null);
+    
+    // Limpiar estados y ciudades dependientes
+    setStates([]);
+    setCities([]);
+    
+    // Actualizar formData
+    setFormData(prev => ({
+      ...prev,
+      country: country?.name || '',
+      state: '',
+      city: '',
+      timezone: country ? getTimezoneFromCountry(country.isoCode) : ''
+    }));
+    
+    // Cargar estados del país seleccionado
+    if (country) {
+      const countryStates = State.getStatesOfCountry(country.isoCode);
+      setStates(countryStates);
+    }
+  };
+
+  // Manejar cambio de estado/provincia
+  const handleStateChange = (stateCode: string) => {
+    const state = states.find(s => s.isoCode === stateCode);
+    setSelectedState(state);
+    
+    // Limpiar ciudades
+    setCities([]);
+    
+    // Actualizar formData
+    setFormData(prev => ({
+      ...prev,
+      state: state?.name || '',
+      city: ''
+    }));
+    
+    // Cargar ciudades del estado seleccionado
+    if (state && selectedCountry) {
+      const stateCities = City.getCitiesOfState(selectedCountry.isoCode, state.isoCode);
+      setCities(stateCities);
+    }
+  };
+
+  // Manejar cambio de ciudad
+  const handleCityChange = (cityName: string) => {
+    setFormData(prev => ({
+      ...prev,
+      city: cityName
+    }));
+  };
+
+  // Obtener timezone basado en el país
+  const getTimezoneFromCountry = (countryCode: string): string => {
+    const timezoneMap: { [key: string]: string } = {
+      'US': 'America/New_York',
+      'CA': 'America/Toronto',
+      'MX': 'America/Mexico_City',
+      'AR': 'America/Argentina/Buenos_Aires',
+      'BR': 'America/Sao_Paulo',
+      'CL': 'America/Santiago',
+      'CO': 'America/Bogota',
+      'PE': 'America/Lima',
+      'VE': 'America/Caracas',
+      'EC': 'America/Guayaquil',
+      'UY': 'America/Montevideo',
+      'PY': 'America/Asuncion',
+      'BO': 'America/La_Paz',
+      'ES': 'Europe/Madrid',
+      'FR': 'Europe/Paris',
+      'DE': 'Europe/Berlin',
+      'IT': 'Europe/Rome',
+      'GB': 'Europe/London',
+    };
+    
+    return timezoneMap[countryCode] || moment.tz.guess();
+  };
 
   const validateStep = (step: number): boolean => {
     const newErrors: Partial<OnboardingData> = {};
@@ -43,14 +167,24 @@ export default function Onboarding({ user, redirectPath = '/account' }: Onboardi
       if (!formData.full_name.trim()) {
         newErrors.full_name = 'Tu nombre completo es requerido';
       }
+      // Validar teléfono si está presente
+      if (formData.phone && !isValidPhoneNumber(formData.phone)) {
+        newErrors.phone = 'El número de teléfono no es válido';
+      }
     }
 
     if (step === 2) {
       if (!formData.country.trim()) {
         newErrors.country = 'El país es requerido';
       }
+      if (!formData.state.trim()) {
+        newErrors.state = 'El estado/provincia es requerido';
+      }
       if (!formData.city.trim()) {
         newErrors.city = 'La ciudad es requerida';
+      }
+      if (!formData.postal_code.trim()) {
+        newErrors.postal_code = 'El código postal es requerido';
       }
     }
 
@@ -93,7 +227,10 @@ export default function Onboarding({ user, redirectPath = '/account' }: Onboardi
           full_name: formData.full_name.trim(),
           phone: formData.phone.trim() || null,
           country: formData.country.trim(),
+          state: formData.state.trim(),
           city: formData.city.trim(),
+          postal_code: formData.postal_code.trim(),
+          timezone: formData.timezone || moment.tz.guess(),
           onboarding_completed: true
         })
         .eq('id', user.id);
@@ -176,20 +313,6 @@ export default function Onboarding({ user, redirectPath = '/account' }: Onboardi
           )}
         </div>
 
-        <div>
-          <label htmlFor="phone" className="block text-sm font-semibold text-gray-200 mb-2">
-            <Phone className="inline w-4 h-4 mr-2" />
-            Teléfono (Opcional)
-          </label>
-          <input
-            id="phone"
-            type="tel"
-            placeholder="+1 234 567 8900"
-            value={formData.phone}
-            onChange={(e) => handleInputChange('phone', e.target.value)}
-            className="w-full p-4 rounded-2xl bg-gray-900/50 border border-gray-700 text-white placeholder-gray-400 focus:border-apidevs-primary focus:ring-2 focus:ring-apidevs-primary/50 focus:outline-none transition-all"
-          />
-        </div>
       </div>
     </div>
   );
@@ -202,7 +325,7 @@ export default function Onboarding({ user, redirectPath = '/account' }: Onboardi
         </div>
         <h2 className="text-3xl font-bold text-white mb-2">Ubicación</h2>
         <p className="text-gray-300 text-lg">
-          Ayúdanos a personalizar tu experiencia según tu región
+          Ayúdanos a personalizar tu experiencia y horarios según tu región
         </p>
       </div>
 
@@ -213,57 +336,155 @@ export default function Onboarding({ user, redirectPath = '/account' }: Onboardi
           </label>
           <select
             id="country"
-            value={formData.country}
-            onChange={(e) => handleInputChange('country', e.target.value)}
+            value={selectedCountry?.isoCode || ''}
+            onChange={(e) => handleCountryChange(e.target.value)}
             className={`w-full p-4 rounded-2xl bg-gray-900/50 border text-white focus:ring-2 focus:ring-apidevs-primary/50 focus:outline-none transition-all ${
               errors.country ? 'border-red-500' : 'border-gray-700 focus:border-apidevs-primary'
             }`}
           >
             <option value="">Selecciona tu país</option>
-            <option value="Argentina">Argentina</option>
-            <option value="Bolivia">Bolivia</option>
-            <option value="Chile">Chile</option>
-            <option value="Colombia">Colombia</option>
-            <option value="Costa Rica">Costa Rica</option>
-            <option value="Ecuador">Ecuador</option>
-            <option value="El Salvador">El Salvador</option>
-            <option value="España">España</option>
-            <option value="Guatemala">Guatemala</option>
-            <option value="Honduras">Honduras</option>
-            <option value="México">México</option>
-            <option value="Nicaragua">Nicaragua</option>
-            <option value="Panamá">Panamá</option>
-            <option value="Paraguay">Paraguay</option>
-            <option value="Perú">Perú</option>
-            <option value="República Dominicana">República Dominicana</option>
-            <option value="Uruguay">Uruguay</option>
-            <option value="Venezuela">Venezuela</option>
-            <option value="Estados Unidos">Estados Unidos</option>
-            <option value="Otro">Otro</option>
+            {countries.map((country) => (
+              <option key={country.isoCode} value={country.isoCode}>
+                {country.name}
+              </option>
+            ))}
           </select>
           {errors.country && (
             <p className="text-red-400 text-sm mt-2">{errors.country}</p>
           )}
         </div>
 
-        <div>
-          <label htmlFor="city" className="block text-sm font-semibold text-gray-200 mb-2">
-            Ciudad *
-          </label>
-          <input
-            id="city"
-            type="text"
-            placeholder="Tu ciudad"
-            value={formData.city}
-            onChange={(e) => handleInputChange('city', e.target.value)}
-            className={`w-full p-4 rounded-2xl bg-gray-900/50 border text-white placeholder-gray-400 focus:ring-2 focus:ring-apidevs-primary/50 focus:outline-none transition-all ${
-              errors.city ? 'border-red-500' : 'border-gray-700 focus:border-apidevs-primary'
-            }`}
-          />
-          {errors.city && (
-            <p className="text-red-400 text-sm mt-2">{errors.city}</p>
+        {/* Estado/Provincia */}
+        {states.length > 0 && (
+          <div>
+            <label htmlFor="state" className="block text-sm font-semibold text-gray-200 mb-2">
+              Estado/Provincia *
+            </label>
+            <select
+              id="state"
+              value={selectedState?.isoCode || ''}
+              onChange={(e) => handleStateChange(e.target.value)}
+              className={`w-full p-4 rounded-2xl bg-gray-900/50 border text-white focus:ring-2 focus:ring-apidevs-primary/50 focus:outline-none transition-all ${
+                errors.state ? 'border-red-500' : 'border-gray-700 focus:border-apidevs-primary'
+              }`}
+            >
+              <option value="">Selecciona tu estado/provincia</option>
+              {states.map((state) => (
+                <option key={state.isoCode} value={state.isoCode}>
+                  {state.name}
+                </option>
+              ))}
+            </select>
+            {errors.state && (
+              <p className="text-red-400 text-sm mt-2">{errors.state}</p>
+            )}
+          </div>
+        )}
+
+        {/* Grid para Ciudad y Código Postal */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Ciudad */}
+          {cities.length > 0 ? (
+            <div>
+              <label htmlFor="city" className="block text-sm font-semibold text-gray-200 mb-2">
+                Ciudad *
+              </label>
+              <select
+                id="city"
+                value={formData.city}
+                onChange={(e) => handleCityChange(e.target.value)}
+                className={`w-full p-4 rounded-2xl bg-gray-900/50 border text-white focus:ring-2 focus:ring-apidevs-primary/50 focus:outline-none transition-all ${
+                  errors.city ? 'border-red-500' : 'border-gray-700 focus:border-apidevs-primary'
+                }`}
+              >
+                <option value="">Selecciona tu ciudad</option>
+                {cities.map((city) => (
+                  <option key={city.name} value={city.name}>
+                    {city.name}
+                  </option>
+                ))}
+              </select>
+              {errors.city && (
+                <p className="text-red-400 text-sm mt-2">{errors.city}</p>
+              )}
+            </div>
+          ) : selectedState && (
+            <div>
+              <label htmlFor="city" className="block text-sm font-semibold text-gray-200 mb-2">
+                Ciudad *
+              </label>
+              <input
+                id="city"
+                type="text"
+                value={formData.city}
+                onChange={(e) => handleCityChange(e.target.value)}
+                placeholder="Escribe tu ciudad"
+                className={`w-full p-4 rounded-2xl bg-gray-900/50 border text-white placeholder-gray-400 focus:ring-2 focus:ring-apidevs-primary/50 focus:outline-none transition-all ${
+                  errors.city ? 'border-red-500' : 'border-gray-700 focus:border-apidevs-primary'
+                }`}
+              />
+              {errors.city && (
+                <p className="text-red-400 text-sm mt-2">{errors.city}</p>
+              )}
+            </div>
+          )}
+
+          {/* Código Postal */}
+          {selectedCountry && (
+            <div>
+              <label htmlFor="postal_code" className="block text-sm font-semibold text-gray-200 mb-2">
+                Código Postal *
+              </label>
+              <input
+                id="postal_code"
+                type="text"
+                value={formData.postal_code}
+                onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
+                placeholder="12345"
+                className={`w-full p-4 rounded-2xl bg-gray-900/50 border text-white placeholder-gray-400 focus:ring-2 focus:ring-apidevs-primary/50 focus:outline-none transition-all ${
+                  errors.postal_code ? 'border-red-500' : 'border-gray-700 focus:border-apidevs-primary'
+                }`}
+              />
+              {errors.postal_code && (
+                <p className="text-red-400 text-sm mt-2">{errors.postal_code}</p>
+              )}
+            </div>
           )}
         </div>
+
+        {/* Teléfono - Línea completa */}
+        <div>
+          <label htmlFor="phone" className="block text-sm font-semibold text-gray-200 mb-2">
+            <Phone className="inline w-4 h-4 mr-2" />
+            Teléfono (Opcional)
+          </label>
+          <div className={`phone-input-container ${errors.phone ? 'error' : ''}`}>
+            <PhoneInput
+              placeholder="Ingresa tu número de teléfono"
+              value={formData.phone}
+              onChange={(value) => setFormData(prev => ({ ...prev, phone: value || '' }))}
+              defaultCountry={selectedCountry?.isoCode as any}
+              international
+              countryCallingCodeEditable={false}
+              className="w-full"
+            />
+          </div>
+          {errors.phone && (
+            <p className="text-red-400 text-sm mt-2">{errors.phone}</p>
+          )}
+        </div>
+
+        {/* Mostrar timezone detectado */}
+        {formData.timezone && (
+          <div className="bg-apidevs-primary/10 border border-apidevs-primary/20 rounded-2xl p-4">
+            <div className="flex items-center text-sm text-apidevs-primary">
+              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+              </svg>
+              Zona horaria detectada: <strong>{formData.timezone}</strong>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -305,6 +526,22 @@ export default function Onboarding({ user, redirectPath = '/account' }: Onboardi
       </p>
     </div>
   );
+
+  // Mostrar loading mientras obtenemos el usuario
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-apidevs-dark via-black to-apidevs-dark flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-apidevs-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-apidevs-dark via-black to-apidevs-dark flex items-center justify-center p-4">

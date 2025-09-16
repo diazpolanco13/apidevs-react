@@ -70,7 +70,7 @@ export default function Hero() {
       {/* Background Effects con partículas integradas */}
       <BackgroundEffects variant="hero" showParticles={true} />
 
-      <div className="relative container mx-auto px-4 pt-24 pb-16 lg:pt-32 lg:pb-20">
+      <div className="relative container mx-auto px-4 pt-14 pb-16 lg:pt-24 lg:pb-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
           <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>

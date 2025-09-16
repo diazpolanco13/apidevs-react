@@ -1,5 +1,5 @@
 .root {
-  @apply sticky top-0 z-40 transition-all duration-300 h-16 md:h-20;
+  @apply sticky top-0 z-40 transition-all duration-300 h-16 sm:h-16 md:h-20;
   background: rgba(10, 10, 10, 0.8);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
