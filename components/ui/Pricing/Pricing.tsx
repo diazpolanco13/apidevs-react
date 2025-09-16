@@ -30,11 +30,12 @@ interface Props {
   user: User | null | undefined;
   products: ProductWithPrices[];
   subscription: SubscriptionWithProduct | null;
+  showHeader?: boolean;
 }
 
 type BillingInterval = 'lifetime' | 'year' | 'month';
 
-export default function Pricing({ user, products, subscription }: Props) {
+export default function Pricing({ user, products, subscription, showHeader = true }: Props) {
   const router = useRouter();
   const [priceIdLoading, setPriceIdLoading] = useState<string>();
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('yearly');
@@ -141,7 +142,7 @@ export default function Pricing({ user, products, subscription }: Props) {
     );
   }
   return (
-    <section className="relative bg-gradient-to-b from-apidevs-dark via-black to-apidevs-dark overflow-hidden py-16">
+    <section className="relative overflow-hidden py-12">
       {/* Efectos de fondo épicos */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-96 h-96 bg-apidevs-primary/20 rounded-full blur-3xl animate-pulse" />
@@ -151,48 +152,50 @@ export default function Pricing({ user, products, subscription }: Props) {
       </div>
       
       {/* Header épico */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-16">
-        <div className="inline-flex items-center justify-center px-6 py-2 mb-8 text-sm font-medium text-apidevs-primary bg-apidevs-primary/10 border border-apidevs-primary/30 rounded-full backdrop-blur-sm">
-          <Zap className="w-4 h-4 mr-2" />
-          ÚNETE A 3,500+ TRADERS DE ÉLITE
-        </div>
-        
-        <h1 className="text-6xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-apidevs-primary to-white mb-6 animate-gradient">
-          Elige tu plan
-        </h1>
-        
-        <p className="text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed">
-          Únete a nuestra comunidad exclusiva en Telegram donde traders profesionales comparten estrategias en tiempo real, 
-          reciben alertas VIP y acceden a herramientas de trading de próxima generación.
-        </p>
-
-        {/* Toggle Billing Interval */}
-        <div className="mt-12 flex justify-center">
-          <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-2 inline-flex">
-            <button
-              onClick={() => setBillingInterval('monthly')}
-              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                billingInterval === 'monthly'
-                  ? 'bg-gray-700 text-white shadow-lg'
-                  : 'text-gray-300 hover:text-gray-100'
-              }`}
-            >
-              Mensual
-            </button>
-            <button
-              onClick={() => setBillingInterval('yearly')}
-              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${
-                billingInterval === 'yearly'
-                  ? 'bg-gradient-to-r from-apidevs-primary to-green-400 text-black shadow-lg'
-                  : 'text-gray-300 hover:text-gray-100'
-              }`}
-            >
-              Anual
-              <span className="absolute -top-2 -right-2 bg-apidevs-primary text-black text-xs px-2 py-0.5 rounded-full font-bold">
-                -16%
-              </span>
-            </button>
+      {showHeader && (
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-12">
+          <div className="inline-flex items-center justify-center px-6 py-2 mb-8 text-sm font-medium text-apidevs-primary bg-apidevs-primary/10 border border-apidevs-primary/30 rounded-full backdrop-blur-sm">
+            <Zap className="w-4 h-4 mr-2" />
+            ÚNETE A 3,500+ TRADERS DE ÉLITE
           </div>
+          
+          <h1 className="text-6xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-apidevs-primary to-white mb-6 animate-gradient">
+            Elige tu plan
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed">
+            Únete a nuestra comunidad exclusiva en Telegram donde traders profesionales comparten estrategias en tiempo real, 
+            reciben alertas VIP y acceden a herramientas de trading de próxima generación.
+          </p>
+        </div>
+      )}
+
+      {/* Toggle Billing Interval */}
+      <div className={`${showHeader ? 'mt-0' : 'mt-8'} mb-12 flex justify-center`}>
+        <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-2 inline-flex">
+          <button
+            onClick={() => setBillingInterval('monthly')}
+            className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
+              billingInterval === 'monthly'
+                ? 'bg-gray-700 text-white shadow-lg'
+                : 'text-gray-300 hover:text-gray-100'
+            }`}
+          >
+            Mensual
+          </button>
+          <button
+            onClick={() => setBillingInterval('yearly')}
+            className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${
+              billingInterval === 'yearly'
+                ? 'bg-gradient-to-r from-apidevs-primary to-green-400 text-black shadow-lg'
+                : 'text-gray-300 hover:text-gray-100'
+            }`}
+          >
+            Anual
+            <span className="absolute -top-2 -right-2 bg-apidevs-primary text-black text-xs px-2 py-0.5 rounded-full font-bold">
+              -16%
+            </span>
+          </button>
         </div>
       </div>
 
@@ -300,19 +303,28 @@ export default function Pricing({ user, products, subscription }: Props) {
               {/* Pricing - Altura fija exacta */}
               <div className="text-center mb-8 h-[100px] flex flex-col justify-center">
                 <div className="text-gray-400 line-through text-sm mb-2">
-                  {billingInterval === 'monthly' ? '$49' : '$468'}
+                  {billingInterval === 'monthly' ? '$79' : '$948'}
                 </div>
                 <div className="flex items-baseline justify-center">
-                  <span className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 leading-none">
-                    ${billingInterval === 'monthly' ? '39' : '390'}
-                  </span>
-                  <span className="text-gray-200 ml-2 text-lg">
-                    {billingInterval === 'monthly' ? '/mes' : '/año'}
-                  </span>
+                  {billingInterval === 'monthly' ? (
+                    <>
+                      <span className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 leading-none">
+                        $39
+                      </span>
+                      <span className="text-gray-200 ml-2 text-lg">/mes</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 leading-none">
+                        $32
+                      </span>
+                      <span className="text-gray-200 ml-2 text-lg">.50/mes</span>
+                    </>
+                  )}
                 </div>
                 {billingInterval === 'yearly' && (
                   <div className="mt-2 text-sm text-blue-300 font-medium">
-                    Equivale a $32.50/mes • Ahorra $78 (16%)
+                    $390 facturado anualmente • Ahorra 16%
                   </div>
                 )}
                 {billingInterval === 'monthly' && (
@@ -405,12 +417,17 @@ export default function Pricing({ user, products, subscription }: Props) {
                 <div className="text-gray-400 line-through text-sm mb-2">$1,999</div>
                 <div className="flex items-baseline justify-center">
                   <span className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 leading-none">
-                    ${finalLifetimePrice ? ((finalLifetimePrice.unit_amount || 0) / 100).toFixed(0) : '1299'}
+                    $999
                   </span>
                   <span className="text-gray-200 ml-2 text-lg">/Único</span>
                 </div>
-                <div className="mt-2 text-sm text-purple-300 font-medium">
-                  10 cuotas de $129 disponibles
+                <div className="mt-2">
+                  <div className="text-xs text-green-400 font-bold">
+                    ✨ Ahorra $200 pagando de contado
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    o 12 cuotas de $99.90 (Total: $1,199)
+                  </div>
                 </div>
               </div>
 
@@ -463,7 +480,6 @@ export default function Pricing({ user, products, subscription }: Props) {
           </div>
 
         </div>
-
 
         {/* Garantía - Sección épica */}
         <div className="mt-16 relative">

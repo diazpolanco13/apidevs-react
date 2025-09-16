@@ -116,7 +116,7 @@ export default function Navlinks({ user }: NavlinksProps) {
             </div>
           </div>
 
-          <Link href="/precios" className={s.link}>
+          <Link href="/pricing" className={s.link}>
             Precios
           </Link>
         </nav>
@@ -141,7 +141,7 @@ export default function Navlinks({ user }: NavlinksProps) {
               <Link href="/tutoriales" className="block py-1 pl-4 text-sm text-gray-400 hover:text-apidevs-primary">Tutoriales</Link>
               <Link href="/comunidad" className="block py-1 pl-4 text-sm text-gray-400 hover:text-apidevs-primary">Comunidad</Link>
             </div>
-            <Link href="/precios" className="block py-2 text-gray-300 hover:text-apidevs-primary">Precios</Link>
+            <Link href="/pricing" className="block py-2 text-gray-300 hover:text-apidevs-primary">Precios</Link>
             {user && (
               <Link href="/account" className="block py-2 text-gray-300 hover:text-apidevs-primary">Mi Cuenta</Link>
             )}
