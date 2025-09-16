@@ -25,22 +25,31 @@ export default function Navlinks({ user }: NavlinksProps) {
   }, []);
 
   return (
-    <div className="relative flex flex-row justify-between items-center h-16 md:h-20">
-      {/* Mobile Menu Button - Ahora al principio */}
+    <div className="relative flex flex-row justify-between items-center h-16 sm:h-16 md:h-20">
+      {/* Mobile Menu Button - Compacto */}
       <button
-        className="lg:hidden flex items-center px-3 py-2 border rounded text-gray-300 border-gray-400 hover:text-apidevs-primary hover:border-apidevs-primary mr-4"
+        className="lg:hidden flex items-center p-2 border rounded-md text-gray-300 border-gray-600 hover:text-apidevs-primary hover:border-apidevs-primary mr-2 sm:mr-3"
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         aria-label="Abrir menú de navegación"
         title="Menú"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
 
       <div className="flex items-center flex-1">
         <Link href="/" className={`${s.logo} focus:outline-none`} aria-label="APIDevs Trading">
-          <APIDevsLogo width={160} height={40} />
+          {/* Logo responsive - tamaño balanceado */}
+          <div className="block sm:hidden">
+            <APIDevsLogo width={130} height={32} />
+          </div>
+          <div className="hidden sm:block md:hidden">
+            <APIDevsLogo width={145} height={36} />
+          </div>
+          <div className="hidden md:block">
+            <APIDevsLogo width={160} height={40} />
+          </div>
         </Link>
         <nav className="ml-8 space-x-6 lg:flex items-center hidden">
           <Link href="/" className={s.link}>
@@ -140,11 +149,11 @@ export default function Navlinks({ user }: NavlinksProps) {
         </div>
       )}
 
-      <div className="flex justify-end items-center space-x-4">
+      <div className="flex justify-end items-center space-x-2 sm:space-x-4">
         {user ? (
           <div className="relative group">
-            <button className="flex items-center space-x-2 p-1 rounded-full hover:bg-apidevs-primary/10 transition-colors">
-              <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center text-black font-semibold text-sm">
+            <button className="flex items-center space-x-1 sm:space-x-2 p-1 rounded-full hover:bg-apidevs-primary/10 transition-colors">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-primary rounded-full flex items-center justify-center text-black font-semibold text-xs sm:text-sm">
                 {user.email?.[0]?.toUpperCase() || 'U'}
               </div>
             </button>
@@ -187,8 +196,9 @@ export default function Navlinks({ user }: NavlinksProps) {
             </div>
           </div>
         ) : (
-          <Link href="/signin" className={`${s.link} bg-apidevs-primary/10 border border-apidevs-primary/30 px-4 py-2 rounded-lg hover:bg-apidevs-primary/20`}>
-            Iniciar sesión
+          <Link href="/signin" className={`${s.link} bg-apidevs-primary/10 border border-apidevs-primary/30 px-2 py-1 sm:px-4 sm:py-2 rounded-lg hover:bg-apidevs-primary/20 text-sm sm:text-base`}>
+            <span className="hidden sm:inline">Iniciar sesión</span>
+            <span className="sm:hidden">Entrar</span>
           </Link>
         )}
       </div>
