@@ -1,0 +1,17 @@
+{
+  "name": "apidevs-migration",
+  "version": "1.0.0",
+  "description": "Scripts de migración para APIDevs Trading Platform",
+  "main": "import_users.js",
+  "scripts": {
+    "migrate": "node import_users.js",
+    "test": "echo \"Migración de 6,478 usuarios de WordPress a Supabase\""
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.3.1"
+  },
+  "author": "APIDevs",
+  "license": "MIT"
+}
