@@ -22,9 +22,6 @@ import {
   ShoppingCartIcon,
   UsersIcon,
   XMarkIcon,
-  MegaphoneIcon,
-  LinkIcon,
-  ArrowLeftOnRectangleIcon,
   DocumentDuplicateIcon,
 } from '@heroicons/react/24/outline';
 import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
@@ -71,7 +68,7 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
 
   return (
     <>
-      <div className="h-full bg-gray-900">
+      <div className="h-screen bg-gray-900 flex flex-col">
         <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 lg:hidden">
           <DialogBackdrop
             transition
@@ -92,8 +89,8 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
                 </div>
               </TransitionChild>
 
-              {/* Mobile Sidebar */}
-              <div className="relative flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4 ring ring-apidevs-primary/20 before:pointer-events-none before:absolute before:inset-0 before:bg-black/10">
+              {/* Mobile Sidebar - Optimizado con glassmorphism premium */}
+              <div className="relative flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4 ring ring-white/10 before:pointer-events-none before:absolute before:inset-0 before:bg-black/10">
                 <div className="relative flex h-16 shrink-0 items-center">
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-lg flex items-center justify-center mr-3">
@@ -112,15 +109,15 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
                               href={item.href}
                               className={classNames(
                                 isCurrentPage(item.href)
-                                  ? 'bg-apidevs-primary/20 text-apidevs-primary'
+                                  ? 'bg-white/5 text-white'
                                   : 'text-gray-400 hover:bg-white/5 hover:text-white',
-                                'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
+                                'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold transition-all duration-200',
                               )}
                             >
                               <item.icon
                                 aria-hidden="true"
                                 className={classNames(
-                                  isCurrentPage(item.href) ? 'text-apidevs-primary' : 'text-gray-400 group-hover:text-white',
+                                  isCurrentPage(item.href) ? 'text-white' : 'text-gray-400 group-hover:text-white',
                                   'size-6 shrink-0',
                                 )}
                               />
@@ -131,7 +128,7 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
                       </ul>
                     </li>
                     <li>
-                      <div className="text-xs/6 font-semibold text-gray-400">Gestión Rápida</div>
+                      <div className="text-xs/6 font-semibold text-gray-400">Acceso Rápido</div>
                       <ul role="list" className="-mx-2 mt-2 space-y-1">
                         {teams.map((team) => (
                           <li key={team.name}>
@@ -147,7 +144,7 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
                               <span
                                 className={classNames(
                                   isCurrentPage(team.href)
-                                    ? 'border-apidevs-primary/30 text-apidevs-primary bg-apidevs-primary/10'
+                                    ? 'border-white/20 text-white bg-white/5'
                                     : 'border-white/10 text-gray-400 group-hover:border-white/20 group-hover:text-white bg-white/5',
                                   'flex size-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium',
                                 )}
@@ -179,9 +176,9 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
           </div>
         </Dialog>
 
-        {/* Desktop sidebar */}
-        <div className="hidden bg-gray-900 lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-          <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-apidevs-primary/20 bg-black/10 px-6 pb-4">
+        {/* Desktop sidebar - Optimizado con efectos premium */}
+        <div className="hidden bg-gray-900 lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col lg:h-screen">
+          <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-white/10 bg-black/10 px-6 pb-4">
             <div className="flex h-16 shrink-0 items-center">
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-lg flex items-center justify-center mr-3">
@@ -200,7 +197,7 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
                           href={item.href}
                           className={classNames(
                             isCurrentPage(item.href) 
-                              ? 'bg-apidevs-primary/20 text-apidevs-primary' 
+                              ? 'bg-white/5 text-white' 
                               : 'text-gray-400 hover:bg-white/5 hover:text-white',
                             'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold transition-all duration-200',
                           )}
@@ -208,7 +205,7 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
                           <item.icon
                             aria-hidden="true"
                             className={classNames(
-                              isCurrentPage(item.href) ? 'text-apidevs-primary' : 'text-gray-400 group-hover:text-white',
+                              isCurrentPage(item.href) ? 'text-white' : 'text-gray-400 group-hover:text-white',
                               'size-6 shrink-0',
                             )}
                           />
@@ -219,7 +216,7 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
                   </ul>
                 </li>
                 <li>
-                  <div className="text-xs/6 font-semibold text-gray-400">Gestión Rápida</div>
+                  <div className="text-xs/6 font-semibold text-gray-400">Acceso Rápido</div>
                   <ul role="list" className="-mx-2 mt-2 space-y-1">
                     {teams.map((team) => (
                       <li key={team.name}>
@@ -235,7 +232,7 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
                           <span
                             className={classNames(
                               isCurrentPage(team.href)
-                                ? 'border-apidevs-primary/30 text-apidevs-primary bg-apidevs-primary/10'
+                                ? 'border-white/20 text-white bg-white/5'
                                 : 'border-white/10 text-gray-400 group-hover:border-white/20 group-hover:text-white bg-white/5',
                               'flex size-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium',
                             )}
@@ -265,9 +262,9 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
           </div>
         </div>
 
-        {/* Header con buscador y menú de usuario */}
-        <div className="lg:pl-72">
-          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-apidevs-primary/20 bg-gray-900 px-4 sm:gap-x-6 sm:px-6 lg:px-8">
+        {/* Header y contenido principal */}
+        <div className="lg:pl-72 flex flex-col flex-1 min-h-0">
+          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-white/10 bg-gray-900 px-4 sm:gap-x-6 sm:px-6 lg:px-8">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
@@ -281,17 +278,17 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
             <div aria-hidden="true" className="h-6 w-px bg-white/10 lg:hidden" />
 
             <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-              {/* Buscador */}
+              {/* Buscador optimizado con estilo premium */}
               <form action="#" method="GET" className="grid flex-1 grid-cols-1">
                 <input
                   name="search"
                   placeholder="Buscar usuarios, órdenes, analytics..."
                   aria-label="Buscar"
-                  className="col-start-1 row-start-1 block size-full bg-gray-900 pl-8 text-base text-white outline-none placeholder:text-gray-500 sm:text-sm/6 border-none focus:ring-2 focus:ring-apidevs-primary/50 rounded-md"
+                  className="col-start-1 row-start-1 block size-full bg-gray-900 pl-8 text-base text-white outline-none placeholder:text-gray-500 sm:text-sm/6"
                 />
                 <MagnifyingGlassIcon
                   aria-hidden="true"
-                  className="pointer-events-none col-start-1 row-start-1 ml-2 size-5 self-center text-gray-400"
+                  className="pointer-events-none col-start-1 row-start-1 size-5 self-center text-gray-400"
                 />
               </form>
               
@@ -350,8 +347,8 @@ export default function AdminDashboardLayoutFull({ children, user }: AdminDashbo
           </div>
 
           {/* Contenido principal */}
-          <main className="py-10">
-            <div className="px-4 sm:px-6 lg:px-8">
+          <main className="flex-1 min-h-0 overflow-auto">
+            <div className="px-4 sm:px-6 lg:px-8 py-10">
               {children}
             </div>
           </main>

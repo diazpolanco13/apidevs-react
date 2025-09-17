@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { Suspense } from 'react';
 import UsersTable from '@/components/admin/UsersTable';
-import UsersFilters from '@/components/admin/UsersFilters';
+import UsersFilterWrapper from '@/components/admin/UsersFilterWrapper';
 
 export default async function AdminUsersPage({
   searchParams,
@@ -12,11 +12,15 @@ export default async function AdminUsersPage({
 
   // Parámetros de búsqueda y filtros
   const page = Number(searchParams.page) || 1;
-  const limit = 50;
+  const limit = 10; // Máximo 10 elementos por página
   const offset = (page - 1) * limit;
   const search = searchParams.search as string || '';
   const country = searchParams.country as string || '';
   const status = searchParams.status as string || '';
+  const customerType = searchParams.customerType as string || '';
+  const migrationStatus = searchParams.migrationStatus as string || '';
+  const sortField = searchParams.sortField as string || 'wordpress_created_at';
+  const sortDirection = searchParams.sortDirection as string || 'desc';
 
   // Query base
   let query = supabase
@@ -36,9 +40,18 @@ export default async function AdminUsersPage({
     query = query.eq('reactivation_status', status);
   }
 
+  if (customerType) {
+    query = query.eq('customer_type', customerType);
+  }
+
+  if (migrationStatus) {
+    query = query.eq('migration_status', migrationStatus);
+  }
+
   // Paginación y orden
+  const ascending = sortDirection === 'asc';
   query = query
-    .order('wordpress_created_at', { ascending: false })
+    .order(sortField, { ascending })
     .range(offset, offset + limit - 1);
 
   const { data: users, count, error } = await query;
@@ -73,11 +86,9 @@ export default async function AdminUsersPage({
 
       {/* Filtros */}
       <Suspense fallback={<div>Cargando filtros...</div>}>
-        <UsersFilters 
-          countries={uniqueCountries}
-          currentSearch={search}
-          currentCountry={country}
-          currentStatus={status}
+        <UsersFilterWrapper 
+          totalItems={count || 0}
+          filteredItems={count || 0}
         />
       </Suspense>
 

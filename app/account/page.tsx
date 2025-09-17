@@ -208,7 +208,7 @@ export default async function Account() {
                 </div>
 
                 {/* Payment History */}
-                {subscription && <PaymentHistory subscription={subscription} />}
+                <PaymentHistory subscription={subscription} userEmail={user.email || ''} />
 
                 {/* Account Settings */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

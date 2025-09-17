@@ -30,6 +30,12 @@ CREATE TABLE IF NOT EXISTS purchases (
     revenue_valid_for_metrics BOOLEAN DEFAULT true,
     product_name VARCHAR(255),
     payment_method VARCHAR(100),
+    transaction_id VARCHAR(255),
+    billing_country VARCHAR(10),
+    product_category VARCHAR(100) DEFAULT 'digital',
+    legacy_user_id INTEGER REFERENCES legacy_users(id),
+    revenue_impact VARCHAR(50),
+    follow_up_opportunity VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

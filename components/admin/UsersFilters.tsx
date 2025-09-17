@@ -82,6 +82,7 @@ export default function UsersFilters({
           <select
             value={country}
             onChange={(e) => setCountry(e.target.value)}
+            aria-label="Filtrar por país"
             className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-apidevs-primary focus:border-transparent"
           >
             <option value="">Todos los países</option>
@@ -101,6 +102,7 @@ export default function UsersFilters({
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
+            aria-label="Filtrar por estado de reactivación"
             className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-apidevs-primary focus:border-transparent"
           >
             <option value="">Todos los estados</option>
