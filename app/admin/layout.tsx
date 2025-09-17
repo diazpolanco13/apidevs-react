@@ -18,22 +18,24 @@ export default async function AdminLayout({
     return redirect('/signin?message=Acceso%20restringido%20-%20Inicia%20sesión%20para%20continuar');
   }
 
-  // TEMPORAL: Sin verificación de admin para debugging
-  // TODO: Implementar role checking en producción
+  // 🔒 CONTROL DE ACCESO EXCLUSIVO PARA USUARIO MASTER
+  const MASTER_EMAIL = 'api@apidevs.io';
+  
+  if (user.email !== MASTER_EMAIL) {
+    return redirect('/?message=Acceso%20denegado%20-%20Solo%20el%20administrador%20puede%20acceder%20al%20panel');
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="flex">
-        {/* Sidebar */}
-        <AdminSidebar />
-        
-        {/* Main Content */}
-        <main className="flex-1 md:ml-64">
-          <div className="p-4 sm:p-6 lg:p-8">
-            {children}
-          </div>
-        </main>
-      </div>
+    <div className="fixed inset-0 z-50 flex bg-apidevs-dark">
+      {/* Sidebar Fijo */}
+      <AdminSidebar />
+      
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto">
+        <div className="p-8">
+          {children}
+        </div>
+      </main>
       <Toaster />
     </div>
   );

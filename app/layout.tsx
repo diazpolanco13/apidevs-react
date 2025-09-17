@@ -54,10 +54,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
       </head>
       <body className={`bg-apidevs-dark ${workSans.variable} font-sans`}>
         <Navbar />
-        <main
-          id="skip"
-          className=""
-        >
+        <main id="skip" className="">
           {children}
         </main>
         <Footer />
