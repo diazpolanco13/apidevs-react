@@ -55,7 +55,7 @@ export default async function AdminUsersPage({
     .not('country', 'is', null)
     .order('country');
 
-  const uniqueCountries = Array.from(new Set(countries?.map(c => c.country))).filter(Boolean);
+  const uniqueCountries = Array.from(new Set(countries?.map((c: any) => c.country))).filter(Boolean);
 
   const totalPages = Math.ceil((count || 0) / limit);
 
