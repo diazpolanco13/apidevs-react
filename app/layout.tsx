@@ -44,7 +44,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
-    <html lang="es">
+    <html lang="es" className="h-full">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -52,7 +52,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <link rel="manifest" href="/favicon_io/site.webmanifest" />
         <meta name="theme-color" content="#00ff88" />
       </head>
-      <body className={`bg-apidevs-dark ${workSans.variable} font-sans`}>
+      <body className={`bg-apidevs-dark ${workSans.variable} font-sans h-full`}>
         <Navbar />
         <main id="skip" className="">
           {children}
