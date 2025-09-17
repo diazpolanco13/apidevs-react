@@ -22,6 +22,7 @@
     "supabase:pull": "npx supabase db pull"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.8",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-toast": "^1.1.5",
     "@sanity/client": "^7.11.1",

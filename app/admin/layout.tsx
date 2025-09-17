@@ -1,7 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
-import AdminSidebar from '@/components/admin/AdminSidebar';
-import { Toaster } from '@/components/ui/Toasts/toaster';
+import AdminDashboardLayoutFull from '@/components/admin/AdminDashboardLayoutFull';
 
 export default async function AdminLayout({
   children,
@@ -9,7 +8,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const supabase = createClient();
-  
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -26,17 +25,8 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex bg-apidevs-dark">
-      {/* Sidebar Fijo */}
-      <AdminSidebar />
-      
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
-          {children}
-        </div>
-      </main>
-      <Toaster />
+    <div className="fixed inset-0 z-50 bg-gray-900">
+      <AdminDashboardLayoutFull user={user}>{children}</AdminDashboardLayoutFull>
     </div>
   );
 }
