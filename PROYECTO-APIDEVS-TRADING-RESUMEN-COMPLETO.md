@@ -147,6 +147,22 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - ✅ **Magic Link** para inicio de sesión sin contraseña
 - ✅ **OAuth eliminado** (GitHub removido - no relevante para traders)
 - ✅ **Sistema de Onboarding Crítico** (Septiembre 2025)
+
+### **📈 Hub de Indicadores (NUEVO - Septiembre 2025)**
+- ✅ **Biblioteca de indicadores** fullwidth responsive
+- ✅ **Sistema de filtros** por categoría (Gratuitos/Premium) y tipo
+- ✅ **Buscador funcional** en tiempo real
+- ✅ **Grid optimizado** hasta 4 columnas
+- ✅ **9 indicadores mock** con datos realistas
+- ✅ **Routing dinámico** `/indicadores/[slug]`
+
+### **🔍 Páginas Individuales de Indicadores (NUEVO)**
+- ✅ **Hero section** profesional con metadata
+- ✅ **TradingView embed específico** del script real
+- ✅ **Modal de instrucciones** tipo LuxAlgo para acceso gratuito
+- ✅ **Sección educativa** con explicaciones detalladas
+- ✅ **FAQ y características** por indicador
+- ✅ **CTAs diferenciados** por categoría (free/premium)
 - ✅ **Captura obligatoria** de usuario TradingView
 - ✅ **Onboarding de 3 pasos** con validación en tiempo real
 
@@ -919,14 +935,76 @@ Con este MVP completamente funcional que **supera a LuxAlgo**:
 
 ---
 
-*Documento actualizado el 17 de diciembre de 2024*  
+## 🚀 MIGRACIÓN A SANITY CMS (PRÓXIMA IMPLEMENTACIÓN - SEPTIEMBRE 2025)
+
+### **🎯 PROBLEMA IDENTIFICADO**
+**Contenido Hardcodeado No Escalable:**
+- ❌ Cada indicador requiere componente personalizado
+- ❌ Contenido educativo duplicado y complejo
+- ❌ Mantenimiento imposible a escala (100+ indicadores)
+- ❌ Requiere desarrollador para cada cambio de contenido
+
+### **💡 SOLUCIÓN: ARQUITECTURA TIPO BLOG (COMO LUXALGO)**
+**Sanity CMS ya configurado:**
+- ✅ **Project ID**: txlvgvel
+- ✅ **Studio**: localhost:3001/studio
+- ✅ **Blog funcionando** con schemas personalizados
+- ✅ **Pipeline deployment** listo
+
+### **🏗️ PLAN DE IMPLEMENTACIÓN**
+
+#### **FASE 1: Schemas Dinámicos**
+- 📝 **indicatorContent.ts** - Schema principal para contenido
+- 🧩 **Bloques modulares** reutilizables:
+  - `howToTradeSection` - Pasos de trading con imágenes
+  - `keyFeaturesSection` - Características del indicador
+  - `tradingSequences` - Secuencias de trading explicadas
+  - `useCasesSection` - Casos de uso reales
+  - `faqSection` - Preguntas frecuentes dinámicas
+
+#### **FASE 2: Componente Universal**
+- 🔄 **DynamicIndicatorContent.tsx** - Un componente para todos
+- 📊 **SectionRenderer.tsx** - Renderizado modular por tipo
+- 🗂️ **Eliminación masiva** de componentes hardcodeados
+- ⚡ **Performance optimizada** con cache de Sanity
+
+#### **FASE 3: Migración de Contenido**
+- 📋 **Contenido actual → Sanity Studio**
+- 🎨 **Editor visual** para equipo no técnico
+- 🖼️ **Gestión de imágenes** optimizada
+- 🔄 **Actualizaciones sin deploy**
+
+### **📈 BENEFICIOS ESPERADOS**
+- **Un componente universal** para todos los indicadores
+- **Escalabilidad infinita** sin límites técnicos
+- **Equipo de contenido independiente** de desarrollo
+- **Experiencia idéntica a LuxAlgo** con CMS profesional
+- **Mantenimiento mínimo** de código
+
+### **🎯 ARQUITECTURA FINAL**
+```
+📦 APIDevs Trading Platform:
+├── 🎨 Frontend (Next.js) - Componente universal
+├── 📝 Sanity CMS - Gestión de contenido dinámico
+├── 🗄️ Supabase - Auth/Payments (mantener)
+└── 💳 Stripe - Subscriptions (mantener)
+```
+
+### **⏭️ PRÓXIMOS PASOS**
+1. **Crear schemas Sanity** para contenido de indicadores
+2. **Desarrollar componente universal** de renderizado
+3. **Migrar contenido existente** al CMS
+4. **Eliminar componentes hardcodeados** obsoletos
+5. **Testing y optimización** de performance
+
+---
+
+*Documento actualizado el 17 de septiembre de 2025*  
 *Proyecto: APIDevs Trading Platform*  
-*🏆 **ESTADO: MVP 100% COMPLETADO Y FUNCIONAL** 🏆*  
-*✅ **TODOS LOS ERRORES CRÍTICOS RESUELTOS** ✅*  
-*🚀 **LISTO PARA PRODUCCIÓN** 🚀*  
-*🔥 **SEGUNDA SESIÓN ÉPICA COMPLETADA** 🔥*  
-*📱 **UX/UI OPTIMIZADO AL MÁXIMO** 📱*  
-*🌍 **GEOLOCALIZACIÓN Y VALIDACIÓN AVANZADA** 🌍*
-*💰 **PRICING PSICOLÓGICO IMPLEMENTADO** 💰*
-*📄 **PÁGINAS LEGALES COMPLETAS** 📄*
-*📝 **BLOG CON SANITY CMS EN DESARROLLO** 📝*
+*🏆 **ESTADO: HUB DE INDICADORES COMPLETADO** 🏆*  
+*✅ **PÁGINAS INDIVIDUALES FUNCIONALES** ✅*  
+*🚀 **TRADINGVIEW INTEGRATION EXITOSA** 🚀*  
+*🔥 **MODAL LUXALGO REPLICADO** 🔥*  
+*📱 **DISEÑO FULLWIDTH RESPONSIVE** 📱*  
+*🎯 **LISTO PARA MIGRACIÓN SANITY** 🎯*
+*📝 **CONTENIDO DINÁMICO PLANIFICADO** 📝*
