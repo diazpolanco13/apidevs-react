@@ -14,13 +14,13 @@ export default async function DashboardStats() {
       .from('purchases')
       .select('*', { count: 'exact' });
 
-    // Fetch total revenue (sum of order_total_cents for revenue_valid_for_metrics = true)
-    const { data: revenueData, error: revenueError } = await supabase
-      .from('purchases')
-      .select('order_total_cents')
-      .eq('revenue_valid_for_metrics', true);
+  // Fetch total revenue (sum of order_total_cents for revenue_valid_for_metrics = true)
+  const { data: revenueData, error: revenueError } = await supabase
+    .from('purchases')
+    .select('order_total_cents')
+    .eq('revenue_valid_for_metrics', true);
 
-    const totalRevenueCents = revenueData?.reduce((sum, purchase) => sum + (purchase.order_total_cents || 0), 0) || 0;
+  const totalRevenueCents = revenueData?.reduce((sum: number, purchase: any) => sum + (purchase.order_total_cents || 0), 0) || 0;
     const totalRevenueUSD = (totalRevenueCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     // Fetch reactivation rate (count reactivated vs total legacy)

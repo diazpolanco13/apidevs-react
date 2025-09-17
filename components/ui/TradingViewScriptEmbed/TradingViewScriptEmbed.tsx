@@ -31,7 +31,7 @@ export default function TradingViewScriptEmbed({
       iframe.style.borderRadius = '12px';
       iframe.style.backgroundColor = '#1a1a1a';
       iframe.frameBorder = '0';
-      iframe.allowTransparency = true;
+      (iframe as any).allowTransparency = true; // TypeScript workaround
       iframe.scrolling = 'no';
       iframe.allow = 'encrypted-media';
 

@@ -1,6 +1,15 @@
 import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
 
+// Definir tipo para purchase
+interface Purchase {
+  order_number: string;
+  customer_email: string;
+  order_date: string;
+  order_total_cents: number;
+  order_status: string;
+}
+
 export default async function RecentActivity() {
   const supabase = createClient();
 
@@ -19,7 +28,7 @@ export default async function RecentActivity() {
     <div className="bg-black/30 backdrop-blur-xl border border-apidevs-primary/20 rounded-lg shadow-lg p-6">
       <h2 className="text-xl font-bold text-white mb-4">Actividad Reciente</h2>
       <ul className="divide-y divide-gray-700">
-        {recentPurchases?.map((purchase) => (
+        {(recentPurchases as Purchase[])?.map((purchase) => (
           <li key={purchase.order_number} className="py-3 flex justify-between items-center">
             <div>
               <p className="text-sm font-medium text-white">
