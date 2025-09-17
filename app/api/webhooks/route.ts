@@ -7,6 +7,7 @@ import {
   deleteProductRecord,
   deletePriceRecord
 } from '@/utils/supabase/admin';
+import { updateReactivationStatus } from '@/data/migration/update_reactivation';
 
 const relevantEvents = new Set([
   'product.created',
@@ -63,6 +64,24 @@ export async function POST(req: Request) {
             subscription.customer as string,
             event.type === 'customer.subscription.created'
           );
+          
+          // 🏆 TRACKING DE REACTIVACIÓN LEGACY
+          if (event.type === 'customer.subscription.created') {
+            try {
+              // Obtener email del customer de Stripe
+              const customer = await stripe.customers.retrieve(subscription.customer as string);
+              if (customer && !customer.deleted && customer.email) {
+                await updateReactivationStatus(
+                  customer.email, 
+                  subscription.id,
+                  'organic' // Default campaign, se puede personalizar
+                );
+              }
+            } catch (reactivationError) {
+              console.log('⚠️ Error en tracking de reactivación:', reactivationError);
+              // No fallar el webhook por esto
+            }
+          }
           break;
         case 'checkout.session.completed':
           const checkoutSession = event.data.object as Stripe.Checkout.Session;

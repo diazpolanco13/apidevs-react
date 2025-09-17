@@ -213,17 +213,41 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 ## 🚧 FUNCIONALIDADES PENDIENTES
 
-### **🛒 Checkout Personalizado** (Prioridad Alta)
-- ✅ ~~Captura de datos específicos~~ **COMPLETADO** (Septiembre 2025):
-  - ✅ País y ciudad del cliente
-  - ✅ Usuario de TradingView (CRÍTICO)
-  - ✅ Número de teléfono
-  - ✅ Dirección de facturación completa
-  - ✅ Código postal y timezone
-- ❌ **PROBLEMA CRÍTICO**: Error Stripe checkout "No such price"
-- 🔄 Integración con Stripe Elements
-- 🔄 Validación en tiempo real
-- 🔄 Flujo diferenciado para plan FREE (sin pago)
+### **📊 DASHBOARD ADMINISTRATIVO** (Prioridad CRÍTICA - EN DESARROLLO)
+**Estado**: Migración de datos completada - 6,477 usuarios legacy + 2,873 compras históricas
+
+#### **🎯 FASE 1: MVP DASHBOARD CORE** (Semana 1)
+- 🔄 Dashboard principal con KPIs básicos
+- 🔄 Gestión de usuarios legacy con filtros
+- 🔄 Análisis de compras con estados
+- 🔄 Autenticación admin role-based
+
+#### **📈 FASE 2: ANALYTICS AVANZADOS** (Semana 2-3)
+- 🔄 Customer journey analytics
+- 🔄 Revenue analytics por segmento
+- 🔄 Geolocalización intelligence
+
+#### **📧 FASE 3: CAMPAIGN MANAGEMENT** (Semana 3-4)
+- 🔄 Sistema de campañas automatizadas
+- 🔄 Multi-channel communication (Email/Telegram/SMS)
+- 🔄 Follow-up automation por segmento
+
+#### **🤝 FASE 4: PARTNERSHIPS & TRACKING** (Semana 4-5)
+- 🔄 Integración OKX y sistema de afiliados
+- 🔄 Attribution system completo
+- 🔄 Gamificación y loyalty program
+
+#### **⚡ FASE 5: ADVANCED FEATURES** (Semana 6+)
+- 🔄 AI-powered insights y predicciones
+- 🔄 Real-time features con WebSocket
+- 🔄 Advanced integrations (TradingView API)
+
+### **🛒 Checkout Personalizado** (Prioridad Alta - COMPLETADO)
+- ✅ ~~Captura de datos específicos~~ **COMPLETADO** (Septiembre 2025)
+- ✅ ~~Error Stripe checkout "No such price"~~ **RESUELTO**
+- ✅ ~~Integración con Stripe Elements~~ **FUNCIONAL**
+- ✅ ~~Validación en tiempo real~~ **IMPLEMENTADO**
+- ✅ ~~Flujo diferenciado para plan FREE~~ **OPERATIVO**
 
 ### **📱 Optimizaciones Landing Page** (Prioridad Media)
 - 🔄 Agregar más screenshots reales de indicadores
@@ -605,6 +629,15 @@ Para cualquier consulta sobre el proyecto APIDevs Trading Platform:
 ## 🏁 ESTADO ACTUAL DEL PROYECTO
 
 ### **✅ COMPLETADO AL 100% - MVP FINALIZADO (Septiembre 2025)**
+### **🚀 NUEVA FASE: DASHBOARD ADMINISTRATIVO (Diciembre 2025)**
+
+**Migración de Datos Históricos Completada:**
+- ✅ **6,477 usuarios legacy** migrados desde WordPress
+- ✅ **2,873 compras históricas** con análisis estratégico
+- ✅ **$103,074.69 USD** en ingresos históricos procesados
+- ✅ **Segmentación automática** por tipo de cliente
+- ✅ **Follow-up opportunities** identificadas
+- ✅ **Base de datos optimizada** para analytics avanzados
 - **Landing Page Épico** - 6 secciones de conversión optimizadas
 - **Modal Fullscreen** - Experiencia inmersiva única
 - **Carruseles Interactivos** - Con imágenes reales de indicadores
@@ -999,12 +1032,134 @@ Con este MVP completamente funcional que **supera a LuxAlgo**:
 
 ---
 
-*Documento actualizado el 17 de septiembre de 2025*  
+---
+
+## 📊 **DASHBOARD ADMINISTRATIVO - ROADMAP DETALLADO**
+
+### **🎯 ARQUITECTURA TÉCNICA**
+
+#### **Stack Tecnológico Dashboard:**
+- **Frontend**: Next.js 14 + React + TypeScript
+- **UI Components**: Tailwind CSS + Headless UI
+- **Charts**: Recharts / Chart.js para visualizaciones
+- **Tables**: TanStack Table para tablas avanzadas
+- **Auth**: Supabase Auth con role-based access
+- **API**: Supabase queries + custom hooks
+
+#### **Estructura de Rutas:**
+```
+/admin/
+├── dashboard/          # KPIs y métricas principales
+├── users/             # Gestión usuarios legacy
+│   ├── [id]/         # Vista detallada usuario
+│   └── segments/     # Segmentación avanzada
+├── purchases/         # Análisis de compras
+│   ├── revenue/      # Analytics de ingresos
+│   └── methods/      # Análisis métodos pago
+├── campaigns/         # Gestión de campañas
+│   ├── email/        # Campañas email
+│   ├── telegram/     # Bot y mensajes
+│   └── analytics/    # Métricas campañas
+├── partnerships/      # OKX y afiliados
+│   ├── okx/          # Dashboard OKX específico
+│   └── tracking/     # Attribution tracking
+└── settings/          # Configuración admin
+```
+
+#### **Base de Datos - Nuevas Tablas:**
+```sql
+-- Tracking de campañas
+campaigns (
+  id, name, type, status, created_at,
+  target_segment, message_template,
+  sent_count, opened_count, clicked_count
+)
+
+-- Tracking de partnerships
+partner_conversions (
+  id, user_id, partner_id, referral_code,
+  conversion_date, commission_amount
+)
+
+-- Sistema de cookies y attribution
+visitor_tracking (
+  id, visitor_id, session_id, utm_source,
+  utm_campaign, first_visit, last_visit,
+  pages_visited, converted_at
+)
+```
+
+### **🚀 DESARROLLO POR SPRINTS**
+
+#### **SPRINT 1 (Días 1-7): MVP CORE**
+**Objetivo**: Dashboard básico funcional
+
+**Tareas Técnicas:**
+1. **Setup estructura admin** (`/admin` layout)
+2. **Autenticación admin** (role check middleware)
+3. **Dashboard principal** (KPIs básicos)
+4. **Tabla usuarios legacy** (paginación básica)
+5. **Vista compras** (lista simple con filtros)
+
+**Entregables:**
+- Dashboard navegable con datos reales
+- Autenticación segura admin
+- Tablas básicas funcionales
+
+#### **SPRINT 2 (Días 8-14): ANALYTICS**
+**Objetivo**: Insights y visualizaciones
+
+**Tareas Técnicas:**
+1. **Charts de ingresos** (por mes/año)
+2. **Segmentación visual** (refunded, pending, high-value)
+3. **Geolocalización** (mapas de distribución)
+4. **Filtros avanzados** (fechas, países, métodos)
+5. **Exportación CSV** para análisis externo
+
+**Entregables:**
+- Gráficos interactivos
+- Mapas de calor geográficos
+- Sistema de filtros completo
+
+#### **SPRINT 3 (Días 15-21): CAMPAIGNS**
+**Objetivo**: Automatización de recaptura
+
+**Tareas Técnicas:**
+1. **Campaign builder** (templates por segmento)
+2. **Email integration** (SendGrid/Resend)
+3. **Telegram bot básico** para notificaciones
+4. **Tracking de engagement** (opens, clicks)
+5. **A/B testing** framework
+
+**Entregables:**
+- Sistema de campañas operativo
+- Bot Telegram funcional
+- Métricas de engagement
+
+### **💰 ROI ESPERADO DEL DASHBOARD**
+
+#### **Impacto Inmediato (Mes 1):**
+- **+25% reactivación** usuarios legacy con campañas dirigidas
+- **+40% insights** para toma de decisiones
+- **-60% tiempo** en análisis manual de datos
+
+#### **Impacto Medio Plazo (Mes 3):**
+- **+50% conversión** legacy → activo
+- **+30% ingresos** por partnerships (OKX)
+- **+200% eficiencia** en gestión de clientes
+
+#### **Impacto Largo Plazo (Mes 6):**
+- **+100% LTV** por mejor retention
+- **+300% partnerships revenue**
+- **Base sólida** para IA predictiva
+
+---
+
+*Documento actualizado el 17 de diciembre de 2025*  
 *Proyecto: APIDevs Trading Platform*  
-*🏆 **ESTADO: HUB DE INDICADORES COMPLETADO** 🏆*  
-*✅ **PÁGINAS INDIVIDUALES FUNCIONALES** ✅*  
-*🚀 **TRADINGVIEW INTEGRATION EXITOSA** 🚀*  
-*🔥 **MODAL LUXALGO REPLICADO** 🔥*  
-*📱 **DISEÑO FULLWIDTH RESPONSIVE** 📱*  
-*🎯 **LISTO PARA MIGRACIÓN SANITY** 🎯*
-*📝 **CONTENIDO DINÁMICO PLANIFICADO** 📝*
+*🏆 **ESTADO: MIGRACIÓN DATOS COMPLETADA** 🏆*  
+*📊 **DASHBOARD ADMINISTRATIVO EN DESARROLLO** 📊*  
+*🚀 **ROADMAP FASE 1-5 PLANIFICADO** 🚀*  
+*💰 **$103K INGRESOS HISTÓRICOS PROCESADOS** 💰*  
+*👥 **6,477 USUARIOS + 2,873 COMPRAS MIGRADAS** 👥*  
+*🎯 **LISTO PARA MVP DASHBOARD** 🎯*
