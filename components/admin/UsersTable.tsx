@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import Pagination from './Pagination';
+import MobilePagination from './MobilePagination';
 
 interface User {
   id: string;
@@ -36,10 +38,16 @@ export default function UsersTable({
     router.push(url.toString());
   };
 
+  const handleItemsPerPageChange = (itemsPerPage: number) => {
+    // Para usuarios legacy mantenemos 10 elementos fijos
+    // Esta función existe para compatibilidad con el componente Pagination
+    console.log('Items per page:', itemsPerPage);
+  };
+
   const handleSelectUser = (userId: string) => {
-    setSelectedUsers(prev => 
+    setSelectedUsers((prev: string[]) => 
       prev.includes(userId) 
-        ? prev.filter(id => id !== userId)
+        ? prev.filter((id: string) => id !== userId)
         : [...prev, userId]
     );
   };
@@ -137,6 +145,7 @@ export default function UsersTable({
                   type="checkbox"
                   checked={selectedUsers.length === users.length && users.length > 0}
                   onChange={handleSelectAll}
+                  aria-label="Seleccionar todos los usuarios"
                   className="rounded border-gray-600 text-apidevs-primary focus:ring-apidevs-primary"
                 />
               </th>
@@ -172,6 +181,7 @@ export default function UsersTable({
                       e.stopPropagation();
                       handleSelectUser(user.id);
                     }}
+                    aria-label={`Seleccionar usuario ${user.full_name || user.email}`}
                     className="rounded border-gray-600 text-apidevs-primary focus:ring-apidevs-primary"
                   />
                 </td>
@@ -221,53 +231,32 @@ export default function UsersTable({
         </table>
       </div>
 
-      {/* Paginación */}
-      <div className="px-6 py-4 border-t border-gray-700">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-400">
-            Mostrando {((currentPage - 1) * 50) + 1} - {Math.min(currentPage * 50, totalCount)} de {totalCount.toLocaleString()} usuarios
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage <= 1}
-              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-            >
-              Anterior
-            </button>
-            
-            <div className="flex space-x-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const page = currentPage <= 3 ? i + 1 : currentPage - 2 + i;
-                if (page > totalPages) return null;
-                
-                return (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-1 rounded-lg transition-colors ${
-                      page === currentPage
-                        ? 'bg-apidevs-primary text-black font-medium'
-                        : 'bg-gray-700 hover:bg-gray-600 text-white'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
-            </div>
-            
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage >= totalPages}
-              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-            >
-              Siguiente
-            </button>
-          </div>
+      {/* Desktop Pagination */}
+      {totalPages > 1 && (
+        <div className="hidden lg:block">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={10}
+            totalItems={totalCount}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
         </div>
-      </div>
+      )}
+
+      {/* Mobile Pagination */}
+      {totalPages > 1 && (
+        <div className="lg:hidden">
+          <MobilePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            itemsPerPage={10}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
     </div>
   );
 }

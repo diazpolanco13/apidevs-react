@@ -83,8 +83,10 @@ export default async function DashboardStats() {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((item) => (
           <div key={item.name} className={`${item.bgColor} backdrop-blur-xl border rounded-lg px-4 py-5 shadow-lg sm:p-6 transition-all duration-200 hover:scale-105`}>
-            <dt className="text-sm font-medium text-gray-300 truncate">{item.name}</dt>
-            <dd className={`mt-1 text-3xl font-bold ${item.color}`}>{item.stat}</dd>
+            <dl>
+              <dt className="text-sm font-medium text-gray-300 truncate">{item.name}</dt>
+              <dd className={`mt-1 text-3xl font-bold ${item.color}`}>{item.stat}</dd>
+            </dl>
             <p className="mt-2 text-sm text-gray-400">{item.description}</p>
           </div>
         ))}

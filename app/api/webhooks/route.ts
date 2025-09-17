@@ -5,7 +5,9 @@ import {
   upsertPriceRecord,
   manageSubscriptionStatusChange,
   deleteProductRecord,
-  deletePriceRecord
+  deletePriceRecord,
+  createPurchaseRecord,
+  handleInvoicePayment
 } from '@/utils/supabase/admin';
 import { updateReactivationStatus } from '@/data/migration/update_reactivation';
 
@@ -19,7 +21,9 @@ const relevantEvents = new Set([
   'checkout.session.completed',
   'customer.subscription.created',
   'customer.subscription.updated',
-  'customer.subscription.deleted'
+  'customer.subscription.deleted',
+  'payment_intent.succeeded',
+  'invoice.payment_succeeded'
 ]);
 
 export async function POST(req: Request) {
@@ -92,7 +96,28 @@ export async function POST(req: Request) {
               checkoutSession.customer as string,
               true
             );
+          } else if (checkoutSession.mode === 'payment' && checkoutSession.payment_intent) {
+            // Manejar compras one-time
+            const paymentIntent = await stripe.paymentIntents.retrieve(checkoutSession.payment_intent as string);
+            const customer = await stripe.customers.retrieve(checkoutSession.customer as string);
+            
+            if (customer && !customer.deleted) {
+              await createPurchaseRecord(paymentIntent, customer);
+            }
           }
+          break;
+        case 'payment_intent.succeeded':
+          const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          if (paymentIntent.customer) {
+            const customer = await stripe.customers.retrieve(paymentIntent.customer as string);
+            if (customer && !customer.deleted) {
+              await createPurchaseRecord(paymentIntent, customer);
+            }
+          }
+          break;
+        case 'invoice.payment_succeeded':
+          const invoice = event.data.object as Stripe.Invoice;
+          await handleInvoicePayment(invoice);
           break;
         default:
           throw new Error('Unhandled relevant event!');

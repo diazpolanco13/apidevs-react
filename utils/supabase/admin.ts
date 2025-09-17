@@ -284,11 +284,186 @@ const manageSubscriptionStatusChange = async (
     );
 };
 
+// Función para crear registro de compra usando la estructura real de la DB
+const createPurchaseRecord = async (
+  paymentIntent: Stripe.PaymentIntent,
+  customer: Stripe.Customer
+) => {
+  try {
+    // Obtener información del producto desde line items o metadata
+    let productName = 'Compra directa Stripe';
+    let orderNumber = `PI-${paymentIntent.id.slice(-8)}`;
+    let isLifetimePurchase = false;
+
+    // Detectar si es compra Lifetime por el monto ($999.00 = 99900 centavos)
+    if (paymentIntent.amount === 99900) {
+      productName = 'APIDevs Trading Indicators - Lifetime';
+      isLifetimePurchase = true;
+    }
+
+    // Si hay metadata del checkout, usar esa información
+    if (paymentIntent.metadata?.product_name) {
+      productName = paymentIntent.metadata.product_name;
+    }
+    
+    if (paymentIntent.metadata?.order_number) {
+      orderNumber = paymentIntent.metadata.order_number;
+    }
+
+    if (paymentIntent.metadata?.is_lifetime === 'true') {
+      isLifetimePurchase = true;
+    }
+
+    // Buscar si existe usuario legacy para vincular
+    let legacyUserId = null;
+    if (customer.email) {
+      try {
+        const { data: legacyUser } = await (supabaseAdmin as any)
+          .from('legacy_users')
+          .select('id')
+          .eq('email', customer.email)
+          .single();
+        
+        if (legacyUser) {
+          legacyUserId = legacyUser.id;
+        }
+      } catch (error) {
+        console.log('Info: No legacy user found:', error);
+        // Continuar sin vincular legacy user
+      }
+    }
+
+    // Crear registro usando la estructura real de la tabla purchases
+    const purchaseData = {
+      order_number: orderNumber,
+      customer_email: customer.email || 'unknown@stripe.com',
+      legacy_user_id: legacyUserId,
+      order_date: new Date(paymentIntent.created * 1000).toISOString().slice(0, -1), // Sin 'Z' para timestamp
+      completed_date: new Date().toISOString().slice(0, -1),
+      order_status: 'completed',
+      payment_status: 'paid',
+      order_total_cents: paymentIntent.amount,
+      subtotal_cents: paymentIntent.amount,
+      currency: paymentIntent.currency.toUpperCase(),
+      product_name: productName,
+      product_category: paymentIntent.metadata?.category || 'subscription',
+      quantity: 1,
+      payment_method: 'stripe',
+      payment_gateway: 'stripe',
+      transaction_id: paymentIntent.id,
+      gateway_transaction_id: paymentIntent.id,
+      billing_country: null, // Se obtendrá del checkout session si está disponible
+      billing_state: null,
+      billing_city: null,
+      billing_address: null,
+      billing_postcode: null,
+      billing_phone: null,
+      is_lifetime_purchase: isLifetimePurchase,
+      revenue_impact: 'positive',
+      customer_segment: 'regular',
+      follow_up_opportunity: 'none',
+      revenue_valid_for_metrics: true,
+      notes: `Compra automática desde Stripe - ${new Date().toISOString()}`
+    };
+
+    const { error } = await (supabaseAdmin as any)
+      .from('purchases')
+      .insert([purchaseData]);
+
+    if (error) {
+      console.error('Error creating purchase record:', error);
+      throw new Error(`Purchase record creation failed: ${error.message}`);
+    }
+
+    console.log(`✅ Purchase record created: ${orderNumber} for ${customer.email}`);
+    
+    // Intentar actualizar estado de reactivación si es usuario legacy
+    if (legacyUserId) {
+      await updateLegacyUserReactivation(customer.email!, paymentIntent.id);
+    }
+    
+  } catch (error) {
+    console.error('Error in createPurchaseRecord:', error);
+    throw error;
+  }
+};
+
+// Función para actualizar reactivación de usuario legacy
+const updateLegacyUserReactivation = async (email: string, stripePaymentId: string) => {
+  try {
+    const { data: legacyUser, error } = await (supabaseAdmin as any)
+      .from('legacy_users')
+      .select('id, reactivation_status')
+      .eq('email', email)
+      .single();
+
+    if (legacyUser && legacyUser.reactivation_status === 'pending') {
+      // Marcar como reactivado si era un usuario legacy pendiente
+      await (supabaseAdmin as any)
+        .from('legacy_users')
+        .update({
+          reactivation_status: 'reactivated',
+          reactivated_at: new Date().toISOString().slice(0, -1), // Sin 'Z' para timestamp
+          first_new_subscription_id: stripePaymentId,
+          reactivation_campaign: 'direct_purchase'
+        })
+        .eq('id', legacyUser.id);
+
+      console.log(`🎉 Legacy user reactivated: ${email}`);
+    }
+  } catch (error) {
+    console.log('Info: No legacy user found or error linking:', error);
+    // No fallar el webhook por esto
+  }
+};
+
+// Función para manejar facturas pagadas (suscripciones)
+const handleInvoicePayment = async (invoice: Stripe.Invoice) => {
+  try {
+    if (!invoice.customer || !invoice.subscription) return;
+
+    const customer = await stripe.customers.retrieve(invoice.customer as string);
+    if (!customer || customer.deleted) return;
+
+    // Crear registro de compra para la factura de suscripción
+    const orderNumber = `INV-${invoice.number || invoice.id.slice(-8)}`;
+    
+    const purchaseData = {
+      order_number: orderNumber,
+      customer_email: customer.email || 'unknown@stripe.com',
+      order_total_cents: invoice.amount_paid,
+      order_date: new Date(invoice.created * 1000).toISOString(),
+      order_status: 'completed',
+      product_name: invoice.lines.data[0]?.description || 'Suscripción',
+      payment_method: 'stripe',
+      revenue_valid_for_metrics: true,
+      transaction_id: invoice.payment_intent as string || invoice.id,
+      billing_country: invoice.customer_address?.country || null,
+      product_category: 'subscription'
+    };
+
+    const { error } = await (supabaseAdmin as any)
+      .from('purchases')
+      .upsert([purchaseData], { onConflict: 'order_number' });
+
+    if (error) {
+      console.error('Error creating invoice purchase record:', error);
+    } else {
+      console.log(`✅ Invoice purchase record created: ${orderNumber}`);
+    }
+
+  } catch (error) {
+    console.error('Error in handleInvoicePayment:', error);
+  }
+};
+
 export {
   upsertProductRecord,
   upsertPriceRecord,
   deleteProductRecord,
   deletePriceRecord,
   createOrRetrieveCustomer,
-  manageSubscriptionStatusChange
+  manageSubscriptionStatusChange,
+  createPurchaseRecord,
+  handleInvoicePayment
 };
