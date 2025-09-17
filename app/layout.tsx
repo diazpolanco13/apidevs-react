@@ -36,6 +36,7 @@ export const metadata: Metadata = {
       { url: '/favicon_io/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
     ],
     other: [
+      { rel: 'apple-touch-icon', url: '/favicon_io/apple-touch-icon.png' },
       { rel: 'android-chrome-192x192', url: '/favicon_io/android-chrome-192x192.png' },
       { rel: 'android-chrome-512x512', url: '/favicon_io/android-chrome-512x512.png' }
     ]
@@ -46,6 +47,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="es" className="h-full">
       <head>
+        <link rel="apple-touch-icon" href="/favicon_io/apple-touch-icon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
