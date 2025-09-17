@@ -7,32 +7,83 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="hidden md:flex md:flex-shrink-0">
-      <div className="flex flex-col w-64">
-        <div className="flex flex-col flex-grow border-r border-gray-700 bg-gray-800 pt-5 pb-4 overflow-y-auto">
-          <div className="flex items-center flex-shrink-0 px-4">
-            <span className="text-2xl font-bold text-white">APIDevs Admin</span>
-          </div>
-          <nav className="mt-5 flex-1 px-2 space-y-1">
-            <Link
-              href="/admin"
-              className={`${pathname === '/admin' ? 'bg-green-500 text-black' : 'text-gray-300 hover:bg-gray-700 hover:text-white'} group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/admin/users"
-              className="text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md"
-            >
-              Usuarios Legacy
-            </Link>
-            <Link
-              href="/admin/purchases"
-              className="text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md"
-            >
-              Compras
-            </Link>
-          </nav>
+    <div className="flex flex-col w-64 bg-gray-800 border-r border-gray-700">
+      {/* Header */}
+      <div className="flex items-center px-6 py-8 border-b border-gray-700">
+        <div className="w-10 h-10 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-lg flex items-center justify-center mr-3">
+          <span className="text-black font-bold text-xl">A</span>
+        </div>
+        <span className="text-xl font-bold text-white">Admin Panel</span>
+      </div>
+      
+      {/* Navigation */}
+      <nav className="flex-1 px-4 py-6 space-y-2">
+        <Link
+          href="/admin"
+          className={`${
+            pathname === '/admin' 
+              ? 'bg-apidevs-primary text-black font-semibold shadow-lg' 
+              : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+          } group flex items-center px-4 py-3 text-sm rounded-lg transition-all duration-200`}
+        >
+          <span className="mr-3">📊</span>
+          Dashboard
+        </Link>
+        
+        <Link
+          href="/admin/users"
+          className={`${
+            pathname.startsWith('/admin/users')
+              ? 'bg-apidevs-primary text-black font-semibold shadow-lg' 
+              : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+          } group flex items-center px-4 py-3 text-sm rounded-lg transition-all duration-200`}
+        >
+          <span className="mr-3">👥</span>
+          Usuarios Legacy
+        </Link>
+        
+        <Link
+          href="/admin/purchases"
+          className={`${
+            pathname.startsWith('/admin/purchases')
+              ? 'bg-apidevs-primary text-black font-semibold shadow-lg' 
+              : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+          } group flex items-center px-4 py-3 text-sm rounded-lg transition-all duration-200`}
+        >
+          <span className="mr-3">🛒</span>
+          Compras
+        </Link>
+        
+        <Link
+          href="/admin/analytics"
+          className={`${
+            pathname.startsWith('/admin/analytics')
+              ? 'bg-apidevs-primary text-black font-semibold shadow-lg' 
+              : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+          } group flex items-center px-4 py-3 text-sm rounded-lg transition-all duration-200`}
+        >
+          <span className="mr-3">📈</span>
+          Analytics
+        </Link>
+      </nav>
+      
+      {/* Botón de Regreso */}
+      <div className="px-4 py-4 border-t border-gray-700">
+        <Link
+          href="/"
+          className="flex items-center px-4 py-3 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-all duration-200 group"
+        >
+          <span className="mr-3">🏠</span>
+          <span>Volver a APIDevs</span>
+          <span className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+        </Link>
+      </div>
+      
+      {/* Footer */}
+      <div className="px-4 py-4 border-t border-gray-700">
+        <div className="flex items-center text-sm text-gray-400">
+          <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+          Sistema Operativo
         </div>
       </div>
     </div>
