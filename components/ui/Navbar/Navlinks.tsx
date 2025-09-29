@@ -11,9 +11,10 @@ import s from './Navbar.module.css';
 
 interface NavlinksProps {
   user?: any;
+  avatarUrl?: string | null;
 }
 
-export default function Navlinks({ user }: NavlinksProps) {
+export default function Navlinks({ user, avatarUrl }: NavlinksProps) {
   const router = getRedirectMethod() === 'client' ? useRouter() : null;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState('/');
@@ -157,9 +158,17 @@ export default function Navlinks({ user }: NavlinksProps) {
         {user ? (
           <div className="relative group">
             <button className="flex items-center space-x-1 sm:space-x-2 p-1 rounded-full hover:bg-apidevs-primary/10 transition-colors">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-primary rounded-full flex items-center justify-center text-black font-semibold text-xs sm:text-sm">
-                {user.email?.[0]?.toUpperCase() || 'U'}
-              </div>
+              {avatarUrl ? (
+                <img 
+                  src={avatarUrl} 
+                  alt="TradingView Profile" 
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-apidevs-primary object-cover shadow-lg shadow-apidevs-primary/30"
+                />
+              ) : (
+                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-primary rounded-full flex items-center justify-center text-black font-semibold text-sm sm:text-base shadow-lg shadow-apidevs-primary/30">
+                  {user.email?.[0]?.toUpperCase() || 'U'}
+                </div>
+              )}
             </button>
             <div className="absolute right-0 mt-2 w-48 backdrop-blur-xl bg-apidevs-dark/95 border border-apidevs-primary/20 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
               <div className="py-2">

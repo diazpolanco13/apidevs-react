@@ -43,9 +43,18 @@ export default async function Account() {
       {/* Header */}
       <div className="max-w-6xl px-4 py-6 mx-auto sm:px-6 sm:pt-20 lg:px-8">
         <div className="sm:align-center sm:flex sm:flex-col">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-full mb-4 mx-auto">
-            <User className="w-8 h-8 text-black" />
-          </div>
+          {/* Avatar de TradingView en encabezado */}
+          {profile.avatar_url ? (
+            <img 
+              src={profile.avatar_url} 
+              alt="TradingView Profile" 
+              className="w-16 h-16 rounded-full border-3 border-apidevs-primary mb-4 mx-auto object-cover shadow-lg shadow-apidevs-primary/50"
+            />
+          ) : (
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-full mb-4 mx-auto shadow-lg shadow-apidevs-primary/50">
+              <TrendingUp className="w-8 h-8 text-black" />
+            </div>
+          )}
           <h1 className="text-3xl font-extrabold text-white sm:text-center sm:text-5xl mb-3">
             ¡Bienvenido, {profile.full_name?.split(' ')[0] || 'Trader'}!
           </h1>
