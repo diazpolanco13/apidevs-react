@@ -62,10 +62,18 @@ export default async function Account() {
           <div className="bg-gradient-to-br from-apidevs-primary/10 to-blue-500/10 backdrop-blur-xl border border-apidevs-primary/30 rounded-3xl p-5 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center mb-4 space-y-2 sm:space-y-0">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-apidevs-primary to-blue-500 rounded-full flex items-center justify-center mr-4">
-                  <User className="w-6 h-6 text-black" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-white">Perfil de Usuario</h2>
+                {profile.avatar_url ? (
+                  <img 
+                    src={profile.avatar_url} 
+                    alt="TradingView Profile" 
+                    className="w-12 h-12 rounded-full border-2 border-apidevs-primary mr-4 object-cover"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gradient-to-r from-apidevs-primary to-blue-500 rounded-full flex items-center justify-center mr-4">
+                    <TrendingUp className="w-6 h-6 text-black" />
+                  </div>
+                )}
+                <h2 className="text-xl sm:text-2xl font-bold text-white">Perfil de TradingView</h2>
               </div>
               <div className="sm:ml-auto">
                 <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
@@ -79,7 +87,8 @@ export default async function Account() {
               userId={user.id}
               initialData={{
                 full_name: profile.full_name || '',
-                tradingview_username: profile.tradingview_username || ''
+                tradingview_username: profile.tradingview_username || '',
+                avatar_url: profile.avatar_url || ''
               }}
             />
           </div>

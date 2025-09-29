@@ -6,6 +6,7 @@ import EditProfileForm from '@/components/ui/AccountForms/EditProfileForm';
 interface ProfileData {
   full_name: string;
   tradingview_username: string;
+  avatar_url?: string;
 }
 
 interface EditProfileClientProps {
@@ -19,7 +20,8 @@ export default function EditProfileClient({ userId, initialData }: EditProfileCl
   const handleUpdate = (newData: ProfileData) => {
     // Update local state immediately for instant UI update
     setCurrentData(newData);
-    // No need to refresh the entire page
+    // Refresh page to show new avatar
+    window.location.reload();
   };
 
   return (

@@ -1,13 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import Button from '@/components/ui/Button';
-import { User, TrendingUp, Edit3, Check, X } from 'lucide-react';
+import { User, TrendingUp, Edit3, Check, X, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { useTradingViewValidation } from '@/hooks/useTradingViewValidation';
 
 interface ProfileData {
   full_name: string;
   tradingview_username: string;
+  avatar_url?: string;
 }
 
 interface EditProfileFormProps {
@@ -22,12 +24,19 @@ export default function EditProfileForm({ userId, initialData, onUpdate }: EditP
   const [formData, setFormData] = useState(initialData);
   const [tempData, setTempData] = useState(initialData);
   const [errors, setErrors] = useState<{ name?: string; tradingview?: string }>({});
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
+  // TradingView validation hook
+  const { isValidating, validationResult, validateUsername, resetValidation } = useTradingViewValidation();
 
   // Update internal state when initialData changes
   React.useEffect(() => {
     setFormData(initialData);
     setTempData(initialData);
   }, [initialData]);
+
+  // Ya NO validamos en tiempo real, solo cuando guarda
 
   const handleStartEdit = (field: 'name' | 'tradingview') => {
     setIsEditing(field);
@@ -77,29 +86,75 @@ export default function EditProfileForm({ userId, initialData, onUpdate }: EditP
     setErrors({});
 
     try {
-      const supabase = createClient();
-      
-      const updateData = field === 'name' 
-        ? { full_name: tempData.full_name.trim() }
-        : { tradingview_username: tempData.tradingview_username.trim() };
-
-      const { error: updateError } = await (supabase as any)
-        .from('users')
-        .update(updateData)
-        .eq('id', userId);
-
-      if (updateError) {
-        if (updateError.code === '23505' && field === 'tradingview') {
-          setErrors({ tradingview: 'Este usuario de TradingView ya está registrado' });
+      // Si es TradingView, validar AHORA antes de guardar
+      if (field === 'tradingview') {
+        const result = await validateUsername(tempData.tradingview_username);
+        
+        if (!result.isValid) {
+          setErrors({ tradingview: result.error || 'El usuario de TradingView no existe' });
+          setIsSubmitting(false);
           return;
         }
-        throw updateError;
+        
+        // Si es válido, guardar la imagen
+        if (result.profileImage) {
+          setProfileImage(result.profileImage);
+        }
+        
+        // Guardar con username verificado
+        const supabase = createClient();
+        const { error: updateError } = await (supabase as any)
+          .from('users')
+          .update({
+            tradingview_username: result.username || tempData.tradingview_username.trim(),
+            avatar_url: result.profileImage || null
+          })
+          .eq('id', userId);
+
+        if (updateError) {
+          if (updateError.code === '23505') {
+            setErrors({ tradingview: 'Este usuario de TradingView ya está registrado' });
+            setIsSubmitting(false);
+            return;
+          }
+          throw updateError;
+        }
+      } else {
+        // Si es nombre, guardar directamente
+        const supabase = createClient();
+        const { error: updateError } = await (supabase as any)
+          .from('users')
+          .update({ full_name: tempData.full_name.trim() })
+          .eq('id', userId);
+
+        if (updateError) {
+          throw updateError;
+        }
       }
 
-      // Update local state
-      setFormData(tempData);
+      // Update local state con avatar si es TradingView
+      const updatedData = field === 'tradingview' && profileImage
+        ? { ...tempData, avatar_url: profileImage }
+        : tempData;
+      
+      setFormData(updatedData);
       setIsEditing(null);
-      onUpdate(tempData); // Pass updated data to parent component
+      resetValidation();
+      setProfileImage(null);
+      
+      // Mostrar mensaje de éxito
+      if (field === 'tradingview') {
+        setSuccessMessage('✓ Usuario de TradingView verificado y guardado correctamente');
+      } else {
+        setSuccessMessage('✓ Nombre actualizado correctamente');
+      }
+      
+      // Ocultar mensaje después de 3 segundos
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
+      
+      onUpdate(updatedData); // Pass updated data to parent component
       
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -125,6 +180,15 @@ export default function EditProfileForm({ userId, initialData, onUpdate }: EditP
 
   return (
     <div className="space-y-3">
+      {/* Mensaje de éxito */}
+      {successMessage && (
+        <div className="bg-gradient-to-r from-green-500/20 to-apidevs-primary/20 border border-green-500/50 rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center">
+            <CheckCircle className="w-5 h-5 text-green-400 mr-3 animate-pulse" />
+            <span className="text-green-400 font-medium">{successMessage}</span>
+          </div>
+        </div>
+      )}
       {/* TradingView Username */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-black/30 rounded-2xl space-y-2 sm:space-y-0">
         <div className="flex items-center">
@@ -154,11 +218,14 @@ export default function EditProfileForm({ userId, initialData, onUpdate }: EditP
               <button
                 onClick={handleSave}
                 disabled={isSubmitting}
-                title="Guardar cambios"
+                title={isSubmitting ? "Validando..." : "Guardar cambios"}
                 className="flex items-center justify-center min-w-[44px] h-[44px] bg-gradient-to-r from-apidevs-primary to-green-400 hover:from-green-400 hover:to-apidevs-primary disabled:from-gray-600 disabled:to-gray-700 text-black font-semibold rounded-2xl shadow-xl transition-all duration-300 transform hover:scale-110 disabled:hover:scale-100 disabled:cursor-not-allowed border border-green-300/30 hover:border-green-200/50 hover:shadow-apidevs-primary/30"
               >
                 {isSubmitting ? (
-                  <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                  <div className="flex items-center space-x-2 px-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-xs">Validando...</span>
+                  </div>
                 ) : (
                   <Check className="w-5 h-5" />
                 )}

@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
-import { User, TrendingUp, MapPin, Phone, CheckCircle } from 'lucide-react';
+import { User, TrendingUp, MapPin, Phone, CheckCircle, Loader2, Check, X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Country, State, City } from 'country-state-city';
 import moment from 'moment-timezone';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import { useTradingViewValidation } from '@/hooks/useTradingViewValidation';
 
 interface OnboardingProps {
   redirectPath?: string;
@@ -44,6 +45,12 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
 
   const [errors, setErrors] = useState<Partial<OnboardingData>>({});
   
+  // Hook de validación TradingView
+  const { isValidating, validationResult, validateUsername, resetValidation } = useTradingViewValidation();
+  
+  // Estado para la imagen de perfil
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  
   // Estados para los selectores de ubicación
   const [countries, setCountries] = useState<any[]>([]);
   const [states, setStates] = useState<any[]>([]);
@@ -74,6 +81,31 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
     const allCountries = Country.getAllCountries();
     setCountries(allCountries);
   }, []);
+
+  // Validación de usuario TradingView con debounce
+  useEffect(() => {
+    if (!formData.tradingview_username || formData.tradingview_username.length < 3) {
+      resetValidation();
+      setProfileImage(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      const result = await validateUsername(formData.tradingview_username);
+      
+      if (result.isValid && result.profileImage) {
+        setProfileImage(result.profileImage);
+        // Limpiar error si existía
+        if (errors.tradingview_username) {
+          setErrors(prev => ({ ...prev, tradingview_username: undefined }));
+        }
+      } else {
+        setProfileImage(null);
+      }
+    }, 800); // Esperar 800ms después de que el usuario deje de escribir
+
+    return () => clearTimeout(timer);
+  }, [formData.tradingview_username, validateUsername, resetValidation, errors.tradingview_username]);
 
   // Manejar cambio de país
   const handleCountryChange = (countryCode: string) => {
@@ -163,7 +195,13 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
     if (step === 1) {
       if (!formData.tradingview_username.trim()) {
         newErrors.tradingview_username = 'El usuario de TradingView es obligatorio';
+      } else if (validationResult && !validationResult.isValid) {
+        newErrors.tradingview_username = validationResult.error || 'Usuario no válido en TradingView';
+      } else if (!validationResult) {
+        // Si aún no se ha validado, no permitir continuar
+        newErrors.tradingview_username = 'Esperando validación de TradingView...';
       }
+      
       if (!formData.full_name.trim()) {
         newErrors.full_name = 'Tu nombre completo es requerido';
       }
@@ -219,11 +257,14 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
     try {
       const supabase = createClient();
       
+      // Usar el username verificado de TradingView
+      const verifiedUsername = validationResult?.username || formData.tradingview_username.trim();
+      
       // Update user profile with onboarding data
       const { error } = await (supabase as any)
         .from('users')
         .update({
-          tradingview_username: formData.tradingview_username.trim(),
+          tradingview_username: verifiedUsername,
           full_name: formData.full_name.trim(),
           phone: formData.phone.trim() || null,
           country: formData.country.trim(),
@@ -231,6 +272,7 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
           city: formData.city.trim(),
           postal_code: formData.postal_code.trim(),
           timezone: formData.timezone || moment.tz.guess(),
+          avatar_url: profileImage, // Guardar imagen de perfil de TradingView
           onboarding_completed: true
         })
         .eq('id', user.id);
@@ -275,22 +317,61 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
             <TrendingUp className="inline w-4 h-4 mr-2" />
             Usuario de TradingView *
           </label>
-          <input
-            id="tradingview_username"
-            type="text"
-            placeholder="tu_usuario_tradingview"
-            value={formData.tradingview_username}
-            onChange={(e) => handleInputChange('tradingview_username', e.target.value)}
-            className={`w-full p-4 rounded-2xl bg-gray-900/50 border text-white placeholder-gray-400 focus:ring-2 focus:ring-apidevs-primary/50 focus:outline-none transition-all ${
-              errors.tradingview_username ? 'border-red-500' : 'border-gray-700 focus:border-apidevs-primary'
-            }`}
-          />
+          <div className="relative">
+            <input
+              id="tradingview_username"
+              type="text"
+              placeholder="tu_usuario_tradingview"
+              value={formData.tradingview_username}
+              onChange={(e) => handleInputChange('tradingview_username', e.target.value)}
+              className={`w-full p-4 pr-12 rounded-2xl bg-gray-900/50 border text-white placeholder-gray-400 focus:ring-2 focus:ring-apidevs-primary/50 focus:outline-none transition-all ${
+                errors.tradingview_username ? 'border-red-500' : 
+                validationResult?.isValid ? 'border-green-500' :
+                'border-gray-700 focus:border-apidevs-primary'
+              }`}
+            />
+            {/* Icono de estado de validación */}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+              {isValidating && (
+                <Loader2 className="w-5 h-5 text-apidevs-primary animate-spin" />
+              )}
+              {!isValidating && validationResult?.isValid && (
+                <Check className="w-5 h-5 text-green-500" />
+              )}
+              {!isValidating && validationResult && !validationResult.isValid && formData.tradingview_username.length >= 3 && (
+                <X className="w-5 h-5 text-red-500" />
+              )}
+            </div>
+          </div>
+          
+          {/* Mensajes de validación */}
+          {validationResult?.isValid && !errors.tradingview_username && (
+            <div className="flex items-center gap-2 mt-2">
+              {profileImage && (
+                <img 
+                  src={profileImage} 
+                  alt="TradingView Profile" 
+                  className="w-8 h-8 rounded-full border-2 border-green-500"
+                />
+              )}
+              <p className="text-green-400 text-sm">
+                ✓ Usuario verificado en TradingView: <strong>{validationResult.username}</strong>
+              </p>
+            </div>
+          )}
           {errors.tradingview_username && (
             <p className="text-red-400 text-sm mt-2">{errors.tradingview_username}</p>
           )}
-          <p className="text-gray-400 text-sm mt-2">
-            Este usuario será usado para darte acceso a los indicadores en TradingView
-          </p>
+          {!validationResult && !isValidating && formData.tradingview_username.length >= 3 && !errors.tradingview_username && (
+            <p className="text-gray-400 text-sm mt-2">
+              Validando usuario en TradingView...
+            </p>
+          )}
+          {!validationResult && !errors.tradingview_username && formData.tradingview_username.length < 3 && (
+            <p className="text-gray-400 text-sm mt-2">
+              Este usuario será usado para darte acceso a los indicadores en TradingView
+            </p>
+          )}
         </div>
 
         <div>
@@ -500,9 +581,19 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
       <div className="bg-gradient-to-r from-apidevs-primary/10 to-green-400/10 rounded-2xl p-6 border border-apidevs-primary/20">
         <h3 className="text-xl font-semibold text-apidevs-primary mb-4">Resumen de tu perfil:</h3>
         <div className="space-y-3 text-left">
-          <div className="flex justify-between">
+          {/* Usuario TradingView con imagen */}
+          <div className="flex justify-between items-center">
             <span className="text-gray-300">TradingView:</span>
-            <span className="text-white font-medium">{formData.tradingview_username}</span>
+            <div className="flex items-center gap-2">
+              {profileImage && (
+                <img 
+                  src={profileImage} 
+                  alt="Profile" 
+                  className="w-6 h-6 rounded-full border border-green-500"
+                />
+              )}
+              <span className="text-white font-medium">{formData.tradingview_username}</span>
+            </div>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-300">Nombre:</span>
