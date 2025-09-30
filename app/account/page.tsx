@@ -65,53 +65,30 @@ export default async function AccountDashboard() {
           />
         )}
 
-      {/* Plan Status Card */}
-      <div className={`rounded-2xl p-6 border ${
-        isLifetime
-          ? 'bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/30'
-          : isPro
-            ? 'bg-gradient-to-r from-apidevs-primary/10 to-green-400/10 border-apidevs-primary/30'
-            : 'bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-gray-700'
-      }`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              {isLifetime ? (
-                <Crown className="w-6 h-6 text-purple-400" />
-              ) : isPro ? (
-                <Zap className="w-6 h-6 text-apidevs-primary" />
-              ) : (
+      {/* Plan Status Card - Solo mostrar si NO tiene premium */}
+      {!hasPremium && (
+        <div className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 border border-gray-700 rounded-2xl p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-6 h-6 text-gray-400" />
-              )}
-              <h2 className="text-xl font-bold text-white">{userPlan}</h2>
+                <h2 className="text-xl font-bold text-white">{userPlan}</h2>
+              </div>
+              <p className="text-gray-300">
+                Actualiza tu plan para desbloquear funciones premium
+              </p>
             </div>
-            <p className="text-gray-300">
-              {hasPremium 
-                ? 'Acceso completo a todas las funcionalidades premium' 
-                : 'Actualiza tu plan para desbloquear funciones premium'}
-            </p>
-          </div>
-          <div>
-            {!hasPremium && (
+            <div>
               <Link
                 href="/pricing"
                 className="px-6 py-3 bg-gradient-to-r from-apidevs-primary to-green-400 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-apidevs-primary/50 transition-all"
               >
                 Actualizar Plan
               </Link>
-            )}
-            {hasPremium && (
-              <Link
-                href="/account/suscripcion"
-                className="text-gray-300 hover:text-white flex items-center gap-2 text-sm"
-              >
-                Ver detalles
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
