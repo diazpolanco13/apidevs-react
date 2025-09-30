@@ -6,6 +6,7 @@ import {
   getUser
 } from '@/utils/supabase/queries';
 import { checkOnboardingStatus } from '@/utils/auth-helpers/onboarding';
+import { getUserLoyaltyProfile } from '@/utils/supabase/loyalty';
 import AccountDashboardLayout from '@/components/account/AccountDashboardLayout';
 
 export default async function AccountLayout({
@@ -31,11 +32,16 @@ export default async function AccountLayout({
     return redirect('/onboarding');
   }
 
+  // Get loyalty profile
+  const loyaltyProfile = await getUserLoyaltyProfile(supabase, user.id);
+
   return (
     <AccountDashboardLayout 
       user={user} 
       subscription={subscription}
       userProfile={profile}
+      loyaltyTier={loyaltyProfile?.customer_tier}
+      isLegacy={loyaltyProfile?.is_legacy_user}
     >
       {children}
     </AccountDashboardLayout>

@@ -20,6 +20,7 @@ import {
   AcademicCapIcon,
 } from '@heroicons/react/24/outline';
 import { TrendingUp, Crown, Zap } from 'lucide-react';
+import TierBadgeSmall from './TierBadgeSmall';
 
 interface NavigationItem {
   name: string;
@@ -39,13 +40,17 @@ interface AccountDashboardLayoutProps {
   user: any;
   subscription?: any;
   userProfile?: any;
+  loyaltyTier?: string;
+  isLegacy?: boolean;
 }
 
 export default function AccountDashboardLayout({ 
   children, 
   user, 
   subscription,
-  userProfile 
+  userProfile,
+  loyaltyTier,
+  isLegacy
 }: AccountDashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
@@ -213,6 +218,16 @@ export default function AccountDashboardLayout({
                   )}
                 </div>
 
+                {/* Tier Badge - Usuario especial */}
+                {loyaltyTier && loyaltyTier !== 'free' && (
+                  <div className="mx-2 px-4 py-3 rounded-lg border border-cyan-500/20 bg-cyan-500/5">
+                    <div className="mb-1">
+                      <span className="text-xs text-gray-400 uppercase tracking-wider block mb-2">Estatus VIP</span>
+                      <TierBadgeSmall tier={loyaltyTier as any} isLegacy={isLegacy} />
+                    </div>
+                  </div>
+                )}
+
                 <nav className="flex flex-1 flex-col">
                   <ul role="list" className="flex flex-1 flex-col gap-y-2">
                     {navigation.map((item) => renderNavigationItem(item))}
@@ -269,6 +284,16 @@ export default function AccountDashboardLayout({
                 </Link>
               )}
             </div>
+
+            {/* Tier Badge - Usuario especial */}
+            {loyaltyTier && loyaltyTier !== 'free' && (
+              <div className="mx-2 px-4 py-3 rounded-lg border border-cyan-500/20 bg-cyan-500/5">
+                <div className="mb-1">
+                  <span className="text-xs text-gray-400 uppercase tracking-wider block mb-2">Estatus VIP</span>
+                  <TierBadgeSmall tier={loyaltyTier as any} isLegacy={isLegacy} />
+                </div>
+              </div>
+            )}
 
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-2">
