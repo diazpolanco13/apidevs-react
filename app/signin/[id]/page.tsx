@@ -105,16 +105,16 @@ export default async function SignIn({
         <div className="w-full max-w-md">
           {/* Welcome Section */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-apidevs-primary to-white mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-apidevs-primary to-white mb-4">
               {viewProp === 'signup' 
                 ? 'Únete a la Comunidad' 
-                : 'Bienvenido de vuelta'
+                : '¡Hola de nuevo!'
               }
             </h1>
-            <p className="text-gray-400 text-lg">
+            <p className="text-gray-300 text-lg md:text-xl">
               {viewProp === 'signup' 
                 ? 'Más de 6,500 traders exitosos confían en nosotros' 
-                : 'Accede a tu cuenta de trading profesional'
+                : 'Accede a tus herramientas de trading profesional'
               }
             </p>
             
