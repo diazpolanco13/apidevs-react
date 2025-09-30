@@ -32,7 +32,10 @@ export function Toaster() {
     const error = searchParams.get('error');
     const error_description = searchParams.get('error_description');
     
-    if (error || status) {
+    // No mostrar toast si es "Cuenta Creada" (lo maneja el ConfirmEmailDialog)
+    const isAccountCreated = status && status.includes('Cuenta Creada');
+    
+    if ((error || status) && !isAccountCreated) {
       toast({
         title: error
           ? error ?? 'Hmm... Something went wrong.'
