@@ -30,9 +30,11 @@ export default async function AccountDashboard() {
   const loyaltyProfile = await getUserLoyaltyProfile(supabase as any, user.id);
 
   const userPlan = subscription?.prices?.products?.name || 'Free';
-  const isPro = userPlan.toLowerCase().includes('pro');
   const isLifetime = userPlan.toLowerCase().includes('lifetime');
-  const hasPremium = isPro || isLifetime;
+  
+  // Si tiene suscripción activa, es premium (independientemente del nombre del producto)
+  const hasPremium = subscription?.status === 'active';
+  const isPro = hasPremium && !isLifetime;
 
   // Quick stats
   const stats = [
