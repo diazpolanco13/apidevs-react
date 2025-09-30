@@ -22,6 +22,19 @@ export default function PasswordSignIn({
   const router = redirectMethod === 'client' ? useRouter() : null;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Traducir errores al español
+  const translateError = (errorMsg: string) => {
+    const translations: { [key: string]: string } = {
+      'Invalid login credentials': 'Email o contraseña incorrectos',
+      'Email not confirmed': 'Debes confirmar tu email antes de iniciar sesión',
+      'Invalid email': 'Email inválido',
+      'User not found': 'Usuario no encontrado',
+      'Sign in failed.': 'Error al iniciar sesión. Verifica tus credenciales.'
+    };
+    
+    return translations[errorMsg] || errorMsg;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setIsSubmitting(true); // Disable the button while the request is being handled
     await handleRequest(e, signInWithPassword, router);
@@ -43,7 +56,7 @@ export default function PasswordSignIn({
             </svg>
             <div>
               <p className="font-semibold mb-1">Error al iniciar sesión</p>
-              <p>{error}</p>
+              <p>{translateError(error)}</p>
             </div>
           </div>
         )}
