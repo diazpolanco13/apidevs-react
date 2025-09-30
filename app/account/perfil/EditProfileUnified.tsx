@@ -142,10 +142,10 @@ export default function EditProfileUnified({ userId, userEmail, initialData }: P
       if (error) throw error;
 
       // Actualizar estados locales
-      setTvUsername(validationResult.username);
+      setTvUsername(validationResult.username || '');
       setFormData(prev => ({ 
         ...prev, 
-        tradingview_username: validationResult.username,
+        tradingview_username: validationResult.username || '',
         avatar_url: validationResult.profileImage || prev.avatar_url
       }));
       setIsEditingTv(false);
