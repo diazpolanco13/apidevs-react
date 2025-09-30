@@ -1,9 +1,12 @@
 import { createClient } from '@/utils/supabase/server';
 import { checkOnboardingStatus } from '@/utils/auth-helpers/onboarding';
 import { getUser, getSubscription } from '@/utils/supabase/queries';
+import { getUserLoyaltyProfile } from '@/utils/supabase/loyalty';
 import { redirect } from 'next/navigation';
 import { TrendingUp, User, Shield, Bell, Zap, Crown, CheckCircle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import DashboardWelcome from '@/components/account/DashboardWelcome';
+import LegacyHeroBanner from '@/components/account/LegacyHeroBanner';
 
 export default async function AccountDashboard() {
   const supabase = createClient();
@@ -22,6 +25,9 @@ export default async function AccountDashboard() {
     return redirect('/onboarding');
   }
 
+  // Get loyalty profile for welcome modal
+  const loyaltyProfile = await getUserLoyaltyProfile(supabase, user.id);
+
   const userPlan = subscription?.prices?.products?.name || 'Free';
   const isPro = userPlan.toLowerCase().includes('pro');
   const isLifetime = userPlan.toLowerCase().includes('lifetime');
@@ -35,12 +41,22 @@ export default async function AccountDashboard() {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-        <p className="text-gray-400">Bienvenido de nuevo, {profile.full_name?.split(' ')[0] || 'Trader'}</p>
-      </div>
+    <>
+      {/* Welcome Modal for Legacy Users */}
+      <DashboardWelcome 
+        loyaltyProfile={loyaltyProfile}
+        userName={profile.full_name?.split(' ')[0]}
+      />
+      
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+          <p className="text-gray-400">Bienvenido de nuevo, {profile.full_name?.split(' ')[0] || 'Trader'}</p>
+        </div>
+
+        {/* Legacy Hero Banner */}
+        {loyaltyProfile && <LegacyHeroBanner loyaltyProfile={loyaltyProfile} />}
 
       {/* Plan Status Card */}
       <div className={`rounded-2xl p-6 border ${
@@ -179,6 +195,7 @@ export default async function AccountDashboard() {
           <p className="text-sm text-gray-500 mt-2">Comienza a usar nuestros indicadores para ver tu actividad aquí</p>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

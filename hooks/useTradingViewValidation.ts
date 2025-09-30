@@ -52,10 +52,12 @@ export const useTradingViewValidation = () => {
       const profileResponse = await fetch(`${API_BASE}/profile/${validateData.verifiedUserName}`);
       const profileData = await profileResponse.json();
 
+      console.log('Profile data received:', profileData); // Debug
+
       const result: ValidationResult = {
         isValid: true,
         username: validateData.verifiedUserName,
-        profileImage: profileData.profile_image || null
+        profileImage: profileData.profile_image || profileData.profileImage || null
       };
 
       setValidationResult(result);

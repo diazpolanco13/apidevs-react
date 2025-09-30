@@ -93,7 +93,10 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
     const timer = setTimeout(async () => {
       const result = await validateUsername(formData.tradingview_username);
       
+      console.log('Validation result:', result); // Debug
+      
       if (result.isValid && result.profileImage) {
+        console.log('Setting profile image:', result.profileImage); // Debug
         setProfileImage(result.profileImage);
         // Limpiar error si existía
         if (errors.tradingview_username) {
@@ -105,7 +108,15 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
     }, 800); // Esperar 800ms después de que el usuario deje de escribir
 
     return () => clearTimeout(timer);
-  }, [formData.tradingview_username, validateUsername, resetValidation, errors.tradingview_username]);
+  }, [formData.tradingview_username]);
+  
+  // Sincronizar con validationResult cuando cambie
+  useEffect(() => {
+    if (validationResult?.isValid && validationResult.profileImage) {
+      console.log('Syncing profile image from validationResult:', validationResult.profileImage); // Debug
+      setProfileImage(validationResult.profileImage);
+    }
+  }, [validationResult]);
 
   // Manejar cambio de país
   const handleCountryChange = (countryCode: string) => {
@@ -302,8 +313,16 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
   const renderStep1 = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-full mb-4">
-          <TrendingUp className="w-8 h-8 text-black" />
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-full mb-4 overflow-hidden">
+          {profileImage ? (
+            <img 
+              src={profileImage} 
+              alt="TradingView Profile" 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <TrendingUp className="w-8 h-8 text-black" />
+          )}
         </div>
         <h2 className="text-3xl font-bold text-white mb-2">¡Bienvenido a APIDevs!</h2>
         <p className="text-gray-300 text-lg">
@@ -401,8 +420,16 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
   const renderStep2 = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full mb-4">
-          <MapPin className="w-8 h-8 text-white" />
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full mb-4 overflow-hidden">
+          {profileImage ? (
+            <img 
+              src={profileImage} 
+              alt="TradingView Profile" 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <MapPin className="w-8 h-8 text-white" />
+          )}
         </div>
         <h2 className="text-3xl font-bold text-white mb-2">Ubicación</h2>
         <p className="text-gray-300 text-lg">
@@ -572,8 +599,21 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
 
   const renderStep3 = () => (
     <div className="text-center space-y-6">
-      <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-500 to-apidevs-primary rounded-full mb-6">
-        <CheckCircle className="w-10 h-10 text-black" />
+      <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-500 to-apidevs-primary rounded-full mb-6 overflow-hidden relative">
+        {profileImage ? (
+          <>
+            <img 
+              src={profileImage} 
+              alt="TradingView Profile" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute bottom-0 right-0 w-7 h-7 bg-green-500 rounded-full flex items-center justify-center border-2 border-black">
+              <CheckCircle className="w-4 h-4 text-black" />
+            </div>
+          </>
+        ) : (
+          <CheckCircle className="w-10 h-10 text-black" />
+        )}
       </div>
       
       <h2 className="text-3xl font-bold text-white mb-4">¡Todo listo!</h2>

@@ -113,7 +113,7 @@ export default async function SignIn({
             </h1>
             <p className="text-gray-400 text-lg">
               {viewProp === 'signup' 
-                ? 'Más de 3,500 traders exitosos confían en nosotros' 
+                ? 'Más de 6,500 traders exitosos confían en nosotros' 
                 : 'Accede a tu cuenta de trading profesional'
               }
             </p>

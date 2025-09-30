@@ -36,6 +36,19 @@ export async function checkoutWithStripe(
       throw new Error('Could not get user session.');
     }
 
+    // Get user's loyalty discount percentage
+    const { data: userData } = await (supabase as any)
+      .from('users')
+      .select('loyalty_discount_percentage, is_legacy_user, customer_tier')
+      .eq('id', user.id)
+      .single();
+
+    const discountPercentage = userData?.loyalty_discount_percentage || 0;
+    
+    if (discountPercentage > 0) {
+      console.log(`🎁 Applying ${discountPercentage}% loyalty discount for user ${user.email}`);
+    }
+
     // Retrieve or create the customer in Stripe
     let customer: string;
     try {
@@ -48,8 +61,40 @@ export async function checkoutWithStripe(
       throw new Error('Unable to access customer record.');
     }
 
+    // Create or retrieve loyalty coupon if user has discount
+    let couponId: string | undefined;
+    if (discountPercentage > 0) {
+      try {
+        const couponIdName = `loyalty_${discountPercentage}_percent`;
+        
+        // Try to retrieve existing coupon
+        let existingCoupon;
+        try {
+          existingCoupon = await stripe.coupons.retrieve(couponIdName);
+        } catch (err) {
+          // Coupon doesn't exist, create it
+          existingCoupon = await stripe.coupons.create({
+            id: couponIdName,
+            name: `Loyalty Discount ${discountPercentage}%`,
+            percent_off: discountPercentage,
+            duration: 'forever',
+            metadata: {
+              type: 'loyalty_discount',
+              auto_applied: 'true'
+            }
+          });
+          console.log(`✅ Created loyalty coupon: ${couponIdName}`);
+        }
+        
+        couponId = existingCoupon.id;
+      } catch (err) {
+        console.error('Error creating/retrieving coupon:', err);
+        // Continue without discount if coupon creation fails
+      }
+    }
+
     let params: Stripe.Checkout.SessionCreateParams = {
-      allow_promotion_codes: true,
+      allow_promotion_codes: !couponId, // Disable manual codes if auto-applying discount
       billing_address_collection: 'required',
       customer,
       customer_update: {
@@ -64,6 +109,13 @@ export async function checkoutWithStripe(
       cancel_url: getURL(),
       success_url: getURL(redirectPath)
     };
+
+    // Apply discount if available
+    if (couponId) {
+      params.discounts = [{
+        coupon: couponId
+      }];
+    }
 
     console.log(
       'Trial end:',
