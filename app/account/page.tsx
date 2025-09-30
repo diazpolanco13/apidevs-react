@@ -7,6 +7,7 @@ import { TrendingUp, User, Shield, Bell, Zap, Crown, CheckCircle, ArrowRight } f
 import Link from 'next/link';
 import DashboardWelcome from '@/components/account/DashboardWelcome';
 import LegacyHeroBanner from '@/components/account/LegacyHeroBanner';
+import RecentActivity from '@/components/account/RecentActivity';
 
 export default async function AccountDashboard() {
   const supabase = createClient();
@@ -192,14 +193,10 @@ export default async function AccountDashboard() {
         </div>
       )}
 
-      {/* Recent Activity Placeholder */}
+      {/* Recent Activity */}
       <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-        <h3 className="text-xl font-bold text-white mb-4">Actividad Reciente</h3>
-        <div className="text-center py-12">
-          <TrendingUp className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <p className="text-gray-400">No hay actividad reciente</p>
-          <p className="text-sm text-gray-500 mt-2">Comienza a usar nuestros indicadores para ver tu actividad aquí</p>
-        </div>
+        <h3 className="text-xl font-bold text-white mb-6">Actividad Reciente</h3>
+        <RecentActivity userEmail={user.email || ''} userId={user.id} />
       </div>
       </div>
     </>
