@@ -17,10 +17,25 @@ export default async function SuscripcionPage() {
     return redirect('/signin');
   }
 
-  const userPlan = subscription?.prices?.products?.name || 'Free';
-  const isPro = userPlan.toLowerCase().includes('pro') || userPlan.toLowerCase().includes('trading indicators');
-  const isLifetime = userPlan.toLowerCase().includes('lifetime');
-  const hasPremium = isPro || isLifetime || subscription?.status === 'active';
+  const productName = subscription?.prices?.products?.name || 'Free';
+  const interval = subscription?.prices?.interval;
+  
+  // Mapear nombres técnicos a nombres amigables
+  let userPlan = productName;
+  if (productName === 'APIDevs Trading Indicators' && interval) {
+    userPlan = interval === 'year' 
+      ? 'Plan PRO Anual' 
+      : interval === 'month' 
+        ? 'Plan PRO Mensual' 
+        : 'Plan PRO';
+  } else if (productName.toLowerCase().includes('lifetime')) {
+    userPlan = 'Plan Lifetime Access';
+  }
+  
+  // Detectar si es premium: cualquier suscripción activa es premium
+  const isPro = subscription?.status === 'active' && !productName.toLowerCase().includes('lifetime');
+  const isLifetime = productName.toLowerCase().includes('lifetime');
+  const hasPremium = subscription?.status === 'active';
 
   return (
     <div className="space-y-6">

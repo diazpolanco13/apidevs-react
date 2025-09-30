@@ -25,6 +25,7 @@ interface Purchase {
   order_status: string;
   is_lifetime_purchase: boolean;
   product_category: string;
+  legacy_user_id: string | null;
 }
 
 interface Props {
@@ -42,9 +43,10 @@ export default function PaymentHistory({ subscription, userEmail }: Props) {
         const supabase = createClient();
         const { data, error } = await supabase
           .from('purchases')
-          .select('id, order_number, order_total_cents, product_name, order_date, order_status, is_lifetime_purchase, product_category')
+          .select('id, order_number, order_total_cents, product_name, order_date, order_status, is_lifetime_purchase, product_category, legacy_user_id')
           .eq('customer_email', userEmail)
           .eq('is_lifetime_purchase', true)
+          .is('legacy_user_id', null) // Excluir compras legacy
           .order('order_date', { ascending: false });
 
         if (error) {
