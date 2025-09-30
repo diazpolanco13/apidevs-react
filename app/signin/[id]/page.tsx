@@ -21,7 +21,7 @@ export default async function SignIn({
   searchParams
 }: {
   params: { id: string };
-  searchParams: { disable_button?: boolean; plan?: string };
+  searchParams: { disable_button?: boolean; plan?: string; error?: string; error_description?: string };
 }) {
   const { allowOauth, allowEmail, allowPassword } = getAuthTypes();
   const viewTypes = getViewTypes();
@@ -156,6 +156,7 @@ export default async function SignIn({
               <PasswordSignIn
                 allowEmail={allowEmail}
                 redirectMethod={redirectMethod}
+                error={searchParams.error_description || searchParams.error}
               />
             )}
             {viewProp === 'email_signin' && (
