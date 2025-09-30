@@ -18,9 +18,9 @@ export default async function SuscripcionPage() {
   }
 
   const userPlan = subscription?.prices?.products?.name || 'Free';
-  const isPro = userPlan.toLowerCase().includes('pro');
+  const isPro = userPlan.toLowerCase().includes('pro') || userPlan.toLowerCase().includes('trading indicators');
   const isLifetime = userPlan.toLowerCase().includes('lifetime');
-  const hasPremium = isPro || isLifetime;
+  const hasPremium = isPro || isLifetime || subscription?.status === 'active';
 
   return (
     <div className="space-y-6">

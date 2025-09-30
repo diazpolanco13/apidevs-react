@@ -20,7 +20,7 @@ type CheckoutResponse = {
 
 export async function checkoutWithStripe(
   price: Price,
-  redirectPath: string = '/account'
+  redirectPath: string = '/account/success'
 ): Promise<CheckoutResponse> {
   console.log('checkoutWithStripe called with price:', price);
   try {
