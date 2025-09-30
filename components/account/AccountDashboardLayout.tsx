@@ -213,43 +213,46 @@ export default function AccountDashboardLayout({
                   <span className="text-base font-semibold text-white tracking-wide">MI CUENTA</span>
                 </div>
 
-                {/* Plan Badge */}
-                <div className="mx-2 px-4 py-3 rounded-lg border border-apidevs-primary/20 bg-black/40">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-gray-400 uppercase tracking-wider">Plan</span>
-                    {isLifetime && <Crown className="w-4 h-4 text-purple-400" />}
-                    {isPro && !isLifetime && <Zap className="w-4 h-4 text-apidevs-primary" />}
-                  </div>
-                  <span className="text-sm font-bold text-white">
-                    {userPlan}
-                  </span>
-                  {!hasPremium && (
-                    <Link 
-                      href="/pricing"
-                      className="mt-2 block text-xs text-apidevs-primary hover:text-green-400 transition-colors"
-                    >
-                      Actualizar →
-                    </Link>
-                  )}
-                </div>
-
-                {/* Tier Badge - Usuario especial */}
-                {loyaltyTier && loyaltyTier !== 'free' && (
-                  <div className="mx-2 px-4 py-3 rounded-lg border border-cyan-500/20 bg-cyan-500/5">
-                    <div className="mb-1">
-                      <span className="text-xs text-gray-400 uppercase tracking-wider block mb-2">Estatus VIP</span>
-                      <TierBadgeSmall tier={loyaltyTier as any} isLegacy={isLegacy} />
-                    </div>
-                  </div>
-                )}
-
                 <nav className="flex flex-1 flex-col">
                   <ul role="list" className="flex flex-1 flex-col gap-y-2">
                     {navigation.map((item) => renderNavigationItem(item))}
                   </ul>
 
+                  {/* Badges al final - Plan y Tier */}
+                  <div className="mt-auto space-y-3 pt-4 border-t border-white/10">
+                    {/* Plan Badge */}
+                    <div className="px-4 py-3 rounded-lg border border-apidevs-primary/20 bg-black/40">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-400 uppercase tracking-wider">Plan</span>
+                        {isLifetime && <Crown className="w-4 h-4 text-purple-400" />}
+                        {isPro && !isLifetime && <Zap className="w-4 h-4 text-apidevs-primary" />}
+                      </div>
+                      <span className="text-sm font-bold text-white">
+                        {userPlan}
+                      </span>
+                      {!hasPremium && (
+                        <Link 
+                          href="/pricing"
+                          className="mt-2 block text-xs text-apidevs-primary hover:text-green-400 transition-colors"
+                        >
+                          Actualizar →
+                        </Link>
+                      )}
+                    </div>
+
+                    {/* Tier Badge - Usuario especial */}
+                    {loyaltyTier && loyaltyTier !== 'free' && (
+                      <div className="px-4 py-3 rounded-lg border border-cyan-500/20 bg-cyan-500/5">
+                        <div className="mb-1">
+                          <span className="text-xs text-gray-400 uppercase tracking-wider block mb-2">Estatus VIP</span>
+                          <TierBadgeSmall tier={loyaltyTier as any} isLegacy={isLegacy} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Volver a APIDevs */}
-                  <div className="mt-auto pt-4 border-t border-white/10">
+                  <div className="pt-3">
                     <Link
                       href="/"
                       className="group flex items-center gap-x-3 px-4 py-3 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200 rounded-lg"
@@ -280,43 +283,46 @@ export default function AccountDashboardLayout({
               <span className="text-base font-semibold text-white tracking-wide">MI CUENTA</span>
             </div>
 
-            {/* Plan Badge */}
-            <div className="mx-2 px-4 py-3 rounded-lg border border-apidevs-primary/20 bg-black/40">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-gray-400 uppercase tracking-wider">Plan</span>
-                {isLifetime && <Crown className="w-4 h-4 text-purple-400" />}
-                {isPro && !isLifetime && <Zap className="w-4 h-4 text-apidevs-primary" />}
-              </div>
-              <span className="text-sm font-bold text-white">
-                {userPlan}
-              </span>
-              {!hasPremium && (
-                <Link 
-                  href="/pricing"
-                  className="mt-2 block text-xs text-apidevs-primary hover:text-green-400 transition-colors"
-                >
-                  Actualizar →
-                </Link>
-              )}
-            </div>
-
-            {/* Tier Badge - Usuario especial */}
-            {loyaltyTier && loyaltyTier !== 'free' && (
-              <div className="mx-2 px-4 py-3 rounded-lg border border-cyan-500/20 bg-cyan-500/5">
-                <div className="mb-1">
-                  <span className="text-xs text-gray-400 uppercase tracking-wider block mb-2">Estatus VIP</span>
-                  <TierBadgeSmall tier={loyaltyTier as any} isLegacy={isLegacy} />
-                </div>
-              </div>
-            )}
-
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-2">
                 {navigation.map((item) => renderNavigationItem(item))}
               </ul>
 
+              {/* Badges al final - Plan y Tier */}
+              <div className="mt-auto space-y-3 pt-4 border-t border-white/10">
+                {/* Plan Badge */}
+                <div className="px-4 py-3 rounded-lg border border-apidevs-primary/20 bg-black/40">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-400 uppercase tracking-wider">Plan</span>
+                    {isLifetime && <Crown className="w-4 h-4 text-purple-400" />}
+                    {isPro && !isLifetime && <Zap className="w-4 h-4 text-apidevs-primary" />}
+                  </div>
+                  <span className="text-sm font-bold text-white">
+                    {userPlan}
+                  </span>
+                  {!hasPremium && (
+                    <Link 
+                      href="/pricing"
+                      className="mt-2 block text-xs text-apidevs-primary hover:text-green-400 transition-colors"
+                    >
+                      Actualizar →
+                    </Link>
+                  )}
+                </div>
+
+                {/* Tier Badge - Usuario especial */}
+                {loyaltyTier && loyaltyTier !== 'free' && (
+                  <div className="px-4 py-3 rounded-lg border border-cyan-500/20 bg-cyan-500/5">
+                    <div className="mb-1">
+                      <span className="text-xs text-gray-400 uppercase tracking-wider block mb-2">Estatus VIP</span>
+                      <TierBadgeSmall tier={loyaltyTier as any} isLegacy={isLegacy} />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Volver a APIDevs */}
-              <div className="mt-auto pt-4 border-t border-white/10">
+              <div className="pt-3">
                 <Link
                   href="/"
                   className="group flex items-center gap-x-3 px-4 py-3 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200 rounded-lg"
