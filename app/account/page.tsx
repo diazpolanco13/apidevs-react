@@ -235,8 +235,8 @@ export default async function AccountDashboard() {
               </div>
             </Link>
 
-            <a
-              href="#recursos"
+            <Link
+              href="/indicadores"
               className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-apidevs-primary/50 rounded-xl p-4 transition-all group"
             >
               <div className="flex items-start gap-3">
@@ -245,12 +245,12 @@ export default async function AccountDashboard() {
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-white mb-1 group-hover:text-apidevs-primary transition-colors">
-                    3. Aprende Más
+                    3. Explora Herramientas
                   </h4>
-                  <p className="text-sm text-gray-400">Explora tutoriales y guías para aprovechar al máximo</p>
+                  <p className="text-sm text-gray-400">Descubre todos los indicadores disponibles para ti</p>
                 </div>
               </div>
-            </a>
+            </Link>
           </div>
         </div>
       )}
@@ -293,7 +293,7 @@ export default async function AccountDashboard() {
         {/* Indicators Quick Access - Solo PRO */}
         {hasPremium && (
           <Link
-            href="/indicators"
+            href="/indicadores"
             className="bg-gradient-to-br from-apidevs-primary/10 to-green-400/10 backdrop-blur-xl border border-apidevs-primary/30 rounded-2xl p-6 hover:border-apidevs-primary/50 transition-all group"
           >
             <div className="flex items-center justify-between mb-4">
@@ -335,83 +335,6 @@ export default async function AccountDashboard() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Learning Resources - Solo PRO */}
-      {hasPremium && (
-        <div id="recursos" className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-white">Recursos y Soporte</h3>
-              <p className="text-sm text-gray-400">Aprende, crece y obtén ayuda cuando la necesites</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a
-              href="https://youtube.com/@apidevs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 rounded-xl p-5 transition-all group"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Video className="w-6 h-6 text-red-400" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-white mb-2 group-hover:text-purple-400 transition-colors">
-                    Video Tutoriales
-                  </h4>
-                  <p className="text-sm text-gray-400 mb-3">Aprende a usar cada indicador con guías paso a paso</p>
-                  <span className="text-xs text-purple-400 font-medium">Ver en YouTube →</span>
-                </div>
-              </div>
-            </a>
-
-            <a
-              href="https://docs.apidevs.io"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 rounded-xl p-5 transition-all group"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <BookOpen className="w-6 h-6 text-blue-400" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-white mb-2 group-hover:text-purple-400 transition-colors">
-                    Documentación
-                  </h4>
-                  <p className="text-sm text-gray-400 mb-3">Guías completas, estrategias y mejores prácticas</p>
-                  <span className="text-xs text-purple-400 font-medium">Explorar docs →</span>
-                </div>
-              </div>
-            </a>
-
-            <a
-              href="https://t.me/apidevs_support"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 rounded-xl p-5 transition-all group"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 bg-apidevs-primary/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Shield className="w-6 h-6 text-apidevs-primary" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-white mb-2 group-hover:text-purple-400 transition-colors">
-                    Soporte Prioritario
-                  </h4>
-                  <p className="text-sm text-gray-400 mb-3">Obtén ayuda rápida de nuestro equipo de expertos</p>
-                  <span className="text-xs text-purple-400 font-medium">Contactar soporte →</span>
-                </div>
-              </div>
-            </a>
           </div>
         </div>
       )}
