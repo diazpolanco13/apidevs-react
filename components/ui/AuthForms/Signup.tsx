@@ -5,7 +5,6 @@ import React from 'react';
 import Link from 'next/link';
 import { signUp } from '@/utils/auth-helpers/server';
 import { handleRequest } from '@/utils/auth-helpers/client';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 // Define prop type with allowEmail boolean
@@ -22,7 +21,8 @@ interface SignUpProps {
 }
 
 export default function SignUp({ allowEmail, redirectMethod, selectedPlan, planInfo }: SignUpProps) {
-  const router = redirectMethod === 'client' ? useRouter() : null;
+  // Siempre usar server redirect para signup para garantizar que el toast se muestre
+  const router = null;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

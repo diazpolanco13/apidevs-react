@@ -173,8 +173,8 @@ export async function signUp(formData: FormData) {
   if (!isValidEmail(email)) {
     redirectPath = getErrorRedirect(
       '/signin/signup',
-      'Invalid email address.',
-      'Please try again.'
+      'Email inválido',
+      'Por favor, ingresa un email válido.'
     );
   }
 
@@ -190,11 +190,11 @@ export async function signUp(formData: FormData) {
   if (error) {
     redirectPath = getErrorRedirect(
       '/signin/signup',
-      'Sign up failed.',
+      'Error al crear cuenta',
       error.message
     );
   } else if (data.session) {
-    redirectPath = getStatusRedirect('/onboarding', 'Success!', 'You are now signed in. Complete your profile to continue.');
+    redirectPath = getStatusRedirect('/onboarding', '¡Bienvenido!', 'Completa tu perfil para comenzar.');
   } else if (
     data.user &&
     data.user.identities &&
@@ -202,20 +202,20 @@ export async function signUp(formData: FormData) {
   ) {
     redirectPath = getErrorRedirect(
       '/signin/signup',
-      'Sign up failed.',
-      'There is already an account associated with this email address. Try resetting your password.'
+      'Email ya registrado',
+      'Ya existe una cuenta con este email. Intenta iniciar sesión o restablecer tu contraseña.'
     );
   } else if (data.user) {
     redirectPath = getStatusRedirect(
       '/',
-      'Success!',
-      'Please check your email for a confirmation link. You may now close this tab.'
+      '¡Cuenta Creada!',
+      'Revisa tu correo para confirmar tu email. Haz clic en el enlace de confirmación para acceder a la plataforma.'
     );
   } else {
     redirectPath = getErrorRedirect(
       '/signin/signup',
-      'Hmm... Something went wrong.',
-      'You could not be signed up.'
+      'Error inesperado',
+      'No se pudo crear tu cuenta. Por favor, intenta nuevamente.'
     );
   }
 

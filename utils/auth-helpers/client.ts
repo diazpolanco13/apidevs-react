@@ -21,8 +21,8 @@ export async function handleRequest(
     // If client-side router is provided, use it to redirect
     return router.push(redirectUrl);
   } else {
-    // Otherwise, redirect server-side
-    return await redirectToPath(redirectUrl);
+    // Use window.location.href for full page reload (preserves query params)
+    window.location.href = redirectUrl;
   }
 }
 
