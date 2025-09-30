@@ -87,7 +87,7 @@ export default function Hero() {
                 <span className="text-transparent bg-clip-text bg-gradient-primary animate-glow">
                   soluciones para traders
                 </span>
-                {' '}en todos los medios financieros
+                {' '}de todos los mercados financieros
               </h1>
             </div>
 

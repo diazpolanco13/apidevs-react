@@ -8,16 +8,23 @@ import { useRouter } from 'next/navigation';
 import { getRedirectMethod } from '@/utils/auth-helpers/settings';
 import { useState, useEffect } from 'react';
 import s from './Navbar.module.css';
+import StatusSelector, { getStatusBadgeConfig } from './StatusSelector';
 
 interface NavlinksProps {
   user?: any;
   avatarUrl?: string | null;
+  userStatus?: string;
+  unreadNotifications?: number;
 }
 
-export default function Navlinks({ user, avatarUrl }: NavlinksProps) {
+export default function Navlinks({ user, avatarUrl, userStatus = 'online', unreadNotifications = 0 }: NavlinksProps) {
   const router = getRedirectMethod() === 'client' ? useRouter() : null;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState('/');
+  const [currentStatus, setCurrentStatus] = useState(userStatus);
+  
+  // Obtener configuración del badge según el estado
+  const statusBadge = getStatusBadgeConfig(currentStatus);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -158,17 +165,27 @@ export default function Navlinks({ user, avatarUrl }: NavlinksProps) {
         {user ? (
           <div className="relative group">
             <button className="flex items-center space-x-1 sm:space-x-2 p-1 rounded-full hover:bg-apidevs-primary/10 transition-colors">
-              {avatarUrl ? (
-                <img 
-                  src={avatarUrl} 
-                  alt="TradingView Profile" 
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-apidevs-primary object-cover shadow-lg shadow-apidevs-primary/30"
-                />
-              ) : (
-                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-primary rounded-full flex items-center justify-center text-black font-semibold text-sm sm:text-base shadow-lg shadow-apidevs-primary/30">
-                  {user.email?.[0]?.toUpperCase() || 'U'}
-                </div>
-              )}
+              <span className="relative inline-block">
+                {avatarUrl ? (
+                  <img 
+                    src={avatarUrl} 
+                    alt="TradingView Profile" 
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full outline outline-2 -outline-offset-1 outline-apidevs-primary/50 object-cover shadow-lg shadow-apidevs-primary/30"
+                  />
+                ) : (
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-primary rounded-full outline outline-2 -outline-offset-1 outline-apidevs-primary/50 flex items-center justify-center text-black font-semibold text-sm sm:text-base shadow-lg shadow-apidevs-primary/30">
+                    {user.email?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                )}
+                {/* Indicador de estado dinámico */}
+                <span className={`absolute bottom-0 right-0 block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${statusBadge.color} ring-2 ring-apidevs-dark ${statusBadge.animate ? 'animate-pulse' : ''}`} />
+                {/* Badge de notificaciones */}
+                {unreadNotifications > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full ring-2 ring-apidevs-dark animate-pulse">
+                    {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                  </span>
+                )}
+              </span>
             </button>
             <div className="absolute right-0 mt-2 w-48 backdrop-blur-xl bg-apidevs-dark/95 border border-apidevs-primary/20 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
               <div className="py-2">
@@ -204,6 +221,14 @@ export default function Navlinks({ user, avatarUrl }: NavlinksProps) {
                     Configuración
                   </div>
                 </Link>
+                {/* Selector de Estado */}
+                {user?.id && (
+                  <StatusSelector 
+                    currentStatus={currentStatus} 
+                    userId={user.id}
+                    onStatusChange={(newStatus) => setCurrentStatus(newStatus)}
+                  />
+                )}
                 <div className="border-t border-apidevs-primary/20 mt-2 pt-2">
                   <form onSubmit={(e) => handleRequest(e, SignOut, router)}>
                     <input type="hidden" name="pathName" value={currentPath} />
