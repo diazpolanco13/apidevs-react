@@ -132,9 +132,8 @@ export async function POST(req: Request) {
       );
     }
   } else {
-    return new Response(`Unsupported event type: ${event.type}`, {
-      status: 400
-    });
+    // Ignorar eventos no relevantes sin fallar
+    console.log(`ℹ️ Ignored event type: ${event.type}`);
   }
   return new Response(JSON.stringify({ received: true }));
 }
