@@ -55,7 +55,7 @@ export default function CustomerPortalForm({ subscription }: Props) {
     <button
       onClick={handleStripePortalRequest}
       disabled={isSubmitting}
-      className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold rounded-2xl transition-all transform hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed text-center"
+      className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold rounded-2xl transition-all disabled:cursor-not-allowed text-center"
     >
       {isSubmitting ? 'Abriendo...' : 'Gestionar Suscripción'}
     </button>
