@@ -539,7 +539,7 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
             <Phone className="inline w-4 h-4 mr-2" />
             Teléfono (Opcional)
           </label>
-          <div className={`phone-input-container ${errors.phone ? 'error' : ''}`}>
+          <div className={`phone-input-onboarding ${errors.phone ? 'error' : ''}`}>
             <PhoneInput
               placeholder="Ingresa tu número de teléfono"
               value={formData.phone}

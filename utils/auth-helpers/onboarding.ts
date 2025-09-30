@@ -11,6 +11,7 @@ export interface UserProfile {
   address: string;
   timezone: string;
   avatar_url?: string;
+  telegram_username?: string;
 }
 
 export async function checkOnboardingStatus(userId: string): Promise<{
@@ -21,7 +22,7 @@ export async function checkOnboardingStatus(userId: string): Promise<{
   
   const { data: profile, error } = await (supabase as any)
     .from('users')
-    .select('onboarding_completed, tradingview_username, full_name, country, city, phone, postal_code, address, timezone, avatar_url')
+    .select('onboarding_completed, tradingview_username, full_name, country, city, phone, postal_code, address, timezone, avatar_url, telegram_username')
     .eq('id', userId)
     .single();
 
