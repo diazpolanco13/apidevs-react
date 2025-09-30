@@ -11,6 +11,16 @@ import {
   Clock
 } from 'lucide-react';
 
+interface Purchase {
+  id: string;
+  order_number: string;
+  order_date: string;
+  order_total_cents: number;
+  product_name: string | null;
+  revenue_impact: string | null;
+  order_status: string | null;
+}
+
 interface ActivityItem {
   id: string;
   type: 'purchase' | 'payment' | 'refund' | 'login';
@@ -48,7 +58,7 @@ export default function RecentActivity({ userEmail, userId }: RecentActivityProp
         const activityList: ActivityItem[] = [];
 
         // Mapear compras a actividades
-        purchases?.forEach((purchase) => {
+        (purchases as Purchase[] | null)?.forEach((purchase) => {
           if (purchase.revenue_impact === 'negative') {
             // Devolución
             activityList.push({
