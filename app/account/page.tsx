@@ -71,17 +71,11 @@ export default async function Account() {
           <div className="bg-gradient-to-br from-apidevs-primary/10 to-blue-500/10 backdrop-blur-xl border border-apidevs-primary/30 rounded-3xl p-5 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center mb-4 space-y-2 sm:space-y-0">
               <div className="flex items-center">
-                {profile.avatar_url ? (
-                  <img 
-                    src={profile.avatar_url} 
-                    alt="TradingView Profile" 
-                    className="w-12 h-12 rounded-full border-2 border-apidevs-primary mr-4 object-cover"
-                  />
-                ) : (
-                  <div className="w-12 h-12 bg-gradient-to-r from-apidevs-primary to-blue-500 rounded-full flex items-center justify-center mr-4">
-                    <TrendingUp className="w-6 h-6 text-black" />
-                  </div>
-                )}
+                <img 
+                  src="/logos/tradingview-logo.png" 
+                  alt="TradingView Logo" 
+                  className="w-12 h-12 mr-4 object-contain"
+                />
                 <h2 className="text-xl sm:text-2xl font-bold text-white">Perfil de TradingView</h2>
               </div>
               <div className="sm:ml-auto">
