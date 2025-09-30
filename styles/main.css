@@ -315,7 +315,7 @@ p a {
 /* Toast Notification Animations */
 @keyframes slide-in {
   from {
-    transform: translateY(-20px);
+    transform: translateY(20px);
     opacity: 0;
   }
   to {
@@ -330,7 +330,7 @@ p a {
     opacity: 1;
   }
   to {
-    transform: translateY(-20px);
+    transform: translateY(20px);
     opacity: 0;
   }
 }
