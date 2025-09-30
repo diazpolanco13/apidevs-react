@@ -33,6 +33,19 @@ interface Props {
   userEmail: string;
 }
 
+// Función para mapear nombres técnicos a nombres amigables
+const mapProductName = (productName: string, interval?: string): string => {
+  if (productName === 'APIDevs Trading Indicators') {
+    if (interval === 'year') return 'Plan PRO Anual';
+    if (interval === 'month') return 'Plan PRO Mensual';
+    return 'Plan PRO';
+  }
+  if (productName.toLowerCase().includes('lifetime')) {
+    return 'Plan Lifetime Access';
+  }
+  return productName;
+};
+
 export default function PaymentHistory({ subscription, userEmail }: Props) {
   const [lifetimePurchases, setLifetimePurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,7 +108,7 @@ export default function PaymentHistory({ subscription, userEmail }: Props) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-white font-semibold text-sm sm:text-base truncate">
-                    {purchase.product_name}
+                    {mapProductName(purchase.product_name)}
                   </div>
                   <div className="text-gray-400 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0">
                     <span>
@@ -137,7 +150,9 @@ export default function PaymentHistory({ subscription, userEmail }: Props) {
               </svg>
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-white font-semibold text-sm sm:text-base truncate">{subscription.prices?.products?.name}</div>
+              <div className="text-white font-semibold text-sm sm:text-base truncate">
+                {mapProductName(subscription.prices?.products?.name || '', subscription.prices?.interval)}
+              </div>
               <div className="text-gray-400 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0">
                 <span>15 de septiembre de 2025</span>
                 <span className="hidden sm:block w-1 h-1 bg-gray-500 rounded-full"></span>
