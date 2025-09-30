@@ -28,8 +28,22 @@ export default function IndicatorsShowcase({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [particles, setParticles] = useState<Array<{left: string; top: string; delay: string; duration: string}>>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const showcaseRef = useRef<HTMLDivElement>(null);
+
+  // Generar partículas solo en el cliente
+  useEffect(() => {
+    setMounted(true);
+    const generatedParticles = [...Array(20)].map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      delay: `${Math.random() * 6}s`,
+      duration: `${6 + Math.random() * 4}s`
+    }));
+    setParticles(generatedParticles);
+  }, []);
 
   // Animación de entrada
   useEffect(() => {
@@ -81,21 +95,23 @@ export default function IndicatorsShowcase({
       {/* Background Effects Superiores */}
       <BackgroundEffects variant="showcase" />
       
-      {/* Particles Effect */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-apidevs-primary rounded-full opacity-30 animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 6}s`,
-              animationDuration: `${6 + Math.random() * 4}s`
-            }}
-          />
-        ))}
-      </div>
+      {/* Particles Effect - solo en cliente */}
+      {mounted && (
+        <div className="absolute inset-0 pointer-events-none">
+          {particles.map((particle, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-apidevs-primary rounded-full opacity-30 animate-float"
+              style={{
+                left: particle.left,
+                top: particle.top,
+                animationDelay: particle.delay,
+                animationDuration: particle.duration
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       <div 
         ref={showcaseRef}

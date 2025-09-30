@@ -22,15 +22,22 @@ export default function Navlinks({ user, avatarUrl, userStatus = 'online', unrea
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState('/');
   const [currentStatus, setCurrentStatus] = useState(userStatus);
+  const [mounted, setMounted] = useState(false);
   
   // Obtener configuración del badge según el estado
   const statusBadge = getStatusBadgeConfig(currentStatus);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== 'undefined') {
       setCurrentPath(window.location.pathname);
     }
   }, []);
+  
+  // Sincronizar status cuando cambia desde el servidor
+  useEffect(() => {
+    setCurrentStatus(userStatus);
+  }, [userStatus]);
 
   return (
     <div className="relative flex flex-row justify-between items-center h-16 sm:h-16 md:h-20">
@@ -177,10 +184,15 @@ export default function Navlinks({ user, avatarUrl, userStatus = 'online', unrea
                     {user.email?.[0]?.toUpperCase() || 'U'}
                   </div>
                 )}
-                {/* Indicador de estado dinámico */}
-                <span className={`absolute bottom-0 right-0 block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${statusBadge.color} ring-2 ring-apidevs-dark ${statusBadge.animate ? 'animate-pulse' : ''}`} />
-                {/* Badge de notificaciones */}
-                {unreadNotifications > 0 && (
+                {/* Indicador de estado dinámico - renderizado solo en cliente */}
+                {mounted ? (
+                  <span className={`absolute bottom-0 right-0 block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${statusBadge.color} ring-2 ring-apidevs-dark ${statusBadge.animate ? 'animate-pulse' : ''}`} />
+                ) : (
+                  // Fallback durante SSR
+                  <span className="absolute bottom-0 right-0 block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500 ring-2 ring-apidevs-dark" />
+                )}
+                {/* Badge de notificaciones - solo en cliente */}
+                {mounted && unreadNotifications > 0 && (
                   <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full ring-2 ring-apidevs-dark animate-pulse">
                     {unreadNotifications > 99 ? '99+' : unreadNotifications}
                   </span>
@@ -221,8 +233,8 @@ export default function Navlinks({ user, avatarUrl, userStatus = 'online', unrea
                     Configuración
                   </div>
                 </Link>
-                {/* Selector de Estado */}
-                {user?.id && (
+                {/* Selector de Estado - solo en cliente */}
+                {mounted && user?.id && (
                   <StatusSelector 
                     currentStatus={currentStatus} 
                     userId={user.id}

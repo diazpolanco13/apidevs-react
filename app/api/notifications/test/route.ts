@@ -16,44 +16,34 @@ export async function POST(request: Request) {
     const { count = 1, action = 'add' } = body;
 
     if (action === 'add') {
-      // Agregar notificaciones
-      const { data, error } = await supabase.rpc('increment_notifications', {
-        user_id: user.id,
-        increment_by: count
-      });
+      // Agregar notificaciones - usar update directo
+      const { data: currentData } = await (supabase as any)
+        .from('users')
+        .select('unread_notifications')
+        .eq('id', user.id)
+        .single();
 
-      if (error) {
-        // Si la función RPC no existe, usar update directo
-        const { data: currentData } = await supabase
-          .from('users')
-          .select('unread_notifications')
-          .eq('id', user.id)
-          .single();
+      const currentCount = currentData?.unread_notifications || 0;
+      
+      const { error: updateError } = await (supabase as any)
+        .from('users')
+        .update({ unread_notifications: currentCount + count })
+        .eq('id', user.id);
 
-        const currentCount = currentData?.unread_notifications || 0;
-        
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({ unread_notifications: currentCount + count })
-          .eq('id', user.id);
-
-        if (updateError) {
-          return NextResponse.json({ error: updateError.message }, { status: 500 });
-        }
-
-        return NextResponse.json({ 
-          success: true, 
-          message: `Se agregaron ${count} notificaciones`,
-          new_count: currentCount + count 
-        });
+      if (updateError) {
+        return NextResponse.json({ error: updateError.message }, { status: 500 });
       }
 
-      return NextResponse.json({ success: true, message: `Se agregaron ${count} notificaciones` });
+      return NextResponse.json({ 
+        success: true, 
+        message: `Se agregaron ${count} notificaciones`,
+        new_count: currentCount + count 
+      });
     }
 
     if (action === 'clear') {
       // Limpiar notificaciones
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('users')
         .update({ unread_notifications: 0 })
         .eq('id', user.id);
@@ -67,7 +57,7 @@ export async function POST(request: Request) {
 
     if (action === 'set') {
       // Establecer número específico
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('users')
         .update({ unread_notifications: count })
         .eq('id', user.id);
@@ -100,7 +90,7 @@ export async function GET() {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('users')
       .select('unread_notifications')
       .eq('id', user.id)
