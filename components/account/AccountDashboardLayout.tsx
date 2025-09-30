@@ -213,14 +213,23 @@ export default function AccountDashboardLayout({
                   <span className="text-base font-semibold text-white tracking-wide">MI CUENTA</span>
                 </div>
 
+                {/* Tier Badge - Usuario especial (arriba) */}
+                {loyaltyTier && loyaltyTier !== 'free' && (
+                  <div className="mx-2 px-4 py-3 rounded-lg border border-cyan-500/20 bg-cyan-500/5">
+                    <div className="mb-1">
+                      <span className="text-xs text-gray-400 uppercase tracking-wider block mb-2">Estatus VIP</span>
+                      <TierBadgeSmall tier={loyaltyTier as any} isLegacy={isLegacy} />
+                    </div>
+                  </div>
+                )}
+
                 <nav className="flex flex-1 flex-col">
                   <ul role="list" className="flex flex-1 flex-col gap-y-2">
                     {navigation.map((item) => renderNavigationItem(item))}
                   </ul>
 
-                  {/* Badges al final - Plan y Tier */}
-                  <div className="mt-auto space-y-3 pt-4 border-t border-white/10">
-                    {/* Plan Badge */}
+                  {/* Plan Badge al final */}
+                  <div className="mt-auto pt-4 border-t border-white/10">
                     <div className="px-4 py-3 rounded-lg border border-apidevs-primary/20 bg-black/40">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs text-gray-400 uppercase tracking-wider">Plan</span>
@@ -239,16 +248,6 @@ export default function AccountDashboardLayout({
                         </Link>
                       )}
                     </div>
-
-                    {/* Tier Badge - Usuario especial */}
-                    {loyaltyTier && loyaltyTier !== 'free' && (
-                      <div className="px-4 py-3 rounded-lg border border-cyan-500/20 bg-cyan-500/5">
-                        <div className="mb-1">
-                          <span className="text-xs text-gray-400 uppercase tracking-wider block mb-2">Estatus VIP</span>
-                          <TierBadgeSmall tier={loyaltyTier as any} isLegacy={isLegacy} />
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Volver a APIDevs */}
@@ -283,14 +282,23 @@ export default function AccountDashboardLayout({
               <span className="text-base font-semibold text-white tracking-wide">MI CUENTA</span>
             </div>
 
+            {/* Tier Badge - Usuario especial (arriba) */}
+            {loyaltyTier && loyaltyTier !== 'free' && (
+              <div className="mx-2 px-4 py-3 rounded-lg border border-cyan-500/20 bg-cyan-500/5">
+                <div className="mb-1">
+                  <span className="text-xs text-gray-400 uppercase tracking-wider block mb-2">Estatus VIP</span>
+                  <TierBadgeSmall tier={loyaltyTier as any} isLegacy={isLegacy} />
+                </div>
+              </div>
+            )}
+
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-2">
                 {navigation.map((item) => renderNavigationItem(item))}
               </ul>
 
-              {/* Badges al final - Plan y Tier */}
-              <div className="mt-auto space-y-3 pt-4 border-t border-white/10">
-                {/* Plan Badge */}
+              {/* Plan Badge al final */}
+              <div className="mt-auto pt-4 border-t border-white/10">
                 <div className="px-4 py-3 rounded-lg border border-apidevs-primary/20 bg-black/40">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-gray-400 uppercase tracking-wider">Plan</span>
@@ -309,16 +317,6 @@ export default function AccountDashboardLayout({
                     </Link>
                   )}
                 </div>
-
-                {/* Tier Badge - Usuario especial */}
-                {loyaltyTier && loyaltyTier !== 'free' && (
-                  <div className="px-4 py-3 rounded-lg border border-cyan-500/20 bg-cyan-500/5">
-                    <div className="mb-1">
-                      <span className="text-xs text-gray-400 uppercase tracking-wider block mb-2">Estatus VIP</span>
-                      <TierBadgeSmall tier={loyaltyTier as any} isLegacy={isLegacy} />
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Volver a APIDevs */}
