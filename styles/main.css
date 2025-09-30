@@ -11,53 +11,60 @@
 /* Input principal del teléfono */
 .phone-input-container .PhoneInputInput {
   flex: 1 !important;
-  padding: 1rem !important;
-  background: rgba(17, 24, 39, 0.5) !important;
-  border: 1px solid rgb(55, 65, 81) !important;
+  padding: 0.75rem 1rem !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-left: none !important;
-  border-radius: 0 1rem 1rem 0 !important;
+  border-radius: 0 0.5rem 0.5rem 0 !important;
   color: white !important;
-  font-size: 1rem !important;
-  transition: all 0.3s ease !important;
+  font-size: 0.875rem !important;
+  transition: all 0.2s ease !important;
   outline: none !important;
 }
 
 .phone-input-container .PhoneInputInput:focus {
-  border-color: #c9d92e !important;
-  box-shadow: 0 0 0 2px rgba(201, 217, 46, 0.1) !important;
+  border-color: rgba(201, 217, 46, 1) !important;
+  box-shadow: 0 0 0 1px rgba(201, 217, 46, 1) !important;
 }
 
 .phone-input-container .PhoneInputInput::placeholder {
-  color: rgb(156, 163, 175) !important;
+  color: rgb(107, 114, 128) !important;
 }
 
 /* Selector de país */
 .phone-input-container .PhoneInputCountrySelect {
-  padding: 1rem 0.75rem !important;
-  background: rgba(17, 24, 39, 0.5) !important;
-  border: 1px solid rgb(55, 65, 81) !important;
+  padding: 0.75rem !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-right: none !important;
-  border-radius: 1rem 0 0 1rem !important;
+  border-radius: 0.5rem 0 0 0.5rem !important;
   color: white !important;
   outline: none !important;
-  transition: all 0.3s ease !important;
+  transition: all 0.2s ease !important;
   min-width: 80px !important;
+  cursor: pointer !important;
 }
 
 .phone-input-container .PhoneInputCountrySelect:focus {
-  border-color: #c9d92e !important;
-  box-shadow: 0 0 0 2px rgba(201, 217, 46, 0.1) !important;
+  border-color: rgba(201, 217, 46, 1) !important;
+  box-shadow: 0 0 0 1px rgba(201, 217, 46, 1) !important;
+}
+
+.phone-input-container .PhoneInputCountrySelect:hover {
+  background: rgba(0, 0, 0, 0.7) !important;
 }
 
 /* Flecha del selector */
 .phone-input-container .PhoneInputCountrySelectArrow {
   color: rgb(156, 163, 175) !important;
   margin-left: 0.5rem !important;
+  opacity: 0.5 !important;
 }
 
 /* Bandera del país */
 .phone-input-container .PhoneInputCountryIcon {
   margin-right: 0.5rem !important;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Estados de error */
@@ -69,14 +76,86 @@
 /* Estados deshabilitado */
 .phone-input-container .PhoneInputInput:disabled,
 .phone-input-container .PhoneInputCountrySelect:disabled {
-  opacity: 0.6 !important;
+  opacity: 0.5 !important;
   cursor: not-allowed !important;
+  background: rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Hover effects */
 .phone-input-container .PhoneInputInput:hover:not(:disabled),
 .phone-input-container .PhoneInputCountrySelect:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Dropdown de países del selector */
+.phone-input-container .PhoneInputCountrySelect option {
+  background: rgba(0, 0, 0, 0.95) !important;
+  color: white !important;
+  padding: 0.5rem !important;
+}
+
+/* ========================================== */
+/* Estilos para PhoneInput en Onboarding */
+/* ========================================== */
+
+/* Input principal del teléfono - Onboarding */
+.phone-input-onboarding .PhoneInputInput {
+  flex: 1 !important;
+  padding: 1rem !important;
+  background: rgba(17, 24, 39, 0.5) !important;
+  border: 1px solid rgb(55, 65, 81) !important;
+  border-left: none !important;
+  border-radius: 0 1rem 1rem 0 !important;
+  color: white !important;
+  font-size: 1rem !important;
+  transition: all 0.3s ease !important;
+  outline: none !important;
+}
+
+.phone-input-onboarding .PhoneInputInput:focus {
+  border-color: rgba(201, 217, 46, 1) !important;
+  box-shadow: 0 0 0 2px rgba(201, 217, 46, 0.5) !important;
+  outline: none !important;
+}
+
+.phone-input-onboarding .PhoneInputInput::placeholder {
+  color: rgb(156, 163, 175) !important;
+}
+
+/* Selector de país - Onboarding */
+.phone-input-onboarding .PhoneInputCountrySelect {
+  padding: 1rem !important;
+  background: rgba(17, 24, 39, 0.5) !important;
+  border: 1px solid rgb(55, 65, 81) !important;
+  border-right: none !important;
+  border-radius: 1rem 0 0 1rem !important;
+  color: white !important;
+  outline: none !important;
+  transition: all 0.3s ease !important;
+  min-width: 80px !important;
+  cursor: pointer !important;
+}
+
+.phone-input-onboarding .PhoneInputCountrySelect:focus {
+  border-color: rgba(201, 217, 46, 1) !important;
+  box-shadow: 0 0 0 2px rgba(201, 217, 46, 0.5) !important;
+  outline: none !important;
+}
+
+.phone-input-onboarding .PhoneInputCountrySelect:hover {
+  background: rgba(17, 24, 39, 0.7) !important;
   border-color: rgb(75, 85, 99) !important;
+}
+
+/* Hover effects - Onboarding */
+.phone-input-onboarding .PhoneInputInput:hover:not(:disabled) {
+  border-color: rgb(75, 85, 99) !important;
+}
+
+/* Estados de error - Onboarding */
+.phone-input-onboarding.error .PhoneInputInput,
+.phone-input-onboarding.error .PhoneInputCountrySelect {
+  border-color: rgb(239, 68, 68) !important;
 }
 
 *,

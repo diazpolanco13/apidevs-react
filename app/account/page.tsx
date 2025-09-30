@@ -1,24 +1,14 @@
-import CustomerPortalForm from '@/components/ui/AccountForms/CustomerPortalForm';
-import EmailForm from '@/components/ui/AccountForms/EmailForm';
-import NameForm from '@/components/ui/AccountForms/NameForm';
-import PaymentHistory from '@/components/ui/AccountForms/PaymentHistory';
-import EditProfileClient from './EditProfileClient';
-import EditLocationClient from './EditLocationClient';
-import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
-import { checkOnboardingStatus, type UserProfile } from '@/utils/auth-helpers/onboarding';
-import {
-  getUserDetails,
-  getSubscription,
-  getUser
-} from '@/utils/supabase/queries';
-import { User, TrendingUp, MapPin, Phone, Shield, CheckCircle } from 'lucide-react';
+import { checkOnboardingStatus } from '@/utils/auth-helpers/onboarding';
+import { getUser, getSubscription } from '@/utils/supabase/queries';
+import { redirect } from 'next/navigation';
+import { TrendingUp, User, Shield, Bell, Zap, Crown, CheckCircle, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
-export default async function Account() {
+export default async function AccountDashboard() {
   const supabase = createClient();
-  const [user, userDetails, subscription] = await Promise.all([
+  const [user, subscription] = await Promise.all([
     getUser(supabase),
-    getUserDetails(supabase),
     getSubscription(supabase)
   ]);
 
@@ -26,239 +16,169 @@ export default async function Account() {
     return redirect('/signin');
   }
 
-  // Check onboarding status and get extended profile
   const { completed, profile } = await checkOnboardingStatus(user.id);
   
-  if (!completed) {
+  if (!completed || !profile) {
     return redirect('/onboarding');
   }
 
-  // Ensure profile exists
-  if (!profile) {
-    return redirect('/onboarding');
-  }
+  const userPlan = subscription?.prices?.products?.name || 'Free';
+  const isPro = userPlan.toLowerCase().includes('pro');
+  const isLifetime = userPlan.toLowerCase().includes('lifetime');
+  const hasPremium = isPro || isLifetime;
+
+  // Quick stats
+  const stats = [
+    { name: 'Indicadores Usados', value: '0', change: '+0%', icon: TrendingUp },
+    { name: 'Alertas Activas', value: '0', change: '0', icon: Bell },
+    { name: 'Sesiones Este Mes', value: '0', change: '+0', icon: CheckCircle },
+  ];
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-apidevs-dark via-black to-apidevs-dark">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="max-w-6xl px-4 py-6 mx-auto sm:px-6 sm:pt-20 lg:px-8">
-        <div className="sm:align-center sm:flex sm:flex-col">
-          {/* Avatar de TradingView en encabezado */}
-          {profile.avatar_url ? (
-            <img 
-              src={profile.avatar_url} 
-              alt="TradingView Profile" 
-              className="w-16 h-16 rounded-full border-3 border-apidevs-primary mb-4 mx-auto object-cover shadow-lg shadow-apidevs-primary/50"
-            />
-          ) : (
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-full mb-4 mx-auto shadow-lg shadow-apidevs-primary/50">
-              <TrendingUp className="w-8 h-8 text-black" />
+      <div>
+        <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+        <p className="text-gray-400">Bienvenido de nuevo, {profile.full_name?.split(' ')[0] || 'Trader'}</p>
+      </div>
+
+      {/* Plan Status Card */}
+      <div className={`rounded-2xl p-6 border ${
+        isLifetime
+          ? 'bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/30'
+          : isPro
+            ? 'bg-gradient-to-r from-apidevs-primary/10 to-green-400/10 border-apidevs-primary/30'
+            : 'bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-gray-700'
+      }`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              {isLifetime ? (
+                <Crown className="w-6 h-6 text-purple-400" />
+              ) : isPro ? (
+                <Zap className="w-6 h-6 text-apidevs-primary" />
+              ) : (
+                <Shield className="w-6 h-6 text-gray-400" />
+              )}
+              <h2 className="text-xl font-bold text-white">{userPlan}</h2>
             </div>
-          )}
-          <h1 className="text-3xl font-extrabold text-white sm:text-center sm:text-5xl mb-3">
-            ¡Bienvenido, {profile.full_name?.split(' ')[0] || 'Trader'}!
-          </h1>
-          <p className="max-w-2xl m-auto mt-2 text-lg text-gray-200 sm:text-center sm:text-xl">
-            Tu cuenta está configurada y lista para el trading profesional
-          </p>
+            <p className="text-gray-300">
+              {hasPremium 
+                ? 'Acceso completo a todas las funcionalidades premium' 
+                : 'Actualiza tu plan para desbloquear funciones premium'}
+            </p>
+          </div>
+          <div>
+            {!hasPremium && (
+              <Link
+                href="/pricing"
+                className="px-6 py-3 bg-gradient-to-r from-apidevs-primary to-green-400 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-apidevs-primary/50 transition-all"
+              >
+                Actualizar Plan
+              </Link>
+            )}
+            {hasPremium && (
+              <Link
+                href="/account/suscripcion"
+                className="text-gray-300 hover:text-white flex items-center gap-2 text-sm"
+              >
+                Ver detalles
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 pb-12">
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-          
-          {/* Editable Profile Card */}
-          <div className="bg-gradient-to-br from-apidevs-primary/10 to-blue-500/10 backdrop-blur-xl border border-apidevs-primary/30 rounded-3xl p-5 sm:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center mb-4 space-y-2 sm:space-y-0">
-              <div className="flex items-center">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={stat.name}
+              className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-apidevs-primary/50 transition-all"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <Icon className="w-8 h-8 text-apidevs-primary" />
+                <span className="text-xs text-gray-400">{stat.change}</span>
+              </div>
+              <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
+              <div className="text-sm text-gray-400">{stat.name}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-1 gap-6">
+        {/* Profile Quick View */}
+        <Link
+          href="/account/perfil"
+          className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-6 hover:border-blue-500/50 transition-all group"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              {profile.avatar_url ? (
                 <img 
-                  src="/logos/tradingview-logo.png" 
-                  alt="TradingView Logo" 
-                  className="w-12 h-12 mr-4 object-contain"
+                  src={profile.avatar_url} 
+                  alt="Avatar" 
+                  className="w-12 h-12 rounded-full border-2 border-blue-500"
                 />
-                <h2 className="text-xl sm:text-2xl font-bold text-white">Perfil de TradingView</h2>
-              </div>
-              <div className="sm:ml-auto">
-                <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
-                  <CheckCircle className="w-4 h-4 inline mr-1" />
-                  Verificado
-                </span>
-              </div>
-            </div>
-            
-            <EditProfileClient 
-              userId={user.id}
-              initialData={{
-                full_name: profile.full_name || '',
-                tradingview_username: profile.tradingview_username || '',
-                avatar_url: profile.avatar_url || ''
-              }}
-            />
-          </div>
-
-          {/* Location Info Card */}
-          <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 rounded-3xl p-5 sm:p-6">
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-4">
-                <MapPin className="w-6 h-6 text-white" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-white">Ubicación</h2>
-            </div>
-            
-            <EditLocationClient 
-              userId={user.id}
-              initialData={{
-                country: profile.country || '',
-                city: profile.city || '',
-                phone: profile.phone || '',
-                postal_code: profile.postal_code || '',
-                address: profile.address || '',
-                timezone: profile.timezone || ''
-              }}
-            />
-          </div>
-
-          {/* Subscription Card */}
-          <div className="xl:col-span-2">
-            <div className="bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl border border-gray-700 rounded-3xl p-5 sm:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center mb-4 space-y-2 sm:space-y-0">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-4">
-                    <Shield className="w-6 h-6 text-white" />
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white">Suscripción y Facturación</h2>
+              ) : (
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+                  <User className="w-6 h-6 text-white" />
                 </div>
-              </div>
-              
-              <div className="space-y-4">
-                {/* Plan Status */}
-                <div className="bg-black/30 rounded-2xl p-4 sm:p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-white">Tu Plan Actual</h3>
-                    {subscription ? (
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        subscription.cancel_at_period_end 
-                          ? 'bg-orange-500/20 text-orange-400' 
-                          : 'bg-apidevs-primary/20 text-apidevs-primary'
-                      }`}>
-                        {subscription.prices?.products?.name}
-                      </span>
-                    ) : (
-                      <span className="px-3 py-1 bg-gray-700 text-gray-300 rounded-full text-sm">
-                        Sin Suscripción
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="text-gray-300 mb-4">
-                    {subscription ? (
-                      subscription.cancel_at_period_end ? (
-                        <div>
-                          <div className="text-orange-400 font-medium mb-2">
-                            ⚠️ Suscripción Cancelada
-                          </div>
-                          <div>
-                            Tu suscripción al plan {subscription.prices?.products?.name} ha sido cancelada, 
-                            pero seguirá activa hasta el{' '}
-                            <span className="font-semibold text-white">
-                              {new Date(subscription.current_period_end).toLocaleDateString('es-ES', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </span>
-                            .
-                          </div>
-                        </div>
-                      ) : (
-                        `Estás suscrito al plan ${subscription.prices?.products?.name}.`
-                      )
-                    ) : (
-                      'No tienes una suscripción activa actualmente.'
-                    )}
-                  </div>
-
-                  {subscription && (
-                    <div className="text-2xl font-bold text-white mb-4">
-                      {new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: subscription.prices?.currency || 'USD',
-                        minimumFractionDigits: 0
-                      }).format((subscription.prices?.unit_amount || 0) / 100)}
-                      <span className="text-sm text-gray-400 ml-1">
-                        /{subscription.prices?.interval}
-                      </span>
-                    </div>
+              )}
+              <div>
+                <h3 className="text-lg font-semibold text-white">{profile.full_name || 'Sin nombre'}</h3>
+                <p className="text-sm text-gray-400">
+                  @{profile.tradingview_username || 'Sin username'}
+                  {profile.city && profile.country && (
+                    <span className="ml-2">• {profile.city}, {profile.country}</span>
                   )}
-
-                  <div className="flex flex-col gap-3">
-                    {!subscription ? (
-                      <a
-                        href="/#pricing"
-                        className="px-6 py-3 bg-gradient-to-r from-apidevs-primary to-green-400 hover:from-green-400 hover:to-apidevs-primary text-black font-semibold rounded-2xl transition-all transform hover:scale-105 text-center inline-block"
-                      >
-                        Elegir Plan
-                      </a>
-                    ) : (
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="flex-1">
-                          <CustomerPortalForm subscription={subscription} />
-                        </div>
-                        {subscription.cancel_at_period_end && (
-                          <div className="flex-1">
-                            <a
-                              href="/#pricing"
-                              className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-2xl transition-all transform hover:scale-105 text-center inline-block"
-                            >
-                              Reactivar Suscripción
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Payment History */}
-                <PaymentHistory subscription={subscription} userEmail={user.email || ''} />
-
-                {/* Account Settings */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-black/30 rounded-2xl p-6">
-                    <h4 className="text-lg font-semibold text-white mb-4">Configuración de Cuenta</h4>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                        <div className="text-white font-medium">{user.email}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-black/30 rounded-2xl p-6">
-                    <h4 className="text-lg font-semibold text-white mb-4">Soporte</h4>
-                    <div className="text-gray-300 text-sm">
-                      ¿Necesitas ayuda? Contáctanos a través de nuestros canales de soporte.
-                    </div>
-                  </div>
-                </div>
+                </p>
               </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+          </div>
+          <p className="text-sm text-gray-300">Ver y editar perfil completo</p>
+        </Link>
+      </div>
+
+      {/* Premium Features Locked */}
+      {!hasPremium && (
+        <div className="bg-gradient-to-r from-apidevs-primary/10 to-green-400/10 border border-apidevs-primary/30 rounded-2xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-full flex items-center justify-center flex-shrink-0">
+              <Zap className="w-6 h-6 text-black" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-white mb-2">Desbloquea Todo el Potencial</h3>
+              <p className="text-gray-300 mb-4">
+                Accede a indicadores premium, notificaciones en tiempo real, y mucho más con un plan PRO.
+              </p>
+              <Link
+                href="/pricing"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-apidevs-primary to-green-400 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-apidevs-primary/50 transition-all"
+              >
+                Ver Planes
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Success Message */}
-        <div className="mt-8 bg-gradient-to-r from-green-500/10 to-apidevs-primary/10 border border-green-500/30 rounded-3xl p-6">
-          <div className="flex items-center">
-            <CheckCircle className="w-8 h-8 text-green-500 mr-4" />
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-2">¡Configuración Completa!</h3>
-              <p className="text-gray-300">
-                Tu perfil está listo. Ahora puedes acceder a todos nuestros indicadores de trading usando tu usuario de TradingView: <span className="text-apidevs-primary font-semibold">{profile.tradingview_username}</span>
-              </p>
-            </div>
-          </div>
+      {/* Recent Activity Placeholder */}
+      <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+        <h3 className="text-xl font-bold text-white mb-4">Actividad Reciente</h3>
+        <div className="text-center py-12">
+          <TrendingUp className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-400">No hay actividad reciente</p>
+          <p className="text-sm text-gray-500 mt-2">Comienza a usar nuestros indicadores para ver tu actividad aquí</p>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

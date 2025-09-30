@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import Footer from '@/components/ui/Footer';
+import ConditionalFooter from '@/components/ui/Footer/ConditionalFooter';
 import Navbar from '@/components/ui/Navbar';
 import { Toaster } from '@/components/ui/Toasts/toaster';
 import { ConfirmEmailDialog } from '@/components/ui/ConfirmEmailDialog';
@@ -60,7 +60,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <main id="skip" className="">
           {children}
         </main>
-        <Footer />
+        <ConditionalFooter />
         <Suspense>
           <Toaster />
         </Suspense>
