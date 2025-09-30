@@ -44,6 +44,19 @@ interface AccountDashboardLayoutProps {
   isLegacy?: boolean;
 }
 
+// Función para mapear nombres técnicos a nombres amigables
+const mapProductName = (productName: string, interval?: string): string => {
+  if (productName === 'APIDevs Trading Indicators') {
+    if (interval === 'year') return 'Plan PRO Anual';
+    if (interval === 'month') return 'Plan PRO Mensual';
+    return 'Plan PRO';
+  }
+  if (productName.toLowerCase().includes('lifetime')) {
+    return 'Plan Lifetime Access';
+  }
+  return productName;
+};
+
 export default function AccountDashboardLayout({ 
   children, 
   user, 
@@ -56,9 +69,11 @@ export default function AccountDashboardLayout({
   const pathname = usePathname();
 
   // Determinar plan del usuario
-  const userPlan = subscription?.prices?.products?.name || 'Free';
-  const isPro = userPlan.toLowerCase().includes('pro');
-  const isLifetime = userPlan.toLowerCase().includes('lifetime');
+  const productName = subscription?.prices?.products?.name || 'Free';
+  const interval = subscription?.prices?.interval;
+  const userPlan = mapProductName(productName, interval);
+  const isPro = productName === 'APIDevs Trading Indicators' || productName.toLowerCase().includes('pro');
+  const isLifetime = productName.toLowerCase().includes('lifetime');
   const hasPremium = isPro || isLifetime;
 
   const navigation: NavigationItem[] = [
