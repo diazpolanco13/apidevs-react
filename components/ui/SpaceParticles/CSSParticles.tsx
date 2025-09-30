@@ -1,11 +1,25 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 interface CSSParticlesProps {
   variant?: 'stars' | 'nebula' | 'minimal';
   className?: string;
 }
 
+interface Particle {
+  id: number;
+  left: number;
+  top: number;
+  size: number;
+  duration: number;
+  delay: number;
+}
+
 export default function CSSParticles({ variant = 'stars', className = '' }: CSSParticlesProps) {
+  const [particles, setParticles] = useState<Particle[]>([]);
+  const [mounted, setMounted] = useState(false);
+
   // Configuración por variante
   const getConfig = () => {
     switch (variant) {
@@ -20,17 +34,27 @@ export default function CSSParticles({ variant = 'stars', className = '' }: CSSP
     }
   };
 
-  const config = getConfig();
-  
-  // Generar posiciones aleatorias para las partículas
-  const particles = Array.from({ length: config.count }, (_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    top: Math.random() * 100,
-    size: Math.random() * (config.maxSize - config.minSize) + config.minSize,
-    duration: Math.random() * (config.maxDuration - config.minDuration) + config.minDuration,
-    delay: Math.random() * 5,
-  }));
+  // Generar partículas solo en el cliente
+  useEffect(() => {
+    setMounted(true);
+    const config = getConfig();
+    
+    const generatedParticles = Array.from({ length: config.count }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      size: Math.random() * (config.maxSize - config.minSize) + config.minSize,
+      duration: Math.random() * (config.maxDuration - config.minDuration) + config.minDuration,
+      delay: Math.random() * 5,
+    }));
+    
+    setParticles(generatedParticles);
+  }, [variant]);
+
+  // No renderizar nada durante SSR
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className={`absolute inset-0 pointer-events-none overflow-hidden z-0 ${className}`}>

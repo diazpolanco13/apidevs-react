@@ -58,7 +58,7 @@ export default function StatusSelector({ currentStatus, userId, onStatusChange }
     
     try {
       const supabase = createClient();
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('users')
         .update({ user_status: newStatus })
         .eq('id', userId);

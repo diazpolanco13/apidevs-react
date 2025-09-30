@@ -28,8 +28,22 @@ export default function WinningStrategyCard({
   const [isVisible, setIsVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const [particles, setParticles] = useState<Array<{left: string; top: string; delay: string; duration: string}>>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // Generar partículas solo en el cliente
+  useEffect(() => {
+    setMounted(true);
+    const generatedParticles = [...Array(8)].map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      delay: `${Math.random() * 8}s`,
+      duration: `${8 + Math.random() * 4}s`
+    }));
+    setParticles(generatedParticles);
+  }, []);
 
   // Animación de entrada
   useEffect(() => {
@@ -122,16 +136,16 @@ export default function WinningStrategyCard({
     <section className="relative py-16 lg:py-20 bg-apidevs-dark overflow-hidden">
       {/* Background Effects Sutiles */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Subtle particles */}
-        {[...Array(8)].map((_, i) => (
+        {/* Subtle particles - solo en cliente */}
+        {mounted && particles.map((particle, i) => (
           <div
             key={i}
             className="absolute w-1 h-1 bg-apidevs-primary rounded-full opacity-10 animate-float"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 8}s`,
-              animationDuration: `${8 + Math.random() * 4}s`
+              left: particle.left,
+              top: particle.top,
+              animationDelay: particle.delay,
+              animationDuration: particle.duration
             }}
           />
         ))}

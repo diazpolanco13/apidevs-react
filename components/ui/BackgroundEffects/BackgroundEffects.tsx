@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import CSSParticles from '@/components/ui/SpaceParticles/CSSParticles';
 
 interface BackgroundEffectsProps {
@@ -13,6 +16,11 @@ export default function BackgroundEffects({
   showParticles = true,
   className = ''
 }: BackgroundEffectsProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const getEffectsByVariant = () => {
     switch (variant) {
       case 'hero':
@@ -95,7 +103,8 @@ export default function BackgroundEffects({
   return (
     <div className={`absolute inset-0 overflow-hidden pointer-events-none ${className}`}>
       {getEffectsByVariant()}
-      {showParticles && (
+      {/* Solo renderizar partículas en el cliente para evitar errores de hidratación */}
+      {mounted && showParticles && (
         <CSSParticles variant={getParticleVariant()} />
       )}
     </div>

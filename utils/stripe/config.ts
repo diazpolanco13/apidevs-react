@@ -5,7 +5,8 @@ export const stripe = new Stripe(
   {
     // https://github.com/stripe/stripe-node#configuration
     // https://stripe.com/docs/api/versioning
-    apiVersion: '2023-10-16',
+    // @ts-ignore - Usando versión compatible con stripe 18.5.0
+    apiVersion: '2024-11-20.acacia' as any,
     // Register this as an official Stripe plugin.
     // https://stripe.com/docs/building-plugins#setappinfo
     appInfo: {
