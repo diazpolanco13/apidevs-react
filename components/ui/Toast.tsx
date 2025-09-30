@@ -60,7 +60,7 @@ export default function Toast({ message, type = 'error', duration = 5000, onClos
 
   return (
     <div
-      className={`fixed bottom-4 right-4 left-4 sm:left-auto z-[9999] max-w-md mx-auto sm:mx-0 ${
+      className={`fixed top-20 right-4 left-4 sm:left-auto sm:right-8 z-[9999] max-w-md mx-auto sm:mx-0 ${
         isExiting ? 'animate-slide-out' : 'animate-slide-in'
       }`}
     >
