@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { User, MapPin, Phone, Mail, Send, Globe, Camera, Check, X, Loader2, Edit2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import TimezoneSelect from 'react-timezone-select';
@@ -28,6 +29,7 @@ interface Props {
 }
 
 export default function EditProfileUnified({ userId, userEmail, initialData }: Props) {
+  const router = useRouter();
   const [formData, setFormData] = useState<ProfileData>(initialData);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -118,13 +120,44 @@ export default function EditProfileUnified({ userId, userEmail, initialData }: P
     resetValidation();
   };
 
-  const handleSaveTv = () => {
-    if (validationResult?.isValid) {
-      setTvUsername(tempTvUsername);
-      setIsEditingTv(false);
-      setMessage({ type: 'success', text: 'Username de TradingView actualizado. Recuerda guardar los cambios del formulario.' });
-    } else {
+  const handleSaveTv = async () => {
+    if (!validationResult?.isValid) {
       setMessage({ type: 'error', text: 'Debes validar el nuevo username antes de guardarlo' });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const supabase = createClient();
+      const updateData = {
+        tradingview_username: validationResult.username,
+        avatar_url: validationResult.profileImage || formData.avatar_url
+      };
+      
+      const { error } = await (supabase as any)
+        .from('users')
+        .update(updateData)
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      // Actualizar estados locales
+      setTvUsername(validationResult.username);
+      setFormData(prev => ({ 
+        ...prev, 
+        tradingview_username: validationResult.username,
+        avatar_url: validationResult.profileImage || prev.avatar_url
+      }));
+      setIsEditingTv(false);
+      setMessage({ type: 'success', text: '¡Username de TradingView actualizado exitosamente!' });
+      
+      // Refrescar el navbar para mostrar la nueva imagen
+      router.refresh();
+    } catch (error) {
+      console.error('Error:', error);
+      setMessage({ type: 'error', text: 'Error al actualizar el username de TradingView' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -162,6 +195,9 @@ export default function EditProfileUnified({ userId, userEmail, initialData }: P
       if (error) throw error;
 
       setMessage({ type: 'success', text: '¡Perfil actualizado exitosamente!' });
+      
+      // Refrescar el navbar para mostrar los cambios
+      router.refresh();
     } catch (error) {
       console.error('Error:', error);
       setMessage({ type: 'error', text: 'Error al actualizar el perfil' });

@@ -1,11 +1,10 @@
-import { SupabaseClient } from '@supabase/supabase-js';
 import { LoyaltyProfile, CustomerTier } from '@/types/loyalty';
 
 /**
  * Obtiene el perfil de lealtad de un usuario
  */
 export async function getUserLoyaltyProfile(
-  supabase: SupabaseClient,
+  supabase: any,
   userId: string
 ): Promise<LoyaltyProfile | null> {
   try {
@@ -42,7 +41,7 @@ export async function getUserLoyaltyProfile(
  * Actualiza el tier y descuento de un usuario basado en su gasto total
  */
 export async function updateUserTier(
-  supabase: SupabaseClient,
+  supabase: any,
   userId: string,
   totalSpent: number
 ): Promise<{ tier: CustomerTier; discount: number } | null> {
@@ -95,7 +94,7 @@ export async function updateUserTier(
  * Sincroniza datos de legacy user al crear cuenta
  */
 export async function syncLegacyUserData(
-  supabase: SupabaseClient,
+  supabase: any,
   userId: string,
   email: string
 ): Promise<boolean> {
@@ -150,10 +149,16 @@ export async function syncLegacyUserData(
 
     const customerType = hasLifetime ? 'vip' : (totalSpent > 0 ? 'paid' : 'free');
 
-    // Actualizar usuario con datos legacy
+    // UPSERT usuario con datos legacy (crea si no existe, actualiza si existe)
     const { error: updateError } = await (supabase as any)
       .from('users')
-      .update({
+      .upsert({
+        id: userId,
+        email: email.toLowerCase().trim(),
+        full_name: legacyUser.full_name || null,
+        country: legacyUser.country || null,
+        city: legacyUser.city || null,
+        phone: legacyUser.phone || null,
         is_legacy_user: true,
         legacy_customer_type: customerType,
         customer_tier: tier,
@@ -165,9 +170,11 @@ export async function syncLegacyUserData(
         last_purchase_date: purchases?.[purchases.length - 1]?.order_date,
         tier_unlocked_at: new Date().toISOString(),
         legacy_imported_at: new Date().toISOString(),
-        legacy_original_data: legacyUser
-      })
-      .eq('id', userId);
+        legacy_original_data: legacyUser,
+        onboarding_completed: false // Se completará en el onboarding
+      }, {
+        onConflict: 'id'
+      });
 
     if (updateError) {
       console.error('Error syncing legacy user data:', updateError);

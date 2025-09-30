@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { SignOut } from '@/utils/auth-helpers/server';
 import { handleRequest } from '@/utils/auth-helpers/client';
 import APIDevsLogo from '@/components/icons/APIDevsLogo';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { getRedirectMethod } from '@/utils/auth-helpers/settings';
 import { useState, useEffect } from 'react';
 import s from './Navbar.module.css';
@@ -19,6 +19,7 @@ interface NavlinksProps {
 
 export default function Navlinks({ user, avatarUrl, userStatus = 'online', unreadNotifications = 0 }: NavlinksProps) {
   const router = getRedirectMethod() === 'client' ? useRouter() : null;
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState('/');
   const [currentStatus, setCurrentStatus] = useState(userStatus);
@@ -26,6 +27,9 @@ export default function Navlinks({ user, avatarUrl, userStatus = 'online', unrea
   
   // Obtener configuración del badge según el estado
   const statusBadge = getStatusBadgeConfig(currentStatus);
+  
+  // Detectar si estamos en rutas del dashboard
+  const isInDashboard = pathname?.startsWith('/account') || pathname?.startsWith('/admin');
 
   useEffect(() => {
     setMounted(true);
@@ -41,17 +45,19 @@ export default function Navlinks({ user, avatarUrl, userStatus = 'online', unrea
 
   return (
     <div className="relative flex flex-row justify-between items-center h-16 sm:h-16 md:h-20">
-      {/* Mobile Menu Button - Compacto */}
-      <button
-        className="lg:hidden flex items-center p-2 border rounded-md text-gray-300 border-gray-600 hover:text-apidevs-primary hover:border-apidevs-primary mr-2 sm:mr-3"
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        aria-label="Abrir menú de navegación"
-        title="Menú"
-      >
-        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+      {/* Mobile Menu Button - Oculto en dashboard */}
+      {!isInDashboard && (
+        <button
+          className="lg:hidden flex items-center p-2 border rounded-md text-gray-300 border-gray-600 hover:text-apidevs-primary hover:border-apidevs-primary mr-2 sm:mr-3"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Abrir menú de navegación"
+          title="Menú"
+        >
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      )}
 
       <div className="flex items-center flex-1">
         <Link href="/" className={`${s.logo} focus:outline-none`} aria-label="APIDevs Trading">
@@ -138,7 +144,7 @@ export default function Navlinks({ user, avatarUrl, userStatus = 'online', unrea
       </div>
 
       {/* Mobile Menu */}
-      {mobileMenuOpen && (
+      {mobileMenuOpen && !isInDashboard && (
         <div className="lg:hidden absolute top-full left-0 w-full backdrop-blur-xl bg-apidevs-dark/95 border-t border-apidevs-primary/20 z-50">
           <div className="px-6 py-4 space-y-3">
             <Link href="/" className="block py-2 text-gray-300 hover:text-apidevs-primary">Inicio</Link>
