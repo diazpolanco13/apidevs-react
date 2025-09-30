@@ -317,26 +317,29 @@ export default function AccountDashboardLayout({
 
         {/* Main content */}
         <div className="lg:pl-72">
-          {/* Botón hamburger mobile */}
+          {/* Botón hamburger mobile - Discreto */}
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden fixed top-[68px] sm:top-[84px] left-4 z-20 p-2.5 rounded-lg text-gray-300 hover:text-apidevs-primary transition-all duration-200"
+            className="lg:hidden fixed top-[72px] sm:top-[88px] left-3 z-20 p-2 rounded-md text-gray-400 hover:text-apidevs-primary hover:bg-white/5 transition-all duration-200"
             style={{
-              background: 'rgba(10, 10, 10, 0.9)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(201, 217, 46, 0.2)'
+              background: 'rgba(15, 15, 15, 0.6)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.05)'
             }}
           >
             <span className="sr-only">Abrir menú</span>
-            <Bars3Icon className="h-6 w-6" />
+            <Bars3Icon className="h-5 w-5" />
           </button>
 
           {/* Main content */}
           <main className="py-3 sm:py-4">
             <div className="px-4 sm:px-6 lg:px-8">
-              {children}
+              {/* Contenedor con max-width para pantallas ultra wide */}
+              <div className="max-w-7xl mx-auto">
+                {children}
+              </div>
             </div>
           </main>
         </div>

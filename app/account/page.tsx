@@ -26,7 +26,7 @@ export default async function AccountDashboard() {
   }
 
   // Get loyalty profile for welcome modal
-  const loyaltyProfile = await getUserLoyaltyProfile(supabase, user.id);
+  const loyaltyProfile = await getUserLoyaltyProfile(supabase as any, user.id);
 
   const userPlan = subscription?.prices?.products?.name || 'Free';
   const isPro = userPlan.toLowerCase().includes('pro');
@@ -55,8 +55,14 @@ export default async function AccountDashboard() {
           <p className="text-gray-400">Bienvenido de nuevo, {profile.full_name?.split(' ')[0] || 'Trader'}</p>
         </div>
 
-        {/* Legacy Hero Banner */}
-        {loyaltyProfile && <LegacyHeroBanner loyaltyProfile={loyaltyProfile} />}
+        {/* Legacy Hero Banner - Solo visible si es Free */}
+        {loyaltyProfile && (
+          <LegacyHeroBanner 
+            loyaltyProfile={loyaltyProfile} 
+            showOnlyIfFree={true}
+            hasPaidPlan={hasPremium}
+          />
+        )}
 
       {/* Plan Status Card */}
       <div className={`rounded-2xl p-6 border ${

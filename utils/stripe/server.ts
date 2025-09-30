@@ -94,7 +94,6 @@ export async function checkoutWithStripe(
     }
 
     let params: Stripe.Checkout.SessionCreateParams = {
-      allow_promotion_codes: !couponId, // Disable manual codes if auto-applying discount
       billing_address_collection: 'required',
       customer,
       customer_update: {
@@ -110,11 +109,14 @@ export async function checkoutWithStripe(
       success_url: getURL(redirectPath)
     };
 
-    // Apply discount if available
+    // Apply discount if available, otherwise allow manual promotion codes
     if (couponId) {
       params.discounts = [{
         coupon: couponId
       }];
+      // NO incluir allow_promotion_codes cuando hay cupón aplicado
+    } else {
+      params.allow_promotion_codes = true; // Permitir códigos manuales si no hay descuento automático
     }
 
     console.log(

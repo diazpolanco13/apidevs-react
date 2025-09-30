@@ -6,6 +6,8 @@ import { LoyaltyProfile } from '@/types/loyalty';
 
 interface LegacyHeroBannerProps {
   loyaltyProfile: LoyaltyProfile;
+  showOnlyIfFree?: boolean;
+  hasPaidPlan?: boolean;
 }
 
 const TIER_CONFIG = {
@@ -46,8 +48,18 @@ const TIER_CONFIG = {
   }
 };
 
-export default function LegacyHeroBanner({ loyaltyProfile }: LegacyHeroBannerProps) {
+export default function LegacyHeroBanner({ 
+  loyaltyProfile, 
+  showOnlyIfFree = false,
+  hasPaidPlan = false 
+}: LegacyHeroBannerProps) {
+  // No mostrar si no es legacy o si el tier es free
   if (!loyaltyProfile.is_legacy_user || loyaltyProfile.customer_tier === 'free') {
+    return null;
+  }
+
+  // Si showOnlyIfFree está activo, solo mostrar si NO tiene plan pago
+  if (showOnlyIfFree && hasPaidPlan) {
     return null;
   }
 
