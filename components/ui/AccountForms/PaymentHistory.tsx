@@ -151,7 +151,7 @@ export default function PaymentHistory({ subscription, userEmail }: Props) {
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-white font-semibold text-sm sm:text-base truncate">
-                {mapProductName(subscription.prices?.products?.name || '', subscription.prices?.interval)}
+                {mapProductName(subscription.prices?.products?.name || '', subscription.prices?.interval || undefined)}
               </div>
               <div className="text-gray-400 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0">
                 <span>15 de septiembre de 2025</span>
