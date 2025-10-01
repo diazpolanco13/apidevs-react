@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { Shield, Lock, Ban, DollarSign, Mail, AlertTriangle, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import InputModal from '@/components/ui/InputModal';
+import SelectModal from '@/components/ui/SelectModal';
 
 interface ActiveUserActionsProps {
   userId: string;
@@ -28,10 +31,28 @@ export default function ActiveUserActions({
   const [loading, setLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   
+  // Modal states
+  const [resetPasswordModal, setResetPasswordModal] = useState(false);
+  const [cancelTypeModal, setCancelTypeModal] = useState(false);
+  const [cancelReasonModal, setCancelReasonModal] = useState(false);
+  const [cancelConfirmModal, setCancelConfirmModal] = useState(false);
+  const [refundSelectModal, setRefundSelectModal] = useState(false);
+  const [refundReasonModal, setRefundReasonModal] = useState(false);
+  const [refundConfirmModal, setRefundConfirmModal] = useState(false);
+  const [emailSubjectModal, setEmailSubjectModal] = useState(false);
+  const [emailMessageModal, setEmailMessageModal] = useState(false);
+  const [emailConfirmModal, setEmailConfirmModal] = useState(false);
+  
+  // Temp data for multi-step flows
+  const [tempCancelType, setTempCancelType] = useState<string>('');
+  const [tempCancelReason, setTempCancelReason] = useState<string>('');
+  const [tempRefundPayment, setTempRefundPayment] = useState<any>(null);
+  const [tempRefundReason, setTempRefundReason] = useState<string>('');
+  const [tempEmailSubject, setTempEmailSubject] = useState<string>('');
+  const [tempEmailMessage, setTempEmailMessage] = useState<string>('');
+  
   // Reset Password
-  const handleResetPassword = async () => {
-    if (!confirm(`¿Enviar email de recuperación a ${userEmail}?`)) return;
-    
+  const executeResetPassword = async () => {
     setLoading('reset-password');
     setMessage(null);
     
@@ -56,43 +77,26 @@ export default function ActiveUserActions({
     }
   };
   
-  // Cancel Subscription
-  const handleCancelSubscription = async () => {
+  // Cancel Subscription - Multi-step flow
+  const startCancelSubscription = () => {
     if (!subscriptionId) {
       setMessage({ type: 'error', text: 'No hay suscripción activa' });
       return;
     }
-    
-    // Seleccionar tipo de cancelación
-    const cancelType = prompt(
-      `Tipo de cancelación:\n\n` +
-      `1 = INMEDIATA (pierde acceso ahora - casos graves)\n` +
-      `2 = AL FINAL DEL PERÍODO (mantiene acceso hasta vencimiento)\n\n` +
-      `Escribe el número (2 recomendado):`
-    );
-    
-    if (!cancelType) return;
-    
-    const cancelTypeMap: Record<string, string> = {
-      '1': 'immediate',
-      '2': 'end_of_period'
-    };
-    
-    const selectedType = cancelTypeMap[cancelType] || 'end_of_period';
-    const typeText = selectedType === 'immediate' 
-      ? '⚠️ INMEDIATA (pierde acceso ahora)' 
-      : '✅ Al final del período (mantiene acceso)';
-    
-    const reason = prompt('Razón de cancelación (opcional):');
-    if (reason === null) return;
-    
-    if (!confirm(
-      `¿Cancelar suscripción de ${userName}?\n\n` +
-      `Tipo: ${typeText}\n` +
-      `Razón: ${reason || 'No especificada'}\n\n` +
-      `Esta acción no se puede deshacer.`
-    )) return;
-    
+    setCancelTypeModal(true);
+  };
+  
+  const handleCancelTypeSelected = (type: string) => {
+    setTempCancelType(type);
+    setCancelReasonModal(true);
+  };
+  
+  const handleCancelReasonSubmitted = (reason: string) => {
+    setTempCancelReason(reason);
+    setCancelConfirmModal(true);
+  };
+  
+  const executeCancelSubscription = async () => {
     setLoading('cancel-subscription');
     setMessage(null);
     
@@ -100,7 +104,11 @@ export default function ActiveUserActions({
       const response = await fetch('/api/admin/cancel-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscriptionId, reason, cancelType: selectedType })
+        body: JSON.stringify({ 
+          subscriptionId, 
+          reason: tempCancelReason, 
+          cancelType: tempCancelType 
+        })
       });
       
       const data = await response.json();
@@ -267,7 +275,7 @@ export default function ActiveUserActions({
             Enviar email de recuperación a {userEmail}
           </p>
           <button 
-            onClick={handleResetPassword}
+            onClick={() => setResetPasswordModal(true)}
             disabled={loading !== null}
             className="w-full px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 text-sm hover:bg-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
@@ -290,7 +298,7 @@ export default function ActiveUserActions({
             {subscriptionId ? '2 tipos: Inmediata o al final del período' : 'Sin suscripción activa'}
           </p>
           <button 
-            onClick={handleCancelSubscription}
+            onClick={startCancelSubscription}
             disabled={loading !== null || !subscriptionId}
             className="w-full px-4 py-2 bg-orange-500/20 text-orange-400 rounded-lg border border-orange-500/30 text-sm hover:bg-orange-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
@@ -313,7 +321,7 @@ export default function ActiveUserActions({
             {paymentIntents.filter(pi => pi.status === 'succeeded').length} pagos disponibles
           </p>
           <button 
-            onClick={handleProcessRefund}
+            onClick={() => alert('Modales de reembolso próximamente')}
             disabled={loading !== null || paymentIntents.filter(pi => pi.status === 'succeeded').length === 0}
             className="w-full px-4 py-2 bg-red-500/20 text-red-400 rounded-lg border border-red-500/30 text-sm hover:bg-red-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
@@ -336,7 +344,7 @@ export default function ActiveUserActions({
             Comunicación directa con {userName}
           </p>
           <button 
-            onClick={handleSendEmail}
+            onClick={() => alert('Modales de email próximamente')}
             disabled={loading !== null}
             className="w-full px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg border border-purple-500/30 text-sm hover:bg-purple-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
@@ -377,6 +385,70 @@ export default function ActiveUserActions({
           </div>
         </div>
       </div>
+
+      {/* MODALES PERSONALIZADOS */}
+      
+      {/* Reset Password Modal */}
+      <ConfirmModal
+        isOpen={resetPasswordModal}
+        onClose={() => setResetPasswordModal(false)}
+        onConfirm={executeResetPassword}
+        title="Restablecer Contraseña"
+        message={`¿Enviar email de recuperación a:\n\n${userEmail}?`}
+        confirmText="Enviar Email"
+        variant="info"
+      />
+
+      {/* Cancel Subscription - Step 1: Select Type */}
+      <SelectModal
+        isOpen={cancelTypeModal}
+        onClose={() => setCancelTypeModal(false)}
+        onSelect={handleCancelTypeSelected}
+        title="Tipo de Cancelación"
+        description="Selecciona cómo procesar la cancelación de la suscripción"
+        options={[
+          {
+            value: 'end_of_period',
+            label: 'Al final del período',
+            description: '✅ El usuario mantiene acceso hasta que expire el período pagado. Recomendado para cancelaciones normales.',
+            recommended: true,
+            color: 'green'
+          },
+          {
+            value: 'immediate',
+            label: 'Inmediata',
+            description: '⚠️ El usuario pierde acceso AHORA. Solo para casos graves: fraude, violación de términos, abuso.',
+            color: 'red'
+          }
+        ]}
+      />
+
+      {/* Cancel Subscription - Step 2: Reason */}
+      <InputModal
+        isOpen={cancelReasonModal}
+        onClose={() => setCancelReasonModal(false)}
+        onSubmit={handleCancelReasonSubmitted}
+        title="Razón de Cancelación"
+        description="Especifica el motivo de la cancelación (opcional)"
+        placeholder="Ej: Solicitud del usuario, fraude detectado, etc."
+        submitText="Continuar"
+        required={false}
+      />
+
+      {/* Cancel Subscription - Step 3: Confirm */}
+      <ConfirmModal
+        isOpen={cancelConfirmModal}
+        onClose={() => setCancelConfirmModal(false)}
+        onConfirm={executeCancelSubscription}
+        title="Confirmar Cancelación"
+        message={`¿Cancelar suscripción de ${userName}?\n\nTipo: ${
+          tempCancelType === 'immediate'
+            ? '⚠️ INMEDIATA (pierde acceso ahora)'
+            : '✅ Al final del período (mantiene acceso)'
+        }\nRazón: ${tempCancelReason || 'No especificada'}\n\n⚠️ Esta acción no se puede deshacer.`}
+        confirmText="Confirmar Cancelación"
+        variant={tempCancelType === 'immediate' ? 'danger' : 'warning'}
+      />
     </div>
   );
 }
