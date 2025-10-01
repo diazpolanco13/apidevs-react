@@ -83,8 +83,10 @@ export default function Pricing({ user, products, subscription, showHeader = tru
     setPriceIdLoading(undefined);
   };
 
-  // Obtener el producto principal (no lifetime)
-  const mainProduct = mainProducts.find(p => !p.name?.includes('Lifetime'));
+  // Obtener el producto principal (Plan Pro - no FREE ni Lifetime)
+  const mainProduct = mainProducts.find(p => 
+    p.name?.includes('Pro') && !p.name?.includes('FREE')
+  );
   const lifetimeProduct = mainProducts.find(p => p.name?.includes('Lifetime'));
 
   // Obtener precios específicos
@@ -97,6 +99,16 @@ export default function Pricing({ user, products, subscription, showHeader = tru
   const yearlyPrice = mainProduct?.prices?.find(price => 
     price.interval === 'year' && price.interval_count === 1
   );
+
+  // Debug logs
+  console.log('🔍 Pricing Debug:', {
+    mainProducts,
+    mainProduct,
+    lifetimeProduct,
+    monthlyPrice,
+    yearlyPrice,
+    lifetimePrice
+  });
   
   // Para Lifetime, buscar precio que no tenga intervalo (pago único) o usar el primer precio
   const lifetimePrice = lifetimeProduct?.prices?.find(price => 
