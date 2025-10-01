@@ -7,7 +7,9 @@ import {
   deleteProductRecord,
   deletePriceRecord,
   createPurchaseRecord,
-  handleInvoicePayment
+  handleInvoicePayment,
+  upsertPaymentIntentRecord,
+  upsertInvoiceRecord
 } from '@/utils/supabase/admin';
 import { updateReactivationStatus } from '@/data/migration/update_reactivation';
 
@@ -23,7 +25,16 @@ const relevantEvents = new Set([
   'customer.subscription.updated',
   'customer.subscription.deleted',
   'payment_intent.succeeded',
-  'invoice.payment_succeeded'
+  'payment_intent.created',
+  'payment_intent.processing',
+  'payment_intent.canceled',
+  'payment_intent.payment_failed',
+  'invoice.payment_succeeded',
+  'invoice.created',
+  'invoice.updated',
+  'invoice.finalized',
+  'invoice.paid',
+  'invoice.payment_failed'
 ]);
 
 export async function POST(req: Request) {
@@ -107,8 +118,15 @@ export async function POST(req: Request) {
           }
           break;
         case 'payment_intent.succeeded':
+        case 'payment_intent.created':
+        case 'payment_intent.processing':
+        case 'payment_intent.canceled':
+        case 'payment_intent.payment_failed':
           const paymentIntent = event.data.object as Stripe.PaymentIntent;
-          if (paymentIntent.customer) {
+          // Sincronizar payment intent con Supabase
+          await upsertPaymentIntentRecord(paymentIntent);
+          // Crear purchase record solo si succeeded
+          if (event.type === 'payment_intent.succeeded' && paymentIntent.customer) {
             const customer = await stripe.customers.retrieve(paymentIntent.customer as string);
             if (customer && !customer.deleted) {
               await createPurchaseRecord(paymentIntent, customer);
@@ -116,8 +134,18 @@ export async function POST(req: Request) {
           }
           break;
         case 'invoice.payment_succeeded':
+        case 'invoice.created':
+        case 'invoice.updated':
+        case 'invoice.finalized':
+        case 'invoice.paid':
+        case 'invoice.payment_failed':
           const invoice = event.data.object as Stripe.Invoice;
-          await handleInvoicePayment(invoice);
+          // Sincronizar invoice con Supabase
+          await upsertInvoiceRecord(invoice);
+          // Crear purchase record solo si payment_succeeded
+          if (event.type === 'invoice.payment_succeeded') {
+            await handleInvoicePayment(invoice);
+          }
           break;
         default:
           throw new Error('Unhandled relevant event!');

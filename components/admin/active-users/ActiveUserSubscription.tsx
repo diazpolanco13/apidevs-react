@@ -99,7 +99,7 @@ export default function ActiveUserSubscription({
     );
   };
 
-  const formatPrice = (amount: number | null, currency: string) => {
+  const formatPrice = (amount: number | null | undefined, currency: string) => {
     if (!amount) return 'N/A';
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
@@ -107,7 +107,7 @@ export default function ActiveUserSubscription({
     }).format(amount / 100);
   };
 
-  const formatInterval = (interval: string | null, intervalCount: number | null) => {
+  const formatInterval = (interval: string | null | undefined, intervalCount: number | null | undefined) => {
     if (!interval) return '';
     const count = intervalCount || 1;
     const periods: Record<string, string> = {

@@ -464,6 +464,125 @@ const handleInvoicePayment = async (invoice: Stripe.Invoice) => {
   }
 };
 
+// ==================== SINCRONIZACIÓN DE PAYMENT INTENTS ====================
+const upsertPaymentIntentRecord = async (paymentIntent: Stripe.PaymentIntent) => {
+  try {
+    // Obtener user_id desde el customer
+    let userId = null;
+    if (paymentIntent.customer) {
+      const customerId = typeof paymentIntent.customer === 'string' 
+        ? paymentIntent.customer 
+        : paymentIntent.customer.id;
+      
+      const { data: customerData } = await supabaseAdmin
+        .from('customers')
+        .select('id')
+        .eq('stripe_customer_id', customerId)
+        .single();
+      
+      userId = customerData?.id || null;
+    }
+
+    const paymentIntentData = {
+      id: paymentIntent.id,
+      user_id: userId,
+      customer_id: typeof paymentIntent.customer === 'string' 
+        ? paymentIntent.customer 
+        : paymentIntent.customer?.id || null,
+      amount: paymentIntent.amount,
+      amount_received: paymentIntent.amount_received || 0,
+      currency: paymentIntent.currency,
+      status: paymentIntent.status,
+      payment_method: typeof paymentIntent.payment_method === 'string'
+        ? paymentIntent.payment_method
+        : null,
+      payment_method_types: paymentIntent.payment_method_types || [],
+      description: paymentIntent.description || null,
+      receipt_email: paymentIntent.receipt_email || null,
+      metadata: paymentIntent.metadata || {},
+      created: toDateTime(paymentIntent.created),
+      updated: new Date().toISOString()
+    };
+
+    const { error } = await (supabaseAdmin as any)
+      .from('payment_intents')
+      .upsert([paymentIntentData], { onConflict: 'id' });
+
+    if (error) {
+      console.error('❌ Error upserting payment intent:', error);
+      throw new Error(`Payment Intent upsert failed: ${error.message}`);
+    }
+
+    console.log(`✅ Payment Intent synced: ${paymentIntent.id} - ${paymentIntent.status}`);
+  } catch (error) {
+    console.error('Error in upsertPaymentIntentRecord:', error);
+    throw error;
+  }
+};
+
+// ==================== SINCRONIZACIÓN DE INVOICES ====================
+const upsertInvoiceRecord = async (invoice: Stripe.Invoice) => {
+  try {
+    // Obtener user_id desde el customer
+    let userId = null;
+    if (invoice.customer) {
+      const customerId = typeof invoice.customer === 'string' 
+        ? invoice.customer 
+        : invoice.customer.id;
+      
+      const { data: customerData } = await supabaseAdmin
+        .from('customers')
+        .select('id')
+        .eq('stripe_customer_id', customerId)
+        .single();
+      
+      userId = customerData?.id || null;
+    }
+
+    const invoiceData = {
+      id: invoice.id,
+      user_id: userId,
+      customer_id: typeof invoice.customer === 'string' 
+        ? invoice.customer 
+        : (invoice.customer as any)?.id || null,
+      subscription_id: typeof (invoice as any).subscription === 'string'
+        ? (invoice as any).subscription
+        : (invoice as any).subscription?.id || null,
+      status: invoice.status || 'draft',
+      amount_due: invoice.amount_due,
+      amount_paid: invoice.amount_paid,
+      amount_remaining: invoice.amount_remaining,
+      currency: invoice.currency,
+      number: invoice.number || null,
+      invoice_pdf: invoice.invoice_pdf || null,
+      hosted_invoice_url: invoice.hosted_invoice_url || null,
+      due_date: invoice.due_date ? toDateTime(invoice.due_date) : null,
+      paid_at: invoice.status_transitions?.paid_at 
+        ? toDateTime(invoice.status_transitions.paid_at) 
+        : null,
+      collection_method: invoice.collection_method || null,
+      billing_reason: invoice.billing_reason || null,
+      metadata: invoice.metadata || {},
+      created: toDateTime(invoice.created),
+      updated: new Date().toISOString()
+    };
+
+    const { error } = await (supabaseAdmin as any)
+      .from('invoices')
+      .upsert([invoiceData], { onConflict: 'id' });
+
+    if (error) {
+      console.error('❌ Error upserting invoice:', error);
+      throw new Error(`Invoice upsert failed: ${error.message}`);
+    }
+
+    console.log(`✅ Invoice synced: ${invoice.id} - ${invoice.status}`);
+  } catch (error) {
+    console.error('Error in upsertInvoiceRecord:', error);
+    throw error;
+  }
+};
+
 export {
   supabaseAdmin,
   upsertProductRecord,
@@ -473,5 +592,7 @@ export {
   createOrRetrieveCustomer,
   manageSubscriptionStatusChange,
   createPurchaseRecord,
-  handleInvoicePayment
+  handleInvoicePayment,
+  upsertPaymentIntentRecord,
+  upsertInvoiceRecord
 };
