@@ -240,7 +240,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
       userId={params.id}
       userEmail={primaryEmail}
       userName={(user as any).full_name || 'Usuario sin nombre'}
-      subscriptionId={activeSubscription?.id || null}
+      subscriptionId={(activeSubscription as any)?.id || null}
       paymentIntents={(paymentIntents as any) || []}
     />
   );
