@@ -175,7 +175,7 @@ export default function ActiveUsersTable({
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <Link
                       href={`/admin/users/active/${user.id}`}
-                      className="text-apidevs-primary hover:text-green-400 font-medium transition-colors"
+                      className="inline-flex items-center gap-2 text-apidevs-primary hover:text-green-400 font-medium transition-colors"
                     >
                       Ver detalles →
                     </Link>
