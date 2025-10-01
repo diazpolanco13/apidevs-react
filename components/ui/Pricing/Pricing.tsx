@@ -43,7 +43,7 @@ export default function Pricing({ user, products, subscription, showHeader = tru
 
   // Filtrar productos de prueba y obtener solo los productos principales
   const mainProducts = products.filter(product => 
-    product.name?.includes('APIDevs Trading Indicators') && 
+    product.name?.includes('APIDevs indicator') && 
     !product.name?.includes('Test')
   );
 
