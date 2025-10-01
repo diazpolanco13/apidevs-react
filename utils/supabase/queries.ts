@@ -19,12 +19,15 @@ export const getSubscription = async (supabase: SupabaseClient<any, "public", an
 
   console.log('🔍 Fetching subscription for user:', user.id);
 
-  const { data: subscription, error } = await supabase
+  const { data: subscriptions, error } = await supabase
     .from('subscriptions')
     .select('*, prices(*, products(*))')
     .eq('user_id', user.id)  // Explicit user_id filter
     .in('status', ['trialing', 'active'])
-    .maybeSingle();
+    .order('created', { ascending: false });  // Most recent first
+  
+  // Take only the most recent active subscription
+  const subscription = subscriptions && subscriptions.length > 0 ? subscriptions[0] : null;
 
   if (error) {
     console.error('❌ Error fetching subscription:', error);
