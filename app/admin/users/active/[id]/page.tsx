@@ -191,6 +191,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
         <ActiveUserSubscription
           subscriptions={(subscriptions as any) || []}
           stripeCustomerId={(customer as any)?.stripe_customer_id}
+          paymentIntents={(paymentIntents as any) || []}
         />
 
         {/* Indicator Access */}

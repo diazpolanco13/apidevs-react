@@ -23,3 +23,13 @@
 .logo {
   @apply cursor-pointer rounded-full transform duration-100 ease-in-out flex items-center;
 }
+
+.logo:focus {
+  @apply outline-none;
+  box-shadow: none !important;
+}
+
+.logo:focus-visible {
+  @apply outline-none;
+  box-shadow: none !important;
+}

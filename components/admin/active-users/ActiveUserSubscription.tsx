@@ -35,19 +35,53 @@ interface Subscription {
   } | null;
 }
 
+interface PaymentIntent {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  created: string;
+  invoice_id?: string | null;
+}
+
 interface ActiveUserSubscriptionProps {
   subscriptions: Subscription[];
   stripeCustomerId?: string | null;
+  paymentIntents?: PaymentIntent[];
 }
 
 export default function ActiveUserSubscription({
   subscriptions,
-  stripeCustomerId
+  stripeCustomerId,
+  paymentIntents = []
 }: ActiveUserSubscriptionProps) {
   
   const activeSubscription = subscriptions.find(
     sub => ['active', 'trialing'].includes(sub.status)
   );
+
+  /**
+   * Obtiene el precio REAL que pagó el usuario para una suscripción.
+   * Esto es importante para usuarios con descuentos permanentes (loyalty, coupons, etc.)
+   * 
+   * @param subscriptionId - ID de la suscripción
+   * @param fallbackAmount - Precio base del producto como fallback
+   * @returns El monto real pagado o el fallback si no hay payment intents
+   */
+  const getActualPricePaid = (subscriptionId: string, fallbackAmount: number | null): number | null => {
+    // Buscar el último payment intent exitoso para esta suscripción
+    const successfulPayments = paymentIntents
+      .filter(pi => pi.status === 'succeeded')
+      .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
+
+    // Si hay pagos exitosos, usar el monto del más reciente
+    if (successfulPayments.length > 0) {
+      return successfulPayments[0].amount;
+    }
+
+    // Si no hay payment intents, usar el precio base del producto como fallback
+    return fallbackAmount;
+  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { icon: any; color: string; bgColor: string; borderColor: string; label: string }> = {
@@ -156,7 +190,10 @@ export default function ActiveUserSubscription({
                 {getStatusBadge(activeSubscription.status)}
                 <div className="text-right">
                   <div className="text-3xl font-bold text-apidevs-primary">
-                    {formatPrice(activeSubscription.prices?.unit_amount, activeSubscription.prices?.currency || 'usd')}
+                    {formatPrice(
+                      getActualPricePaid(activeSubscription.id, activeSubscription.prices?.unit_amount ?? null), 
+                      activeSubscription.prices?.currency || 'usd'
+                    )}
                   </div>
                   <div className="text-xs text-gray-400 mt-1">
                     {formatInterval(activeSubscription.prices?.interval, activeSubscription.prices?.interval_count)}
@@ -277,7 +314,10 @@ export default function ActiveUserSubscription({
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-bold text-apidevs-primary">
-                      {formatPrice(sub.prices?.unit_amount, sub.prices?.currency || 'usd')}
+                      {formatPrice(
+                        getActualPricePaid(sub.id, sub.prices?.unit_amount ?? null), 
+                        sub.prices?.currency || 'usd'
+                      )}
                     </p>
                     <p className="text-xs text-gray-400">
                       {formatInterval(sub.prices?.interval, sub.prices?.interval_count)}
