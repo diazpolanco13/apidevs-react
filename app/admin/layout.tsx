@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
-import AdminDashboardLayoutFull from '@/components/admin/AdminDashboardLayoutFull';
+import AdminDashboardLayout from '@/components/admin/AdminDashboardLayout';
 
 export default async function AdminLayout({
   children,
@@ -24,10 +24,12 @@ export default async function AdminLayout({
     return redirect('/?message=Acceso%20denegado%20-%20Solo%20el%20administrador%20puede%20acceder%20al%20panel');
   }
 
+  const userName = user.email?.split('@')[0] || 'Admin';
+
   return (
-    <div className="fixed inset-0 z-50 bg-gray-900">
-      <AdminDashboardLayoutFull user={user}>{children}</AdminDashboardLayoutFull>
-    </div>
+    <AdminDashboardLayout userName={userName}>
+      {children}
+    </AdminDashboardLayout>
   );
 }
 

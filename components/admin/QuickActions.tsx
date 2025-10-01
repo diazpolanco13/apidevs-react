@@ -35,19 +35,23 @@ export default function QuickActions() {
   ];
 
   return (
-    <div className="bg-black/30 backdrop-blur-xl border border-apidevs-primary/20 rounded-lg shadow-lg p-6">
-      <h2 className="text-xl font-bold text-white mb-4">Acciones Rápidas</h2>
-      <div className="space-y-4">
+    <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+      <h3 className="text-xl font-bold text-white mb-6">Acciones Rápidas</h3>
+      <div className="space-y-3">
         {actions.map((action) => (
           <Link
             key={action.name}
             href={action.href}
-            className="flex items-start p-4 bg-gray-800/50 rounded-md hover:bg-gray-700/50 transition-colors duration-200"
+            className="flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-apidevs-primary/50 rounded-xl transition-all group"
           >
-            <action.icon className="h-6 w-6 text-apidevs-primary mr-4 flex-shrink-0" aria-hidden="true" />
-            <div>
-              <h3 className="text-lg font-semibold text-white">{action.name}</h3>
-              <p className="text-sm text-gray-400">{action.description}</p>
+            <div className="w-10 h-10 bg-apidevs-primary/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-apidevs-primary/30 transition-colors">
+              <action.icon className="h-5 w-5 text-apidevs-primary" aria-hidden="true" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-white mb-0.5 group-hover:text-apidevs-primary transition-colors truncate">
+                {action.name}
+              </h4>
+              <p className="text-sm text-gray-400 line-clamp-1">{action.description}</p>
             </div>
           </Link>
         ))}

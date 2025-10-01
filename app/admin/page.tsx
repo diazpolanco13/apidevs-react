@@ -2,18 +2,19 @@ import { Suspense } from 'react';
 import DashboardStats from '@/components/admin/DashboardStats';
 import RecentActivity from '@/components/admin/RecentActivity';
 import QuickActions from '@/components/admin/QuickActions';
+import Link from 'next/link';
+import { Users, BarChart3, ArrowRight, Sparkles } from 'lucide-react';
 
 export default async function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-gray-700 pb-4">
-        <h1 className="text-2xl font-bold text-white">
+      <div>
+        <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-2">
           Dashboard Administrativo
+          <Sparkles className="w-7 h-7 text-purple-400 animate-pulse" />
         </h1>
-        <p className="mt-1 text-gray-400">
-          Gestión completa de usuarios legacy y analytics de APIDevs Trading Platform
-        </p>
+        <p className="text-gray-400">Gestión completa de usuarios legacy y analytics de APIDevs Trading Platform</p>
       </div>
 
       {/* Stats Cards con datos reales de Supabase */}
@@ -21,13 +22,43 @@ export default async function AdminDashboard() {
         <DashboardStats />
       </Suspense>
 
+      {/* Quick Access Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Link
+          href="/admin/users"
+          className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-6 hover:border-blue-500/50 transition-all group"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <Users className="w-8 h-8 text-blue-400" />
+            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">Usuarios Legacy</h3>
+          <p className="text-sm text-gray-400">Gestionar base de datos completa de 6,477 usuarios</p>
+        </Link>
+
+        <Link
+          href="/account"
+          className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 hover:border-purple-500/50 transition-all group"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <BarChart3 className="w-8 h-8 text-purple-400" />
+            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">Mi Perfil Personal</h3>
+          <p className="text-sm text-gray-400">Ir a mi cuenta de usuario y suscripción</p>
+        </Link>
+      </div>
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Activity - 2 columnas */}
         <div className="lg:col-span-2">
-          <Suspense fallback={<ActivityLoadingSkeleton />}>
-            <RecentActivity />
-          </Suspense>
+          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+            <h3 className="text-xl font-bold text-white mb-6">Actividad Reciente</h3>
+            <Suspense fallback={<ActivityLoadingSkeleton />}>
+              <RecentActivity />
+            </Suspense>
+          </div>
         </div>
 
         {/* Quick Actions - 1 columna */}
@@ -37,24 +68,32 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Status Message */}
-      <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-6">
-        <div className="flex items-start">
-          <div className="flex-shrink-0">
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold">✓</span>
-            </div>
+      <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-2xl p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-xl">✓</span>
           </div>
-          <div className="ml-4">
-            <h3 className="text-lg font-medium text-green-400">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-white mb-2">
               Sistema Operativo al 100%
             </h3>
-            <div className="mt-2 text-sm text-green-300">
-              <p>
-                • Base de datos conectada y sincronizada<br/>
-                • 6,477 usuarios legacy disponibles para gestión<br/>
-                • 3,269 compras históricas analizables<br/>
-                • Dashboard listo para funcionalidades avanzadas
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-300">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                <span>Base de datos conectada y sincronizada</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                <span>6,477 usuarios legacy disponibles</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                <span>3,269 compras históricas analizables</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                <span>Dashboard listo para expansión</span>
+              </div>
             </div>
           </div>
         </div>

@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { signInWithPassword } from '@/utils/auth-helpers/server';
 import { handleRequest } from '@/utils/auth-helpers/client';
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
-import Toast from '@/components/ui/Toast';
+import React, { useState } from 'react';
 
 // Define prop type with allowEmail boolean
 interface PasswordSignInProps {
@@ -22,7 +21,6 @@ export default function PasswordSignIn({
 }: PasswordSignInProps) {
   const router = redirectMethod === 'client' ? useRouter() : null;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showToast, setShowToast] = useState(false);
 
   // Traducir errores al español
   const translateError = (errorMsg: string) => {
@@ -37,13 +35,6 @@ export default function PasswordSignIn({
     return translations[errorMsg] || errorMsg;
   };
 
-  // Mostrar toast cuando hay error
-  useEffect(() => {
-    if (error) {
-      setShowToast(true);
-    }
-  }, [error]);
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setIsSubmitting(true); // Disable the button while the request is being handled
     await handleRequest(e, signInWithPassword, router);
@@ -52,14 +43,37 @@ export default function PasswordSignIn({
 
   return (
     <div>
-      {/* Toast Notification */}
-      {showToast && error && (
-        <Toast
-          message={translateError(error)}
-          type="error"
-          duration={5000}
-          onClose={() => setShowToast(false)}
-        />
+      {/* Error Message - Inline */}
+      {error && (
+        <div className="mb-4 p-4 bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-xl border border-red-500/50 rounded-lg animate-slide-in">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="flex-1">
+              <p className="text-red-100 font-medium text-sm leading-relaxed">
+                {translateError(error)}
+              </p>
+            </div>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                // Ocultar mensaje (requiere recargar para mostrarlo de nuevo)
+                const url = new URL(window.location.href);
+                url.searchParams.delete('error');
+                url.searchParams.delete('error_description');
+                window.history.replaceState({}, '', url.toString());
+                window.location.reload();
+              }}
+              className="text-gray-400 hover:text-white transition-colors flex-shrink-0"
+              type="button"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
       )}
 
       <form
