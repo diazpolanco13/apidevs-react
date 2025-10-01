@@ -8,15 +8,33 @@ export const getUser = cache(async (supabase: SupabaseClient<any, "public", any>
   return user;
 });
 
-export const getSubscription = cache(async (supabase: SupabaseClient<any, "public", any>) => {
+export const getSubscription = async (supabase: SupabaseClient<any, "public", any>) => {
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    console.log('❌ No user found in getSubscription');
+    return null;
+  }
+
+  console.log('🔍 Fetching subscription for user:', user.id);
+
   const { data: subscription, error } = await supabase
     .from('subscriptions')
     .select('*, prices(*, products(*))')
+    .eq('user_id', user.id)  // Explicit user_id filter
     .in('status', ['trialing', 'active'])
     .maybeSingle();
 
+  if (error) {
+    console.error('❌ Error fetching subscription:', error);
+    return null;
+  }
+
+  console.log('✅ Subscription found:', subscription ? `${subscription.status} - ${subscription.id}` : 'null');
+
   return subscription;
-});
+};
 
 export const getProducts = cache(async (supabase: SupabaseClient<any, "public", any>) => {
   const { data: products, error } = await supabase
