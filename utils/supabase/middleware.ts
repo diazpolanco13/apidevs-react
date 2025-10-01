@@ -62,38 +62,47 @@ export const createClient = (request: NextRequest) => {
 
 export const updateSession = async (request: NextRequest) => {
   try {
+    // Check if this is a protected route that needs auth verification
+    const { pathname } = request.nextUrl;
+    const isPublicRoute = pathname === '/' || 
+                          pathname.startsWith('/pricing') ||
+                          pathname.startsWith('/signin') ||
+                          pathname.startsWith('/auth');
+    
     const { supabase, response } = createClient(request);
 
-    // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
-    const { data: { user }, error } = await supabase.auth.getUser();
+    // Only verify auth for protected routes or if auth cookies exist
+    const hasAuthCookies = request.cookies.has('sb-zzieiqxlxfydvexalbsr-auth-token');
+    
+    if (!isPublicRoute || hasAuthCookies) {
+      // This will refresh session if expired - required for Server Components
+      // https://supabase.com/docs/guides/auth/server-side/nextjs
+      const { data: { user }, error } = await supabase.auth.getUser();
 
-    // Only clear cookies on SPECIFIC critical errors that indicate corruption
-    // Don't clear for "Auth session missing!" which is normal for logged-out users
-    if (error && (
-      error.message?.includes('refresh_token_not_found') ||
-      error.message?.includes('invalid_grant') ||
-      error.status === 429 // Rate limit
-    )) {
-      console.warn('Auth error requiring cookie reset:', error.message);
-      
-      // Clear the invalid session cookies
-      const clearedResponse = NextResponse.next({
-        request: {
-          headers: request.headers
-        }
-      });
-      
-      // Clear ALL auth cookies for this project
-      clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token');
-      clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token.0');
-      clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token.1');
-      
-      return clearedResponse;
+      // Only clear cookies on SPECIFIC critical errors that indicate corruption
+      if (error && (
+        error.message?.includes('refresh_token_not_found') ||
+        error.message?.includes('invalid_grant')
+      )) {
+        console.warn('Auth error requiring cookie reset:', error.message);
+        
+        // Clear the invalid session cookies
+        const clearedResponse = NextResponse.next({
+          request: {
+            headers: request.headers
+          }
+        });
+        
+        // Clear ALL auth cookies for this project
+        clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token');
+        clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token.0');
+        clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token.1');
+        
+        return clearedResponse;
+      }
     }
 
-    // For other errors (like "Auth session missing!"), just continue normally
-    // This is expected for non-authenticated pages
+    // For public routes without auth cookies, skip auth check entirely
     return response;
   } catch (e) {
     console.error('Supabase middleware error:', e);
