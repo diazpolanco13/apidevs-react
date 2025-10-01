@@ -29,8 +29,15 @@ export default function PasswordSignIn({
       'Email not confirmed': 'Debes confirmar tu email antes de iniciar sesión',
       'Invalid email': 'Email inválido',
       'User not found': 'Usuario no encontrado',
-      'Sign in failed.': 'Error al iniciar sesión. Verifica tus credenciales.'
+      'Sign in failed.': 'Error al iniciar sesión. Verifica tus credenciales.',
+      'Request rate limit reached': '⏰ Demasiados intentos. Por favor espera 15 minutos e intenta nuevamente.',
+      'over_request_rate_limit': '⏰ Demasiados intentos. Por favor espera 15 minutos e intenta nuevamente.'
     };
+    
+    // Check if error message contains rate limit keywords
+    if (errorMsg.toLowerCase().includes('rate limit') || errorMsg.toLowerCase().includes('too many')) {
+      return '⏰ Demasiados intentos de inicio de sesión. Por favor espera 15-60 minutos e intenta nuevamente. Si el problema persiste, contacta a soporte.';
+    }
     
     return translations[errorMsg] || errorMsg;
   };
