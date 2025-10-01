@@ -68,11 +68,16 @@ export const updateSession = async (request: NextRequest) => {
     // https://supabase.com/docs/guides/auth/server-side/nextjs
     const { data: { user }, error } = await supabase.auth.getUser();
 
-    // Handle ANY auth error gracefully to prevent rate limit loops
-    if (error) {
-      console.warn('Auth error in middleware:', error.message);
+    // Only clear cookies on SPECIFIC critical errors that indicate corruption
+    // Don't clear for "Auth session missing!" which is normal for logged-out users
+    if (error && (
+      error.message?.includes('refresh_token_not_found') ||
+      error.message?.includes('invalid_grant') ||
+      error.status === 429 // Rate limit
+    )) {
+      console.warn('Auth error requiring cookie reset:', error.message);
       
-      // Clear the invalid session cookies for ANY error
+      // Clear the invalid session cookies
       const clearedResponse = NextResponse.next({
         request: {
           headers: request.headers
@@ -87,21 +92,16 @@ export const updateSession = async (request: NextRequest) => {
       return clearedResponse;
     }
 
+    // For other errors (like "Auth session missing!"), just continue normally
+    // This is expected for non-authenticated pages
     return response;
   } catch (e) {
     console.error('Supabase middleware error:', e);
-    
-    // Clear cookies on ANY catch error
-    const clearedResponse = NextResponse.next({
+    // Don't clear cookies on general errors, just return the response
+    return NextResponse.next({
       request: {
         headers: request.headers
       }
     });
-    
-    clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token');
-    clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token.0');
-    clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token.1');
-    
-    return clearedResponse;
   }
 };
