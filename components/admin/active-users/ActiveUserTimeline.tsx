@@ -374,21 +374,25 @@ export default function ActiveUserTimeline({
           </div>
         ) : (
           <div className="relative">
-            {/* Timeline Line */}
-            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-cyan-500/50 via-purple-500/50 to-transparent"></div>
-
             {/* Events */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               {events.map((event, index) => {
                 const Icon = event.icon;
+                const isLast = index === events.length - 1;
+                
                 return (
                   <div
                     key={event.id}
-                    className="relative pl-20 pb-4 group"
+                    className="relative pl-20 group"
                   >
+                    {/* Timeline Line - behind icon */}
+                    {!isLast && (
+                      <div className="absolute left-7 top-16 bottom-0 w-0.5 bg-gradient-to-b from-cyan-500/30 via-purple-500/30 to-transparent -mb-6"></div>
+                    )}
+
                     {/* Icon */}
-                    <div className={`absolute left-0 w-16 h-16 rounded-xl border ${event.borderColor} ${event.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                      <Icon className={`w-7 h-7 ${event.color}`} />
+                    <div className={`absolute left-0 w-14 h-14 rounded-xl border-2 ${event.borderColor} ${event.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform z-10`}>
+                      <Icon className={`w-6 h-6 ${event.color}`} />
                     </div>
 
                     {/* Content */}
