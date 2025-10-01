@@ -48,6 +48,8 @@ export default function ActiveUserActions({
   const [tempCancelReason, setTempCancelReason] = useState<string>('');
   const [tempRefundPayment, setTempRefundPayment] = useState<any>(null);
   const [tempRefundReason, setTempRefundReason] = useState<string>('');
+  const [tempRefundAmount, setTempRefundAmount] = useState<string>('');
+  const [tempEmailTemplate, setTempEmailTemplate] = useState<string>('');
   const [tempEmailSubject, setTempEmailSubject] = useState<string>('');
   const [tempEmailMessage, setTempEmailMessage] = useState<string>('');
   
@@ -128,8 +130,8 @@ export default function ActiveUserActions({
     }
   };
   
-  // Process Refund
-  const handleProcessRefund = async () => {
+  // Process Refund - Multi-step flow
+  const startRefundProcess = () => {
     const successfulPayments = paymentIntents.filter(pi => pi.status === 'succeeded');
     
     if (successfulPayments.length === 0) {
@@ -137,31 +139,21 @@ export default function ActiveUserActions({
       return;
     }
     
-    // Mostrar lista de pagos
-    const paymentList = successfulPayments
-      .map((pi, i) => `${i + 1}. $${(pi.amount / 100).toFixed(2)} ${pi.currency.toUpperCase()} - ${pi.id}`)
-      .join('\n');
-    
-    const selection = prompt(`Selecciona el pago a reembolsar (número):\n\n${paymentList}`);
-    if (!selection) return;
-    
-    const index = parseInt(selection) - 1;
-    if (isNaN(index) || index < 0 || index >= successfulPayments.length) {
-      setMessage({ type: 'error', text: 'Selección inválida' });
-      return;
-    }
-    
-    const selectedPayment = successfulPayments[index];
-    
-    const reason = prompt('Razón del reembolso:\n1. duplicate\n2. fraudulent\n3. requested_by_customer\n\nEscribe el número:');
-    const reasonMap: Record<string, string> = {
-      '1': 'duplicate',
-      '2': 'fraudulent',
-      '3': 'requested_by_customer'
-    };
-    
-    if (!confirm(`¿Reembolsar $${(selectedPayment.amount / 100).toFixed(2)} ${selectedPayment.currency.toUpperCase()} a ${userName}?`)) return;
-    
+    setRefundSelectModal(true);
+  };
+  
+  const handleRefundPaymentSelected = (paymentId: string) => {
+    const payment = paymentIntents.find((pi: any) => pi.id === paymentId);
+    setTempRefundPayment(payment);
+    setRefundReasonModal(true);
+  };
+  
+  const handleRefundReasonSelected = (reason: string) => {
+    setTempRefundReason(reason);
+    setRefundConfirmModal(true);
+  };
+  
+  const executeRefund = async () => {
     setLoading('process-refund');
     setMessage(null);
     
@@ -170,8 +162,8 @@ export default function ActiveUserActions({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          paymentIntentId: selectedPayment.id,
-          reason: reasonMap[reason || '3'] || 'requested_by_customer'
+          paymentIntentId: tempRefundPayment.id,
+          reason: tempRefundReason
         })
       });
       
@@ -183,8 +175,8 @@ export default function ActiveUserActions({
       
       setMessage({ type: 'success', text: data.message });
       
-      // Recargar página después de 2 segundos
-      setTimeout(() => window.location.reload(), 2000);
+      // Recargar página después de 3 segundos
+      setTimeout(() => window.location.reload(), 3000);
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message });
     } finally {
@@ -192,16 +184,22 @@ export default function ActiveUserActions({
     }
   };
   
-  // Send Email
-  const handleSendEmail = async () => {
-    const subject = prompt(`Asunto del email para ${userName}:`);
-    if (!subject) return;
-    
-    const message = prompt('Mensaje (puede incluir HTML):');
-    if (!message) return;
-    
-    if (!confirm(`¿Enviar email a ${userEmail}?`)) return;
-    
+  // Send Email - Multi-step flow
+  const startEmailProcess = () => {
+    setEmailSubjectModal(true);
+  };
+  
+  const handleEmailSubjectSubmitted = (subject: string) => {
+    setTempEmailSubject(subject);
+    setEmailMessageModal(true);
+  };
+  
+  const handleEmailMessageSubmitted = (message: string) => {
+    setTempEmailMessage(message);
+    setEmailConfirmModal(true);
+  };
+  
+  const executeSendEmail = async () => {
     setLoading('send-email');
     setMessage(null);
     
@@ -211,8 +209,8 @@ export default function ActiveUserActions({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           to: userEmail,
-          subject,
-          message,
+          subject: tempEmailSubject,
+          message: tempEmailMessage,
           template: 'custom'
         })
       });
@@ -321,7 +319,7 @@ export default function ActiveUserActions({
             {paymentIntents.filter(pi => pi.status === 'succeeded').length} pagos disponibles
           </p>
           <button 
-            onClick={() => alert('Modales de reembolso próximamente')}
+            onClick={startRefundProcess}
             disabled={loading !== null || paymentIntents.filter(pi => pi.status === 'succeeded').length === 0}
             className="w-full px-4 py-2 bg-red-500/20 text-red-400 rounded-lg border border-red-500/30 text-sm hover:bg-red-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
@@ -344,7 +342,7 @@ export default function ActiveUserActions({
             Comunicación directa con {userName}
           </p>
           <button 
-            onClick={() => alert('Modales de email próximamente')}
+            onClick={startEmailProcess}
             disabled={loading !== null}
             className="w-full px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg border border-purple-500/30 text-sm hover:bg-purple-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
@@ -448,6 +446,110 @@ export default function ActiveUserActions({
         }\nRazón: ${tempCancelReason || 'No especificada'}\n\n⚠️ Esta acción no se puede deshacer.`}
         confirmText="Confirmar Cancelación"
         variant={tempCancelType === 'immediate' ? 'danger' : 'warning'}
+      />
+
+      {/* Refund - Step 1: Select Payment */}
+      <SelectModal
+        isOpen={refundSelectModal}
+        onClose={() => setRefundSelectModal(false)}
+        onSelect={handleRefundPaymentSelected}
+        title="Seleccionar Pago a Reembolsar"
+        description="Elige el payment intent que deseas reembolsar"
+        options={paymentIntents
+          .filter((pi: any) => pi.status === 'succeeded')
+          .map((pi: any) => ({
+            value: pi.id,
+            label: `$${(pi.amount / 100).toFixed(2)} ${(pi.currency || 'USD').toUpperCase()}`,
+            description: `Payment Intent: ${pi.id}\nFecha: ${new Date(pi.created).toLocaleDateString('es-ES', { 
+              day: 'numeric', 
+              month: 'long', 
+              year: 'numeric' 
+            })}\nMétodo: ${pi.payment_method_types?.join(', ') || 'N/A'}`,
+            color: 'blue'
+          }))}
+      />
+
+      {/* Refund - Step 2: Select Reason */}
+      <SelectModal
+        isOpen={refundReasonModal}
+        onClose={() => setRefundReasonModal(false)}
+        onSelect={handleRefundReasonSelected}
+        title="Razón del Reembolso"
+        description="Selecciona el motivo por el cual se procesa este reembolso"
+        options={[
+          {
+            value: 'requested_by_customer',
+            label: 'Solicitado por el cliente',
+            description: '✅ El cliente solicitó el reembolso. Caso normal y común.',
+            recommended: true,
+            color: 'green'
+          },
+          {
+            value: 'duplicate',
+            label: 'Pago duplicado',
+            description: '🔄 Se detectó un cargo duplicado accidental.',
+            color: 'blue'
+          },
+          {
+            value: 'fraudulent',
+            label: 'Fraudulento',
+            description: '⚠️ Transacción fraudulenta o no autorizada.',
+            color: 'red'
+          }
+        ]}
+      />
+
+      {/* Refund - Step 3: Confirm */}
+      <ConfirmModal
+        isOpen={refundConfirmModal}
+        onClose={() => setRefundConfirmModal(false)}
+        onConfirm={executeRefund}
+        title="Confirmar Reembolso"
+        message={tempRefundPayment ? `¿Procesar reembolso completo?\n\nUsuario: ${userName}\nMonto: $${(tempRefundPayment.amount / 100).toFixed(2)} ${(tempRefundPayment.currency || 'USD').toUpperCase()}\nRazón: ${
+          tempRefundReason === 'requested_by_customer' 
+            ? 'Solicitado por cliente' 
+            : tempRefundReason === 'duplicate' 
+              ? 'Pago duplicado' 
+              : 'Fraudulento'
+        }\n\n⚠️ El reembolso puede tardar 5-10 días hábiles en reflejarse.` : ''}
+        confirmText="Procesar Reembolso"
+        variant="danger"
+      />
+
+      {/* Email - Step 1: Subject */}
+      <InputModal
+        isOpen={emailSubjectModal}
+        onClose={() => setEmailSubjectModal(false)}
+        onSubmit={handleEmailSubjectSubmitted}
+        title="Asunto del Email"
+        description={`Email para ${userName} (${userEmail})`}
+        placeholder="Ej: Actualización importante de tu cuenta"
+        submitText="Continuar"
+        required={true}
+      />
+
+      {/* Email - Step 2: Message */}
+      <InputModal
+        isOpen={emailMessageModal}
+        onClose={() => setEmailMessageModal(false)}
+        onSubmit={handleEmailMessageSubmitted}
+        title="Mensaje del Email"
+        description="Escribe el contenido del email (soporta HTML básico)"
+        placeholder={`Hola ${userName},\n\nTu mensaje aquí...\n\nSaludos,\nEquipo APIDevs`}
+        submitText="Continuar"
+        multiline={true}
+        required={true}
+      />
+
+      {/* Email - Step 3: Confirm */}
+      <ConfirmModal
+        isOpen={emailConfirmModal}
+        onClose={() => setEmailConfirmModal(false)}
+        onConfirm={executeSendEmail}
+        title="Confirmar Envío de Email"
+        message={`¿Enviar email a ${userName}?\n\nDe: APIDevs\nPara: ${userEmail}\nAsunto: ${tempEmailSubject}\n\nPreview:\n${tempEmailMessage.substring(0, 100)}${tempEmailMessage.length > 100 ? '...' : ''}`}
+        confirmText="Enviar Email"
+        variant="info"
       />
     </div>
   );
