@@ -5,7 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { MagnifyingGlassIcon, XMarkIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import { useDebounce } from '@/hooks/useDebounce';
 
-export default function SearchBar() {
+interface SearchBarProps {
+  placeholder?: string;
+}
+
+export default function SearchBar({ placeholder = "Buscar por email, nombre o username..." }: SearchBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
@@ -80,7 +84,7 @@ export default function SearchBar() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por email, nombre o username..."
+              placeholder={placeholder}
               className="w-full pl-12 pr-12 py-3.5 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
             />
             {searchTerm && (

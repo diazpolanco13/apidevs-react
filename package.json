@@ -36,6 +36,7 @@
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "country-state-city": "^3.2.1",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.23.13",
     "groq": "^4.9.0",
     "lucide-react": "^0.330.0",
