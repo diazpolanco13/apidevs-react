@@ -457,16 +457,35 @@ export default function ActiveUserActions({
         description="Elige el payment intent que deseas reembolsar"
         options={paymentIntents
           .filter((pi: any) => pi.status === 'succeeded')
-          .map((pi: any) => ({
-            value: pi.id,
-            label: `$${(pi.amount / 100).toFixed(2)} ${(pi.currency || 'USD').toUpperCase()}`,
-            description: `Payment Intent: ${pi.id}\nFecha: ${new Date(pi.created).toLocaleDateString('es-ES', { 
-              day: 'numeric', 
-              month: 'long', 
-              year: 'numeric' 
-            })}\nMétodo: ${pi.payment_method_types?.join(', ') || 'N/A'}`,
-            color: 'blue'
-          }))}
+          .map((pi: any) => {
+            const isRefunded = pi.refunded || (pi.amount_refunded && pi.amount_refunded >= pi.amount);
+            const isPartiallyRefunded = pi.amount_refunded > 0 && pi.amount_refunded < pi.amount;
+            
+            return {
+              value: pi.id,
+              label: `$${(pi.amount / 100).toFixed(2)} ${(pi.currency || 'USD').toUpperCase()}`,
+              description: isRefunded 
+                ? `💸 REEMBOLSADO COMPLETO\nReembolsado: $${(pi.amount_refunded / 100).toFixed(2)}\nFecha: ${new Date(pi.created).toLocaleDateString('es-ES', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                  })}\n\n⚠️ Este pago ya fue reembolsado completamente.`
+                : isPartiallyRefunded
+                  ? `💸 REEMBOLSO PARCIAL\nReembolsado: $${(pi.amount_refunded / 100).toFixed(2)} de $${(pi.amount / 100).toFixed(2)}\nFecha: ${new Date(pi.created).toLocaleDateString('es-ES', { 
+                      day: 'numeric', 
+                      month: 'long', 
+                      year: 'numeric' 
+                    })}\nMétodo: ${pi.payment_method_types?.join(', ') || 'N/A'}\n\n⚠️ Este pago ya tiene reembolsos parciales.`
+                  : `Payment Intent: ${pi.id}\nFecha: ${new Date(pi.created).toLocaleDateString('es-ES', { 
+                      day: 'numeric', 
+                      month: 'long', 
+                      year: 'numeric' 
+                    })}\nMétodo: ${pi.payment_method_types?.join(', ') || 'N/A'}`,
+              color: isRefunded ? 'gray' : isPartiallyRefunded ? 'orange' : 'blue',
+              disabled: isRefunded,
+              badge: isRefunded ? '💸 Ya Reembolsado' : isPartiallyRefunded ? '⚠️ Reembolso Parcial' : undefined
+            };
+          })}
       />
 
       {/* Refund - Step 2: Select Reason */}
