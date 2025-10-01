@@ -105,16 +105,6 @@ export default function Pricing({ user, products, subscription, showHeader = tru
     !price.interval || price.interval === null
   ) || lifetimeProduct?.prices?.[0];
 
-  // Debug logs
-  console.log('🔍 Pricing Debug:', {
-    mainProducts,
-    mainProduct,
-    lifetimeProduct,
-    monthlyPrice,
-    yearlyPrice,
-    lifetimePrice
-  });
-
   // Si no hay producto Lifetime en Stripe, crear uno mock para desarrollo
   const lifetimePriceMock = !lifetimePrice ? {
     id: 'price_lifetime_mock',
