@@ -21,6 +21,22 @@ export default async function SuscripcionPage() {
     return redirect('/signin');
   }
 
+  // Obtener el último payment intent exitoso para mostrar el precio REAL pagado
+  let actualPricePaid: number | null = null;
+  if (subscription) {
+    const { data: paymentIntents } = await supabase
+      .from('payment_intents')
+      .select('amount, status')
+      .eq('user_id', user.id)
+      .eq('status', 'succeeded')
+      .order('created', { ascending: false })
+      .limit(1) as { data: { amount: number; status: string }[] | null };
+
+    if (paymentIntents && paymentIntents.length > 0) {
+      actualPricePaid = paymentIntents[0].amount;
+    }
+  }
+
   const productName = subscription?.prices?.products?.name || 'Free';
   const interval = subscription?.prices?.interval;
   
@@ -86,7 +102,7 @@ export default async function SuscripcionPage() {
                   style: 'currency',
                   currency: subscription.prices?.currency || 'USD',
                   minimumFractionDigits: 0
-                }).format((subscription.prices?.unit_amount || 0) / 100)}
+                }).format((actualPricePaid || subscription.prices?.unit_amount || 0) / 100)}
               </div>
               <div className="text-sm text-gray-400">
                 /{subscription.prices?.interval}
@@ -232,7 +248,11 @@ export default async function SuscripcionPage() {
           </div>
           <h2 className="text-xl font-bold text-white">Historial de Pagos</h2>
         </div>
-        <PaymentHistory subscription={subscription} userEmail={user.email || ''} />
+        <PaymentHistory 
+          subscription={subscription} 
+          userEmail={user.email || ''} 
+          actualPricePaid={actualPricePaid}
+        />
       </div>
     </div>
   );
