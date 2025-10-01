@@ -68,16 +68,18 @@ export const updateSession = async (request: NextRequest) => {
     // https://supabase.com/docs/guides/auth/server-side/nextjs
     const { data: { user }, error } = await supabase.auth.getUser();
 
-    // Handle refresh token errors gracefully
-    if (error && error.message?.includes('refresh_token_not_found')) {
-      // Clear the invalid session cookies
+    // Handle ANY auth error gracefully to prevent rate limit loops
+    if (error) {
+      console.warn('Auth error in middleware:', error.message);
+      
+      // Clear the invalid session cookies for ANY error
       const clearedResponse = NextResponse.next({
         request: {
           headers: request.headers
         }
       });
       
-      // Clear auth cookies for this project
+      // Clear ALL auth cookies for this project
       clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token');
       clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token.0');
       clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token.1');
@@ -88,11 +90,18 @@ export const updateSession = async (request: NextRequest) => {
     return response;
   } catch (e) {
     console.error('Supabase middleware error:', e);
-    // Return clean response if there's any error
-    return NextResponse.next({
+    
+    // Clear cookies on ANY catch error
+    const clearedResponse = NextResponse.next({
       request: {
         headers: request.headers
       }
     });
+    
+    clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token');
+    clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token.0');
+    clearedResponse.cookies.delete('sb-zzieiqxlxfydvexalbsr-auth-token.1');
+    
+    return clearedResponse;
   }
 };
