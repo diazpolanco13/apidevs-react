@@ -21,19 +21,21 @@ export default async function SuscripcionPage() {
     return redirect('/signin');
   }
 
-  // Obtener el último payment intent exitoso para mostrar el precio REAL pagado
+  // Obtener el último payment intent exitoso para mostrar el precio REAL pagado y la fecha
   let actualPricePaid: number | null = null;
+  let lastPaymentDate: string | null = null;
   if (subscription) {
     const { data: paymentIntents } = await supabase
       .from('payment_intents')
-      .select('amount, status')
+      .select('amount, status, created')
       .eq('user_id', user.id)
       .eq('status', 'succeeded')
       .order('created', { ascending: false })
-      .limit(1) as { data: { amount: number; status: string }[] | null };
+      .limit(1) as { data: { amount: number; status: string; created: string }[] | null };
 
     if (paymentIntents && paymentIntents.length > 0) {
       actualPricePaid = paymentIntents[0].amount;
+      lastPaymentDate = paymentIntents[0].created;
     }
   }
 
@@ -252,6 +254,7 @@ export default async function SuscripcionPage() {
           subscription={subscription} 
           userEmail={user.email || ''} 
           actualPricePaid={actualPricePaid}
+          lastPaymentDate={lastPaymentDate}
         />
       </div>
     </div>
