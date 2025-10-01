@@ -63,10 +63,35 @@ export default function ActiveUserActions({
       return;
     }
     
-    const reason = prompt('Razón de cancelación (opcional):');
-    if (reason === null) return; // User clicked cancel
+    // Seleccionar tipo de cancelación
+    const cancelType = prompt(
+      `Tipo de cancelación:\n\n` +
+      `1 = INMEDIATA (pierde acceso ahora - casos graves)\n` +
+      `2 = AL FINAL DEL PERÍODO (mantiene acceso hasta vencimiento)\n\n` +
+      `Escribe el número (2 recomendado):`
+    );
     
-    if (!confirm(`¿Cancelar suscripción de ${userName}? Esta acción no se puede deshacer.`)) return;
+    if (!cancelType) return;
+    
+    const cancelTypeMap: Record<string, string> = {
+      '1': 'immediate',
+      '2': 'end_of_period'
+    };
+    
+    const selectedType = cancelTypeMap[cancelType] || 'end_of_period';
+    const typeText = selectedType === 'immediate' 
+      ? '⚠️ INMEDIATA (pierde acceso ahora)' 
+      : '✅ Al final del período (mantiene acceso)';
+    
+    const reason = prompt('Razón de cancelación (opcional):');
+    if (reason === null) return;
+    
+    if (!confirm(
+      `¿Cancelar suscripción de ${userName}?\n\n` +
+      `Tipo: ${typeText}\n` +
+      `Razón: ${reason || 'No especificada'}\n\n` +
+      `Esta acción no se puede deshacer.`
+    )) return;
     
     setLoading('cancel-subscription');
     setMessage(null);
@@ -75,7 +100,7 @@ export default function ActiveUserActions({
       const response = await fetch('/api/admin/cancel-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscriptionId, reason })
+        body: JSON.stringify({ subscriptionId, reason, cancelType: selectedType })
       });
       
       const data = await response.json();
@@ -86,8 +111,8 @@ export default function ActiveUserActions({
       
       setMessage({ type: 'success', text: data.message });
       
-      // Recargar página después de 2 segundos
-      setTimeout(() => window.location.reload(), 2000);
+      // Recargar página después de 3 segundos
+      setTimeout(() => window.location.reload(), 3000);
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message });
     } finally {
@@ -262,7 +287,7 @@ export default function ActiveUserActions({
           <Ban className="w-8 h-8 text-orange-400 mb-3" />
           <h3 className="text-lg font-semibold text-white mb-2">Cancelar Suscripción</h3>
           <p className="text-sm text-gray-400 mb-4">
-            {subscriptionId ? `ID: ${subscriptionId.slice(0, 20)}...` : 'Sin suscripción activa'}
+            {subscriptionId ? '2 tipos: Inmediata o al final del período' : 'Sin suscripción activa'}
           </p>
           <button 
             onClick={handleCancelSubscription}
@@ -275,7 +300,7 @@ export default function ActiveUserActions({
                 Cancelando...
               </>
             ) : (
-              'Cancelar Ahora'
+              'Seleccionar Tipo'
             )}
           </button>
         </div>
@@ -340,7 +365,12 @@ export default function ActiveUserActions({
             </p>
             <ul className="text-sm text-gray-400 space-y-1 ml-4">
               <li>• <strong className="text-white">Reset de contraseña:</strong> El usuario recibirá un email y deberá crear una nueva contraseña</li>
-              <li>• <strong className="text-white">Cancelar suscripción:</strong> Acceso a indicadores premium se perderá inmediatamente</li>
+              <li>• <strong className="text-white">Cancelar suscripción:</strong>
+                <ul className="ml-4 mt-1 space-y-0.5">
+                  <li className="text-orange-400">- Inmediata: Pierde acceso ahora (solo casos graves)</li>
+                  <li className="text-green-400">- Al final del período: Mantiene acceso hasta vencimiento (recomendado)</li>
+                </ul>
+              </li>
               <li>• <strong className="text-white">Reembolsos:</strong> Procesados a través de Stripe, pueden tardar 5-10 días hábiles</li>
               <li>• <strong className="text-white">Emails:</strong> Serán enviados desde la cuenta oficial de APIDevs</li>
             </ul>

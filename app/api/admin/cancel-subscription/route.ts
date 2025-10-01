@@ -15,29 +15,49 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { subscriptionId, reason } = body;
+    const { subscriptionId, reason, cancelType = 'immediate' } = body;
 
     if (!subscriptionId) {
       return NextResponse.json({ error: 'subscriptionId is required' }, { status: 400 });
     }
 
     console.log(`🚫 Cancelando suscripción: ${subscriptionId}`);
+    console.log(`   Tipo: ${cancelType === 'immediate' ? 'INMEDIATA' : 'AL FINAL DEL PERÍODO'}`);
     console.log(`   Razón: ${reason || 'No especificada'}`);
 
-    // Cancelar en Stripe
-    const canceledSubscription = await stripe.subscriptions.cancel(subscriptionId, {
-      invoice_now: false,
-      prorate: false
-    });
+    let canceledSubscription;
+
+    // Cancelar según el tipo
+    if (cancelType === 'end_of_period') {
+      // Cancelar al final del período (el usuario mantiene acceso)
+      canceledSubscription = await stripe.subscriptions.update(subscriptionId, {
+        cancel_at_period_end: true
+      });
+      console.log(`✅ Suscripción se cancelará el: ${new Date((canceledSubscription as any).current_period_end * 1000).toLocaleDateString('es-ES')}`);
+    } else {
+      // Cancelación inmediata (pierde acceso ahora)
+      canceledSubscription = await stripe.subscriptions.cancel(subscriptionId, {
+        invoice_now: false,
+        prorate: false
+      });
+      console.log(`⚠️ Acceso revocado inmediatamente`);
+    }
 
     // Actualizar en Supabase
+    const updateData: any = {
+      cancel_at_period_end: (canceledSubscription as any).cancel_at_period_end,
+      cancel_reason: reason || 'Canceled by admin'
+    };
+
+    // Solo actualizar status si es cancelación inmediata
+    if (cancelType === 'immediate') {
+      updateData.status = 'canceled';
+      updateData.canceled_at = new Date().toISOString();
+    }
+
     const { error: dbError } = await (supabase as any)
       .from('subscriptions')
-      .update({ 
-        status: 'canceled',
-        canceled_at: new Date().toISOString(),
-        cancel_reason: reason || 'Canceled by admin'
-      })
+      .update(updateData)
       .eq('id', subscriptionId);
 
     if (dbError) {
@@ -45,16 +65,23 @@ export async function POST(req: Request) {
       // No fallar si la DB no se actualiza, Stripe es la fuente de verdad
     }
 
-    console.log(`✅ Suscripción cancelada: ${subscriptionId}`);
+    console.log(`✅ Suscripción procesada: ${subscriptionId}`);
+
+    const message = cancelType === 'end_of_period'
+      ? `Suscripción se cancelará el ${new Date((canceledSubscription as any).current_period_end * 1000).toLocaleDateString('es-ES')}. El usuario mantiene acceso hasta esa fecha.`
+      : 'Suscripción cancelada inmediatamente. El usuario perdió acceso ahora.';
 
     return NextResponse.json({
       success: true,
       subscription: {
         id: canceledSubscription.id,
         status: canceledSubscription.status,
-        canceled_at: canceledSubscription.canceled_at
+        cancel_at_period_end: (canceledSubscription as any).cancel_at_period_end,
+        current_period_end: (canceledSubscription as any).current_period_end,
+        canceled_at: (canceledSubscription as any).canceled_at
       },
-      message: 'Suscripción cancelada exitosamente'
+      message,
+      cancelType
     });
 
   } catch (error: any) {
