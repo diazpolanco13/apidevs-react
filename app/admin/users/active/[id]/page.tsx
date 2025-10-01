@@ -3,6 +3,9 @@ import { supabaseAdmin } from '@/utils/supabase/admin';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import ActiveUserStats from '@/components/admin/active-users/ActiveUserStats';
+import ActiveUserProfileCard from '@/components/admin/active-users/ActiveUserProfileCard';
+import ActiveUserSubscription from '@/components/admin/active-users/ActiveUserSubscription';
 
 interface ActiveUserDetailPageProps {
   params: {
@@ -15,10 +18,32 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
 
   // ==================== QUERIES FUNDAMENTALES ====================
   
-  // 1. Datos del usuario desde la tabla users
+  // 1. Datos del usuario desde la tabla users (con todos los campos necesarios)
   const { data: user, error: userError } = await supabase
     .from('users')
-    .select('*')
+    .select(`
+      id,
+      email,
+      full_name,
+      avatar_url,
+      phone,
+      country,
+      city,
+      state,
+      postal_code,
+      address,
+      timezone,
+      tradingview_username,
+      telegram_username,
+      onboarding_completed,
+      customer_tier,
+      loyalty_discount_percentage,
+      total_lifetime_spent,
+      purchase_count,
+      customer_since,
+      first_purchase_date,
+      last_purchase_date
+    `)
     .eq('id', params.id)
     .single();
 
@@ -148,193 +173,36 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
       {/* Main content grid */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* Left column - User profile */}
-        <div className="xl:col-span-1 space-y-6">
-          {/* Profile Card - Placeholder */}
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Información Personal</h3>
-            
-            {/* Avatar */}
-            <div className="flex justify-center mb-4">
-              {user.avatar_url ? (
-                <img 
-                  src={user.avatar_url} 
-                  alt={user.full_name || 'Avatar'}
-                  className="w-24 h-24 rounded-full border-4 border-apidevs-primary"
-                />
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-apidevs-primary to-green-400 flex items-center justify-center text-black text-3xl font-bold">
-                  {(user.full_name || user.email || 'U').charAt(0).toUpperCase()}
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-3 text-sm">
-              <div>
-                <span className="text-gray-400">Email:</span>
-                <p className="text-white font-medium break-all">{primaryEmail}</p>
-                {authUser && primaryEmail !== 'Sin email' && (
-                  emailVerified ? (
-                    <span className="text-xs text-green-400">✓ Verificado</span>
-                  ) : (
-                    <span className="text-xs text-yellow-400">⚠ Sin verificar</span>
-                  )
-                )}
-              </div>
-
-              {user.phone && (
-                <div>
-                  <span className="text-gray-400">Teléfono:</span>
-                  <p className="text-white">{user.phone}</p>
-                </div>
-              )}
-
-              {(user.city || user.country) && (
-                <div>
-                  <span className="text-gray-400">Ubicación:</span>
-                  <p className="text-white">
-                    {[user.city, user.country].filter(Boolean).join(', ')}
-                  </p>
-                </div>
-              )}
-
-              {user.tradingview_username && (
-                <div>
-                  <span className="text-gray-400">TradingView:</span>
-                  <p className="text-white font-mono text-xs">{user.tradingview_username}</p>
-                </div>
-              )}
-
-              {user.timezone && (
-                <div>
-                  <span className="text-gray-400">Timezone:</span>
-                  <p className="text-white">{user.timezone}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Auth Info */}
-            <div className="mt-6 pt-6 border-t border-gray-700">
-              <h4 className="text-sm font-semibold text-white mb-3">Autenticación</h4>
-              <div className="space-y-2 text-xs">
-                {authUser ? (
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400">Proveedor:</span>
-                    <span className="text-white font-medium">
-                      {authUser.user?.app_metadata?.provider || 'email'}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="text-gray-500 text-xs italic">
-                    Datos de auth no disponibles (rate limit)
-                  </div>
-                )}
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400">ID Usuario:</span>
-                  <code className="text-apidevs-primary text-[10px]" title={params.id}>
-                    {params.id.slice(0, 8)}...
-                  </code>
-                </div>
-                {customer?.stripe_customer_id && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400">Stripe ID:</span>
-                    <code className="text-purple-400 text-[10px]" title={customer.stripe_customer_id}>
-                      {customer.stripe_customer_id.slice(0, 12)}...
-                    </code>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+        <div className="xl:col-span-1">
+          <ActiveUserProfileCard
+            user={user as any}
+            authUser={authUser}
+            primaryEmail={primaryEmail}
+            emailVerified={emailVerified}
+            stripeCustomerId={customer?.stripe_customer_id}
+          />
         </div>
 
         {/* Right column - Main content */}
         <div className="xl:col-span-3 space-y-6">
-          {/* Stats Cards - Placeholder */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-6">
-              <h4 className="text-sm text-gray-400 mb-2">Suscripciones</h4>
-              <p className="text-3xl font-bold text-white">{subscriptions?.length || 0}</p>
-              <p className="text-xs text-gray-500 mt-1">
-                {activeSubscription ? 'Activa' : 'Sin suscripción activa'}
-              </p>
-            </div>
+          {/* Stats Cards Mejorados */}
+          <ActiveUserStats
+            registeredDays={registeredDays}
+            lastLoginDate={lastLoginDate}
+            onboardingCompleted={user.onboarding_completed || false}
+            subscriptionsCount={subscriptions?.length || 0}
+            indicatorAccessCount={indicatorAccess?.length || 0}
+            customerTier={user.customer_tier}
+            totalLifetimeSpent={user.total_lifetime_spent ? Number(user.total_lifetime_spent) : null}
+            purchaseCount={user.purchase_count}
+            loyaltyDiscount={user.loyalty_discount_percentage}
+          />
 
-            <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-xl border border-green-500/30 rounded-2xl p-6">
-              <h4 className="text-sm text-gray-400 mb-2">Accesos TradingView</h4>
-              <p className="text-3xl font-bold text-white">{indicatorAccess?.length || 0}</p>
-              <p className="text-xs text-gray-500 mt-1">Indicadores activos</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6">
-              <h4 className="text-sm text-gray-400 mb-2">Onboarding</h4>
-              <p className="text-3xl font-bold text-white">
-                {user.onboarding_completed ? '✓' : '⏳'}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                {user.onboarding_completed ? 'Completado' : 'Pendiente'}
-              </p>
-            </div>
-          </div>
-
-          {/* Subscription Panel - Placeholder */}
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Suscripción Actual</h3>
-            
-            {activeSubscription ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-xl font-bold text-white">
-                      {(activeSubscription as any).prices?.products?.name || 'Plan Desconocido'}
-                    </h4>
-                    <p className="text-gray-400 text-sm">
-                      Estado: <span className="text-green-400 font-medium">{activeSubscription.status}</span>
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-apidevs-primary">
-                      ${((activeSubscription as any).prices?.unit_amount || 0) / 100}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      /{(activeSubscription as any).prices?.interval || 'mes'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-400">Inicio:</span>
-                    <p className="text-white">
-                      {new Date(activeSubscription.created).toLocaleDateString('es-ES')}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Próximo cobro:</span>
-                    <p className="text-white">
-                      {new Date(activeSubscription.current_period_end).toLocaleDateString('es-ES')}
-                    </p>
-                  </div>
-                </div>
-
-                {customer?.stripe_customer_id && (
-                  <div className="pt-4 border-t border-gray-700">
-                    <a
-                      href={`https://dashboard.stripe.com/customers/${customer.stripe_customer_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-2"
-                    >
-                      Ver en Stripe Dashboard →
-                    </a>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <p>Sin suscripción activa</p>
-              </div>
-            )}
-          </div>
+          {/* Panel de Suscripción Mejorado */}
+          <ActiveUserSubscription
+            subscriptions={(subscriptions as any) || []}
+            stripeCustomerId={customer?.stripe_customer_id}
+          />
 
           {/* Indicator Access - Placeholder */}
           {indicatorAccess && indicatorAccess.length > 0 && (
