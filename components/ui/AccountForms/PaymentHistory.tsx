@@ -31,6 +31,7 @@ interface Purchase {
 interface Props {
   subscription: SubscriptionWithPriceAndProduct | null;
   userEmail: string;
+  actualPricePaid?: number | null;
 }
 
 // Función para mapear nombres técnicos a nombres amigables
@@ -46,7 +47,7 @@ const mapProductName = (productName: string, interval?: string): string => {
   return productName;
 };
 
-export default function PaymentHistory({ subscription, userEmail }: Props) {
+export default function PaymentHistory({ subscription, userEmail, actualPricePaid }: Props) {
   const [lifetimePurchases, setLifetimePurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -166,7 +167,7 @@ export default function PaymentHistory({ subscription, userEmail }: Props) {
                 style: 'currency',
                 currency: subscription.prices?.currency || 'USD',
                 minimumFractionDigits: 0
-              }).format((subscription.prices?.unit_amount || 0) / 100)}
+              }).format((actualPricePaid || subscription.prices?.unit_amount || 0) / 100)}
             </div>
             <div className="flex items-center space-x-1">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
@@ -201,7 +202,7 @@ export default function PaymentHistory({ subscription, userEmail }: Props) {
                   style: 'currency',
                   currency: subscription.prices?.currency || 'USD',
                   minimumFractionDigits: 0
-                }).format((subscription.prices?.unit_amount || 0) / 100)}
+                }).format((actualPricePaid || subscription.prices?.unit_amount || 0) / 100)}
               </div>
               <div className="flex items-center space-x-1">
                 <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
