@@ -99,6 +99,11 @@ export default function Pricing({ user, products, subscription, showHeader = tru
   const yearlyPrice = mainProduct?.prices?.find(price => 
     price.interval === 'year' && price.interval_count === 1
   );
+  
+  // Para Lifetime, buscar precio que no tenga intervalo (pago único) o usar el primer precio
+  const lifetimePrice = lifetimeProduct?.prices?.find(price => 
+    !price.interval || price.interval === null
+  ) || lifetimeProduct?.prices?.[0];
 
   // Debug logs
   console.log('🔍 Pricing Debug:', {
@@ -109,11 +114,6 @@ export default function Pricing({ user, products, subscription, showHeader = tru
     yearlyPrice,
     lifetimePrice
   });
-  
-  // Para Lifetime, buscar precio que no tenga intervalo (pago único) o usar el primer precio
-  const lifetimePrice = lifetimeProduct?.prices?.find(price => 
-    !price.interval || price.interval === null
-  ) || lifetimeProduct?.prices?.[0];
 
   // Si no hay producto Lifetime en Stripe, crear uno mock para desarrollo
   const lifetimePriceMock = !lifetimePrice ? {
