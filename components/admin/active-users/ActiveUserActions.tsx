@@ -1,18 +1,207 @@
 'use client';
 
-import { Shield, Lock, Ban, DollarSign, Mail, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { Shield, Lock, Ban, DollarSign, Mail, AlertTriangle, Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 interface ActiveUserActionsProps {
   userId: string;
   userEmail: string;
   userName: string;
+  subscriptionId?: string | null;
+  paymentIntents?: Array<{
+    id: string;
+    amount: number;
+    currency: string;
+    status: string;
+    created: string;
+  }>;
 }
 
 export default function ActiveUserActions({
   userId,
   userEmail,
-  userName
+  userName,
+  subscriptionId,
+  paymentIntents = []
 }: ActiveUserActionsProps) {
+  
+  const [loading, setLoading] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  
+  // Reset Password
+  const handleResetPassword = async () => {
+    if (!confirm(`¿Enviar email de recuperación a ${userEmail}?`)) return;
+    
+    setLoading('reset-password');
+    setMessage(null);
+    
+    try {
+      const response = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userEmail })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Error enviando email');
+      }
+      
+      setMessage({ type: 'success', text: data.message });
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message });
+    } finally {
+      setLoading(null);
+    }
+  };
+  
+  // Cancel Subscription
+  const handleCancelSubscription = async () => {
+    if (!subscriptionId) {
+      setMessage({ type: 'error', text: 'No hay suscripción activa' });
+      return;
+    }
+    
+    const reason = prompt('Razón de cancelación (opcional):');
+    if (reason === null) return; // User clicked cancel
+    
+    if (!confirm(`¿Cancelar suscripción de ${userName}? Esta acción no se puede deshacer.`)) return;
+    
+    setLoading('cancel-subscription');
+    setMessage(null);
+    
+    try {
+      const response = await fetch('/api/admin/cancel-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscriptionId, reason })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Error cancelando suscripción');
+      }
+      
+      setMessage({ type: 'success', text: data.message });
+      
+      // Recargar página después de 2 segundos
+      setTimeout(() => window.location.reload(), 2000);
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message });
+    } finally {
+      setLoading(null);
+    }
+  };
+  
+  // Process Refund
+  const handleProcessRefund = async () => {
+    const successfulPayments = paymentIntents.filter(pi => pi.status === 'succeeded');
+    
+    if (successfulPayments.length === 0) {
+      setMessage({ type: 'error', text: 'No hay pagos exitosos para reembolsar' });
+      return;
+    }
+    
+    // Mostrar lista de pagos
+    const paymentList = successfulPayments
+      .map((pi, i) => `${i + 1}. $${(pi.amount / 100).toFixed(2)} ${pi.currency.toUpperCase()} - ${pi.id}`)
+      .join('\n');
+    
+    const selection = prompt(`Selecciona el pago a reembolsar (número):\n\n${paymentList}`);
+    if (!selection) return;
+    
+    const index = parseInt(selection) - 1;
+    if (isNaN(index) || index < 0 || index >= successfulPayments.length) {
+      setMessage({ type: 'error', text: 'Selección inválida' });
+      return;
+    }
+    
+    const selectedPayment = successfulPayments[index];
+    
+    const reason = prompt('Razón del reembolso:\n1. duplicate\n2. fraudulent\n3. requested_by_customer\n\nEscribe el número:');
+    const reasonMap: Record<string, string> = {
+      '1': 'duplicate',
+      '2': 'fraudulent',
+      '3': 'requested_by_customer'
+    };
+    
+    if (!confirm(`¿Reembolsar $${(selectedPayment.amount / 100).toFixed(2)} ${selectedPayment.currency.toUpperCase()} a ${userName}?`)) return;
+    
+    setLoading('process-refund');
+    setMessage(null);
+    
+    try {
+      const response = await fetch('/api/admin/create-refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          paymentIntentId: selectedPayment.id,
+          reason: reasonMap[reason || '3'] || 'requested_by_customer'
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Error procesando reembolso');
+      }
+      
+      setMessage({ type: 'success', text: data.message });
+      
+      // Recargar página después de 2 segundos
+      setTimeout(() => window.location.reload(), 2000);
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message });
+    } finally {
+      setLoading(null);
+    }
+  };
+  
+  // Send Email
+  const handleSendEmail = async () => {
+    const subject = prompt(`Asunto del email para ${userName}:`);
+    if (!subject) return;
+    
+    const message = prompt('Mensaje (puede incluir HTML):');
+    if (!message) return;
+    
+    if (!confirm(`¿Enviar email a ${userEmail}?`)) return;
+    
+    setLoading('send-email');
+    setMessage(null);
+    
+    try {
+      const response = await fetch('/api/admin/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          to: userEmail,
+          subject,
+          message,
+          template: 'custom'
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Error enviando email');
+      }
+      
+      setMessage({ type: 'success', text: data.message });
+      if (data.note) {
+        setTimeout(() => {
+          setMessage({ type: 'success', text: data.note });
+        }, 2000);
+      }
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message });
+    } finally {
+      setLoading(null);
+    }
+  };
   
   return (
     <div className="space-y-6">
@@ -23,69 +212,117 @@ export default function ActiveUserActions({
           <h2 className="text-xl font-bold text-white">Acciones Administrativas</h2>
         </div>
         <p className="text-gray-400 text-sm">
-          Gestión de cuenta, suscripciones y acciones críticas del usuario
+          Gestión de cuenta, suscripciones y acciones críticas para <span className="text-white font-semibold">{userName}</span>
         </p>
       </div>
+
+      {/* Message Display */}
+      {message && (
+        <div className={`p-4 rounded-xl border ${
+          message.type === 'success' 
+            ? 'bg-green-500/10 border-green-500/30 text-green-400' 
+            : 'bg-red-500/10 border-red-500/30 text-red-400'
+        } flex items-center gap-3 animate-slide-in`}>
+          {message.type === 'success' ? (
+            <CheckCircle className="w-5 h-5 flex-shrink-0" />
+          ) : (
+            <XCircle className="w-5 h-5 flex-shrink-0" />
+          )}
+          <p className="text-sm">{message.text}</p>
+        </div>
+      )}
 
       {/* Action Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Reset Password */}
-        <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-xl p-5 hover:scale-105 transition-all cursor-pointer">
+        <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-xl p-5 hover:scale-[1.02] transition-all">
           <Lock className="w-8 h-8 text-blue-400 mb-3" />
           <h3 className="text-lg font-semibold text-white mb-2">Restablecer Contraseña</h3>
           <p className="text-sm text-gray-400 mb-4">
-            Enviar email de recuperación al usuario
+            Enviar email de recuperación a {userEmail}
           </p>
           <button 
-            disabled
-            className="w-full px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 text-sm opacity-50 cursor-not-allowed"
+            onClick={handleResetPassword}
+            disabled={loading !== null}
+            className="w-full px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 text-sm hover:bg-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Próximamente
+            {loading === 'reset-password' ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Enviando...
+              </>
+            ) : (
+              'Enviar Email'
+            )}
           </button>
         </div>
 
         {/* Cancel Subscription */}
-        <div className="bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-xl border border-orange-500/30 rounded-xl p-5 hover:scale-105 transition-all cursor-pointer">
+        <div className="bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-xl border border-orange-500/30 rounded-xl p-5 hover:scale-[1.02] transition-all">
           <Ban className="w-8 h-8 text-orange-400 mb-3" />
           <h3 className="text-lg font-semibold text-white mb-2">Cancelar Suscripción</h3>
           <p className="text-sm text-gray-400 mb-4">
-            Cancelar la suscripción activa del usuario
+            {subscriptionId ? `ID: ${subscriptionId.slice(0, 20)}...` : 'Sin suscripción activa'}
           </p>
           <button 
-            disabled
-            className="w-full px-4 py-2 bg-orange-500/20 text-orange-400 rounded-lg border border-orange-500/30 text-sm opacity-50 cursor-not-allowed"
+            onClick={handleCancelSubscription}
+            disabled={loading !== null || !subscriptionId}
+            className="w-full px-4 py-2 bg-orange-500/20 text-orange-400 rounded-lg border border-orange-500/30 text-sm hover:bg-orange-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Próximamente
+            {loading === 'cancel-subscription' ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Cancelando...
+              </>
+            ) : (
+              'Cancelar Ahora'
+            )}
           </button>
         </div>
 
         {/* Process Refund */}
-        <div className="bg-gradient-to-br from-red-500/10 to-pink-500/10 backdrop-blur-xl border border-red-500/30 rounded-xl p-5 hover:scale-105 transition-all cursor-pointer">
+        <div className="bg-gradient-to-br from-red-500/10 to-pink-500/10 backdrop-blur-xl border border-red-500/30 rounded-xl p-5 hover:scale-[1.02] transition-all">
           <DollarSign className="w-8 h-8 text-red-400 mb-3" />
           <h3 className="text-lg font-semibold text-white mb-2">Procesar Reembolso</h3>
           <p className="text-sm text-gray-400 mb-4">
-            Reembolsar pagos a través de Stripe
+            {paymentIntents.filter(pi => pi.status === 'succeeded').length} pagos disponibles
           </p>
           <button 
-            disabled
-            className="w-full px-4 py-2 bg-red-500/20 text-red-400 rounded-lg border border-red-500/30 text-sm opacity-50 cursor-not-allowed"
+            onClick={handleProcessRefund}
+            disabled={loading !== null || paymentIntents.filter(pi => pi.status === 'succeeded').length === 0}
+            className="w-full px-4 py-2 bg-red-500/20 text-red-400 rounded-lg border border-red-500/30 text-sm hover:bg-red-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Próximamente
+            {loading === 'process-refund' ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Procesando...
+              </>
+            ) : (
+              'Seleccionar Pago'
+            )}
           </button>
         </div>
 
         {/* Send Email */}
-        <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 rounded-xl p-5 hover:scale-105 transition-all cursor-pointer">
+        <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 rounded-xl p-5 hover:scale-[1.02] transition-all">
           <Mail className="w-8 h-8 text-purple-400 mb-3" />
           <h3 className="text-lg font-semibold text-white mb-2">Enviar Email</h3>
           <p className="text-sm text-gray-400 mb-4">
-            Comunicación directa con el usuario
+            Comunicación directa con {userName}
           </p>
           <button 
-            disabled
-            className="w-full px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg border border-purple-500/30 text-sm opacity-50 cursor-not-allowed"
+            onClick={handleSendEmail}
+            disabled={loading !== null}
+            className="w-full px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg border border-purple-500/30 text-sm hover:bg-purple-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Próximamente
+            {loading === 'send-email' ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Enviando...
+              </>
+            ) : (
+              'Escribir Email'
+            )}
           </button>
         </div>
       </div>
@@ -96,17 +333,20 @@ export default function ActiveUserActions({
           <AlertTriangle className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-0.5" />
           <div>
             <h3 className="text-lg font-semibold text-white mb-2">
-              🚧 FASE 5 - Acciones Críticas (En Desarrollo)
+              ⚠️ Acciones Críticas - Usar con Precaución
             </h3>
-            <p className="text-gray-400 text-sm">
-              Estas acciones administrativas requieren confirmación y permisos especiales. 
-              Incluirán: reset de contraseña, cancelación de suscripciones, procesamiento de reembolsos, 
-              envío de emails personalizados y gestión avanzada de cuentas.
+            <p className="text-gray-400 text-sm mb-2">
+              Estas acciones son <strong className="text-white">irreversibles</strong> y afectan directamente la experiencia del usuario:
             </p>
+            <ul className="text-sm text-gray-400 space-y-1 ml-4">
+              <li>• <strong className="text-white">Reset de contraseña:</strong> El usuario recibirá un email y deberá crear una nueva contraseña</li>
+              <li>• <strong className="text-white">Cancelar suscripción:</strong> Acceso a indicadores premium se perderá inmediatamente</li>
+              <li>• <strong className="text-white">Reembolsos:</strong> Procesados a través de Stripe, pueden tardar 5-10 días hábiles</li>
+              <li>• <strong className="text-white">Emails:</strong> Serán enviados desde la cuenta oficial de APIDevs</li>
+            </ul>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
