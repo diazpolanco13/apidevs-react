@@ -56,9 +56,19 @@ export async function POST(req: Request) {
 
     const userId = (customerData as { id: string }).id;
 
-    // Sincronizar payment intents
+    // Sincronizar payment intents con refunds
     let syncedPaymentIntents = 0;
     for (const pi of paymentIntents.data) {
+      // 🚀 MÉTODO CORRECTO: Obtener refunds usando stripe.refunds.list()
+      const refundsList = await stripe.refunds.list({
+        payment_intent: pi.id,
+        limit: 100
+      });
+      
+      const refunds = refundsList.data;
+      const amountRefunded = refunds.reduce((sum, refund) => sum + refund.amount, 0);
+      const isFullyRefunded = amountRefunded >= pi.amount;
+
       const { error } = await (supabase as any)
         .from('payment_intents')
         .upsert({
@@ -67,6 +77,19 @@ export async function POST(req: Request) {
           customer_id: customerId,
           amount: pi.amount,
           amount_received: pi.amount_received || 0,
+          amount_refunded: amountRefunded,
+          refunded: isFullyRefunded,
+          refunds: refunds.map((refund) => ({
+            id: refund.id,
+            amount: refund.amount,
+            currency: refund.currency,
+            reason: refund.reason,
+            status: refund.status,
+            created: refund.created
+          })),
+          last_refund_at: refunds.length > 0 
+            ? new Date(Math.max(...refunds.map((r) => r.created)) * 1000).toISOString()
+            : null,
           currency: pi.currency,
           status: pi.status,
           payment_method: typeof pi.payment_method === 'string' ? pi.payment_method : null,

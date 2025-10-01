@@ -160,13 +160,10 @@ export async function POST(req: Request) {
               ? charge.payment_intent 
               : charge.payment_intent.id;
             
-            // Recuperar el payment intent actualizado de Stripe
-            // IMPORTANTE: expandir charges para incluir refunds
-            const updatedPaymentIntent = await stripe.paymentIntents.retrieve(piId, {
-              expand: ['charges.data.refunds']
-            });
+            // 🚀 Recuperar el payment intent (sin expand, los refunds se obtienen dentro de upsertPaymentIntentRecord)
+            const updatedPaymentIntent = await stripe.paymentIntents.retrieve(piId);
             
-            // Actualizar el payment intent en Supabase con el estado de refund
+            // Actualizar el payment intent en Supabase (ahora usa stripe.refunds.list() internamente)
             await upsertPaymentIntentRecord(updatedPaymentIntent);
             
             console.log(`✅ Payment Intent ${piId} updated with refund info`);
