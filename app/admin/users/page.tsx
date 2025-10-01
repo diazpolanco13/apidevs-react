@@ -1,7 +1,8 @@
 import { createClient } from '@/utils/supabase/server';
 import { Suspense } from 'react';
 import UsersTable from '@/components/admin/UsersTable';
-import UsersFilterWrapper from '@/components/admin/UsersFilterWrapper';
+import SearchBar from '@/components/admin/SearchBar';
+import { Users as UsersIcon, TrendingUp, UserCheck, UserX } from 'lucide-react';
 
 export default async function AdminUsersPage({
   searchParams,
@@ -12,7 +13,7 @@ export default async function AdminUsersPage({
 
   // Parámetros de búsqueda y filtros
   const page = Number(searchParams.page) || 1;
-  const limit = 10; // Máximo 10 elementos por página
+  const limit = 20; // 20 elementos por página
   const offset = (page - 1) * limit;
   const search = searchParams.search as string || '';
   const country = searchParams.country as string || '';
@@ -61,36 +62,93 @@ export default async function AdminUsersPage({
     return <div className="text-red-500">Error al cargar usuarios</div>;
   }
 
-  // Obtener países únicos para filtros
-  const { data: countries } = await supabase
-    .from('legacy_users')
-    .select('country')
-    .not('country', 'is', null)
-    .order('country');
-
-  const uniqueCountries = Array.from(new Set(countries?.map((c: any) => c.country))).filter(Boolean);
-
   const totalPages = Math.ceil((count || 0) / limit);
+
+  // Obtener estadísticas rápidas
+  const { count: reactivatedCount } = await supabase
+    .from('legacy_users')
+    .select('*', { count: 'exact', head: true })
+    .eq('reactivation_status', 'reactivated');
+
+  const { count: pendingCount } = await supabase
+    .from('legacy_users')
+    .select('*', { count: 'exact', head: true })
+    .eq('reactivation_status', 'pending');
+
+  const stats = [
+    {
+      name: 'Total Usuarios',
+      value: count?.toLocaleString() || '0',
+      icon: UsersIcon,
+      color: 'text-blue-400',
+      bgColor: 'from-blue-500/10 to-cyan-500/10',
+      borderColor: 'border-blue-500/30'
+    },
+    {
+      name: 'Reactivados',
+      value: reactivatedCount?.toLocaleString() || '0',
+      icon: UserCheck,
+      color: 'text-green-400',
+      bgColor: 'from-green-500/10 to-emerald-500/10',
+      borderColor: 'border-green-500/30',
+      subtitle: `${((reactivatedCount || 0) / (count || 1) * 100).toFixed(1)}% tasa`
+    },
+    {
+      name: 'Pendientes',
+      value: pendingCount?.toLocaleString() || '0',
+      icon: UserX,
+      color: 'text-yellow-400',
+      bgColor: 'from-yellow-500/10 to-orange-500/10',
+      borderColor: 'border-yellow-500/30',
+      subtitle: `${((pendingCount || 0) / (count || 1) * 100).toFixed(1)}% del total`
+    },
+    {
+      name: 'Tasa de Crecimiento',
+      value: '+0%',
+      icon: TrendingUp,
+      color: 'text-purple-400',
+      bgColor: 'from-purple-500/10 to-pink-500/10',
+      borderColor: 'border-purple-500/30',
+      subtitle: 'Últimos 30 días'
+    },
+  ];
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-gray-700 pb-4">
-        <h1 className="text-2xl font-bold text-white">
+      <div>
+        <h1 className="text-3xl font-bold text-white mb-2">
           Gestión de Usuarios Legacy
         </h1>
-        <p className="mt-1 text-gray-400">
+        <p className="text-gray-400">
           {count?.toLocaleString()} usuarios migrados desde WordPress
         </p>
       </div>
 
-      {/* Filtros */}
-      <Suspense fallback={<div>Cargando filtros...</div>}>
-        <UsersFilterWrapper 
-          totalItems={count || 0}
-          filteredItems={count || 0}
-        />
-      </Suspense>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={stat.name}
+              className={`bg-gradient-to-br ${stat.bgColor} backdrop-blur-xl border ${stat.borderColor} rounded-2xl p-6 hover:scale-105 transition-all`}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <Icon className={`w-8 h-8 ${stat.color}`} />
+              </div>
+              <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
+              <div className="text-sm text-gray-400">{stat.name}</div>
+              {stat.subtitle && (
+                <div className="text-xs text-gray-500 mt-1">{stat.subtitle}</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Search Bar */}
+      <SearchBar />
 
       {/* Tabla de Usuarios */}
       <Suspense fallback={<UsersTableSkeleton />}>
