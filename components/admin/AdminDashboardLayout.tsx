@@ -46,7 +46,7 @@ export default function AdminDashboardLayout({
 
   const navigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
-    { name: 'Usuarios Legacy', href: '/admin/users', icon: UsersIcon },
+    { name: 'Usuarios', href: '/admin/users', icon: UsersIcon },
     { name: 'Compras', href: '/admin/users?tab=purchases', icon: ShoppingBagIcon, badge: 'Próximamente' },
     { name: 'Analytics', href: '/admin', icon: ChartBarIcon, badge: 'Próximamente' },
     { name: 'Reportes', href: '/admin', icon: TrendingUp, badge: 'Próximamente' },
