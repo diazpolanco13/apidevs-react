@@ -8,7 +8,9 @@ interface SelectOption {
   label: string;
   description?: string;
   recommended?: boolean;
-  color?: 'green' | 'orange' | 'red' | 'blue' | 'purple';
+  disabled?: boolean;
+  badge?: string;
+  color?: 'green' | 'orange' | 'red' | 'blue' | 'purple' | 'gray';
 }
 
 interface SelectModalProps {
@@ -70,7 +72,11 @@ export default function SelectModal({
     }
   };
   
-  const getColorClasses = (color?: string, isSelected?: boolean) => {
+  const getColorClasses = (color?: string, isSelected?: boolean, isDisabled?: boolean) => {
+    if (isDisabled) {
+      return 'bg-gray-500/5 border-gray-500/20 opacity-50 cursor-not-allowed';
+    }
+    
     const colors = {
       green: isSelected 
         ? 'bg-green-500/20 border-green-500/50 ring-2 ring-green-500/30' 
@@ -86,7 +92,10 @@ export default function SelectModal({
         : 'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20',
       purple: isSelected 
         ? 'bg-purple-500/20 border-purple-500/50 ring-2 ring-purple-500/30' 
-        : 'bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20'
+        : 'bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20',
+      gray: isSelected 
+        ? 'bg-gray-500/20 border-gray-500/50 ring-2 ring-gray-500/30' 
+        : 'bg-gray-500/10 border-gray-500/30 hover:bg-gray-500/20'
     };
     
     return colors[color as keyof typeof colors] || (isSelected 
@@ -132,11 +141,12 @@ export default function SelectModal({
           {options.map((option) => (
             <button
               key={option.value}
-              onClick={() => setSelectedValue(option.value)}
+              onClick={() => !option.disabled && setSelectedValue(option.value)}
+              disabled={option.disabled}
               className={`
                 w-full text-left p-4 rounded-xl border
                 transition-all
-                ${getColorClasses(option.color, selectedValue === option.value)}
+                ${getColorClasses(option.color, selectedValue === option.value, option.disabled)}
               `}
             >
               <div className="flex items-start gap-3">
@@ -144,30 +154,40 @@ export default function SelectModal({
                 <div className={`
                   flex-shrink-0 w-5 h-5 rounded-full border-2 mt-0.5
                   flex items-center justify-center
-                  ${selectedValue === option.value 
-                    ? 'border-green-500 bg-green-500' 
-                    : 'border-gray-500'
+                  ${option.disabled
+                    ? 'border-gray-600 bg-gray-700'
+                    : selectedValue === option.value 
+                      ? 'border-green-500 bg-green-500' 
+                      : 'border-gray-500'
                   }
                 `}>
-                  {selectedValue === option.value && (
+                  {selectedValue === option.value && !option.disabled && (
                     <Check className="w-3 h-3 text-white" />
+                  )}
+                  {option.disabled && (
+                    <X className="w-3 h-3 text-gray-500" />
                   )}
                 </div>
                 
                 {/* Content */}
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-white font-semibold">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className={`font-semibold ${option.disabled ? 'text-gray-500 line-through' : 'text-white'}`}>
                       {option.label}
                     </span>
-                    {option.recommended && (
+                    {option.recommended && !option.disabled && (
                       <span className="px-2 py-0.5 bg-green-500/30 text-green-400 text-xs font-medium rounded-full border border-green-500/50">
                         Recomendado
                       </span>
                     )}
+                    {option.badge && (
+                      <span className="px-2 py-0.5 bg-red-500/30 text-red-400 text-xs font-medium rounded-full border border-red-500/50">
+                        {option.badge}
+                      </span>
+                    )}
                   </div>
                   {option.description && (
-                    <p className="text-sm text-gray-400">
+                    <p className={`text-sm whitespace-pre-line ${option.disabled ? 'text-gray-600' : 'text-gray-400'}`}>
                       {option.description}
                     </p>
                   )}
