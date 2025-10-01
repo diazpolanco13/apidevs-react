@@ -465,6 +465,7 @@ const handleInvoicePayment = async (invoice: Stripe.Invoice) => {
 };
 
 export {
+  supabaseAdmin,
   upsertProductRecord,
   upsertPriceRecord,
   deleteProductRecord,
