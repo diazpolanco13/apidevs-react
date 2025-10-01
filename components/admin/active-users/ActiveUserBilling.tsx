@@ -5,7 +5,7 @@ interface PaymentIntent {
   amount: number;
   currency: string;
   status: string;
-  created: number;
+  created: string | number;  // Puede ser ISO string o UNIX timestamp
   description?: string;
   payment_method?: string;
 }
@@ -16,8 +16,8 @@ interface Invoice {
   amount_paid: number;
   currency: string;
   status: string;
-  created: number;
-  due_date?: number;
+  created: string | number;  // Puede ser ISO string o UNIX timestamp
+  due_date?: string | number | null;
   invoice_pdf?: string;
   hosted_invoice_url?: string;
   number?: string;
@@ -26,7 +26,7 @@ interface Invoice {
 interface Subscription {
   id: string;
   status: string;
-  current_period_end: number;
+  current_period_end: string | number;  // Puede ser ISO string o UNIX timestamp
   items: {
     data: Array<{
       price: {
@@ -64,9 +64,7 @@ export default function ActiveUserBilling({
   const totalInvoices = invoices.length;
 
   // Próximo cobro basado en suscripción activa
-  const nextBillingDate = subscription?.current_period_end 
-    ? new Date(subscription.current_period_end * 1000)
-    : null;
+  const nextBillingDate = subscription?.current_period_end || null;
 
   const nextBillingAmount = subscription?.items?.data[0]?.price?.unit_amount 
     ? subscription.items.data[0].price.unit_amount / 100
@@ -167,8 +165,26 @@ export default function ActiveUserBilling({
     }).format(amount);
   };
 
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleDateString('es-ES', {
+  const formatDate = (date: string | number | null | undefined) => {
+    if (!date) return 'Fecha no disponible';
+    
+    let dateObj: Date;
+    
+    // Si es un string (ISO 8601 de Supabase)
+    if (typeof date === 'string') {
+      dateObj = new Date(date);
+    } 
+    // Si es un number (UNIX timestamp en segundos)
+    else {
+      dateObj = new Date(date * 1000);
+    }
+    
+    // Validar que la fecha es válida
+    if (isNaN(dateObj.getTime())) {
+      return 'Fecha inválida';
+    }
+    
+    return dateObj.toLocaleDateString('es-ES', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -227,8 +243,8 @@ export default function ActiveUserBilling({
 
         <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 rounded-xl p-5">
           <Calendar className="w-8 h-8 text-purple-400 mb-3" />
-          <div className="text-2xl font-bold text-white mb-1">
-            {nextBillingDate ? nextBillingDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '-'}
+          <div className="text-xl font-bold text-white mb-1">
+            {nextBillingDate ? formatDate(nextBillingDate) : 'Sin programar'}
           </div>
           <div className="text-sm text-gray-400">Próximo Cobro</div>
           {nextBillingAmount && (
