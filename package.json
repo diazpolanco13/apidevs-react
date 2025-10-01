@@ -19,7 +19,9 @@
     "supabase:generate-migration": "npx supabase db diff | npx supabase migration new",
     "supabase:generate-seed": "npx supabase db dump --data-only -f supabase/seed.sql",
     "supabase:push": "npx supabase db push",
-    "supabase:pull": "npx supabase db pull"
+    "supabase:pull": "npx supabase db pull",
+    "delete-invalid-users": "tsx scripts/delete-invalid-legacy-users.ts",
+    "check-remaining-users": "tsx scripts/check-remaining-users.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.8",
@@ -56,6 +58,7 @@
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "autoprefixer": "^10.4.19",
+    "dotenv": "^17.2.3",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.1.0",
     "eslint-config-prettier": "^9.1.0",
@@ -66,6 +69,7 @@
     "prettier-plugin-tailwindcss": "^0.5.14",
     "stripe": "^18.5.0",
     "supabase": "^1.172.2",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.2"
   }
 }
