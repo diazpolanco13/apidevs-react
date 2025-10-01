@@ -69,6 +69,7 @@ export const updateSession = async (request: NextRequest) => {
     const isPublicRoute = pathname === '/' || 
                           pathname.startsWith('/pricing') ||
                           pathname.startsWith('/signin') ||
+                          pathname.startsWith('/signout') ||  // Skip auth check on signout
                           pathname.startsWith('/auth');
     
     // Only verify auth for protected routes or if auth cookies exist
