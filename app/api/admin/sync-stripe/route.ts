@@ -41,24 +41,25 @@ export async function POST(req: Request) {
     console.log(`📄 ${invoices.data.length} invoices encontradas`);
 
     // Obtener el user_id desde la tabla customers
-    const { data: customerData } = await supabase
+    const { data: customerData, error: customerError } = await supabase
       .from('customers')
       .select('id')
       .eq('stripe_customer_id', customerId)
       .single();
 
-    if (!customerData) {
+    if (customerError || !customerData) {
       return NextResponse.json({ 
-        error: 'Customer not found in Supabase' 
+        error: 'Customer not found in Supabase',
+        details: customerError?.message 
       }, { status: 404 });
     }
 
-    const userId = customerData.id;
+    const userId = (customerData as { id: string }).id;
 
     // Sincronizar payment intents
     let syncedPaymentIntents = 0;
     for (const pi of paymentIntents.data) {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('payment_intents')
         .upsert({
           id: pi.id,
@@ -87,13 +88,13 @@ export async function POST(req: Request) {
     // Sincronizar invoices
     let syncedInvoices = 0;
     for (const inv of invoices.data) {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('invoices')
         .upsert({
           id: inv.id,
           user_id: userId,
           customer_id: customerId,
-          subscription_id: typeof inv.subscription === 'string' ? inv.subscription : null,
+          subscription_id: typeof (inv as any).subscription === 'string' ? (inv as any).subscription : null,
           status: inv.status || 'draft',
           amount_due: inv.amount_due,
           amount_paid: inv.amount_paid,
