@@ -32,6 +32,7 @@ interface Props {
   subscription: SubscriptionWithPriceAndProduct | null;
   userEmail: string;
   actualPricePaid?: number | null;
+  lastPaymentDate?: string | null;
 }
 
 // Función para mapear nombres técnicos a nombres amigables
@@ -47,7 +48,7 @@ const mapProductName = (productName: string, interval?: string): string => {
   return productName;
 };
 
-export default function PaymentHistory({ subscription, userEmail, actualPricePaid }: Props) {
+export default function PaymentHistory({ subscription, userEmail, actualPricePaid, lastPaymentDate }: Props) {
   const [lifetimePurchases, setLifetimePurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -155,7 +156,20 @@ export default function PaymentHistory({ subscription, userEmail, actualPricePai
                 {mapProductName(subscription.prices?.products?.name || '', subscription.prices?.interval || undefined)}
               </div>
               <div className="text-gray-400 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0">
-                <span>15 de septiembre de 2025</span>
+                <span>
+                  {lastPaymentDate 
+                    ? new Date(lastPaymentDate).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })
+                    : new Date(subscription.current_period_start).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })
+                  }
+                </span>
                 <span className="hidden sm:block w-1 h-1 bg-gray-500 rounded-full"></span>
                 <span>Factura #{subscription.id.slice(-8)}</span>
               </div>
