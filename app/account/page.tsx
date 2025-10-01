@@ -9,6 +9,10 @@ import DashboardWelcome from '@/components/account/DashboardWelcome';
 import LegacyHeroBanner from '@/components/account/LegacyHeroBanner';
 import RecentActivity from '@/components/account/RecentActivity';
 
+// Force dynamic rendering - no cache
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function AccountDashboard() {
   const supabase = createClient();
   const [user, subscription] = await Promise.all([
