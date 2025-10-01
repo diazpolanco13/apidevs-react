@@ -70,8 +70,8 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
     console.warn('⚠️  No se pudieron obtener datos de auth:', err);
   }
 
-  // 3. Datos de Stripe (customer_id)
-  const { data: customer, error: customerError } = await supabase
+  // 3. Datos de Stripe (customer_id) - usar supabaseAdmin para evitar RLS
+  const { data: customer, error: customerError } = await (supabaseAdmin as any)
     .from('customers')
     .select('stripe_customer_id')
     .eq('id', params.id)
@@ -81,6 +81,8 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
     console.error('❌ Error fetching customer:', customerError);
   } else if (!customer) {
     console.log('ℹ️  Usuario sin registro en Stripe (no ha realizado compras)');
+  } else {
+    console.log('✅ Customer ID encontrado:', customer.stripe_customer_id);
   }
 
   // 4. Suscripción actual
