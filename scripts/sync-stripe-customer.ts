@@ -85,8 +85,8 @@ async function syncStripeCustomer(customerId: string) {
     const userId = customerData.id;
     console.log(`✅ User ID en Supabase: ${userId}`);
 
-    // 1. Sincronizar Payment Intents
-    console.log('\n📦 Sincronizando Payment Intents...');
+    // 1. Sincronizar Payment Intents (con refunds)
+    console.log('\n📦 Sincronizando Payment Intents (incluyendo refunds)...');
     const paymentIntents = await stripe.paymentIntents.list({
       customer: customerId,
       limit: 100
@@ -94,6 +94,18 @@ async function syncStripeCustomer(customerId: string) {
 
     let syncedPI = 0;
     for (const pi of paymentIntents.data) {
+      // 🚀 FORMA CORRECTA: Usar stripe.refunds.list() con payment_intent filter
+      const refundsList = await stripe.refunds.list({
+        payment_intent: pi.id,
+        limit: 100
+      });
+      
+      const allRefunds = refundsList.data;
+      const amountRefunded = allRefunds.reduce((sum, refund) => sum + refund.amount, 0);
+      const isFullyRefunded = amountRefunded >= pi.amount;
+      
+      console.log(`  🔍 PI: ${pi.id} - Refunds: ${allRefunds.length} - Amount Refunded: $${(amountRefunded/100).toFixed(2)}`);
+
       const { error } = await supabase
         .from('payment_intents')
         .upsert({
@@ -102,6 +114,19 @@ async function syncStripeCustomer(customerId: string) {
           customer_id: customerId,
           amount: pi.amount,
           amount_received: pi.amount_received || 0,
+          amount_refunded: amountRefunded,
+          refunded: isFullyRefunded,
+          refunds: allRefunds.map((refund) => ({
+            id: refund.id,
+            amount: refund.amount,
+            currency: refund.currency,
+            reason: refund.reason,
+            status: refund.status,
+            created: refund.created
+          })),
+          last_refund_at: allRefunds.length > 0 
+            ? new Date(Math.max(...allRefunds.map((r) => r.created)) * 1000).toISOString()
+            : null,
           currency: pi.currency,
           status: pi.status,
           payment_method: typeof pi.payment_method === 'string' ? pi.payment_method : null,
@@ -115,7 +140,8 @@ async function syncStripeCustomer(customerId: string) {
 
       if (!error) {
         syncedPI++;
-        console.log(`  ✓ ${pi.id} - ${pi.status} - $${(pi.amount / 100).toFixed(2)}`);
+        const refundText = amountRefunded > 0 ? ` [💸 ${allRefunds.length} refund(s): $${(amountRefunded / 100).toFixed(2)}]` : '';
+        console.log(`  ✓ ${pi.id} - ${pi.status} - $${(pi.amount / 100).toFixed(2)}${refundText}`);
       } else {
         console.error(`  ✗ Error en ${pi.id}:`, error.message);
       }

@@ -483,9 +483,14 @@ const upsertPaymentIntentRecord = async (paymentIntent: Stripe.PaymentIntent) =>
       userId = customerData?.id || null;
     }
 
-    // Obtener información de refunds del payment intent
-    const refunds = (paymentIntent as any).charges?.data?.[0]?.refunds?.data || [];
-    const amountRefunded = refunds.reduce((sum: number, refund: any) => sum + refund.amount, 0);
+    // 🚀 MÉTODO CORRECTO: Obtener refunds usando stripe.refunds.list()
+    const refundsList = await stripe.refunds.list({
+      payment_intent: paymentIntent.id,
+      limit: 100
+    });
+    
+    const refunds = refundsList.data;
+    const amountRefunded = refunds.reduce((sum, refund) => sum + refund.amount, 0);
     const isFullyRefunded = amountRefunded >= paymentIntent.amount;
 
     const paymentIntentData = {
@@ -498,16 +503,16 @@ const upsertPaymentIntentRecord = async (paymentIntent: Stripe.PaymentIntent) =>
       amount_received: paymentIntent.amount_received || 0,
       amount_refunded: amountRefunded,
       refunded: isFullyRefunded,
-      refunds: refunds.map((r: any) => ({
-        id: r.id,
-        amount: r.amount,
-        currency: r.currency,
-        reason: r.reason,
-        status: r.status,
-        created: r.created
+      refunds: refunds.map((refund) => ({
+        id: refund.id,
+        amount: refund.amount,
+        currency: refund.currency,
+        reason: refund.reason,
+        status: refund.status,
+        created: refund.created
       })),
       last_refund_at: refunds.length > 0 
-        ? new Date(Math.max(...refunds.map((r: any) => r.created)) * 1000).toISOString()
+        ? new Date(Math.max(...refunds.map((r) => r.created)) * 1000).toISOString()
         : null,
       currency: paymentIntent.currency,
       status: paymentIntent.status,
