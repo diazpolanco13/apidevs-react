@@ -483,6 +483,11 @@ const upsertPaymentIntentRecord = async (paymentIntent: Stripe.PaymentIntent) =>
       userId = customerData?.id || null;
     }
 
+    // Obtener información de refunds del payment intent
+    const refunds = (paymentIntent as any).charges?.data?.[0]?.refunds?.data || [];
+    const amountRefunded = refunds.reduce((sum: number, refund: any) => sum + refund.amount, 0);
+    const isFullyRefunded = amountRefunded >= paymentIntent.amount;
+
     const paymentIntentData = {
       id: paymentIntent.id,
       user_id: userId,
@@ -491,6 +496,19 @@ const upsertPaymentIntentRecord = async (paymentIntent: Stripe.PaymentIntent) =>
         : paymentIntent.customer?.id || null,
       amount: paymentIntent.amount,
       amount_received: paymentIntent.amount_received || 0,
+      amount_refunded: amountRefunded,
+      refunded: isFullyRefunded,
+      refunds: refunds.map((r: any) => ({
+        id: r.id,
+        amount: r.amount,
+        currency: r.currency,
+        reason: r.reason,
+        status: r.status,
+        created: r.created
+      })),
+      last_refund_at: refunds.length > 0 
+        ? new Date(Math.max(...refunds.map((r: any) => r.created)) * 1000).toISOString()
+        : null,
       currency: paymentIntent.currency,
       status: paymentIntent.status,
       payment_method: typeof paymentIntent.payment_method === 'string'

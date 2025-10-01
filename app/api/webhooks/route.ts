@@ -34,7 +34,9 @@ const relevantEvents = new Set([
   'invoice.updated',
   'invoice.finalized',
   'invoice.paid',
-  'invoice.payment_failed'
+  'invoice.payment_failed',
+  'charge.refunded',
+  'charge.refund.updated'
 ]);
 
 export async function POST(req: Request) {
@@ -145,6 +147,29 @@ export async function POST(req: Request) {
           // Crear purchase record solo si payment_succeeded
           if (event.type === 'invoice.payment_succeeded') {
             await handleInvoicePayment(invoice);
+          }
+          break;
+        case 'charge.refunded':
+        case 'charge.refund.updated':
+          const charge = event.data.object as Stripe.Charge;
+          console.log(`💸 Refund detected for charge: ${charge.id}`);
+          
+          // Obtener el payment intent asociado
+          if (charge.payment_intent) {
+            const piId = typeof charge.payment_intent === 'string' 
+              ? charge.payment_intent 
+              : charge.payment_intent.id;
+            
+            // Recuperar el payment intent actualizado de Stripe
+            // IMPORTANTE: expandir charges para incluir refunds
+            const updatedPaymentIntent = await stripe.paymentIntents.retrieve(piId, {
+              expand: ['charges.data.refunds']
+            });
+            
+            // Actualizar el payment intent en Supabase con el estado de refund
+            await upsertPaymentIntentRecord(updatedPaymentIntent);
+            
+            console.log(`✅ Payment Intent ${piId} updated with refund info`);
           }
           break;
         default:

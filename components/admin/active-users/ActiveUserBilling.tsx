@@ -8,6 +8,14 @@ interface PaymentIntent {
   created: string | number;  // Puede ser ISO string o UNIX timestamp
   description?: string;
   payment_method?: string;
+  amount_refunded?: number;
+  refunded?: boolean;
+  refunds?: Array<{
+    id: string;
+    amount: number;
+    reason: string;
+    status: string;
+  }>;
 }
 
 interface Invoice {
@@ -56,10 +64,14 @@ export default function ActiveUserBilling({
   subscription
 }: ActiveUserBillingProps) {
   
-  // Calcular totales
+  // Calcular totales (restando refunds)
   const totalPaid = paymentIntents
     .filter(pi => pi.status === 'succeeded')
-    .reduce((sum, pi) => sum + pi.amount, 0) / 100;
+    .reduce((sum, pi) => {
+      const amount = pi.amount;
+      const refunded = pi.amount_refunded || 0;
+      return sum + (amount - refunded);
+    }, 0) / 100;
 
   const totalInvoices = invoices.length;
 
@@ -264,33 +276,85 @@ export default function ActiveUserBilling({
 
         {paymentIntents.length > 0 ? (
           <div className="space-y-3">
-            {paymentIntents.slice(0, 10).map((payment) => (
-              <div 
-                key={payment.id}
-                className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <p className="text-white font-medium">
-                      {formatPrice(payment.amount / 100, payment.currency)}
-                    </p>
-                    {getStatusBadge(payment.status)}
-                  </div>
-                  <div className="flex items-center gap-4 text-xs text-gray-400">
-                    <span>{formatDate(payment.created)}</span>
-                    {payment.description && <span>• {payment.description}</span>}
+            {paymentIntents.slice(0, 10).map((payment) => {
+              const hasRefund = payment.amount_refunded && payment.amount_refunded > 0;
+              const isFullyRefunded = payment.refunded;
+              const refundPercentage = hasRefund 
+                ? Math.round((payment.amount_refunded! / payment.amount) * 100)
+                : 0;
+
+              return (
+                <div 
+                  key={payment.id}
+                  className={`p-4 rounded-lg border transition-colors ${
+                    isFullyRefunded 
+                      ? 'bg-red-500/10 border-red-500/30' 
+                      : hasRefund 
+                        ? 'bg-orange-500/10 border-orange-500/30'
+                        : 'bg-white/5 border-white/10 hover:bg-white/10'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <p className={`font-medium ${isFullyRefunded ? 'text-red-400 line-through' : 'text-white'}`}>
+                          {formatPrice(payment.amount / 100, payment.currency)}
+                        </p>
+                        {hasRefund && !isFullyRefunded && (
+                          <span className="px-2 py-0.5 bg-orange-500/30 text-orange-400 text-xs rounded-full border border-orange-500/50">
+                            Reembolso parcial: {refundPercentage}%
+                          </span>
+                        )}
+                        {isFullyRefunded && (
+                          <span className="px-2 py-0.5 bg-red-500/30 text-red-400 text-xs rounded-full border border-red-500/50">
+                            💸 Reembolsado
+                          </span>
+                        )}
+                        {!hasRefund && getStatusBadge(payment.status)}
+                      </div>
+                      
+                      {/* Información de refund */}
+                      {hasRefund && (
+                        <div className="mb-2 px-3 py-2 bg-black/20 rounded-lg border border-white/10">
+                          <p className="text-sm text-red-300 font-medium mb-1">
+                            Reembolsado: {formatPrice(payment.amount_refunded! / 100, payment.currency)}
+                          </p>
+                          {payment.refunds && payment.refunds.length > 0 && (
+                            <div className="text-xs text-gray-400 space-y-0.5">
+                              {payment.refunds.map((refund) => (
+                                <div key={refund.id} className="flex items-center gap-2">
+                                  <span>• {formatPrice(refund.amount / 100, payment.currency)}</span>
+                                  {refund.reason && (
+                                    <span className="text-orange-400">
+                                      ({refund.reason === 'requested_by_customer' ? 'Solicitado' : 
+                                        refund.reason === 'duplicate' ? 'Duplicado' : 
+                                        refund.reason === 'fraudulent' ? 'Fraude' : refund.reason})
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-4 text-xs text-gray-400">
+                        <span>{formatDate(payment.created)}</span>
+                        {payment.description && <span>• {payment.description}</span>}
+                      </div>
+                    </div>
+                    <a
+                      href={`https://dashboard.stripe.com/payments/${payment.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-purple-400 hover:text-purple-300 transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
                   </div>
                 </div>
-                <a
-                  href={`https://dashboard.stripe.com/payments/${payment.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-purple-400 hover:text-purple-300 transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-8">
