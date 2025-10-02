@@ -40,6 +40,9 @@ module.exports = {
         'gradient-dark': 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
         'chart-gradient': 'linear-gradient(180deg, rgba(201,217,46,0.1) 0%, rgba(201,217,46,0) 100%)'
       },
+      backgroundSize: {
+        '200': '200%'
+      },
       boxShadow: {
         'primary': '0 0 20px rgba(201, 217, 46, 0.3)',
         'primary-lg': '0 0 40px rgba(201, 217, 46, 0.4)',
@@ -79,6 +82,14 @@ module.exports = {
             'background-size': '200% 200%',
             'background-position': 'right center'
           }
+        },
+        'fade-in': {
+          'from': { opacity: 0 },
+          'to': { opacity: 1 }
+        },
+        'slide-up': {
+          'from': { transform: 'translateY(100%)', opacity: 0 },
+          'to': { transform: 'translateY(0)', opacity: 1 }
         }
       },
       animation: {
@@ -88,7 +99,9 @@ module.exports = {
         'float': 'float 6s ease-in-out infinite',
         'float-reverse': 'float-reverse 6s ease-in-out infinite',
         'spin-slow': 'spin-slow 20s linear infinite',
-        'gradient': 'gradient 8s ease infinite'
+        'gradient': 'gradient 8s ease infinite',
+        'fade-in': 'fade-in 0.3s ease-out',
+        'slide-up': 'slide-up 0.5s ease-out'
       }
     }
   },

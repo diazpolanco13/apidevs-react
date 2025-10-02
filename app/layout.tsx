@@ -8,8 +8,8 @@ import { PropsWithChildren, Suspense } from 'react';
 import { getURL } from '@/utils/helpers';
 import 'styles/main.css';
 
-// Importar CookieConsentWrapper dinámicamente solo en el cliente
-const CookieConsentWrapper = dynamic(() => import('@/components/CookieConsentWrapper'), {
+// ✅ NUEVO SISTEMA DE COOKIES - Simple y funcional sin Context API
+const SimpleCookieBanner = dynamic(() => import('@/components/SimpleCookieBanner'), {
   ssr: false
 });
 
@@ -59,20 +59,20 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
         <link rel="manifest" href="/favicon_io/site.webmanifest" />
-        <meta name="theme-color" content="#00ff88" />
+        <meta name="theme-color" content="#C9D92E" />
       </head>
       <body className={`bg-apidevs-dark ${workSans.variable} font-sans h-full`}>
-        <CookieConsentWrapper>
-          <Navbar />
-          <main id="skip" className="">
-            {children}
-          </main>
-          <ConditionalFooter />
-          <Suspense>
-            <Toaster />
-          </Suspense>
-          <ConfirmEmailDialog />
-        </CookieConsentWrapper>
+        <Navbar />
+        <main id="skip" className="">
+          {children}
+        </main>
+        <ConditionalFooter />
+        <Suspense>
+          <Toaster />
+        </Suspense>
+        <ConfirmEmailDialog />
+        {/* ✅ Banner de cookies con diseño premium */}
+        <SimpleCookieBanner />
       </body>
     </html>
   );
