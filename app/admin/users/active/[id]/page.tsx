@@ -182,7 +182,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
           subscriptionsCount={subscriptions?.length || 0}
           indicatorAccessCount={indicatorAccess?.length || 0}
           customerTier={(user as any).customer_tier}
-          totalLifetimeSpent={(user as any).total_lifetime_spent ? Number((user as any).total_lifetime_spent) : null}
+          totalLifetimeSpent={(user as any).total_lifetime_spent ? Number((user as any).total_lifetime_spent) / 100 : null}
           purchaseCount={(user as any).purchase_count}
           loyaltyDiscount={(user as any).loyalty_discount_percentage}
         />
