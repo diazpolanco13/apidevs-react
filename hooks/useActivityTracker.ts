@@ -25,7 +25,6 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { v4 as uuidv4 } from 'uuid';
 
 interface ActivityEvent {
   event_type: string;
@@ -45,13 +44,13 @@ export function useActivityTracker() {
     if (typeof window !== 'undefined') {
       let sid = localStorage.getItem('activity_session_id');
       if (!sid) {
-        sid = uuidv4();
+        sid = crypto.randomUUID();
         localStorage.setItem('activity_session_id', sid);
         localStorage.setItem('session_start', Date.now().toString());
       }
       return sid;
     }
-    return uuidv4();
+    return crypto.randomUUID();
   });
 
   /**
@@ -149,7 +148,7 @@ export function useActivityTracker() {
       // Insertar en Supabase
       const { error } = await supabase
         .from('user_activity_log')
-        .insert([eventData]);
+        .insert([eventData] as any);
 
       if (error) {
         console.error('Error tracking event:', error);

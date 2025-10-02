@@ -70,8 +70,8 @@ export default function ActiveUserTimeline({
         .eq('user_id', userId)
         .order('created', { ascending: false });
 
-      if (paymentIntents) {
-        paymentIntents.forEach((pi) => {
+      if (paymentIntents && paymentIntents.length > 0) {
+        paymentIntents.forEach((pi: any) => {
           const eventDate = new Date(pi.created);
           if (!filterDate || eventDate >= filterDate) {
             // Evento de pago
@@ -135,7 +135,7 @@ export default function ActiveUserTimeline({
         .eq('user_id', userId)
         .order('created', { ascending: false });
 
-      if (subscriptions) {
+      if (subscriptions && subscriptions.length > 0) {
         subscriptions.forEach((sub: any) => {
           const eventDate = new Date(sub.created);
           if (!filterDate || eventDate >= filterDate) {
@@ -177,13 +177,19 @@ export default function ActiveUserTimeline({
       }
 
       // 3. Eventos de Compras (Purchases)
+      const { data: userEmail } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', userId)
+        .single();
+      
       const { data: purchases } = await supabase
         .from('purchases')
         .select('*')
-        .eq('customer_email', (await supabase.from('users').select('email').eq('id', userId).single()).data?.email || '')
+        .eq('customer_email', (userEmail as any)?.email || '')
         .order('order_date', { ascending: false });
 
-      if (purchases) {
+      if (purchases && purchases.length > 0) {
         purchases.forEach((purchase: any) => {
           const eventDate = new Date(purchase.order_date);
           if (!filterDate || eventDate >= filterDate) {
@@ -213,7 +219,7 @@ export default function ActiveUserTimeline({
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      if (indicatorAccess) {
+      if (indicatorAccess && indicatorAccess.length > 0) {
         indicatorAccess.forEach((access: any) => {
           const eventDate = new Date(access.created_at);
           if (!filterDate || eventDate >= filterDate) {
