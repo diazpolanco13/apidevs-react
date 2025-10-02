@@ -3,10 +3,15 @@ import ConditionalFooter from '@/components/ui/Footer/ConditionalFooter';
 import Navbar from '@/components/ui/Navbar';
 import { Toaster } from '@/components/ui/Toasts/toaster';
 import { ConfirmEmailDialog } from '@/components/ui/ConfirmEmailDialog';
-import CookieConsentWrapper from '@/components/CookieConsentWrapper';
+import dynamic from 'next/dynamic';
 import { PropsWithChildren, Suspense } from 'react';
 import { getURL } from '@/utils/helpers';
 import 'styles/main.css';
+
+// Importar CookieConsentWrapper dinámicamente solo en el cliente
+const CookieConsentWrapper = dynamic(() => import('@/components/CookieConsentWrapper'), {
+  ssr: false
+});
 
 // Importar fuentes de Google Fonts
 import { Work_Sans } from 'next/font/google';
