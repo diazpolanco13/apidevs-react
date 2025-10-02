@@ -10,13 +10,13 @@
 ## 📋 ÍNDICE DE FASES
 
 ```
-FUNDACIÓN (Fases 1-5)    → 11-16 horas → Funcionalidad Básica [🟢 80% - 4/5 completadas]
+FUNDACIÓN (Fases 1-5)    → 11-16 horas → Funcionalidad Básica [✅ 100% - 5/5 completadas]
 EXPANSION (Fases 6-8)    → 9-12 horas  → Overview + Tabs Core [🟢 33% - 1/3 completadas]
 AVANZADO (Fases 9-10)    → 8-10 horas  → Analytics + Features Premium [⏳ Pendiente]
 FINALIZACIÓN (Fases 11-12) → 5-7 horas   → Testing + Docs [⏳ Pendiente]
 ```
 
-**PROGRESO GLOBAL: 42% (5 de 12 fases completadas) - Tiempo invertido: ~12 horas**
+**PROGRESO GLOBAL: 50% (6 de 12 fases completadas) - Tiempo invertido: ~16 horas**
 
 ---
 
@@ -348,14 +348,15 @@ const displayValue = useCountAnimation(value, 2000);
 
 ## 🔍 FASE 5: VISTA DETALLE
 **Tiempo:** 3-4 horas  
-**Estado:** ⏳ PENDIENTE
+**Estado:** ✅ COMPLETADA (2 Oct 2025)
 **Dependencias:** Fase 2, 3
 
 ### Objetivos:
 - ✅ Página `/admin/compras/[id]`
-- ✅ 6 secciones de información
-- ✅ Acciones administrativas
+- ✅ 6 secciones de información (Info Compra, Cliente, Producto, Payment Details, Refunds, Acciones Admin)
+- ✅ Acciones administrativas (Reembolso, Email, Descargar PDF, Ver Stripe)
 - ✅ Layout similar a User Detail
+- ✅ Descarga de facturas PDF funcional desde Stripe
 
 ### Archivos a Crear:
 ```

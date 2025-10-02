@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Search, Filter, ChevronLeft, ChevronRight, ExternalLink, CheckCircle, Clock, XCircle, RefreshCw } from 'lucide-react';
 import { Purchase } from '@/types/purchases';
 
@@ -35,11 +36,12 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
   const currentPurchases = filteredPurchases.slice(startIndex, endIndex);
 
   // Formatear moneda
-  const formatCurrency = (amount: number) => {
+  // NOTA: amount ya viene en centavos desde page.tsx, NO dividir de nuevo
+  const formatCurrency = (amountInCents: number) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: 'USD'
-    }).format(amount / 100);
+    }).format(amountInCents / 100);
   };
 
   // Formatear fecha
@@ -170,7 +172,7 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
                   {/* Monto */}
                   <td className="py-4 px-4">
                     <div className="text-sm font-semibold text-white">{formatCurrency(purchase.amount)}</div>
-                    {purchase.amount_refunded && purchase.amount_refunded > 0 && (
+                    {(!!purchase.amount_refunded && purchase.amount_refunded > 0) && (
                       <div className="text-xs text-orange-400">-{formatCurrency(purchase.amount_refunded)} reemb.</div>
                     )}
                   </td>
@@ -187,10 +189,13 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
 
                   {/* Acciones */}
                   <td className="py-4 px-4 text-right">
-                    <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 text-xs text-gray-300 hover:text-white transition-all">
+                    <Link
+                      href={`/admin/compras/${purchase.id}`}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 text-xs text-gray-300 hover:text-white transition-all"
+                    >
                       <span>Ver</span>
                       <ExternalLink className="w-3 h-3" />
-                    </button>
+                    </Link>
                   </td>
                 </tr>
               ))

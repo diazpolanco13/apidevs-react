@@ -1,7 +1,8 @@
 'use client';
 
 import { XCircle, AlertTriangle, CheckCircle } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -25,6 +26,13 @@ export default function ConfirmModal({
   variant = 'warning'
 }: ConfirmModalProps) {
   
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+  
   // Close on ESC key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -42,7 +50,7 @@ export default function ConfirmModal({
     };
   }, [isOpen, onClose]);
   
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
   
   const variants = {
     danger: {
@@ -70,8 +78,8 @@ export default function ConfirmModal({
   
   const style = variants[variant];
   
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
       <div 
         className={`
           relative w-full max-w-md
@@ -119,5 +127,7 @@ export default function ConfirmModal({
       </div>
     </div>
   );
+  
+  return createPortal(modalContent, document.body);
 }
 
