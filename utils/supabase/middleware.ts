@@ -1,6 +1,10 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
+// Cache de sesiones para evitar rate limiting (30 segundos)
+const sessionCache = new Map<string, { user: any; timestamp: number }>();
+const CACHE_TTL = 30000; // 30 segundos
+
 export const createClient = (request: NextRequest) => {
   // Create an unmodified response
   let response = NextResponse.next({
@@ -94,9 +98,32 @@ export const updateSession = async (request: NextRequest) => {
     
     const { supabase, response } = createClient(request);
 
+    // Verificar caché primero (evita rate limiting)
+    const authToken = request.cookies.get('sb-zzieiqxlxfydvexalbsr-auth-token')?.value;
+    if (authToken) {
+      const cached = sessionCache.get(authToken);
+      if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`⚡ Using cached auth for ${pathname} - ${Date.now() - startTime}ms`);
+        }
+        return response;
+      }
+    }
+
     // This will refresh session if expired - required for Server Components
     // https://supabase.com/docs/guides/auth/server-side/nextjs
     const { data: { user }, error } = await supabase.auth.getUser();
+
+    // Guardar en caché si es exitoso
+    if (user && authToken) {
+      sessionCache.set(authToken, { user, timestamp: Date.now() });
+      
+      // Limpiar caché antiguo (max 100 entradas)
+      if (sessionCache.size > 100) {
+        const oldestKey = sessionCache.keys().next().value;
+        sessionCache.delete(oldestKey);
+      }
+    }
 
     // Only clear cookies on SPECIFIC critical errors that indicate corruption
     if (error && (
