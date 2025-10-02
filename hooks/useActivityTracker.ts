@@ -100,6 +100,15 @@ export function useActivityTracker() {
   };
 
   /**
+   * Verifica si el usuario ha dado consentimiento para analytics
+   */
+  const hasAnalyticsConsent = () => {
+    if (typeof window === 'undefined') return false;
+    const analyticsEnabled = localStorage.getItem('analytics_enabled');
+    return analyticsEnabled === 'true';
+  };
+
+  /**
    * Trackea un evento genérico
    */
   const trackEvent = async (
@@ -110,6 +119,12 @@ export function useActivityTracker() {
     metadata?: Record<string, any>
   ) => {
     try {
+      // ⚠️ IMPORTANTE: Verificar consentimiento antes de trackear
+      if (!hasAnalyticsConsent()) {
+        console.log('🍪 Analytics tracking disabled - no consent');
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return; // Solo trackear usuarios autenticados
 
