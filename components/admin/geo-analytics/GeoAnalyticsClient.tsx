@@ -87,12 +87,22 @@ export default function GeoAnalyticsClient({
     }
   }, []);
 
-  const stats = [
+  const stats: Array<{
+    name: string;
+    value: string;
+    change: string;
+    changeType: 'positive' | 'negative' | 'neutral';
+    icon: any;
+    color: string;
+    bgColor: string;
+    borderColor: string;
+    tooltip: string;
+  }> = [
     {
       name: 'Visitas Totales',
       value: totalVisits.toLocaleString(),
       change: `+${visitsChange}%`,
-      changeType: 'positive' as const,
+      changeType: 'positive',
       icon: Users,
       color: 'text-blue-400',
       bgColor: 'from-blue-500/10 to-cyan-500/10',
@@ -103,7 +113,7 @@ export default function GeoAnalyticsClient({
       name: 'Compras',
       value: totalPurchases.toLocaleString(),
       change: `+${purchasesChange}%`,
-      changeType: 'positive' as const,
+      changeType: 'positive',
       icon: ShoppingCart,
       color: 'text-green-400',
       bgColor: 'from-green-500/10 to-emerald-500/10',
@@ -114,7 +124,7 @@ export default function GeoAnalyticsClient({
       name: 'Conversion Rate',
       value: `${conversionRate.toFixed(2)}%`,
       change: '+0.2%',
-      changeType: 'positive' as const,
+      changeType: 'positive',
       icon: TrendingUp,
       color: 'text-purple-400',
       bgColor: 'from-purple-500/10 to-pink-500/10',
@@ -125,7 +135,7 @@ export default function GeoAnalyticsClient({
       name: 'Países Alcanzados',
       value: uniqueCountries.toString(),
       change: topCountry ? `Top: ${topCountry.country_name}` : '',
-      changeType: 'neutral' as const,
+      changeType: 'neutral',
       icon: Globe,
       color: 'text-orange-400',
       bgColor: 'from-orange-500/10 to-yellow-500/10',

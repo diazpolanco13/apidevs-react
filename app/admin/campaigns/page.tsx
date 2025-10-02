@@ -37,18 +37,20 @@ export default async function CampaignsPage() {
   const { data: campaigns, error } = await supabase
     .from('campaign_performance')
     .select('*')
-    .order('total_visits', { ascending: false }) as { data: CampaignPerformance[] | null };
+    .order('total_visits', { ascending: false });
 
   if (error) {
     console.error('Error fetching campaigns:', error);
   }
 
+  const typedCampaigns = campaigns as CampaignPerformance[] | null;
+
   // Calcular métricas globales
-  const activeCampaigns = campaigns?.filter(c => c.status === 'active') || [];
-  const totalSpent = campaigns?.reduce((sum, c) => sum + (c.external_spend_cents || 0), 0) || 0;
-  const totalRevenue = campaigns?.reduce((sum, c) => sum + (c.total_revenue_cents || 0), 0) || 0;
-  const totalVisits = campaigns?.reduce((sum, c) => sum + c.total_visits, 0) || 0;
-  const totalPurchases = campaigns?.reduce((sum, c) => sum + c.total_purchases, 0) || 0;
+  const activeCampaigns = typedCampaigns?.filter(c => c.status === 'active') || [];
+  const totalSpent = typedCampaigns?.reduce((sum, c) => sum + (c.external_spend_cents || 0), 0) || 0;
+  const totalRevenue = typedCampaigns?.reduce((sum, c) => sum + (c.total_revenue_cents || 0), 0) || 0;
+  const totalVisits = typedCampaigns?.reduce((sum, c) => sum + c.total_visits, 0) || 0;
+  const totalPurchases = typedCampaigns?.reduce((sum, c) => sum + c.total_purchases, 0) || 0;
   const globalConversionRate = totalVisits > 0 ? (totalPurchases / totalVisits * 100) : 0;
   const globalROAS = totalSpent > 0 ? (totalRevenue / totalSpent * 100) : 0;
   const globalCAC = totalPurchases > 0 ? totalSpent / totalPurchases : 0;
@@ -56,7 +58,7 @@ export default async function CampaignsPage() {
   return (
     <div className="space-y-6">
       <CampaignsClient
-        initialCampaigns={campaigns || []}
+        initialCampaigns={typedCampaigns || []}
         activeCampaignsCount={activeCampaigns.length}
         totalSpent={totalSpent}
         totalRevenue={totalRevenue}

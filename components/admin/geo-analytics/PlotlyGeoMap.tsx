@@ -2,10 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import type { PlotParams } from 'react-plotly.js';
 
 // Importar Plotly dinámicamente para evitar SSR issues
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
+
+// Types para Plotly
+type PlotParams = {
+  data: any[];
+  layout: any;
+  config: any;
+};
 
 interface CountryData {
   country: string;

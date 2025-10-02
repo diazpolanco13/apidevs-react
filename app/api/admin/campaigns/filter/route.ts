@@ -14,6 +14,13 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient();
 
+    type Visit = {
+      utm_campaign?: string;
+      purchased?: boolean;
+      purchase_amount_cents?: number;
+      created_at?: string;
+    };
+
     // Query visitor_tracking filtrado por rango de fechas
     const { data: visits, error: visitsError } = await supabase
       .from('visitor_tracking')
@@ -29,6 +36,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const typedVisits = visits as Visit[] | null;
+
     // Obtener todas las campañas
     const { data: allCampaigns, error: campaignsError } = await supabase
       .from('utm_campaigns')
@@ -42,16 +51,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    type Campaign = {
+      id: string;
+      campaign_name: string;
+      utm_source: string;
+      utm_campaign: string;
+      status: 'active' | 'paused' | 'completed';
+      budget_cents: number;
+      external_reach: number;
+      external_spend_cents: number;
+    };
+
+    const typedCampaigns = allCampaigns as Campaign[] | null;
+
     // Agrupar visitas por campaña y calcular métricas
     const campaignMetrics = new Map<string, {
-      campaign: any;
+      campaign: Campaign;
       visits: any[];
       purchases: any[];
       revenue: number;
     }>();
 
     // Inicializar todas las campañas
-    allCampaigns?.forEach(campaign => {
+    typedCampaigns?.forEach(campaign => {
       campaignMetrics.set(campaign.utm_campaign, {
         campaign,
         visits: [],
@@ -61,7 +83,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Agrupar visitas por campaña
-    visits?.forEach(visit => {
+    typedVisits?.forEach(visit => {
       if (!visit.utm_campaign) return;
 
       const metrics = campaignMetrics.get(visit.utm_campaign);
