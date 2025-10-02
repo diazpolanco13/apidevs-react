@@ -3,8 +3,7 @@ import ConditionalFooter from '@/components/ui/Footer/ConditionalFooter';
 import Navbar from '@/components/ui/Navbar';
 import { Toaster } from '@/components/ui/Toasts/toaster';
 import { ConfirmEmailDialog } from '@/components/ui/ConfirmEmailDialog';
-import { CookieConsentProvider } from '@/contexts/CookieConsentContext';
-import CookieBanner from '@/components/CookieBanner';
+import CookieConsentWrapper from '@/components/CookieConsentWrapper';
 import { PropsWithChildren, Suspense } from 'react';
 import { getURL } from '@/utils/helpers';
 import 'styles/main.css';
@@ -58,7 +57,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <meta name="theme-color" content="#00ff88" />
       </head>
       <body className={`bg-apidevs-dark ${workSans.variable} font-sans h-full`}>
-        <CookieConsentProvider>
+        <CookieConsentWrapper>
           <Navbar />
           <main id="skip" className="">
             {children}
@@ -68,8 +67,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
             <Toaster />
           </Suspense>
           <ConfirmEmailDialog />
-          <CookieBanner />
-        </CookieConsentProvider>
+        </CookieConsentWrapper>
       </body>
     </html>
   );
