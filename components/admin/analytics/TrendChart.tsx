@@ -128,7 +128,6 @@ export default function TrendChart({
       x: {
         grid: {
           color: 'rgba(75, 85, 99, 0.2)', // gray-600 with opacity
-          drawBorder: false,
         },
         ticks: {
           color: 'rgb(156, 163, 175)', // gray-400
@@ -143,7 +142,6 @@ export default function TrendChart({
         beginAtZero: true,
         grid: {
           color: 'rgba(75, 85, 99, 0.2)',
-          drawBorder: false,
         },
         ticks: {
           color: 'rgb(156, 163, 175)',

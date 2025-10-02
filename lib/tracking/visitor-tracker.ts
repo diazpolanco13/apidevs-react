@@ -1,5 +1,4 @@
 import { createClient } from '@/utils/supabase/server';
-import { cookies } from 'next/headers';
 
 interface VisitorData {
   sessionId: string;
@@ -31,30 +30,24 @@ interface DeviceData {
   device_type?: 'desktop' | 'mobile' | 'tablet';
 }
 
-const SESSION_COOKIE_NAME = 'apidevs_session_id';
+export const SESSION_COOKIE_NAME = 'apidevs_session_id';
 const SESSION_DURATION = 30 * 60 * 1000; // 30 minutos
 
 export async function trackVisitor(
   request: Request,
-  pathname: string
-): Promise<void> {
+  pathname: string,
+  existingSessionId?: string
+): Promise<string | null> {
   try {
     const supabase = createClient();
-    const cookieStore = cookies();
     const url = new URL(request.url);
 
     // Obtener o crear session_id
-    let sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+    let sessionId = existingSessionId;
     const isNewSession = !sessionId;
     
     if (!sessionId) {
       sessionId = generateSessionId();
-      cookieStore.set(SESSION_COOKIE_NAME, sessionId, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 365, // 1 año
-      });
     }
 
     // Extraer datos de la request
@@ -110,9 +103,13 @@ export async function trackVisitor(
         deviceData
       );
     }
+    
+    // Retornar sessionId (nuevo o existente)
+    return isNewSession ? sessionId : null;
   } catch (error) {
     // Silenciar errores de tracking para no romper la app
     console.error('Error tracking visitor:', error);
+    return null;
   }
 }
 

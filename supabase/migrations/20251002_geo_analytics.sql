@@ -50,6 +50,9 @@ CREATE TABLE IF NOT EXISTS visitor_tracking (
   purchased BOOLEAN DEFAULT FALSE,
   purchase_id TEXT, -- FK a payment_intent de Stripe
   purchase_amount_cents INTEGER,
+  product_purchased TEXT, -- ID del producto comprado
+  subscription_id TEXT, -- ID de la suscripción creada
+  user_id TEXT, -- ID del usuario que realizó la compra
   purchase_date TIMESTAMPTZ,
   
   -- Timestamps

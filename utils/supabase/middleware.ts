@@ -9,16 +9,39 @@ const CACHE_TTL = 60000; // 60 segundos
 const pendingRequests = new Map<string, Promise<any>>();
 
 // Función async para tracking de visitantes (no bloquea la respuesta)
-async function trackVisitorAsync(request: NextRequest, pathname: string): Promise<void> {
+async function trackVisitorAsync(
+  request: NextRequest, 
+  response: NextResponse, 
+  pathname: string
+): Promise<NextResponse> {
   try {
     // Importar dinámicamente para evitar circular dependencies
-    const { trackVisitor } = await import('@/lib/tracking/visitor-tracker');
-    await trackVisitor(request, pathname);
+    const { trackVisitor, SESSION_COOKIE_NAME } = await import('@/lib/tracking/visitor-tracker');
+    
+    // Obtener sessionId existente de las cookies
+    const existingSessionId = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+    
+    // Trackear visitante (retorna nuevo sessionId si se creó uno)
+    const newSessionId = await trackVisitor(request, pathname, existingSessionId);
+    
+    // Si se creó un nuevo sessionId, agregarlo a la respuesta
+    if (newSessionId) {
+      response.cookies.set(SESSION_COOKIE_NAME, newSessionId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 365, // 1 año
+        path: '/'
+      });
+    }
+    
+    return response;
   } catch (error) {
     // Silenciar errores para no romper la app
     if (process.env.NODE_ENV === 'development') {
       console.error('Track visitor error:', error);
     }
+    return response;
   }
 }
 
@@ -113,7 +136,8 @@ export const updateSession = async (request: NextRequest) => {
       return response;
     }
     
-    const { supabase, response } = createClient(request);
+    const { supabase, response: initialResponse } = createClient(request);
+    let response = initialResponse;
 
     // Verificar caché primero (evita rate limiting)
     const authToken = request.cookies.get('sb-zzieiqxlxfydvexalbsr-auth-token')?.value;
@@ -205,10 +229,8 @@ export const updateSession = async (request: NextRequest) => {
                         pathname !== '/signout';
 
     if (shouldTrack) {
-      // Ejecutar tracking de forma async sin bloquear la respuesta
-      trackVisitorAsync(request, pathname).catch(err => {
-        console.error('Visitor tracking error:', err);
-      });
+      // Ejecutar tracking y obtener respuesta con cookie actualizada
+      response = await trackVisitorAsync(request, response, pathname);
     }
 
     return response;
