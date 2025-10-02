@@ -1,47 +1,233 @@
 'use client';
 
-import { ShoppingBag, Package, Tag, Star, Filter } from 'lucide-react';
+import { DollarSign, ShoppingBag, TrendingUp, Star, Award, TrendingDown } from 'lucide-react';
+import PurchasesTable from '../overview/PurchasesTable';
+import Tooltip from '@/components/ui/Tooltip';
+import { Purchase } from '@/types/purchases';
 
-export default function OneTimeTab() {
-  const features = [
-    { icon: Package, label: 'Productos', color: 'text-purple-400' },
-    { icon: Tag, label: 'Lifetime Deals', color: 'text-pink-400' },
-    { icon: Star, label: 'Top Sellers', color: 'text-yellow-400' },
-    { icon: Filter, label: 'Filtros Avanzados', color: 'text-blue-400' }
-  ];
+interface OneTimeTabProps {
+  oneTimeData: {
+    metrics: {
+      totalOneTime: number;
+      aov: number;
+      lifetimeSold: number;
+      upsells: number;
+      currentMonthRevenue: number;
+      currentMonthCount: number;
+      monthOverMonth: {
+        revenue: number;
+        purchases: number;
+      };
+    };
+    purchases: Purchase[];
+  };
+}
+
+export default function OneTimeTab({ oneTimeData }: OneTimeTabProps) {
+  const { metrics, purchases } = oneTimeData;
+
+  // Formatear números
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  };
+
+  const formatPercent = (value: number) => {
+    const formatted = Math.abs(value).toFixed(1);
+    return `${value >= 0 ? '+' : '-'}${formatted}%`;
+  };
 
   return (
-    <div className="bg-gradient-to-br from-gray-800/30 to-gray-900/30 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-12">
-      <div className="max-w-2xl mx-auto text-center space-y-6">
-        <div className="inline-flex p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border border-purple-500/30">
-          <ShoppingBag className="w-12 h-12 text-purple-400" />
-        </div>
-        
-        <div>
-          <h3 className="text-2xl font-bold text-white mb-2">Compras One-Time</h3>
-          <p className="text-gray-400">
-            Análisis de compras únicas y productos lifetime
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
-          {features.map((feature) => {
-            const Icon = feature.icon;
-            return (
-              <div key={feature.label} className="bg-gray-800/40 border border-gray-700/30 rounded-xl p-3">
-                <Icon className={`w-5 h-5 ${feature.color} mx-auto mb-1`} />
-                <div className="text-[10px] text-gray-500">{feature.label}</div>
+    <div className="space-y-6">
+      {/* Métricas Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Revenue Total One-Time */}
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
+          
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-blue-500/20 rounded-xl p-6 hover:border-blue-500/40 transition-all">
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                <DollarSign className="w-6 h-6 text-blue-400" />
               </div>
-            );
-          })}
+              <div className="text-right">
+                <div className="flex items-center justify-end gap-1 mb-1">
+                  <p className="text-xs text-gray-400">Revenue Total</p>
+                  <Tooltip 
+                    content="Total de ingresos generados por compras únicas y Lifetime. Representa ventas de pago único sin recurrencia mensual."
+                    position="left"
+                  />
+                </div>
+                <p className="text-2xl font-bold text-white">{formatCurrency(metrics.totalOneTime)}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Este mes</span>
+                <span className="text-white font-semibold">{formatCurrency(metrics.currentMonthRevenue)}</span>
+              </div>
+              
+              {metrics.monthOverMonth.revenue !== 0 && (
+                <div className="flex items-center gap-1 text-xs">
+                  {metrics.monthOverMonth.revenue >= 0 ? (
+                    <>
+                      <TrendingUp className="w-3 h-3 text-green-400" />
+                      <span className="text-green-400">{formatPercent(metrics.monthOverMonth.revenue)} vs mes anterior</span>
+                    </>
+                  ) : (
+                    <>
+                      <TrendingDown className="w-3 h-3 text-red-400" />
+                      <span className="text-red-400">{formatPercent(metrics.monthOverMonth.revenue)} vs mes anterior</span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/30 rounded-full">
-          <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-          <span className="text-sm font-medium text-purple-400">Fase 4 • Próximamente</span>
+        {/* Card 2: AOV (Average Order Value) */}
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
+          
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-purple-500/20 rounded-xl p-6 hover:border-purple-500/40 transition-all">
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                <ShoppingBag className="w-6 h-6 text-purple-400" />
+              </div>
+              <div className="text-right">
+                <div className="flex items-center justify-end gap-1 mb-1">
+                  <p className="text-xs text-gray-400">AOV</p>
+                  <Tooltip 
+                    content="AOV (Average Order Value): Valor promedio de cada orden. Se calcula dividiendo el revenue total entre el número de compras. Indica cuánto gastan los clientes por transacción."
+                    position="left"
+                    maxWidth="260px"
+                  />
+                </div>
+                <p className="text-2xl font-bold text-white">{formatCurrency(metrics.aov)}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Total vendidos</span>
+                <span className="text-white font-semibold">{metrics.lifetimeSold}</span>
+              </div>
+              
+              <div className="text-xs text-gray-400">
+                {metrics.aov > 200 ? (
+                  <span className="text-green-400">✓ Excelente ticket promedio</span>
+                ) : metrics.aov > 100 ? (
+                  <span className="text-yellow-400">⚠ Ticket promedio normal</span>
+                ) : (
+                  <span className="text-gray-400">Ticket promedio bajo</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Lifetime Sold */}
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
+          
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-amber-500/20 rounded-xl p-6 hover:border-amber-500/40 transition-all">
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                <Award className="w-6 h-6 text-amber-400" />
+              </div>
+              <div className="text-right">
+                <div className="flex items-center justify-end gap-1 mb-1">
+                  <p className="text-xs text-gray-400">Lifetime Vendidos</p>
+                  <Tooltip 
+                    content="Número total de productos Lifetime vendidos. Estas compras representan acceso permanente sin pagos recurrentes."
+                    position="left"
+                  />
+                </div>
+                <p className="text-2xl font-bold text-white">{metrics.lifetimeSold}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Este mes</span>
+                <span className="text-white font-semibold">{metrics.currentMonthCount}</span>
+              </div>
+              
+              {metrics.monthOverMonth.purchases !== 0 && (
+                <div className="flex items-center gap-1 text-xs">
+                  {metrics.monthOverMonth.purchases >= 0 ? (
+                    <>
+                      <TrendingUp className="w-3 h-3 text-green-400" />
+                      <span className="text-green-400">{formatPercent(metrics.monthOverMonth.purchases)} nuevas</span>
+                    </>
+                  ) : (
+                    <>
+                      <TrendingDown className="w-3 h-3 text-red-400" />
+                      <span className="text-red-400">{formatPercent(metrics.monthOverMonth.purchases)} este mes</span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Upsells Detectados */}
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
+          
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-green-500/20 rounded-xl p-6 hover:border-green-500/40 transition-all">
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                <Star className="w-6 h-6 text-green-400" />
+              </div>
+              <div className="text-right">
+                <div className="flex items-center justify-end gap-1 mb-1">
+                  <p className="text-xs text-gray-400">Upsells</p>
+                  <Tooltip 
+                    content="Clientes que realizaron múltiples compras el mismo día. Indica efectividad en estrategias de venta cruzada y ofertas complementarias."
+                    position="left"
+                    maxWidth="260px"
+                  />
+                </div>
+                <p className="text-2xl font-bold text-white">{metrics.upsells}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="text-xs text-gray-400">
+                {metrics.upsells > 0 ? (
+                  <span className="text-green-400">✓ Estrategia de upsell activa</span>
+                ) : (
+                  <span className="text-gray-400">Sin upsells detectados</span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Título de la sección */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <ShoppingBag className="w-5 h-5 text-apidevs-primary" />
+            Compras únicas y acceso Lifetime
+          </h2>
+          <p className="text-sm text-gray-400 mt-1">
+            {purchases.length} compra{purchases.length !== 1 ? 's' : ''} lifetime realizadas
+          </p>
+        </div>
+      </div>
+
+      {/* Tabla de Compras One-Time */}
+      <PurchasesTable purchases={purchases} />
     </div>
   );
 }
-
