@@ -19,7 +19,7 @@ import {
   Cog6ToothIcon,
   UsersIcon,
 } from '@heroicons/react/24/outline';
-import { Shield, TrendingUp } from 'lucide-react';
+import { Shield, TrendingUp, Package } from 'lucide-react';
 
 interface NavigationItem {
   name: string;
@@ -47,7 +47,7 @@ export default function AdminDashboardLayout({
   const navigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'Usuarios', href: '/admin/users', icon: UsersIcon },
-    { name: 'Compras', href: '/admin/users?tab=purchases', icon: ShoppingBagIcon, badge: 'Próximamente' },
+    { name: 'Compras', href: '/admin/compras', icon: Package },
     { name: 'Analytics', href: '/admin', icon: ChartBarIcon, badge: 'Próximamente' },
     { name: 'Reportes', href: '/admin', icon: TrendingUp, badge: 'Próximamente' },
     { name: 'Configuración', href: '/admin', icon: Cog6ToothIcon, badge: 'Próximamente' },
