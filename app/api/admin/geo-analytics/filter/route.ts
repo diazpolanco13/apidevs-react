@@ -30,11 +30,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Calcular métricas globales
-    const totalVisits = visits?.length || 0;
-    const totalPurchases = visits?.filter(v => v.purchased).length || 0;
+    type Visit = {
+      purchased?: boolean;
+      purchase_amount_cents?: number;
+      country?: string;
+    };
+
+    const typedVisits: Visit[] = Array.isArray(visits) ? visits : [];
+
+    const totalVisits = typedVisits.length;
+    const totalPurchases = typedVisits.filter(v => !!v.purchased).length;
     const conversionRate = totalVisits > 0 ? (totalPurchases / totalVisits * 100) : 0;
-    const totalRevenue = visits?.reduce((sum, v) => sum + (v.purchase_amount_cents || 0), 0) || 0;
-    const uniqueCountries = new Set(visits?.map(v => v.country).filter(Boolean)).size;
+    const totalRevenue = typedVisits.reduce((sum, v) => sum + (v.purchase_amount_cents || 0), 0);
+    const uniqueCountries = new Set(typedVisits.map(v => v.country).filter(Boolean)).size;
 
     // Agrupar por país y calcular stats
     const countryMap = new Map<string, {
@@ -51,7 +59,7 @@ export async function POST(request: NextRequest) {
       lonCount: number;
     }>();
 
-    visits?.forEach(visit => {
+    (visits as any[] | undefined)?.forEach((visit) => {
       if (!visit.country) return;
 
       if (!countryMap.has(visit.country)) {
