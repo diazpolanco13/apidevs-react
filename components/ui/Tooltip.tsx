@@ -10,6 +10,7 @@ interface TooltipProps {
   iconSize?: number;
   position?: 'top' | 'bottom' | 'left' | 'right';
   maxWidth?: string;
+  className?: string;
 }
 
 export default function Tooltip({ 
@@ -18,7 +19,8 @@ export default function Tooltip({
   showIcon = true, 
   iconSize = 14,
   position = 'top',
-  maxWidth = '240px'
+  maxWidth = '520px',
+  className = ''
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [adjustedPosition, setAdjustedPosition] = useState(position);
@@ -46,40 +48,40 @@ export default function Tooltip({
   const getTooltipPositionClasses = () => {
     switch (adjustedPosition) {
       case 'top':
-        return 'bottom-full left-1/2 -translate-x-1/2 mb-2';
+        return 'bottom-full left-1/2 -translate-x-1/2 mb-3';
       case 'bottom':
-        return 'top-full left-1/2 -translate-x-1/2 mt-2';
+        return 'top-full left-1/2 -translate-x-1/2 mt-3';
       case 'left':
-        return 'right-full top-1/2 -translate-y-1/2 mr-2';
+        return 'right-full top-1/2 -translate-y-1/2 mr-3';
       case 'right':
-        return 'left-full top-1/2 -translate-y-1/2 ml-2';
+        return 'left-full top-1/2 -translate-y-1/2 ml-3';
       default:
-        return 'bottom-full left-1/2 -translate-x-1/2 mb-2';
+        return 'bottom-full left-1/2 -translate-x-1/2 mb-3';
     }
   };
 
   const getArrowPositionClasses = () => {
     switch (adjustedPosition) {
       case 'top':
-        return 'top-full left-1/2 -translate-x-1/2 -mt-1 border-t-gray-800 border-l-transparent border-r-transparent border-b-transparent';
+        return 'top-full left-1/2 -translate-x-1/2 -mt-1 border-t-gray-900 border-l-transparent border-r-transparent border-b-transparent';
       case 'bottom':
-        return 'bottom-full left-1/2 -translate-x-1/2 -mb-1 border-b-gray-800 border-l-transparent border-r-transparent border-t-transparent';
+        return 'bottom-full left-1/2 -translate-x-1/2 -mb-1 border-b-gray-900 border-l-transparent border-r-transparent border-t-transparent';
       case 'left':
-        return 'left-full top-1/2 -translate-y-1/2 -ml-1 border-l-gray-800 border-t-transparent border-b-transparent border-r-transparent';
+        return 'left-full top-1/2 -translate-y-1/2 -ml-1 border-l-gray-900 border-t-transparent border-b-transparent border-r-transparent';
       case 'right':
-        return 'right-full top-1/2 -translate-y-1/2 -mr-1 border-r-gray-800 border-t-transparent border-b-transparent border-l-transparent';
+        return 'right-full top-1/2 -translate-y-1/2 -mr-1 border-r-gray-900 border-t-transparent border-b-transparent border-l-transparent';
       default:
-        return 'top-full left-1/2 -translate-x-1/2 -mt-1 border-t-gray-800 border-l-transparent border-r-transparent border-b-transparent';
+        return 'top-full left-1/2 -translate-x-1/2 -mt-1 border-t-gray-900 border-l-transparent border-r-transparent border-b-transparent';
     }
   };
 
   return (
-    <div className="relative inline-flex items-center">
+    <div className="relative inline-flex items-center z-[100]">
       <div
         ref={triggerRef}
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
-        className="inline-flex items-center cursor-help"
+        className="inline-flex items-center cursor-help relative z-[100]"
       >
         {children || (
           showIcon && (
@@ -95,24 +97,27 @@ export default function Tooltip({
         <div
           ref={tooltipRef}
           className={`
-            absolute z-[9999] ${getTooltipPositionClasses()}
+            absolute ${getTooltipPositionClasses()}
             pointer-events-none
           `}
-          style={{ maxWidth }}
+          style={{ 
+            maxWidth,
+            zIndex: 99999
+          }}
         >
           {/* Tooltip Content */}
           <div className="relative">
             {/* Glassmorphism container */}
-            <div className="relative bg-gray-800/95 backdrop-blur-md border border-gray-700/50 rounded-lg shadow-2xl">
+            <div className="relative bg-gray-900 border border-gray-600 rounded-lg shadow-2xl min-w-[400px]">
               {/* Content */}
-              <div className="px-3 py-2">
-                <p className="text-xs text-gray-200 leading-relaxed">
+              <div className="px-5 py-3">
+                <p className="text-sm text-gray-100 leading-relaxed text-left whitespace-normal">
                   {content}
                 </p>
               </div>
 
               {/* Subtle gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-apidevs-primary/5 to-transparent rounded-lg pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-apidevs-primary/10 to-transparent rounded-lg pointer-events-none" />
             </div>
 
             {/* Arrow */}

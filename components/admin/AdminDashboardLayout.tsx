@@ -18,6 +18,7 @@ import {
   ChartBarIcon,
   Cog6ToothIcon,
   UsersIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { Shield, TrendingUp, Package } from 'lucide-react';
 
@@ -48,7 +49,7 @@ export default function AdminDashboardLayout({
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'Usuarios', href: '/admin/users', icon: UsersIcon },
     { name: 'Compras', href: '/admin/compras', icon: Package },
-    { name: 'Analytics', href: '/admin', icon: ChartBarIcon, badge: 'Próximamente' },
+    { name: 'Geo-Analytics', href: '/admin/geo-analytics', icon: GlobeAltIcon },
     { name: 'Reportes', href: '/admin', icon: TrendingUp, badge: 'Próximamente' },
     { name: 'Configuración', href: '/admin', icon: Cog6ToothIcon, badge: 'Próximamente' },
   ];

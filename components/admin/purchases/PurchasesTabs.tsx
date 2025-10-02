@@ -33,8 +33,8 @@ export default function PurchasesTabs({
 }: PurchasesTabsProps) {
   const [activeTab, setActiveTab] = useState('overview');
   
-  // Determinar si mostrar métricas arriba (solo para tabs que no sean Overview)
-  const showMetricsAbove = activeTab !== 'overview';
+  // Determinar si mostrar métricas arriba (SOLO para el tab "Todas las Compras")
+  const showMetricsAbove = activeTab === 'all-purchases';
 
   const tabs = [
     {
@@ -132,7 +132,7 @@ export default function PurchasesTabs({
         </nav>
       </div>
 
-      {/* Metrics Header - Mostrar después de tabs, solo para tabs que NO sean Overview */}
+      {/* Metrics Header - Mostrar SOLO en el tab "Todas las Compras" */}
       {showMetricsAbove && (
         <PurchasesHeader metrics={metrics} loading={!metrics} />
       )}

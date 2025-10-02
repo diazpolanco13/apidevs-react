@@ -69,7 +69,7 @@ export default function RefundsTab({ refundsData }: RefundsTabProps) {
         <div className="relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-orange-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           
-          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-red-500/20 rounded-xl p-6 hover:border-red-500/40 transition-all">
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-red-500/20 rounded-xl p-6 hover:border-red-500/40 transition-all min-h-[180px] flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-red-500/10 rounded-lg border border-red-500/20">
                 <DollarSign className="w-6 h-6 text-red-400" />
@@ -79,7 +79,7 @@ export default function RefundsTab({ refundsData }: RefundsTabProps) {
                   <p className="text-xs text-gray-400">Total Reembolsado</p>
                   <Tooltip 
                     content="Monto total reembolsado a clientes desde el inicio. Incluye reembolsos completos y parciales procesados exitosamente."
-                    position="left"
+                    position="top"
                   />
                 </div>
                 <p className="text-2xl font-bold text-white">{formatCurrency(metrics.totalRefunded)}</p>
@@ -115,7 +115,7 @@ export default function RefundsTab({ refundsData }: RefundsTabProps) {
         <div className="relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-amber-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           
-          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-orange-500/20 rounded-xl p-6 hover:border-orange-500/40 transition-all">
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-orange-500/20 rounded-xl p-6 hover:border-orange-500/40 transition-all min-h-[180px] flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-orange-500/10 rounded-lg border border-orange-500/20">
                 <Percent className="w-6 h-6 text-orange-400" />
@@ -125,8 +125,7 @@ export default function RefundsTab({ refundsData }: RefundsTabProps) {
                   <p className="text-xs text-gray-400">Tasa de Reembolso</p>
                   <Tooltip 
                     content="Refund Rate: Porcentaje de compras que terminan siendo reembolsadas. Una tasa baja (<3%) indica satisfacción del cliente. Tasas altas requieren análisis de causas."
-                    position="left"
-                    maxWidth="260px"
+                    position="top"
                   />
                 </div>
                 <p className="text-2xl font-bold text-white">{metrics.refundRate.toFixed(1)}%</p>
@@ -156,7 +155,7 @@ export default function RefundsTab({ refundsData }: RefundsTabProps) {
         <div className="relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           
-          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-blue-500/20 rounded-xl p-6 hover:border-blue-500/40 transition-all">
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-blue-500/20 rounded-xl p-6 hover:border-blue-500/40 transition-all min-h-[180px] flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
                 <Clock className="w-6 h-6 text-blue-400" />
@@ -166,8 +165,7 @@ export default function RefundsTab({ refundsData }: RefundsTabProps) {
                   <p className="text-xs text-gray-400">Tiempo Promedio</p>
                   <Tooltip 
                     content="Tiempo promedio desde que se solicita un reembolso hasta que se procesa. Un tiempo bajo (<48h) mejora la experiencia del cliente."
-                    position="left"
-                    maxWidth="260px"
+                    position="top"
                   />
                 </div>
                 <p className="text-2xl font-bold text-white">{metrics.avgProcessingTime}h</p>
@@ -192,7 +190,7 @@ export default function RefundsTab({ refundsData }: RefundsTabProps) {
         <div className="relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           
-          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-purple-500/20 rounded-xl p-6 hover:border-purple-500/40 transition-all">
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-purple-500/20 rounded-xl p-6 hover:border-purple-500/40 transition-all min-h-[180px] flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
                 <RotateCcw className="w-6 h-6 text-purple-400" />
@@ -202,7 +200,7 @@ export default function RefundsTab({ refundsData }: RefundsTabProps) {
                   <p className="text-xs text-gray-400">Este Mes</p>
                   <Tooltip 
                     content="Número de reembolsos procesados en el mes actual. Permite identificar tendencias y patrones temporales."
-                    position="left"
+                    position="top"
                   />
                 </div>
                 <p className="text-2xl font-bold text-white">{metrics.currentMonthRefunds}</p>
@@ -242,7 +240,6 @@ export default function RefundsTab({ refundsData }: RefundsTabProps) {
               <Tooltip 
                 content="Distribución de los motivos por los cuales se procesaron reembolsos. Ayuda a identificar patrones y áreas de mejora."
                 iconSize={14}
-                maxWidth="260px"
               />
             </div>
 
