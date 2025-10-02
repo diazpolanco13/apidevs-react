@@ -10,10 +10,14 @@ export default async function AdminDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-2">
-          Dashboard Administrativo
-          <Sparkles className="w-7 h-7 text-purple-400 animate-pulse" />
-        </h1>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+            <Sparkles className="w-6 h-6 text-purple-400" />
+          </div>
+          <h1 className="text-3xl font-bold text-white">
+            Dashboard Administrativo
+          </h1>
+        </div>
         <p className="text-gray-400">Gestión completa de usuarios legacy y analytics de APIDevs Trading Platform</p>
       </div>
 
