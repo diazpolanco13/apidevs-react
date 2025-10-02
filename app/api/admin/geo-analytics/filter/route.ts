@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
     const { data: visits, error: visitsError } = await supabase
       .from('visitor_tracking')
       .select('*')
-      .gte('visit_started_at', from)
-      .lte('visit_started_at', to);
+      .gte('created_at', from)
+      .lte('created_at', to);
 
     if (visitsError) {
       console.error('Error fetching visits:', visitsError);
