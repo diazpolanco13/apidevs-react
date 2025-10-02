@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Globe, Users, ShoppingCart, TrendingUp, MapPin, RefreshCw } from 'lucide-react';
 import PlotlyGeoMap from './PlotlyGeoMap';
 import CountryStatsTable from './CountryStatsTable';
 import DateRangeFilter from './DateRangeFilter';
+import TrendChart from '../analytics/TrendChart';
+import PeriodComparison from '../analytics/PeriodComparison';
 
 interface CountryStats {
   country: string;
@@ -48,29 +50,44 @@ export default function GeoAnalyticsClient({
   const [isLoading, setIsLoading] = useState(false);
   const [dateFrom, setDateFrom] = useState<Date | null>(null);
   const [dateTo, setDateTo] = useState<Date | null>(null);
+  
+  // Estados para tendencias y comparación
+  const [trendsData, setTrendsData] = useState<any>(null);
+  const [showTrends, setShowTrends] = useState(false);
 
-  // Calcular cambios simulados (más tarde desde API)
-  const visitsChange = '+16.7';
-  const purchasesChange = '+9.5';
+  // Calcular cambios desde trendsData o usar valores iniciales
+  const visitsChange = trendsData?.comparison?.visits?.toFixed(1) || '+0.0';
+  const purchasesChange = trendsData?.comparison?.purchases?.toFixed(1) || '+0.0';
 
   const handleDateChange = useCallback(async (from: Date, to: Date) => {
     setIsLoading(true);
     setDateFrom(from);
     setDateTo(to);
+    setShowTrends(true);
 
     try {
-      // Llamar a API route para obtener datos filtrados
-      const response = await fetch('/api/admin/geo-analytics/filter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from: from.toISOString(),
-          to: to.toISOString()
+      // Llamar a ambas APIs en paralelo
+      const [filterResponse, trendsResponse] = await Promise.all([
+        fetch('/api/admin/geo-analytics/filter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: from.toISOString(),
+            to: to.toISOString()
+          })
+        }),
+        fetch('/api/admin/geo-analytics/trends', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: from.toISOString(),
+            to: to.toISOString()
+          })
         })
-      });
+      ]);
 
-      if (response.ok) {
-        const data = await response.json();
+      if (filterResponse.ok) {
+        const data = await filterResponse.json();
         
         setCountryStats(data.countryStats || []);
         setTotalVisits(data.totalVisits || 0);
@@ -79,6 +96,11 @@ export default function GeoAnalyticsClient({
         setTotalRevenue(data.totalRevenue || 0);
         setUniqueCountries(data.uniqueCountries || 0);
         setTopCountry(data.topCountry);
+      }
+
+      if (trendsResponse.ok) {
+        const trendsData = await trendsResponse.json();
+        setTrendsData(trendsData);
       }
     } catch (error) {
       console.error('Error fetching filtered data:', error);
@@ -220,6 +242,73 @@ export default function GeoAnalyticsClient({
           );
         })}
       </div>
+
+      {/* Comparación de Períodos y Tendencias */}
+      {showTrends && trendsData && (
+        <>
+          <PeriodComparison
+            metrics={[
+              {
+                label: 'Visitas',
+                current: trendsData.current.visits || 0,
+                previous: trendsData.previous.visits || 0,
+              },
+              {
+                label: 'Compras',
+                current: trendsData.current.purchases || 0,
+                previous: trendsData.previous.purchases || 0,
+              },
+              {
+                label: 'Revenue',
+                current: trendsData.current.revenue || 0,
+                previous: trendsData.previous.revenue || 0,
+                format: (v) => `$${(v / 100).toFixed(2)}`,
+              },
+              {
+                label: 'Conv. Rate',
+                current: trendsData.current.conversionRate || 0,
+                previous: trendsData.previous.conversionRate || 0,
+                format: (v) => `${v.toFixed(2)}%`,
+                inverse: false,
+              },
+            ]}
+            currentPeriodLabel={trendsData.periodLabels.current}
+            previousPeriodLabel={trendsData.periodLabels.previous}
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TrendChart
+              data={trendsData.trends.visits}
+              title="Tendencia de Visitas"
+              label="Período actual"
+              comparisonLabel="Período anterior"
+              color="rgb(16, 185, 129)"
+              comparisonColor="rgb(147, 51, 234)"
+              formatValue={(v) => v.toLocaleString()}
+            />
+
+            <TrendChart
+              data={trendsData.trends.conversions}
+              title="Tendencia de Conversiones"
+              label="Período actual"
+              comparisonLabel="Período anterior"
+              color="rgb(59, 130, 246)"
+              comparisonColor="rgb(236, 72, 153)"
+              formatValue={(v) => v.toLocaleString()}
+            />
+          </div>
+
+          <TrendChart
+            data={trendsData.trends.revenue}
+            title="Tendencia de Revenue"
+            label="Período actual"
+            comparisonLabel="Período anterior"
+            color="rgb(245, 158, 11)"
+            comparisonColor="rgb(139, 92, 246)"
+            formatValue={(v) => `$${(v / 100).toFixed(2)}`}
+          />
+        </>
+      )}
 
       {/* Mapa Interactivo */}
       <div className="bg-black/30 backdrop-blur-xl border border-purple-500/20 rounded-2xl overflow-hidden relative">
