@@ -16,7 +16,7 @@ AVANZADO (Fases 9-10)    → 8-10 horas  → Analytics + Features Premium [⏳ P
 FINALIZACIÓN (Fases 11-12) → 5-7 horas   → Testing + Docs [⏳ Pendiente]
 ```
 
-**PROGRESO GLOBAL: 50% (6 de 12 fases completadas) - Tiempo invertido: ~16 horas**
+**PROGRESO GLOBAL: 50% (6 de 12 fases completadas) - Tiempo invertido: ~18 horas**
 
 ---
 
@@ -356,7 +356,10 @@ const displayValue = useCountAnimation(value, 2000);
 - ✅ 6 secciones de información (Info Compra, Cliente, Producto, Payment Details, Refunds, Acciones Admin)
 - ✅ Acciones administrativas (Reembolso, Email, Descargar PDF, Ver Stripe)
 - ✅ Layout similar a User Detail
-- ✅ Descarga de facturas PDF funcional desde Stripe
+- ✅ Descarga de facturas PDF funcional desde Supabase
+- ✅ Sistema de reembolsos migrado desde vista de usuarios
+- ✅ Sistema de emails migrado desde vista de usuarios
+- ✅ Modales con React Portals (centrados, z-index correcto)
 
 ### Archivos a Crear:
 ```
@@ -432,6 +435,32 @@ Botones:
 ✅ Información clara y organizada  
 ✅ Acciones funcionales  
 ✅ Navegación fluida
+
+### Archivos Creados:
+- ✅ `app/admin/compras/[id]/page.tsx` - Página principal con SSR
+- ✅ `components/admin/purchases/detail/PurchaseInfoCard.tsx` - Info general y timeline
+- ✅ `components/admin/purchases/detail/CustomerInfoCard.tsx` - Info del cliente
+- ✅ `components/admin/purchases/detail/ProductInfoCard.tsx` - Info del producto
+- ✅ `components/admin/purchases/detail/PaymentDetailsCard.tsx` - Detalles de pago + PDF
+- ✅ `components/admin/purchases/detail/RefundsCard.tsx` - Historial de reembolsos
+- ✅ `components/admin/purchases/detail/AdminActionsCard.tsx` - Acciones administrativas
+
+### Fixes Realizados:
+1. ✅ **Bug monto "0"** - Corrección en formatCurrency (división doble)
+2. ✅ **Payment Intent no encontrado** - Usar transaction_id/gateway_transaction_id
+3. ✅ **Modales no centrados** - Implementar React Portals + z-index 9999
+4. ✅ **PDF bloqueado** - Simplificar lógica usando invoice.invoice_pdf de Supabase
+5. ✅ **"0" en timeline** - Fix comparación numérica `> "0"` → `> 0`
+6. ✅ **"0" en tabla principal** - Fix condicional amount_refunded con `!!`
+7. ✅ **Errores TypeScript** - Interfaces Purchase + manejo undefined
+
+### Features Destacadas:
+- 🔄 Sistema de reembolsos multi-step (parcial/completo)
+- 📧 Sistema de emails con templates personalizados
+- 📄 Descarga directa de facturas PDF desde Stripe
+- 🔗 Links directos a Stripe Dashboard
+- ⏱️ Timeline visual de estados de la compra
+- 🎨 Modales glassmorphism centrados
 
 ---
 
@@ -1197,30 +1226,50 @@ function useRealtimePurchases() {
 
 | Fase | Tiempo | Componentes | Estado |
 |------|--------|-------------|--------|
-| 1-5 (Fundación) | 11-16h | 8 componentes | 🟢 80% (4/5 - Falta Fase 5) |
-| 6-8 (Expansión) | 9-12h | 6 componentes | 🟡 33% (1/3 - Overview completada) |
+| 1-5 (Fundación) | 11-16h | 13 componentes | ✅ 100% (5/5 completadas) |
+| 6-8 (Expansión) | 9-12h | 6 componentes | 🟢 33% (1/3 - Overview completada) |
 | 9-10 (Avanzado) | 8-10h | 7 componentes | ⏳ Pendiente |
 | 11-12 (Finalización) | 5-7h | 3 componentes | ⏳ Pendiente |
 
 ### Progreso Actual:
-- **Componentes Creados:** 10 de 24 (42%)
-- **Archivos Nuevos:** 12 creados
-- **Lines of Code:** ~1,500 de ~3,500 (43%)
-- **Tiempo Invertido:** ~12 horas de 30-40 horas (35%)
+- **Componentes Creados:** 19 de 29 (66%)
+- **Archivos Nuevos:** 19 creados
+- **Lines of Code:** ~2,100 de ~3,500 (60%)
+- **Tiempo Invertido:** ~18 horas de 30-40 horas (50%)
 
 ### Componentes Completados:
-1. ✅ PurchasesTabs.tsx
-2. ✅ PurchasesHeader.tsx
-3. ✅ PurchasesTable.tsx
-4. ✅ AllPurchasesTab.tsx
-5. ✅ OverviewTab.tsx
-6. ✅ RevenueChart.tsx
-7. ✅ TypeBreakdown.tsx
-8. ✅ TopProducts.tsx
-9. ✅ SubscriptionsTab.tsx (placeholder)
-10. ✅ OneTimeTab.tsx (placeholder)
-11. ✅ RefundsTab.tsx (placeholder)
-12. ✅ AnalyticsTab.tsx (placeholder)
+
+**Estructura Base (Fase 1-4):**
+1. ✅ `PurchasesTabs.tsx` - Sistema de tabs con navegación
+2. ✅ `PurchasesHeader.tsx` - 4 cards de métricas
+3. ✅ `PurchasesTable.tsx` - Tabla maestra con filtros
+4. ✅ `AllPurchasesTab.tsx` - Tab "Todas las Compras"
+
+**Vista Detalle (Fase 5):**
+5. ✅ `app/admin/compras/[id]/page.tsx` - Página detalle con SSR
+6. ✅ `PurchaseInfoCard.tsx` - Info general + timeline
+7. ✅ `CustomerInfoCard.tsx` - Info del cliente
+8. ✅ `ProductInfoCard.tsx` - Info del producto
+9. ✅ `PaymentDetailsCard.tsx` - Detalles de pago + PDF
+10. ✅ `RefundsCard.tsx` - Historial de reembolsos
+11. ✅ `AdminActionsCard.tsx` - Acciones administrativas
+
+**Tab Overview (Fase 6):**
+12. ✅ `OverviewTab.tsx` - Dashboard ejecutivo
+13. ✅ `RevenueChart.tsx` - Gráfico de revenue 30 días
+14. ✅ `TypeBreakdown.tsx` - Breakdown por tipo
+15. ✅ `TopProducts.tsx` - Top 5 productos
+
+**Modales Reutilizables:**
+16. ✅ `SelectModal.tsx` - Modal de selección (con Portal)
+17. ✅ `ConfirmModal.tsx` - Modal de confirmación (con Portal)
+18. ✅ `InputModal.tsx` - Modal con input (con Portal)
+
+**Tabs Pendientes (Placeholders):**
+19. ⏳ `SubscriptionsTab.tsx` - PRÓXIMO (Fase 7)
+20. ⏳ `OneTimeTab.tsx` (Fase 8)
+21. ⏳ `RefundsTab.tsx` (Fase 9)
+22. ⏳ `AnalyticsTab.tsx` (Fase 10)
 
 ---
 
@@ -1251,13 +1300,25 @@ function useRealtimePurchases() {
 
 ## 🚀 PRÓXIMOS PASOS
 
-1. **Revisar y aprobar plan** ✅ (tú decides)
-2. **Empezar Fase 1** → Estructura base
-3. **Implementar fase por fase** → Desarrollo iterativo
-4. **Testing continuo** → Cada fase se prueba
-5. **Documentar avances** → Actualizar memorias
+### ✅ Fases Completadas (1-6):
+1. ✅ **Fase 1-5:** Fundación completa (Estructura, Datos, Tabla, Métricas, Vista Detalle)
+2. ✅ **Fase 6:** Tab Overview con gráficos y analytics
+3. ✅ **Fixes críticos:** 7 bugs corregidos (montos, modales, PDF, TypeScript)
+
+### 🎯 Siguiente Fase (7):
+**FASE 7: TAB SUSCRIPCIONES**
+- Métricas MRR/ARR/Churn/LTV
+- Tabla filtrada solo suscripciones
+- Calendario de próximos cobros
+- Acciones de gestión (Cancelar, Cambiar plan)
+
+### 📊 Estado del Proyecto:
+- **Tiempo invertido:** 18 horas de 30-40h (50%)
+- **Componentes completados:** 18/22 funcionales
+- **Progreso global:** 50% (6 de 12 fases)
+- **Próxima meta:** Completar Expansión (Fases 7-8)
 
 ---
 
-**¿Listo para comenzar con la Fase 1?** 🎯
+**🚀 ¿Empezamos con la FASE 7: Tab Suscripciones?**
 
