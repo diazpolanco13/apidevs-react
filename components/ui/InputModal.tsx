@@ -2,6 +2,7 @@
 
 import { X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 interface InputModalProps {
   isOpen: boolean;
@@ -32,7 +33,13 @@ export default function InputModal({
 }: InputModalProps) {
   
   const [value, setValue] = useState(defaultValue);
+  const [mounted, setMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
   
   // Focus input when modal opens
   useEffect(() => {
@@ -69,10 +76,10 @@ export default function InputModal({
     onClose();
   };
   
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
   
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
       <div 
         className="
           relative w-full max-w-lg
@@ -160,5 +167,7 @@ export default function InputModal({
       </div>
     </div>
   );
+  
+  return createPortal(modalContent, document.body);
 }
 

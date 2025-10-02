@@ -2,6 +2,7 @@
 
 import { Check, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface SelectOption {
   value: string;
@@ -32,6 +33,12 @@ export default function SelectModal({
 }: SelectModalProps) {
   
   const [selectedValue, setSelectedValue] = useState<string>('');
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
   
   useEffect(() => {
     if (isOpen) {
@@ -103,10 +110,10 @@ export default function SelectModal({
       : 'bg-white/5 border-white/20 hover:bg-white/10');
   };
   
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
   
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
       <div 
         className="
           relative w-full max-w-2xl
@@ -216,5 +223,7 @@ export default function SelectModal({
       </div>
     </div>
   );
+  
+  return createPortal(modalContent, document.body);
 }
 
