@@ -27,6 +27,9 @@ interface CountryStats {
   avg_pages_visited: number;
 }
 
+// Revalidar caché cada 5 minutos para evitar spam a Supabase
+export const revalidate = 300;
+
 export default async function GeoAnalyticsPage() {
   const supabase = createClient();
 

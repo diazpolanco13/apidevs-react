@@ -9,14 +9,13 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - images - .svg, .png, .jpg, .jpeg, .gif, .webp
+     * - _next/* (Next.js internals)
+     * - __nextjs* (Next.js dev tools)
+     * - static files
+     * - favicon
      * - api routes (handled separately)
-     * - admin routes (handled by admin layout)
-     * Only run middleware on actual page routes
+     * Only run on actual page routes
      */
-    '/((?!_next/static|_next/image|_next/webpack|favicon.ico|api/|admin|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot)$).*)'
+    '/((?!_next|__nextjs|api/|_static|_vercel|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map|woff|woff2|ttf|eot|json)$).*)'
   ]
 };
