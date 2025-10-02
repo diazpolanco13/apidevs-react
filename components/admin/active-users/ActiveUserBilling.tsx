@@ -64,14 +64,66 @@ export default function ActiveUserBilling({
   subscription
 }: ActiveUserBillingProps) {
   
-  // Calcular totales (restando refunds)
-  const totalPaid = paymentIntents
+  // ==================== CÁLCULO ROBUSTO DEL TOTAL FACTURADO ====================
+  // Estrategia: Combinar ambas fuentes (invoices + payment_intents) evitando duplicados
+  // mediante detección por monto y fecha
+  
+  // Helper: Normalizar fecha a timestamp para comparación
+  const getTimestamp = (date: string | number): number => {
+    if (typeof date === 'number') return date;
+    return Math.floor(new Date(date).getTime() / 1000);
+  };
+
+  // 1. Procesar Invoices pagados (fuente principal para suscripciones)
+  const paidInvoices = invoices
+    .filter(inv => inv.status === 'paid')
+    .map(inv => ({
+      amount: inv.amount_paid,
+      timestamp: getTimestamp(inv.created),
+      source: 'invoice' as const,
+      id: inv.id
+    }));
+
+  // 2. Procesar Payment Intents exitosos (one-time payments y fallback)
+  const succeededPayments = paymentIntents
     .filter(pi => pi.status === 'succeeded')
-    .reduce((sum, pi) => {
-      const amount = pi.amount;
-      const refunded = pi.amount_refunded || 0;
-      return sum + (amount - refunded);
-    }, 0) / 100;
+    .map(pi => ({
+      amount: pi.amount - (pi.amount_refunded || 0), // Restar refunds
+      timestamp: getTimestamp(pi.created),
+      source: 'payment_intent' as const,
+      id: pi.id
+    }));
+
+  // 3. Combinar y eliminar duplicados (mismo monto ±5 segundos = mismo pago)
+  const allPayments = [...paidInvoices, ...succeededPayments];
+  const uniquePayments: typeof allPayments = [];
+  
+  allPayments.forEach(payment => {
+    const isDuplicate = uniquePayments.some(existing => {
+      const timeDiff = Math.abs(existing.timestamp - payment.timestamp);
+      const amountMatch = existing.amount === payment.amount;
+      // Si mismo monto y dentro de 5 segundos, es duplicado
+      return amountMatch && timeDiff <= 5;
+    });
+    
+    if (!isDuplicate) {
+      uniquePayments.push(payment);
+    }
+  });
+
+  // 4. Calcular total sumando pagos únicos
+  const totalPaidCents = uniquePayments.reduce((sum, payment) => sum + payment.amount, 0);
+  const totalPaid = totalPaidCents / 100;
+
+  // Debug info (solo visible en consola del servidor)
+  if (uniquePayments.length > 0) {
+    console.log(`💰 Billing calculation for user ${userId}:`, {
+      invoicesFound: paidInvoices.length,
+      paymentIntentsFound: succeededPayments.length,
+      uniquePaymentsAfterDedup: uniquePayments.length,
+      totalPaidUSD: totalPaid
+    });
+  }
 
   const totalInvoices = invoices.length;
 
