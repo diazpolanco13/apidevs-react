@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 
 interface VisitorData {
   sessionId: string;
@@ -39,7 +39,18 @@ export async function trackVisitor(
   existingSessionId?: string
 ): Promise<string | null> {
   try {
-    const supabase = createClient();
+    // Usar service_role client para bypasear RLS
+    const supabase = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
+    
     const url = new URL(request.url);
 
     // Obtener o crear session_id
