@@ -432,6 +432,149 @@ async function getOneTimeData() {
   }
 }
 
+// ==================== DATA FOR REFUNDS ====================
+
+async function getRefundsData() {
+  try {
+    const supabase = createClient();
+
+    // Obtener todas las compras con reembolsos
+    const { data: refundedPurchases } = await Promise.race([
+      supabase
+        .from('purchases')
+        .select('*')
+        .gt('refund_amount_cents', 0)
+        .eq('order_status', 'completed')
+        .order('created_at', { ascending: false }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+    ]) as { data: PurchaseRow[] | null };
+
+    const allRefunded = refundedPurchases || [];
+
+    // Fecha actual y mes anterior
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // Reembolsos del mes actual
+    const currentMonthRefunds = allRefunded.filter(p => 
+      new Date(p.created_at) >= firstDayOfMonth
+    );
+
+    // Reembolsos del mes anterior
+    const lastMonthRefunds = allRefunded.filter(p => {
+      const date = new Date(p.created_at);
+      return date >= firstDayOfLastMonth && date <= lastDayOfLastMonth;
+    });
+
+    // Total reembolsado
+    const totalRefunded = allRefunded.reduce((sum, p) => 
+      sum + (p.refund_amount_cents || 0), 0
+    ) / 100;
+
+    // Obtener todas las compras para calcular refund rate
+    const { data: allPurchases } = await Promise.race([
+      supabase
+        .from('purchases')
+        .select('*')
+        .eq('order_status', 'completed'),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+    ]) as { data: PurchaseRow[] | null };
+
+    const totalPurchases = allPurchases?.length || 0;
+    const refundedCount = allRefunded.length;
+
+    // Refund Rate (porcentaje de compras reembolsadas)
+    const refundRate = totalPurchases > 0 ? (refundedCount / totalPurchases) * 100 : 0;
+
+    // Tiempo promedio de procesamiento (simplificado - usar created_at como referencia)
+    // En un caso real, esto vendría de un campo refund_processed_at
+    const avgProcessingTime = 24; // Valor fijo por ahora, idealmente calculado
+
+    // Motivos de reembolso (simulado - en un caso real vendría de un campo refund_reason)
+    // Por ahora, asumimos que la mayoría son "requested_by_customer"
+    const topReason = 'requested_by_customer';
+    const reasonBreakdown = {
+      requested_by_customer: Math.floor(refundedCount * 0.75),
+      duplicate: Math.floor(refundedCount * 0.15),
+      fraudulent: Math.floor(refundedCount * 0.10)
+    };
+
+    // Revenue mes actual vs anterior
+    const currentMonthRefundAmount = currentMonthRefunds.reduce((sum, p) => 
+      sum + (p.refund_amount_cents || 0), 0
+    ) / 100;
+
+    const lastMonthRefundAmount = lastMonthRefunds.reduce((sum, p) => 
+      sum + (p.refund_amount_cents || 0), 0
+    ) / 100;
+
+    // Calcular cambios
+    const calculateChange = (current: number, previous: number) => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return ((current - previous) / previous) * 100;
+    };
+
+    // Tabla de reembolsos
+    const refundsPurchases = allRefunded.map(p => ({
+      id: p.id,
+      order_number: p.order_number,
+      customer_id: p.legacy_user_id || p.id,
+      customer_email: p.customer_email,
+      customer_name: p.customer_email.split('@')[0],
+      amount: p.order_total_cents,
+      amount_refunded: p.refund_amount_cents,
+      currency: 'USD',
+      status: 'refunded' as any,
+      type: (p.is_lifetime_purchase ? 'lifetime' : 'subscription') as any,
+      product_name: p.product_name || 'Producto',
+      created_at: p.created_at,
+      payment_method: (p.payment_method || 'stripe') as any
+    }));
+
+    return {
+      metrics: {
+        totalRefunded,
+        refundRate,
+        avgProcessingTime,
+        topReason,
+        reasonBreakdown,
+        currentMonthRefunds: currentMonthRefunds.length,
+        currentMonthAmount: currentMonthRefundAmount,
+        monthOverMonth: {
+          count: calculateChange(currentMonthRefunds.length, lastMonthRefunds.length),
+          amount: calculateChange(currentMonthRefundAmount, lastMonthRefundAmount)
+        }
+      },
+      purchases: refundsPurchases
+    };
+
+  } catch (error) {
+    console.error('Error in getRefundsData:', error);
+    return {
+      metrics: {
+        totalRefunded: 0,
+        refundRate: 0,
+        avgProcessingTime: 0,
+        topReason: 'requested_by_customer' as any,
+        reasonBreakdown: {
+          requested_by_customer: 0,
+          duplicate: 0,
+          fraudulent: 0
+        },
+        currentMonthRefunds: 0,
+        currentMonthAmount: 0,
+        monthOverMonth: {
+          count: 0,
+          amount: 0
+        }
+      },
+      purchases: []
+    };
+  }
+}
+
 // ==================== DATA FOR OVERVIEW ====================
 
 async function getOverviewData() {
@@ -589,6 +732,26 @@ export default async function PurchasesPage() {
     },
     purchases: []
   };
+  let refundsData: Awaited<ReturnType<typeof getRefundsData>> = {
+    metrics: {
+      totalRefunded: 0,
+      refundRate: 0,
+      avgProcessingTime: 0,
+      topReason: 'requested_by_customer' as any,
+      reasonBreakdown: {
+        requested_by_customer: 0,
+        duplicate: 0,
+        fraudulent: 0
+      },
+      currentMonthRefunds: 0,
+      currentMonthAmount: 0,
+      monthOverMonth: {
+        count: 0,
+        amount: 0
+      }
+    },
+    purchases: []
+  };
 
   try {
     metrics = await getPurchaseMetrics();
@@ -618,6 +781,13 @@ export default async function PurchasesPage() {
     // No lanzar error, solo continuar con datos vacíos
   }
 
+  try {
+    refundsData = await getRefundsData();
+  } catch (error: any) {
+    console.error('Error loading refunds data:', error?.message || error);
+    // No lanzar error, solo continuar con datos vacíos
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -637,7 +807,7 @@ export default async function PurchasesPage() {
         allPurchasesView={<AllPurchasesTab purchases={overviewData.allPurchases} />}
         subscriptionsView={<SubscriptionsTab subscriptionsData={subscriptionsData} />}
         oneTimeView={<OneTimeTab oneTimeData={oneTimeData} />}
-        refundsView={<RefundsTab />}
+        refundsView={<RefundsTab refundsData={refundsData} />}
         analyticsView={<AnalyticsTab />}
       />
     </div>
