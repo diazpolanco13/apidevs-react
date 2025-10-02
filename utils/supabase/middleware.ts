@@ -1,9 +1,12 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
-// Cache de sesiones para evitar rate limiting (30 segundos)
+// Cache de sesiones para evitar rate limiting (60 segundos)
 const sessionCache = new Map<string, { user: any; timestamp: number }>();
-const CACHE_TTL = 30000; // 30 segundos
+const CACHE_TTL = 60000; // 60 segundos
+
+// Request deduplication: evita múltiples llamadas simultáneas a getUser()
+const pendingRequests = new Map<string, Promise<any>>();
 
 export const createClient = (request: NextRequest) => {
   // Create an unmodified response
@@ -110,9 +113,37 @@ export const updateSession = async (request: NextRequest) => {
       }
     }
 
-    // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
-    const { data: { user }, error } = await supabase.auth.getUser();
+    // Request deduplication: si ya hay un request en vuelo para este token, esperarlo
+    let getUserPromise: Promise<any>;
+    
+    if (authToken && pendingRequests.has(authToken)) {
+      // Reutilizar request existente
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 Deduplicating auth request for ${pathname} - ${Date.now() - startTime}ms`);
+      }
+      getUserPromise = pendingRequests.get(authToken)!;
+    } else {
+      // Crear nuevo request y guardarlo
+      getUserPromise = supabase.auth.getUser();
+      if (authToken) {
+        pendingRequests.set(authToken, getUserPromise);
+      }
+    }
+
+    // Esperar resultado (con manejo de errores para limpiar pending)
+    let user, error;
+    try {
+      const result = await getUserPromise;
+      user = result.data?.user;
+      error = result.error;
+    } catch (e) {
+      error = e;
+    } finally {
+      // SIEMPRE limpiar request pendiente
+      if (authToken) {
+        pendingRequests.delete(authToken);
+      }
+    }
 
     // Guardar en caché si es exitoso
     if (user && authToken) {
