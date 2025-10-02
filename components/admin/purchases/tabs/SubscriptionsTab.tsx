@@ -49,7 +49,7 @@ export default function SubscriptionsTab({ subscriptionsData }: SubscriptionsTab
         <div className="relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           
-          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-green-500/20 rounded-xl p-6 hover:border-green-500/40 transition-all">
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-green-500/20 rounded-xl p-6 hover:border-green-500/40 transition-all min-h-[180px] flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
                 <DollarSign className="w-6 h-6 text-green-400" />
@@ -59,7 +59,7 @@ export default function SubscriptionsTab({ subscriptionsData }: SubscriptionsTab
                   <p className="text-xs text-gray-400">MRR</p>
                   <Tooltip 
                     content="MRR (Monthly Recurring Revenue): Ingresos recurrentes mensuales. Representa el ingreso predecible que recibirás cada mes de tus suscripciones activas."
-                    position="left"
+                    position="top"
                   />
                 </div>
                 <p className="text-2xl font-bold text-white">{formatCurrency(metrics.mrr)}</p>
@@ -72,7 +72,7 @@ export default function SubscriptionsTab({ subscriptionsData }: SubscriptionsTab
                   <span className="text-gray-400">ARR</span>
                   <Tooltip 
                     content="ARR (Annual Recurring Revenue): Ingresos recurrentes anuales. Se calcula multiplicando el MRR por 12. Es la métrica que proyecta tus ingresos anuales."
-                    position="right"
+                    position="top"
                     iconSize={12}
                   />
                 </div>
@@ -102,7 +102,7 @@ export default function SubscriptionsTab({ subscriptionsData }: SubscriptionsTab
         <div className="relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           
-          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-blue-500/20 rounded-xl p-6 hover:border-blue-500/40 transition-all">
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-blue-500/20 rounded-xl p-6 hover:border-blue-500/40 transition-all min-h-[180px] flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
                 <Users className="w-6 h-6 text-blue-400" />
@@ -112,7 +112,7 @@ export default function SubscriptionsTab({ subscriptionsData }: SubscriptionsTab
                   <p className="text-xs text-gray-400">Suscripciones Activas</p>
                   <Tooltip 
                     content="Total de suscripciones activas actualmente. Incluye todas las suscripciones con pagos completados que no han sido canceladas."
-                    position="left"
+                    position="top"
                   />
                 </div>
                 <p className="text-2xl font-bold text-white">{metrics.activeSubscriptions}</p>
@@ -125,7 +125,7 @@ export default function SubscriptionsTab({ subscriptionsData }: SubscriptionsTab
                   <span className="text-gray-400">AVG LTV</span>
                   <Tooltip 
                     content="AVG LTV (Average Lifetime Value): Valor promedio del tiempo de vida del cliente. Representa cuánto dinero genera cada cliente durante toda su relación con tu negocio."
-                    position="right"
+                    position="top"
                     iconSize={12}
                   />
                 </div>
@@ -155,7 +155,7 @@ export default function SubscriptionsTab({ subscriptionsData }: SubscriptionsTab
         <div className="relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           
-          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-orange-500/20 rounded-xl p-6 hover:border-orange-500/40 transition-all">
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-orange-500/20 rounded-xl p-6 hover:border-orange-500/40 transition-all min-h-[180px] flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-orange-500/10 rounded-lg border border-orange-500/20">
                 <TrendingDown className="w-6 h-6 text-orange-400" />
@@ -165,7 +165,7 @@ export default function SubscriptionsTab({ subscriptionsData }: SubscriptionsTab
                   <p className="text-xs text-gray-400">Tasa de Cancelación</p>
                   <Tooltip 
                     content="Churn Rate: Porcentaje de clientes que cancelan su suscripción. Un churn bajo (<5%) indica buena retención. Valores altos requieren atención inmediata."
-                    position="left"
+                    position="top"
                   />
                 </div>
                 <p className="text-2xl font-bold text-white">{metrics.churnRate.toFixed(1)}%</p>
@@ -190,7 +190,7 @@ export default function SubscriptionsTab({ subscriptionsData }: SubscriptionsTab
         <div className="relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           
-          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-purple-500/20 rounded-xl p-6 hover:border-purple-500/40 transition-all">
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-purple-500/20 rounded-xl p-6 hover:border-purple-500/40 transition-all min-h-[180px] flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
                 <RefreshCw className="w-6 h-6 text-purple-400" />
@@ -200,8 +200,7 @@ export default function SubscriptionsTab({ subscriptionsData }: SubscriptionsTab
                   <p className="text-xs text-gray-400">Retención Neta</p>
                   <Tooltip 
                     content="Net Revenue Retention (NRR): Mide si tus ingresos crecen o decrecen con tu base actual de clientes. >100% indica crecimiento neto, <100% indica pérdida de ingresos."
-                    position="left"
-                    maxWidth="260px"
+                    position="top"
                   />
                 </div>
                 <p className="text-2xl font-bold text-white">{metrics.netRevenueRetention.toFixed(0)}%</p>

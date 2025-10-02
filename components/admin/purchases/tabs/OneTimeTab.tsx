@@ -49,7 +49,7 @@ export default function OneTimeTab({ oneTimeData }: OneTimeTabProps) {
         <div className="relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           
-          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-blue-500/20 rounded-xl p-6 hover:border-blue-500/40 transition-all">
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-blue-500/20 rounded-xl p-6 hover:border-blue-500/40 transition-all min-h-[180px] flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
                 <DollarSign className="w-6 h-6 text-blue-400" />
@@ -59,7 +59,7 @@ export default function OneTimeTab({ oneTimeData }: OneTimeTabProps) {
                   <p className="text-xs text-gray-400">Revenue Total</p>
                   <Tooltip 
                     content="Total de ingresos generados por compras únicas y Lifetime. Representa ventas de pago único sin recurrencia mensual."
-                    position="left"
+                    position="top"
                   />
                 </div>
                 <p className="text-2xl font-bold text-white">{formatCurrency(metrics.totalOneTime)}</p>
@@ -95,7 +95,7 @@ export default function OneTimeTab({ oneTimeData }: OneTimeTabProps) {
         <div className="relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           
-          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-purple-500/20 rounded-xl p-6 hover:border-purple-500/40 transition-all">
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-purple-500/20 rounded-xl p-6 hover:border-purple-500/40 transition-all min-h-[180px] flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
                 <ShoppingBag className="w-6 h-6 text-purple-400" />
@@ -105,8 +105,7 @@ export default function OneTimeTab({ oneTimeData }: OneTimeTabProps) {
                   <p className="text-xs text-gray-400">AOV</p>
                   <Tooltip 
                     content="AOV (Average Order Value): Valor promedio de cada orden. Se calcula dividiendo el revenue total entre el número de compras. Indica cuánto gastan los clientes por transacción."
-                    position="left"
-                    maxWidth="260px"
+                    position="top"
                   />
                 </div>
                 <p className="text-2xl font-bold text-white">{formatCurrency(metrics.aov)}</p>
@@ -136,7 +135,7 @@ export default function OneTimeTab({ oneTimeData }: OneTimeTabProps) {
         <div className="relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           
-          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-amber-500/20 rounded-xl p-6 hover:border-amber-500/40 transition-all">
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-amber-500/20 rounded-xl p-6 hover:border-amber-500/40 transition-all min-h-[180px] flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
                 <Award className="w-6 h-6 text-amber-400" />
@@ -146,7 +145,7 @@ export default function OneTimeTab({ oneTimeData }: OneTimeTabProps) {
                   <p className="text-xs text-gray-400">Lifetime Vendidos</p>
                   <Tooltip 
                     content="Número total de productos Lifetime vendidos. Estas compras representan acceso permanente sin pagos recurrentes."
-                    position="left"
+                    position="top"
                   />
                 </div>
                 <p className="text-2xl font-bold text-white">{metrics.lifetimeSold}</p>
@@ -182,7 +181,7 @@ export default function OneTimeTab({ oneTimeData }: OneTimeTabProps) {
         <div className="relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           
-          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-green-500/20 rounded-xl p-6 hover:border-green-500/40 transition-all">
+          <div className="relative bg-gray-900/50 backdrop-blur-sm border border-green-500/20 rounded-xl p-6 hover:border-green-500/40 transition-all min-h-[180px] flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
                 <Star className="w-6 h-6 text-green-400" />
@@ -192,8 +191,7 @@ export default function OneTimeTab({ oneTimeData }: OneTimeTabProps) {
                   <p className="text-xs text-gray-400">Upsells</p>
                   <Tooltip 
                     content="Clientes que realizaron múltiples compras el mismo día. Indica efectividad en estrategias de venta cruzada y ofertas complementarias."
-                    position="left"
-                    maxWidth="260px"
+                    position="top"
                   />
                 </div>
                 <p className="text-2xl font-bold text-white">{metrics.upsells}</p>
