@@ -178,6 +178,121 @@ async function getPurchaseMetrics(): Promise<PurchaseMetrics | null> {
   }
 }
 
+// ==================== DATA FOR SUBSCRIPTIONS ====================
+
+async function getSubscriptionsData() {
+  try {
+    const supabase = createClient();
+
+    // Obtener todas las suscripciones (no lifetime)
+    const { data: subscriptions } = await Promise.race([
+      supabase
+        .from('purchases')
+        .select('*')
+        .eq('is_lifetime_purchase', false)
+        .eq('order_status', 'completed')
+        .order('created_at', { ascending: false }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+    ]) as { data: PurchaseRow[] | null };
+
+    const allSubscriptions = subscriptions || [];
+
+    // Fecha actual y mes anterior
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // Suscripciones del mes actual
+    const currentMonthSubs = allSubscriptions.filter(s => 
+      new Date(s.created_at) >= firstDayOfMonth
+    );
+
+    // Suscripciones del mes anterior
+    const lastMonthSubs = allSubscriptions.filter(s => {
+      const date = new Date(s.created_at);
+      return date >= firstDayOfLastMonth && date <= lastDayOfLastMonth;
+    });
+
+    // Calcular MRR (Monthly Recurring Revenue)
+    const mrr = currentMonthSubs.reduce((sum, s) => sum + s.order_total_cents, 0) / 100;
+    const lastMonthMRR = lastMonthSubs.reduce((sum, s) => sum + s.order_total_cents, 0) / 100;
+
+    // ARR (Annual Recurring Revenue)
+    const arr = mrr * 12;
+
+    // Suscripciones activas (todas las completadas)
+    const activeSubscriptions = allSubscriptions.length;
+
+    // Churn Rate (cancelaciones / activas del mes anterior)
+    // Por ahora, calculamos basado en la diferencia
+    const churnRate = lastMonthSubs.length > 0 
+      ? Math.max(0, ((lastMonthSubs.length - currentMonthSubs.length) / lastMonthSubs.length) * 100)
+      : 0;
+
+    // AVG LTV (Lifetime Value promedio)
+    const avgLTV = allSubscriptions.length > 0
+      ? allSubscriptions.reduce((sum, s) => sum + (s.order_total_cents / 100), 0) / allSubscriptions.length
+      : 0;
+
+    // Net Revenue Retention (simplificado)
+    const netRevenueRetention = lastMonthMRR > 0 ? (mrr / lastMonthMRR) * 100 : 100;
+
+    // Tabla de suscripciones para mostrar
+    const subscriptionsTable = allSubscriptions.map(s => ({
+      id: s.id,
+      order_number: s.order_number,
+      customer_id: s.legacy_user_id || s.id,
+      customer_email: s.customer_email,
+      customer_name: s.customer_email.split('@')[0],
+      amount: s.order_total_cents,
+      amount_refunded: s.refund_amount_cents,
+      currency: 'USD',
+      status: s.order_status as any,
+      type: 'subscription' as any,
+      product_name: s.product_name || 'Suscripción',
+      created_at: s.created_at,
+      payment_method: (s.payment_method || 'stripe') as any
+    }));
+
+    return {
+      metrics: {
+        mrr,
+        arr,
+        churnRate,
+        avgLTV,
+        activeSubscriptions,
+        netRevenueRetention,
+        monthOverMonth: {
+          mrr: lastMonthMRR > 0 ? ((mrr - lastMonthMRR) / lastMonthMRR) * 100 : 0,
+          activeSubscriptions: lastMonthSubs.length > 0 
+            ? ((currentMonthSubs.length - lastMonthSubs.length) / lastMonthSubs.length) * 100 
+            : 0
+        }
+      },
+      subscriptions: subscriptionsTable
+    };
+
+  } catch (error) {
+    console.error('Error in getSubscriptionsData:', error);
+    return {
+      metrics: {
+        mrr: 0,
+        arr: 0,
+        churnRate: 0,
+        avgLTV: 0,
+        activeSubscriptions: 0,
+        netRevenueRetention: 100,
+        monthOverMonth: {
+          mrr: 0,
+          activeSubscriptions: 0
+        }
+      },
+      subscriptions: []
+    };
+  }
+}
+
 // ==================== DATA FOR OVERVIEW ====================
 
 async function getOverviewData() {
@@ -305,6 +420,21 @@ export default async function PurchasesPage() {
     },
     allPurchases: []
   };
+  let subscriptionsData: Awaited<ReturnType<typeof getSubscriptionsData>> = {
+    metrics: {
+      mrr: 0,
+      arr: 0,
+      churnRate: 0,
+      avgLTV: 0,
+      activeSubscriptions: 0,
+      netRevenueRetention: 100,
+      monthOverMonth: {
+        mrr: 0,
+        activeSubscriptions: 0
+      }
+    },
+    subscriptions: []
+  };
 
   try {
     metrics = await getPurchaseMetrics();
@@ -317,6 +447,13 @@ export default async function PurchasesPage() {
     overviewData = await getOverviewData();
   } catch (error: any) {
     console.error('Error loading overview data:', error?.message || error);
+    // No lanzar error, solo continuar con datos vacíos
+  }
+
+  try {
+    subscriptionsData = await getSubscriptionsData();
+  } catch (error: any) {
+    console.error('Error loading subscriptions data:', error?.message || error);
     // No lanzar error, solo continuar con datos vacíos
   }
 
@@ -337,7 +474,7 @@ export default async function PurchasesPage() {
         metrics={metrics}
         overviewView={<OverviewTab overviewData={overviewData} />}
         allPurchasesView={<AllPurchasesTab purchases={overviewData.allPurchases} />}
-        subscriptionsView={<SubscriptionsTab />}
+        subscriptionsView={<SubscriptionsTab subscriptionsData={subscriptionsData} />}
         oneTimeView={<OneTimeTab />}
         refundsView={<RefundsTab />}
         analyticsView={<AnalyticsTab />}
