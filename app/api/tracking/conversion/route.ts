@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
+import { Database } from '@/types_db';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient();
+    const supabase = createClient() as any;
     const cookieStore = cookies();
     
     // Obtener session_id de la cookie
@@ -54,16 +55,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Actualizar el registro con la conversión
+    const updateData = {
+      purchased: true,
+      purchase_amount_cents: purchase_amount_cents || 0,
+      product_purchased: product_id,
+      subscription_id: subscription_id,
+      user_id: user_id,
+      updated_at: new Date().toISOString(),
+    };
+
     const { error: updateError } = await supabase
       .from('visitor_tracking')
-      .update({
-        purchased: true,
-        purchase_amount_cents: purchase_amount_cents || 0,
-        product_purchased: product_id,
-        subscription_id: subscription_id,
-        user_id: user_id,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('session_id', sessionId);
 
     if (updateError) {
