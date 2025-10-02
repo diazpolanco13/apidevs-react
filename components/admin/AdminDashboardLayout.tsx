@@ -20,7 +20,7 @@ import {
   UsersIcon,
   GlobeAltIcon,
 } from '@heroicons/react/24/outline';
-import { Shield, TrendingUp, Package } from 'lucide-react';
+import { Shield, TrendingUp, Package, Megaphone } from 'lucide-react';
 
 interface NavigationItem {
   name: string;
@@ -49,6 +49,7 @@ export default function AdminDashboardLayout({
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'Usuarios', href: '/admin/users', icon: UsersIcon },
     { name: 'Compras', href: '/admin/compras', icon: Package },
+    { name: 'Campañas', href: '/admin/campaigns', icon: Megaphone },
     { name: 'Geo-Analytics', href: '/admin/geo-analytics', icon: GlobeAltIcon },
     { name: 'Reportes', href: '/admin', icon: TrendingUp, badge: 'Próximamente' },
     { name: 'Configuración', href: '/admin', icon: Cog6ToothIcon, badge: 'Próximamente' },
