@@ -119,7 +119,7 @@ export default function DateRangeFilter({ onDateChange, defaultRange = 'month' }
           />
           
           {/* Menu */}
-          <div className="absolute top-full left-0 mt-2 z-50 w-80 bg-slate-900/95 backdrop-blur-xl border border-purple-500/30 rounded-xl shadow-2xl overflow-hidden">
+          <div className="absolute top-full right-0 mt-2 z-50 w-80 bg-slate-900/95 backdrop-blur-xl border border-purple-500/30 rounded-xl shadow-2xl overflow-hidden">
             {/* Presets */}
             <div className="p-2">
               <div className="text-xs font-semibold text-gray-400 px-3 py-2">
