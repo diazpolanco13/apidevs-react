@@ -8,6 +8,20 @@ const CACHE_TTL = 60000; // 60 segundos
 // Request deduplication: evita múltiples llamadas simultáneas a getUser()
 const pendingRequests = new Map<string, Promise<any>>();
 
+// Función async para tracking de visitantes (no bloquea la respuesta)
+async function trackVisitorAsync(request: NextRequest, pathname: string): Promise<void> {
+  try {
+    // Importar dinámicamente para evitar circular dependencies
+    const { trackVisitor } = await import('@/lib/tracking/visitor-tracker');
+    await trackVisitor(request, pathname);
+  } catch (error) {
+    // Silenciar errores para no romper la app
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Track visitor error:', error);
+    }
+  }
+}
+
 export const createClient = (request: NextRequest) => {
   // Create an unmodified response
   let response = NextResponse.next({
@@ -181,6 +195,20 @@ export const updateSession = async (request: NextRequest) => {
     // Log successful auth checks in development
     if (process.env.NODE_ENV === 'development' && user) {
       console.log(`✅ Auth verified for ${pathname} - ${Date.now() - startTime}ms`);
+    }
+
+    // Track visitor para páginas públicas (no admin, no auth)
+    const shouldTrack = !pathname.startsWith('/admin') && 
+                        !pathname.startsWith('/auth') &&
+                        !pathname.startsWith('/api') &&
+                        pathname !== '/signin' &&
+                        pathname !== '/signout';
+
+    if (shouldTrack) {
+      // Ejecutar tracking de forma async sin bloquear la respuesta
+      trackVisitorAsync(request, pathname).catch(err => {
+        console.error('Visitor tracking error:', err);
+      });
     }
 
     return response;
