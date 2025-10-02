@@ -239,8 +239,8 @@ async function createNewSession(
       purchased: false,
       
       // Timestamps
-      first_seen: new Date().toISOString(),
-      last_seen: new Date().toISOString(),
+      first_visit_at: new Date().toISOString(),
+      last_visit_at: new Date().toISOString(),
     });
 
   if (error) {
@@ -254,8 +254,8 @@ async function updateExistingSession(
   currentPage: string
 ) {
   const now = new Date();
-  const lastSeen = new Date(existingSession.last_seen);
-  const timeDiff = now.getTime() - lastSeen.getTime();
+  const lastVisit = new Date(existingSession.last_visit_at);
+  const timeDiff = now.getTime() - lastVisit.getTime();
   
   // Solo actualizar si han pasado más de 10 segundos (evitar spam)
   if (timeDiff < 10000) {
@@ -263,15 +263,15 @@ async function updateExistingSession(
   }
 
   // Calcular time_on_site (segundos)
-  const firstSeen = new Date(existingSession.first_seen);
-  const timeOnSite = Math.floor((now.getTime() - firstSeen.getTime()) / 1000);
+  const firstVisit = new Date(existingSession.first_visit_at);
+  const timeOnSite = Math.floor((now.getTime() - firstVisit.getTime()) / 1000);
 
   const { error } = await supabase
     .from('visitor_tracking')
     .update({
       pages_visited: existingSession.pages_visited + 1,
       time_on_site: timeOnSite,
-      last_seen: now.toISOString(),
+      last_visit_at: now.toISOString(),
       updated_at: now.toISOString(),
     })
     .eq('session_id', existingSession.session_id);
