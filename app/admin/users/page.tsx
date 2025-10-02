@@ -302,9 +302,14 @@ export default async function AdminUsersPage({
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">
-          Gestión de Usuarios
-        </h1>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
+            <UsersIcon className="w-6 h-6 text-blue-400" />
+          </div>
+          <h1 className="text-3xl font-bold text-white">
+            Gestión de Usuarios
+          </h1>
+        </div>
         <p className="text-gray-400">
           Panel unificado de gestión y reactivación de usuarios
         </p>

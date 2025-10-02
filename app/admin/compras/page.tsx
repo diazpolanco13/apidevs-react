@@ -792,9 +792,14 @@ export default async function PurchasesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">
-          Compras
-        </h1>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30">
+            <Package className="w-6 h-6 text-green-400" />
+          </div>
+          <h1 className="text-3xl font-bold text-white">
+            Compras
+          </h1>
+        </div>
         <p className="text-gray-400">
           Gestión completa de compras, suscripciones y analytics
         </p>

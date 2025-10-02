@@ -121,7 +121,7 @@ export const updateSession = async (request: NextRequest) => {
       // Limpiar caché antiguo (max 100 entradas)
       if (sessionCache.size > 100) {
         const oldestKey = sessionCache.keys().next().value;
-        sessionCache.delete(oldestKey);
+        if (oldestKey) sessionCache.delete(oldestKey);
       }
     }
 
