@@ -4,15 +4,10 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Package } from 'lucide-react';
 import PurchaseInfoCard from '@/components/admin/purchases/detail/PurchaseInfoCard';
-// @ts-expect-error - Component exists, TS declaration missing
 import CustomerInfoCard from '@/components/admin/purchases/detail/CustomerInfoCard';
-// @ts-expect-error - Component exists, TS declaration missing
 import ProductInfoCard from '@/components/admin/purchases/detail/ProductInfoCard';
-// @ts-expect-error - Component exists, TS declaration missing
 import PaymentDetailsCard from '@/components/admin/purchases/detail/PaymentDetailsCard';
-// @ts-expect-error - Component exists, TS declaration missing
 import RefundsCard from '@/components/admin/purchases/detail/RefundsCard';
-// @ts-expect-error - Component exists, TS declaration missing
 import AdminActionsCard from '@/components/admin/purchases/detail/AdminActionsCard';
 
 interface PurchaseDetailPageProps {

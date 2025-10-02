@@ -179,8 +179,8 @@ export default function CampaignsTable({ campaigns }: CampaignsTableProps) {
           <tbody>
             {filteredAndSortedCampaigns.map((campaign) => {
               const statusBadge = getStatusBadge(campaign.status);
-              const isGoodROAS = campaign.roas >= 200;
-              const isGoodConversion = campaign.conversion_rate >= 5;
+              const isGoodROAS = (campaign.roas || 0) >= 200;
+              const isGoodConversion = (campaign.conversion_rate || 0) >= 5;
 
               return (
                 <tr
@@ -202,15 +202,15 @@ export default function CampaignsTable({ campaigns }: CampaignsTableProps) {
                     </span>
                   </td>
                   <td className="p-4 text-right text-white font-medium">
-                    {formatCurrency(campaign.external_spend_cents)}
+                    {formatCurrency(campaign.external_spend_cents || 0)}
                   </td>
                   <td className="p-4 text-right text-white font-medium">
-                    {formatCurrency(campaign.total_revenue_cents)}
+                    {formatCurrency(campaign.total_revenue_cents || 0)}
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <span className={`font-bold ${isGoodROAS ? 'text-green-400' : 'text-red-400'}`}>
-                        {campaign.roas.toFixed(0)}%
+                        {(campaign.roas || 0).toFixed(0)}%
                       </span>
                       {isGoodROAS ? (
                         <TrendingUp className="w-4 h-4 text-green-400" />
@@ -220,18 +220,18 @@ export default function CampaignsTable({ campaigns }: CampaignsTableProps) {
                     </div>
                   </td>
                   <td className="p-4 text-right text-white">
-                    {formatCurrency(campaign.cac_cents)}
+                    {formatCurrency(campaign.cac_cents || 0)}
                   </td>
                   <td className="p-4 text-right">
                     <span className={`font-medium ${isGoodConversion ? 'text-green-400' : 'text-yellow-400'}`}>
-                      {campaign.conversion_rate.toFixed(2)}%
+                      {(campaign.conversion_rate || 0).toFixed(2)}%
                     </span>
                   </td>
                   <td className="p-4 text-right text-white">
-                    {campaign.total_visits.toLocaleString()}
+                    {(campaign.total_visits || 0).toLocaleString()}
                   </td>
                   <td className="p-4 text-right text-white font-medium">
-                    {campaign.total_purchases.toLocaleString()}
+                    {(campaign.total_purchases || 0).toLocaleString()}
                   </td>
                 </tr>
               );
