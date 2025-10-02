@@ -293,6 +293,145 @@ async function getSubscriptionsData() {
   }
 }
 
+// ==================== DATA FOR ONE-TIME/LIFETIME ====================
+
+async function getOneTimeData() {
+  try {
+    const supabase = createClient();
+
+    // Obtener todas las compras lifetime
+    const { data: lifetimePurchases } = await Promise.race([
+      supabase
+        .from('purchases')
+        .select('*')
+        .eq('is_lifetime_purchase', true)
+        .eq('order_status', 'completed')
+        .order('created_at', { ascending: false }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+    ]) as { data: PurchaseRow[] | null };
+
+    const allLifetime = lifetimePurchases || [];
+
+    // Fecha actual y mes anterior
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // Compras del mes actual
+    const currentMonthPurchases = allLifetime.filter(p => 
+      new Date(p.created_at) >= firstDayOfMonth
+    );
+
+    // Compras del mes anterior
+    const lastMonthPurchases = allLifetime.filter(p => {
+      const date = new Date(p.created_at);
+      return date >= firstDayOfLastMonth && date <= lastDayOfLastMonth;
+    });
+
+    // Total revenue de compras one-time/lifetime
+    const totalOneTime = allLifetime.reduce((sum, p) => 
+      sum + (p.order_total_cents - (p.refund_amount_cents || 0)), 0
+    ) / 100;
+
+    // AOV (Average Order Value)
+    const aov = allLifetime.length > 0 
+      ? totalOneTime / allLifetime.length 
+      : 0;
+
+    // Lifetime sold
+    const lifetimeSold = allLifetime.length;
+
+    // Revenue mes actual
+    const currentMonthRevenue = currentMonthPurchases.reduce((sum, p) => 
+      sum + (p.order_total_cents - (p.refund_amount_cents || 0)), 0
+    ) / 100;
+
+    // Revenue mes anterior
+    const lastMonthRevenue = lastMonthPurchases.reduce((sum, p) => 
+      sum + (p.order_total_cents - (p.refund_amount_cents || 0)), 0
+    ) / 100;
+
+    // Calcular cambios porcentuales
+    const calculateChange = (current: number, previous: number) => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return ((current - previous) / previous) * 100;
+    };
+
+    // Detección de upsells (clientes con múltiples compras el mismo día)
+    const customerPurchases: { [email: string]: PurchaseRow[] } = {};
+    allLifetime.forEach(p => {
+      if (!customerPurchases[p.customer_email]) {
+        customerPurchases[p.customer_email] = [];
+      }
+      customerPurchases[p.customer_email].push(p);
+    });
+
+    let upsells = 0;
+    Object.values(customerPurchases).forEach(purchases => {
+      if (purchases.length > 1) {
+        // Verificar si compraron el mismo día
+        const dates = purchases.map(p => p.created_at.split('T')[0]);
+        const uniqueDates = new Set(dates);
+        if (uniqueDates.size < purchases.length) {
+          upsells++;
+        }
+      }
+    });
+
+    // Tabla de compras para mostrar
+    const oneTimePurchases = allLifetime.map(p => ({
+      id: p.id,
+      order_number: p.order_number,
+      customer_id: p.legacy_user_id || p.id,
+      customer_email: p.customer_email,
+      customer_name: p.customer_email.split('@')[0],
+      amount: p.order_total_cents,
+      amount_refunded: p.refund_amount_cents,
+      currency: 'USD',
+      status: p.order_status as any,
+      type: 'lifetime' as any,
+      product_name: p.product_name || 'Lifetime Access',
+      created_at: p.created_at,
+      payment_method: (p.payment_method || 'stripe') as any
+    }));
+
+    return {
+      metrics: {
+        totalOneTime,
+        aov,
+        lifetimeSold,
+        upsells,
+        currentMonthRevenue,
+        currentMonthCount: currentMonthPurchases.length,
+        monthOverMonth: {
+          revenue: calculateChange(currentMonthRevenue, lastMonthRevenue),
+          purchases: calculateChange(currentMonthPurchases.length, lastMonthPurchases.length)
+        }
+      },
+      purchases: oneTimePurchases
+    };
+
+  } catch (error) {
+    console.error('Error in getOneTimeData:', error);
+    return {
+      metrics: {
+        totalOneTime: 0,
+        aov: 0,
+        lifetimeSold: 0,
+        upsells: 0,
+        currentMonthRevenue: 0,
+        currentMonthCount: 0,
+        monthOverMonth: {
+          revenue: 0,
+          purchases: 0
+        }
+      },
+      purchases: []
+    };
+  }
+}
+
 // ==================== DATA FOR OVERVIEW ====================
 
 async function getOverviewData() {
@@ -435,6 +574,21 @@ export default async function PurchasesPage() {
     },
     subscriptions: []
   };
+  let oneTimeData: Awaited<ReturnType<typeof getOneTimeData>> = {
+    metrics: {
+      totalOneTime: 0,
+      aov: 0,
+      lifetimeSold: 0,
+      upsells: 0,
+      currentMonthRevenue: 0,
+      currentMonthCount: 0,
+      monthOverMonth: {
+        revenue: 0,
+        purchases: 0
+      }
+    },
+    purchases: []
+  };
 
   try {
     metrics = await getPurchaseMetrics();
@@ -457,6 +611,13 @@ export default async function PurchasesPage() {
     // No lanzar error, solo continuar con datos vacíos
   }
 
+  try {
+    oneTimeData = await getOneTimeData();
+  } catch (error: any) {
+    console.error('Error loading one-time data:', error?.message || error);
+    // No lanzar error, solo continuar con datos vacíos
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -475,7 +636,7 @@ export default async function PurchasesPage() {
         overviewView={<OverviewTab overviewData={overviewData} />}
         allPurchasesView={<AllPurchasesTab purchases={overviewData.allPurchases} />}
         subscriptionsView={<SubscriptionsTab subscriptionsData={subscriptionsData} />}
-        oneTimeView={<OneTimeTab />}
+        oneTimeView={<OneTimeTab oneTimeData={oneTimeData} />}
         refundsView={<RefundsTab />}
         analyticsView={<AnalyticsTab />}
       />
