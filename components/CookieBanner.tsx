@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCookieConsent } from '@/contexts/CookieConsentContext';
 import { Cookie, X, Settings, Shield, BarChart3, Target, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -9,8 +9,14 @@ export default function CookieBanner() {
   const { showBanner, acceptAll, rejectOptional, setCustomPreferences, preferences } = useCookieConsent();
   const [showSettings, setShowSettings] = useState(false);
   const [customPrefs, setCustomPrefs] = useState(preferences);
+  const [mounted, setMounted] = useState(false);
 
-  if (!showBanner) return null;
+  // Solo renderizar en el cliente para evitar hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !showBanner) return null;
 
   const handleCustomSave = () => {
     setCustomPreferences(customPrefs);
