@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import IndicadoresTab from './IndicadoresTab';
 import GestionUsuariosTab from './GestionUsuariosTab';
+import BulkAssignmentTab from './BulkAssignmentTab';
 
 type Indicator = {
   id: string;
@@ -37,7 +38,7 @@ type Props = {
 };
 
 export default function IndicadoresMainView({ initialIndicators, stats }: Props) {
-  const [activeTab, setActiveTab] = useState<'indicadores' | 'usuarios'>('indicadores');
+  const [activeTab, setActiveTab] = useState<'indicadores' | 'usuarios' | 'asignacion'>('indicadores');
 
   return (
     <div className="min-h-screen">
@@ -164,9 +165,6 @@ export default function IndicadoresMainView({ initialIndicators, stats }: Props)
               <div className="flex flex-col items-start">
                 <span className="flex items-center gap-2">
                   Gestión de Usuarios
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-800 text-gray-400">
-                    Próximamente
-                  </span>
                 </span>
                 <span className="text-xs text-gray-500 mt-0.5">
                   Administración de accesos por usuario
@@ -175,6 +173,54 @@ export default function IndicadoresMainView({ initialIndicators, stats }: Props)
 
               {/* Active indicator */}
               {activeTab === 'usuarios' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-apidevs-primary to-green-400" />
+              )}
+            </button>
+
+            {/* Tab Asignación Masiva */}
+            <button
+              onClick={() => setActiveTab('asignacion')}
+              className={`
+                group relative flex items-center gap-3 px-6 py-4 border-b-2 font-medium text-sm transition-all
+                ${
+                  activeTab === 'asignacion'
+                    ? 'border-apidevs-primary text-apidevs-primary'
+                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-700'
+                }
+              `}
+            >
+              <svg
+                className={`h-5 w-5 ${
+                  activeTab === 'asignacion'
+                    ? 'text-apidevs-primary'
+                    : 'text-gray-400 group-hover:text-gray-300'
+                }`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+
+              <div className="flex flex-col items-start">
+                <span className="flex items-center gap-2">
+                  Asignación Masiva
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-400">
+                    Nuevo
+                  </span>
+                </span>
+                <span className="text-xs text-gray-500 mt-0.5">
+                  Operaciones bulk a múltiples usuarios
+                </span>
+              </div>
+
+              {/* Active indicator */}
+              {activeTab === 'asignacion' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-apidevs-primary to-green-400" />
               )}
             </button>
@@ -188,6 +234,7 @@ export default function IndicadoresMainView({ initialIndicators, stats }: Props)
           <IndicadoresTab indicators={initialIndicators} stats={stats} />
         )}
         {activeTab === 'usuarios' && <GestionUsuariosTab />}
+        {activeTab === 'asignacion' && <BulkAssignmentTab />}
       </div>
     </div>
   );
