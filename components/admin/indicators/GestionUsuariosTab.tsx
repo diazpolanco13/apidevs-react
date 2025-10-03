@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Search, UserCircle, Calendar, Award } from 'lucide-react';
 import GrantAccessModal from './GrantAccessModal';
+import QuickActionsDropdown from './QuickActionsDropdown';
 
 type User = {
   id: string;
@@ -320,14 +321,19 @@ export default function GestionUsuariosTab() {
               </div>
             )}
 
-            {/* Botón de acción */}
-            <div className="mt-4">
+            {/* Botones de acción */}
+            <div className="mt-4 flex gap-3">
               <button
                 onClick={handleGrantAccess}
-                className="w-full rounded-lg bg-emerald-500 py-3 font-medium text-white transition-colors hover:bg-emerald-600"
+                className="flex-1 rounded-lg bg-emerald-500 py-3 font-medium text-white transition-colors hover:bg-emerald-600"
               >
                 + Conceder Acceso Individual
               </button>
+              <QuickActionsDropdown
+                userId={selectedUser.id}
+                userEmail={selectedUser.email}
+                onActionComplete={handleAccessGranted}
+              />
             </div>
           </div>
 
