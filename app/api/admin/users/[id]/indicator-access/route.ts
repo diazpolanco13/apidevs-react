@@ -1,0 +1,113 @@
+import { createClient } from '@/utils/supabase/server';
+import { NextResponse } from 'next/server';
+
+// GET - Obtener todos los accesos a indicadores de un usuario
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const supabase = createClient();
+
+    // Verificar autenticación admin
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    if (!user || user.email !== 'api@apidevs.io') {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    const { id: userId } = params;
+
+    // Verificar que el usuario existe
+    const { data: targetUser, error: userError } = await supabase
+      .from('users')
+      .select('id, email, full_name, tradingview_username')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !targetUser) {
+      return NextResponse.json(
+        { error: 'Usuario no encontrado' },
+        { status: 404 }
+      );
+    }
+
+    // Obtener todos los accesos del usuario con información de indicadores
+    const { data: accesses, error: accessError } = await supabase
+      .from('indicator_access')
+      .select(
+        `
+        id,
+        indicator_id,
+        tradingview_username,
+        status,
+        granted_at,
+        expires_at,
+        revoked_at,
+        duration_type,
+        access_source,
+        subscription_id,
+        payment_intent_id,
+        error_message,
+        auto_renew,
+        last_renewed_at,
+        renewal_count,
+        created_at,
+        updated_at,
+        indicators:indicator_id (
+          id,
+          pine_id,
+          name,
+          description,
+          category,
+          status,
+          type,
+          access_tier,
+          image_1
+        )
+      `
+      )
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (accessError) {
+      console.error('Error fetching accesses:', accessError);
+      return NextResponse.json(
+        { error: accessError.message },
+        { status: 500 }
+      );
+    }
+
+    // Calcular estadísticas
+    const now = new Date();
+    const stats = {
+      total: accesses?.length || 0,
+      active:
+        accesses?.filter(
+          (a) =>
+            a.status === 'active' &&
+            (!a.expires_at || new Date(a.expires_at) > now)
+        ).length || 0,
+      pending: accesses?.filter((a) => a.status === 'pending').length || 0,
+      expired: accesses?.filter((a) => a.status === 'expired').length || 0,
+      revoked: accesses?.filter((a) => a.status === 'revoked').length || 0,
+      failed: accesses?.filter((a) => a.status === 'failed').length || 0
+    };
+
+    return NextResponse.json({
+      user: targetUser,
+      accesses: accesses || [],
+      stats
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    );
+  }
+}
+
+
