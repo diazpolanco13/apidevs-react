@@ -27,9 +27,14 @@ export async function PUT(
       category,
       status,
       type,
+      access_tier,
+      tradingview_url,
+      public_script_url,
       image_1,
       image_2,
-      image_3
+      image_3,
+      features,
+      tags
     } = body;
 
     // Validaciones básicas
@@ -64,9 +69,14 @@ export async function PUT(
         category,
         status,
         type,
+        access_tier: access_tier || 'premium',
+        tradingview_url: tradingview_url || null,
+        public_script_url: public_script_url || null,
         image_1: image_1 || null,
         image_2: image_2 || null,
         image_3: image_3 || null,
+        features: features || null,
+        tags: tags || [],
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
