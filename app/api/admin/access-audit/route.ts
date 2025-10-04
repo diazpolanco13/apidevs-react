@@ -48,12 +48,15 @@ export async function GET(request: Request) {
     const indicatorId = searchParams.get('indicator_id');
     const grantedBy = searchParams.get('granted_by');
 
-    // Construir query base
+    // Construir query base (sin foreign keys porque pueden ser usuarios legacy)
     let query = supabase
       .from('indicator_access')
       .select(
         `
         id,
+        user_id,
+        indicator_id,
+        tradingview_username,
         status,
         granted_at,
         expires_at,
@@ -64,31 +67,10 @@ export async function GET(request: Request) {
         tradingview_response,
         renewal_count,
         last_renewed_at,
+        granted_by,
+        revoked_by,
         created_at,
-        updated_at,
-        user:users!indicator_access_user_id_fkey (
-          id,
-          email,
-          full_name,
-          tradingview_username
-        ),
-        indicator:indicators!indicator_access_indicator_id_fkey (
-          id,
-          name,
-          pine_id,
-          category,
-          access_tier
-        ),
-        granted_by_user:users!indicator_access_granted_by_fkey (
-          id,
-          email,
-          full_name
-        ),
-        revoked_by_user:users!indicator_access_revoked_by_fkey (
-          id,
-          email,
-          full_name
-        )
+        updated_at
       `,
         { count: 'exact' }
       );
@@ -134,6 +116,63 @@ export async function GET(request: Request) {
 
     console.log(`✅ ${records?.length || 0} registros obtenidos de ${count || 0} totales`);
 
+    // Enriquecer registros con datos de usuarios e indicadores
+    const enrichedRecords = await Promise.all(
+      (records || []).map(async (record) => {
+        // Obtener datos del usuario (puede ser null si es legacy sin registro)
+        let user = null;
+        if (record.user_id) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('id, email, full_name, tradingview_username')
+            .eq('id', record.user_id)
+            .maybeSingle();
+          user = userData;
+        }
+
+        // Obtener datos del indicador
+        let indicator = null;
+        if (record.indicator_id) {
+          const { data: indicatorData } = await supabase
+            .from('indicators')
+            .select('id, name, pine_id, category, access_tier')
+            .eq('id', record.indicator_id)
+            .maybeSingle();
+          indicator = indicatorData;
+        }
+
+        // Obtener datos del admin que concedió
+        let grantedByUser = null;
+        if (record.granted_by) {
+          const { data: grantedByData } = await supabase
+            .from('users')
+            .select('id, email, full_name')
+            .eq('id', record.granted_by)
+            .maybeSingle();
+          grantedByUser = grantedByData;
+        }
+
+        // Obtener datos del admin que revocó
+        let revokedByUser = null;
+        if (record.revoked_by) {
+          const { data: revokedByData } = await supabase
+            .from('users')
+            .select('id, email, full_name')
+            .eq('id', record.revoked_by)
+            .maybeSingle();
+          revokedByUser = revokedByData;
+        }
+
+        return {
+          ...record,
+          user,
+          indicator,
+          granted_by_user: grantedByUser,
+          revoked_by_user: revokedByUser
+        };
+      })
+    );
+
     // Calcular información de paginación
     const totalPages = count ? Math.ceil(count / limit) : 0;
     const hasNextPage = page < totalPages;
@@ -147,7 +186,7 @@ export async function GET(request: Request) {
       totalPages,
       hasNextPage,
       hasPreviousPage,
-      records: records || []
+      records: enrichedRecords
     });
   } catch (error: any) {
     console.error('❌ Error en /api/admin/access-audit:', error);

@@ -112,17 +112,24 @@ export async function POST(
     const tvResult = await tvResponse.json();
     console.log('Respuesta de TradingView:', tvResult);
 
+    // ✅ CRÍTICO: Usar la fecha de expiración QUE TRADINGVIEW RETORNA
+    // Esto garantiza sincronización 100% entre TradingView y Supabase
+    const isSuccess = tvResponse.ok && Array.isArray(tvResult) && tvResult[0]?.status === 'Success';
+    const tvExpiration = isSuccess && tvResult[0]?.expiration 
+      ? tvResult[0].expiration 
+      : (expiresAt?.toISOString() || null);
+
     // Crear o actualizar el registro de acceso
     const accessData = {
       user_id: targetUser?.id || null,
       indicator_id: indicatorId,
       tradingview_username,
-      status: tvResponse.ok ? 'active' : 'failed',
-      granted_at: tvResponse.ok ? new Date().toISOString() : null,
-      expires_at: expiresAt?.toISOString() || null,
+      status: isSuccess ? 'active' : 'failed',
+      granted_at: isSuccess ? new Date().toISOString() : null,
+      expires_at: tvExpiration, // ✅ Fecha real de TradingView
       duration_type,
-      tradingview_response: tvResult,
-      error_message: tvResponse.ok ? null : tvResult.error || 'Error desconocido',
+      tradingview_response: tvResult, // ✅ Guardamos respuesta completa para auditoría
+      error_message: isSuccess ? null : (tvResult.error || tvResult[0]?.error || 'Error desconocido'),
       granted_by: user.id
     };
 

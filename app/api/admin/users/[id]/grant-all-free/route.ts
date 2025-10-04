@@ -121,6 +121,12 @@ export async function POST(
       const tvResultItem = Array.isArray(tvResult) ? tvResult[i] : null;
       const isSuccess = tvResultItem?.status === 'Success';
 
+      // ✅ CRÍTICO: Para Lifetime, TradingView puede retornar expiration o null
+      // Usar lo que TradingView retorna para mantener sincronización perfecta
+      const tvExpiration = isSuccess && tvResultItem?.expiration 
+        ? tvResultItem.expiration 
+        : null; // Lifetime = null
+
       // Verificar si ya existe acceso
       const { data: existing } = await supabase
         .from('indicator_access')
@@ -135,11 +141,11 @@ export async function POST(
         tradingview_username: targetUser.tradingview_username,
         status: isSuccess ? 'active' : 'failed',
         granted_at: isSuccess ? now : null,
-        expires_at: null, // Lifetime
+        expires_at: tvExpiration, // ✅ Fecha real de TradingView (null para Lifetime)
         duration_type: '1L',
         access_source: 'manual',
         granted_by: user.id,
-        tradingview_response: tvResultItem,
+        tradingview_response: tvResultItem, // ✅ Guardamos respuesta completa para auditoría
         error_message: isSuccess ? null : tvResultItem?.error || 'Error desconocido'
       };
 
