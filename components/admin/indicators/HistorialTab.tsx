@@ -99,6 +99,7 @@ export default function HistorialTab() {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDateFrom, setFilterDateFrom] = useState('');
   const [filterDateTo, setFilterDateTo] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
   // Cargar estadísticas al montar
@@ -109,7 +110,7 @@ export default function HistorialTab() {
   // Cargar registros cuando cambien filtros o página
   useEffect(() => {
     loadRecords();
-  }, [currentPage, filterSource, filterStatus, filterDateFrom, filterDateTo]);
+  }, [currentPage, filterSource, filterStatus, filterDateFrom, filterDateTo, searchQuery]);
 
   const loadStats = async () => {
     try {
@@ -138,6 +139,7 @@ export default function HistorialTab() {
       if (filterStatus) params.append('status', filterStatus);
       if (filterDateFrom) params.append('date_from', filterDateFrom);
       if (filterDateTo) params.append('date_to', filterDateTo);
+      if (searchQuery) params.append('search', searchQuery);
 
       const response = await fetch(`/api/admin/access-audit?${params}`);
       const data = await response.json();
@@ -159,6 +161,7 @@ export default function HistorialTab() {
     setFilterStatus('');
     setFilterDateFrom('');
     setFilterDateTo('');
+    setSearchQuery('');
     setCurrentPage(1);
   };
 
@@ -324,15 +327,45 @@ export default function HistorialTab() {
         </div>
       )}
 
-      {/* Filtros */}
+      {/* Barra de Búsqueda */}
       <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Buscar por email o username de TradingView..."
+              className="w-full pl-11 pr-4 py-2.5 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-apidevs-primary transition-colors"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setCurrentPage(1);
+                }}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              >
+                <XCircle className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Línea divisoria */}
+        <div className="border-t border-gray-700/50 mb-4"></div>
+
+        <div className="flex items-center justify-between">
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-2 text-sm font-medium text-white hover:text-apidevs-primary transition-colors"
           >
             <Filter className="w-4 h-4" />
-            Filtros
+            Filtros Avanzados
             {(filterSource || filterStatus || filterDateFrom || filterDateTo) && (
               <span className="ml-2 px-2 py-0.5 bg-apidevs-primary/20 text-apidevs-primary rounded-full text-xs">
                 Activos

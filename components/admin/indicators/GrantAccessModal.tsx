@@ -50,7 +50,7 @@ export default function GrantAccessModal({
       if (!response.ok) throw new Error('Error cargando indicadores');
 
       const data = await response.json();
-      const activeIndicators = data.filter((i: Indicator) => i.status === 'activo');
+      const activeIndicators = (data.indicators || []).filter((i: Indicator) => i.status === 'activo');
       setIndicators(activeIndicators);
     } catch (err: any) {
       setError(err.message);

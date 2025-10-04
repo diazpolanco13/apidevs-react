@@ -17,6 +17,7 @@ import { createClient } from '@/utils/supabase/server';
  * - user_id: filtrar por usuario específico
  * - indicator_id: filtrar por indicador específico
  * - granted_by: filtrar por admin que concedió
+ * - search: buscar por email o tradingview_username
  */
 export async function GET(request: Request) {
   try {
@@ -47,35 +48,77 @@ export async function GET(request: Request) {
     const userId = searchParams.get('user_id');
     const indicatorId = searchParams.get('indicator_id');
     const grantedBy = searchParams.get('granted_by');
+    const search = searchParams.get('search');
 
-    // Construir query base (sin foreign keys porque pueden ser usuarios legacy)
+    // Si hay búsqueda por email/username, primero obtener user_ids coincidentes
+    let userIdsFromSearch: string[] = [];
+    if (search && search.trim()) {
+      console.log(`🔎 Buscando usuarios con: "${search}"`);
+      
+      const searchTerm = search.trim().toLowerCase();
+      
+      // Buscar en tabla users
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('id, email, tradingview_username')
+        .or(`email.ilike.%${searchTerm}%,tradingview_username.ilike.%${searchTerm}%`);
+      
+      if (usersData && usersData.length > 0) {
+        userIdsFromSearch = usersData.map((u: any) => u.id);
+        console.log(`✅ ${userIdsFromSearch.length} usuarios encontrados`);
+      }
+      
+      // Si no encontramos usuarios, retornar resultado vacío
+      if (userIdsFromSearch.length === 0) {
+        console.log('⚠️ No se encontraron usuarios con ese criterio');
+        return NextResponse.json({
+          success: true,
+          page,
+          limit,
+          total: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+          records: []
+        });
+      }
+    }
+
+    // Construir query base desde indicator_access_log (tabla de auditoría)
     let query = supabase
-      .from('indicator_access')
+      .from('indicator_access_log')
       .select(
         `
         id,
         user_id,
         indicator_id,
         tradingview_username,
+        operation_type,
+        access_source,
         status,
         granted_at,
         expires_at,
         revoked_at,
         duration_type,
-        access_source,
-        error_message,
+        subscription_id,
+        payment_intent_id,
+        indicator_access_id,
         tradingview_response,
-        renewal_count,
-        last_renewed_at,
-        granted_by,
-        revoked_by,
-        created_at,
-        updated_at
+        error_message,
+        performed_by,
+        notes,
+        metadata,
+        created_at
       `,
         { count: 'exact' }
       );
 
-    // Aplicar filtros
+    // Aplicar filtro de búsqueda si hay user_ids encontrados
+    if (userIdsFromSearch.length > 0) {
+      query = query.in('user_id', userIdsFromSearch);
+    }
+
+    // Aplicar filtros de fecha sobre created_at (fecha de la operación en el log)
     if (dateFrom) {
       query = query.gte('created_at', dateFrom);
     }
@@ -101,10 +144,10 @@ export async function GET(request: Request) {
     }
 
     if (grantedBy) {
-      query = query.eq('granted_by', grantedBy);
+      query = query.eq('performed_by', grantedBy);
     }
 
-    // Ordenar por fecha descendente y aplicar paginación
+    // Ordenar por fecha de creación descendente (más reciente primero) y aplicar paginación
     query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
 
     const { data: records, error, count } = await query;
@@ -118,7 +161,7 @@ export async function GET(request: Request) {
 
     // Enriquecer registros con datos de usuarios e indicadores
     const enrichedRecords = await Promise.all(
-      (records || []).map(async (record) => {
+      (records || []).map(async (record: any) => {
         // Obtener datos del usuario (puede ser null si es legacy sin registro)
         let user = null;
         if (record.user_id) {
@@ -141,34 +184,22 @@ export async function GET(request: Request) {
           indicator = indicatorData;
         }
 
-        // Obtener datos del admin que concedió
-        let grantedByUser = null;
-        if (record.granted_by) {
-          const { data: grantedByData } = await supabase
+        // Obtener datos del usuario que ejecutó la operación
+        let performedByUser = null;
+        if (record.performed_by) {
+          const { data: performedByData } = await supabase
             .from('users')
             .select('id, email, full_name')
-            .eq('id', record.granted_by)
+            .eq('id', record.performed_by)
             .maybeSingle();
-          grantedByUser = grantedByData;
-        }
-
-        // Obtener datos del admin que revocó
-        let revokedByUser = null;
-        if (record.revoked_by) {
-          const { data: revokedByData } = await supabase
-            .from('users')
-            .select('id, email, full_name')
-            .eq('id', record.revoked_by)
-            .maybeSingle();
-          revokedByUser = revokedByData;
+          performedByUser = performedByData;
         }
 
         return {
           ...record,
           user,
           indicator,
-          granted_by_user: grantedByUser,
-          revoked_by_user: revokedByUser
+          performed_by_user: performedByUser
         };
       })
     );

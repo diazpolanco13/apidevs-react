@@ -22,11 +22,24 @@ export async function GET() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching indicators:', error);
+      console.error('❌ Error fetching indicators:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(indicators);
+    console.log(`✅ ${indicators?.length || 0} indicadores obtenidos`);
+
+    // Calcular estadísticas
+    const stats = {
+      total: indicators?.length || 0,
+      activos: indicators?.filter((i: any) => i.status === 'activo').length || 0,
+      privados: indicators?.filter((i: any) => i.type === 'privado').length || 0,
+      premium: indicators?.filter((i: any) => i.access_tier === 'premium').length || 0
+    };
+
+    return NextResponse.json({ 
+      indicators: indicators || [],
+      stats 
+    });
   } catch (error) {
     console.error('Error:', error);
     return NextResponse.json(
