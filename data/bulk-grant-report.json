@@ -1,0 +1,2837 @@
+[
+  {
+    "tv_username": "plumedelan",
+    "email": "plume_delan@hotmail.fr",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "plumedelan",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:23+02:00",
+        "expiration": "2025-10-04T17:25:23+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "plumedelan",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:23+02:00",
+        "expiration": "2025-10-04T17:25:23+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "plumedelan",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:24+02:00",
+        "expiration": "2025-10-04T17:25:24+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "BitcoinBunny",
+    "email": "zarnertony@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "BitcoinBunny",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:25+02:00",
+        "expiration": "2025-10-04T17:25:25+02:00",
+        "status": "Failure"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "BitcoinBunny",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:25+02:00",
+        "expiration": "2025-10-04T17:25:25+02:00",
+        "status": "Failure"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "BitcoinBunny",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:26+02:00",
+        "expiration": "2025-10-04T17:25:26+02:00",
+        "status": "Failure"
+      }
+    ]
+  },
+  {
+    "tv_username": "carlosmendezal",
+    "email": "carlosmendezal@hotmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "carlosmendezal",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:27+02:00",
+        "expiration": "2025-10-04T17:25:27+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "carlosmendezal",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:27+02:00",
+        "expiration": "2025-10-04T17:25:27+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "carlosmendezal",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:28+02:00",
+        "expiration": "2025-10-04T17:25:28+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "BDavalosSeferlis",
+    "email": "bdavsef@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "BDavalosSeferlis",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:29+02:00",
+        "expiration": "2025-10-04T17:25:29+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "BDavalosSeferlis",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:29+02:00",
+        "expiration": "2025-10-04T17:25:29+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "BDavalosSeferlis",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:29+02:00",
+        "expiration": "2025-10-04T17:25:29+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "mtna1981",
+    "email": "materna.jerome@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "mtna1981",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:30+02:00",
+        "expiration": "2025-10-04T17:25:30+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "mtna1981",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:30+02:00",
+        "expiration": "2025-10-04T17:25:30+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "mtna1981",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:31+02:00",
+        "expiration": "2025-10-04T17:25:31+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "antonyalvarez7",
+    "email": "antonyalvarez@protonmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "antonyalvarez7",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:32+02:00",
+        "expiration": "2025-10-04T17:25:32+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "antonyalvarez7",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:32+02:00",
+        "expiration": "2025-10-04T17:25:32+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "antonyalvarez7",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:32+02:00",
+        "expiration": "2025-10-04T17:25:32+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "mlasso",
+    "email": "ing.mlasso@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "mlasso",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:33+02:00",
+        "expiration": "2025-10-04T17:25:33+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "mlasso",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:34+02:00",
+        "expiration": "2025-10-04T17:25:34+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "mlasso",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:34+02:00",
+        "expiration": "2025-10-04T17:25:34+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "Eduardodoce",
+    "email": "eduardodoce83@gmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "Eduardodoce",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:35+02:00",
+        "expiration": "2025-10-04T17:25:35+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "Eduardodoce",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:35+02:00",
+        "expiration": "2025-10-04T17:25:35+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "Eduardodoce",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:36+02:00",
+        "expiration": "2025-10-04T17:25:36+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "thirteenspirals",
+    "email": "thirteenspirals@gmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "thirteenspirals",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:37+02:00",
+        "expiration": "2025-10-04T17:25:37+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "thirteenspirals",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:37+02:00",
+        "expiration": "2025-10-04T17:25:37+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "thirteenspirals",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:37+02:00",
+        "expiration": "2025-10-04T17:25:37+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "jmpo18",
+    "email": "jorgemanuelparra@gmail.com",
+    "status": "success",
+    "indicators_granted": 2,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "jmpo18",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:38+02:00",
+        "expiration": "2025-10-04T17:25:38+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "jmpo18",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:39+02:00",
+        "expiration": "2025-10-04T17:25:39+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "jmpo18",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:39+02:00",
+        "expiration": "2025-10-04T17:25:39+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "GERY24m",
+    "email": "gerardo_m_a@yahoo.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "GERY24m",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:41+02:00",
+        "expiration": "2025-10-04T17:25:41+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "GERY24m",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:41+02:00",
+        "expiration": "2025-10-04T17:25:41+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "GERY24m",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:41+02:00",
+        "expiration": "2025-10-04T17:25:41+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "Alphaponce1963",
+    "email": "ponce_olvin@yahoo.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "Alphaponce1963",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:42+02:00",
+        "expiration": "2025-10-04T17:25:42+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "Alphaponce1963",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:43+02:00",
+        "expiration": "2025-10-04T17:25:43+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "Alphaponce1963",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:43+02:00",
+        "expiration": "2025-10-04T17:25:43+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "Coxise",
+    "email": "shdec90@hotmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "Coxise",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:44+02:00",
+        "expiration": "2025-10-04T17:25:44+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "Coxise",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:44+02:00",
+        "expiration": "2025-10-04T17:25:44+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "Coxise",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:45+02:00",
+        "expiration": "2025-10-04T17:25:45+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "jesicalopezcamino",
+    "email": "caporalimariano@gmail.com",
+    "status": "success",
+    "indicators_granted": 2,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "jesicalopezcamino",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:46+02:00",
+        "expiration": "2025-10-04T17:25:46+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "jesicalopezcamino",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:47+02:00",
+        "expiration": "2025-10-04T17:25:47+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "jesicalopezcamino",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:47+02:00",
+        "expiration": "2025-10-04T17:25:47+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "gblack10",
+    "email": "gblack10@proton.me",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "gblack10",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:48+02:00",
+        "expiration": "2025-10-04T17:25:48+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "gblack10",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:49+02:00",
+        "expiration": "2025-10-04T17:25:49+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "gblack10",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:49+02:00",
+        "expiration": "2025-10-04T17:25:49+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "egomezg25",
+    "email": "bifrost.net.24@gmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "egomezg25",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:50+02:00",
+        "expiration": "2025-10-04T17:25:50+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "egomezg25",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:51+02:00",
+        "expiration": "2025-10-04T17:25:51+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "egomezg25",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:51+02:00",
+        "expiration": "2025-10-04T17:25:51+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "ozkar2013",
+    "email": "oscarvargas1877@gmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "ozkar2013",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:52+02:00",
+        "expiration": "2025-10-04T17:25:52+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "ozkar2013",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:53+02:00",
+        "expiration": "2025-10-04T17:25:53+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "ozkar2013",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:53+02:00",
+        "expiration": "2025-10-04T17:25:53+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "JosueZambrano",
+    "email": "jzam22.jz@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "JosueZambrano",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:54+02:00",
+        "expiration": "2025-10-04T17:25:54+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "JosueZambrano",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:54+02:00",
+        "expiration": "2025-10-04T17:25:54+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "JosueZambrano",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:55+02:00",
+        "expiration": "2025-10-04T17:25:55+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "fernandomtzsG7",
+    "email": "fernandomtz4800@hotmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "fernandomtzsG7",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:56+02:00",
+        "expiration": "2025-10-04T17:25:56+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "fernandomtzsG7",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:57+02:00",
+        "expiration": "2025-10-04T17:25:57+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "fernandomtzsG7",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:57+02:00",
+        "expiration": "2025-10-04T17:25:57+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "willscorpion32cbe",
+    "email": "willscorpion3@gmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "willscorpion32cbe",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:58+02:00",
+        "expiration": "2025-10-04T17:25:58+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "willscorpion32cbe",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:59+02:00",
+        "expiration": "2025-10-04T17:25:59+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "willscorpion32cbe",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:25:59+02:00",
+        "expiration": "2025-10-04T17:25:59+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "ayrtonchavez1",
+    "email": "ayrtonchavez1@gmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "ayrtonchavez1",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:00+02:00",
+        "expiration": "2025-10-04T17:26:00+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "ayrtonchavez1",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:01+02:00",
+        "expiration": "2025-10-04T17:26:01+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "ayrtonchavez1",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:01+02:00",
+        "expiration": "2025-10-04T17:26:01+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "melocesar1",
+    "email": "cesarmelo71@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "melocesar1",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:02+02:00",
+        "expiration": "2025-10-04T17:26:02+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "melocesar1",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:03+02:00",
+        "expiration": "2025-10-04T17:26:03+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "melocesar1",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:03+02:00",
+        "expiration": "2025-10-04T17:26:03+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "dkhudir",
+    "email": "david.khudir@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "dkhudir",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:04+02:00",
+        "expiration": "2025-10-04T17:26:04+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "dkhudir",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:04+02:00",
+        "expiration": "2025-10-04T17:26:04+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "dkhudir",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:05+02:00",
+        "expiration": "2025-10-04T17:26:05+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "qvalero2017",
+    "email": "qvalero2017@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "qvalero2017",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:06+02:00",
+        "expiration": "2025-10-04T17:26:06+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "qvalero2017",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:06+02:00",
+        "expiration": "2025-10-04T17:26:06+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "qvalero2017",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:07+02:00",
+        "expiration": "2025-10-04T17:26:07+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "happyUser19243carlos",
+    "email": "armandoriofrio1999@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "happyUser19243carlos",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:08+02:00",
+        "expiration": "2025-10-04T17:26:08+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "happyUser19243carlos",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:09+02:00",
+        "expiration": "2025-10-04T17:26:09+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "happyUser19243carlos",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:09+02:00",
+        "expiration": "2025-10-04T17:26:09+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "Maxi_Grosovich",
+    "email": "maxigelmer10@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "Maxi_Grosovich",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:10+02:00",
+        "expiration": "2025-10-04T17:26:10+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "Maxi_Grosovich",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:11+02:00",
+        "expiration": "2025-10-04T17:26:11+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "Maxi_Grosovich",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:12+02:00",
+        "expiration": "2025-10-04T17:26:12+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "KINGTRADERS87",
+    "email": "pockerhacker2015@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "KINGTRADERS87",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:13+02:00",
+        "expiration": "2025-10-04T17:26:13+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "KINGTRADERS87",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:14+02:00",
+        "expiration": "2025-10-04T17:26:14+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "KINGTRADERS87",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:14+02:00",
+        "expiration": "2025-10-04T17:26:14+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "mirmilmor",
+    "email": "mirmilmor@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "mirmilmor",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:16+02:00",
+        "expiration": "2025-10-04T17:26:16+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "mirmilmor",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:16+02:00",
+        "expiration": "2025-10-04T17:26:16+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "mirmilmor",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:17+02:00",
+        "expiration": "2025-10-04T17:26:17+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "sitarblaz",
+    "email": "sitarblaz@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "sitarblaz",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:19+02:00",
+        "expiration": "2025-10-04T17:26:19+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "sitarblaz",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:19+02:00",
+        "expiration": "2025-10-04T17:26:19+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "sitarblaz",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:20+02:00",
+        "expiration": "2025-10-04T17:26:20+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "OscarPujol",
+    "email": "oscarpujol17@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "OscarPujol",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:21+02:00",
+        "expiration": "2025-10-04T17:26:21+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "OscarPujol",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:21+02:00",
+        "expiration": "2025-10-04T17:26:21+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "OscarPujol",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:22+02:00",
+        "expiration": "2025-10-04T17:26:22+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "Elisa_2014xD",
+    "email": "elisa.minaya.ch@gmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "Elisa_2014xD",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:23+02:00",
+        "expiration": "2025-10-04T17:26:23+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "Elisa_2014xD",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:24+02:00",
+        "expiration": "2025-10-04T17:26:24+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "Elisa_2014xD",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:24+02:00",
+        "expiration": "2025-10-04T17:26:24+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "joselopez1317",
+    "email": "joselopez1317@hotmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "joselopez1317",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:26+02:00",
+        "expiration": "2025-10-04T17:26:26+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "joselopez1317",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:26+02:00",
+        "expiration": "2025-10-04T17:26:26+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "joselopez1317",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:27+02:00",
+        "expiration": "2025-10-04T17:26:27+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "dannylopez18072007",
+    "email": "dannylopez18072007@gmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "dannylopez18072007",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:28+02:00",
+        "expiration": "2025-10-04T17:26:28+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "dannylopez18072007",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:29+02:00",
+        "expiration": "2025-10-04T17:26:29+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "dannylopez18072007",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:30+02:00",
+        "expiration": "2025-10-04T17:26:30+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "yoyi241008",
+    "email": "yoyi241008@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "yoyi241008",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:31+02:00",
+        "expiration": "2025-10-04T17:26:31+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "yoyi241008",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:32+02:00",
+        "expiration": "2025-10-04T17:26:32+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "yoyi241008",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:32+02:00",
+        "expiration": "2025-10-04T17:26:32+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "natycampos666",
+    "email": "natycamposasesoria@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "natycampos666",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:34+02:00",
+        "expiration": "2025-10-04T17:26:34+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "natycampos666",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:34+02:00",
+        "expiration": "2025-10-04T17:26:34+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "natycampos666",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:35+02:00",
+        "expiration": "2025-10-04T17:26:35+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "axelflores",
+    "email": "axelflores32@hotmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "axelflores",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:36+02:00",
+        "expiration": "2025-10-04T17:26:36+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "axelflores",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:37+02:00",
+        "expiration": "2025-10-04T17:26:37+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "axelflores",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:37+02:00",
+        "expiration": "2025-10-04T17:26:37+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "davila23",
+    "email": "daniel.avila@rottay.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "davila23",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:38+02:00",
+        "expiration": "2025-10-04T17:26:38+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "davila23",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:39+02:00",
+        "expiration": "2025-10-04T17:26:39+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "davila23",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:39+02:00",
+        "expiration": "2025-10-04T17:26:39+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "JOLUIR",
+    "email": "elanonnimoos832@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "JOLUIR",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:40+02:00",
+        "expiration": "2025-10-04T17:26:40+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "JOLUIR",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:41+02:00",
+        "expiration": "2025-10-04T17:26:41+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "JOLUIR",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:42+02:00",
+        "expiration": "2025-10-04T17:26:42+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "rnznft",
+    "email": "renpalma@hotmail.com.ar",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "rnznft",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:43+02:00",
+        "expiration": "2025-10-04T17:26:43+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "rnznft",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:44+02:00",
+        "expiration": "2025-10-04T17:26:44+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "rnznft",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:45+02:00",
+        "expiration": "2025-10-04T17:26:45+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "silvester_Ray",
+    "email": "RR.camarena@outlook.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "silvester_Ray",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:46+02:00",
+        "expiration": "2025-10-04T17:26:46+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "silvester_Ray",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:47+02:00",
+        "expiration": "2025-10-04T17:26:47+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "silvester_Ray",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:47+02:00",
+        "expiration": "2025-10-04T17:26:47+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "CRIPTO_ZALASAR",
+    "email": "grupocostos2022@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "CRIPTO_ZALASAR",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:48+02:00",
+        "expiration": "2025-10-04T17:26:48+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "CRIPTO_ZALASAR",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:49+02:00",
+        "expiration": "2025-10-04T17:26:49+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "CRIPTO_ZALASAR",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:50+02:00",
+        "expiration": "2025-10-04T17:26:50+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "axelsolo1975",
+    "email": "axelsolo@hotmail.es",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "axelsolo1975",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:51+02:00",
+        "expiration": "2025-10-04T17:26:51+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "axelsolo1975",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:52+02:00",
+        "expiration": "2025-10-04T17:26:52+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "axelsolo1975",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:52+02:00",
+        "expiration": "2025-10-04T17:26:52+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "andreinavalero789",
+    "email": "andreinavalero789@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "andreinavalero789",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:54+02:00",
+        "expiration": "2025-10-04T17:26:54+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "andreinavalero789",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:54+02:00",
+        "expiration": "2025-10-04T17:26:54+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "andreinavalero789",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:54+02:00",
+        "expiration": "2025-10-04T17:26:54+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "joeltrading1987",
+    "email": "joel.uh2009@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "joeltrading1987",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:56+02:00",
+        "expiration": "2025-10-04T17:26:56+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "joeltrading1987",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:56+02:00",
+        "expiration": "2025-10-04T17:26:56+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "joeltrading1987",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:57+02:00",
+        "expiration": "2025-10-04T17:26:57+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "Jesus_criptobuzz_VIP",
+    "email": "jesus.rodriguez.halifax@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "Jesus_criptobuzz_VIP",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:58+02:00",
+        "expiration": "2025-10-04T17:26:58+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "Jesus_criptobuzz_VIP",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:26:59+02:00",
+        "expiration": "2025-10-04T17:26:59+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "Jesus_criptobuzz_VIP",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:00+02:00",
+        "expiration": "2025-10-04T17:27:00+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "lepirela",
+    "email": "lepirela@gmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "lepirela",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:01+02:00",
+        "expiration": "2025-10-04T17:27:01+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "lepirela",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:01+02:00",
+        "expiration": "2025-10-04T17:27:01+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "lepirela",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:02+02:00",
+        "expiration": "2025-10-04T17:27:02+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "ArielFCruzPR",
+    "email": "arielfcruz@gmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "ArielFCruzPR",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:03+02:00",
+        "expiration": "2025-10-04T17:27:03+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "ArielFCruzPR",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:04+02:00",
+        "expiration": "2025-10-04T17:27:04+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "ArielFCruzPR",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:04+02:00",
+        "expiration": "2025-10-04T17:27:04+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "Fr3d1_M4dr1d",
+    "email": "alfredogptv@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "Fr3d1_M4dr1d",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:05+02:00",
+        "expiration": "2025-10-04T17:27:05+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "Fr3d1_M4dr1d",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:05+02:00",
+        "expiration": "2025-10-04T17:27:05+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "Fr3d1_M4dr1d",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:06+02:00",
+        "expiration": "2025-10-04T17:27:06+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "Numberfive",
+    "email": "i_number5@protonmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "Numberfive",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:07+02:00",
+        "expiration": "2025-10-04T17:27:07+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "Numberfive",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:07+02:00",
+        "expiration": "2025-10-04T17:27:07+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "Numberfive",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:08+02:00",
+        "expiration": "2025-10-04T17:27:08+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "alexanderbarrios159",
+    "email": "alexanderbarrios159@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "alexanderbarrios159",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:09+02:00",
+        "expiration": "2025-10-04T17:27:09+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "alexanderbarrios159",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:10+02:00",
+        "expiration": "2025-10-04T17:27:10+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "alexanderbarrios159",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:10+02:00",
+        "expiration": "2025-10-04T17:27:10+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "JoDasilva",
+    "email": "josefran.dasilva@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "JoDasilva",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:11+02:00",
+        "expiration": "2025-10-04T17:27:11+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "JoDasilva",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:11+02:00",
+        "expiration": "2025-10-04T17:27:11+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "JoDasilva",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-27T17:39:23+00:00",
+        "expiration": "2025-10-27T17:39:23+00:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "fernandotorrespalomos",
+    "email": "fernandotorrespalomos@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "fernandotorrespalomos",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:13+02:00",
+        "expiration": "2025-10-04T17:27:13+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "fernandotorrespalomos",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:14+02:00",
+        "expiration": "2025-10-04T17:27:14+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "fernandotorrespalomos",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:15+02:00",
+        "expiration": "2025-10-04T17:27:15+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "eduardo8ramirez6",
+    "email": "eduardo8ramirez6@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "eduardo8ramirez6",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:16+02:00",
+        "expiration": "2025-10-04T17:27:16+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "eduardo8ramirez6",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:16+02:00",
+        "expiration": "2025-10-04T17:27:16+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "eduardo8ramirez6",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:17+02:00",
+        "expiration": "2025-10-04T17:27:17+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "sambodj1983",
+    "email": "sambodj1983@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "sambodj1983",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:18+02:00",
+        "expiration": "2025-10-04T17:27:18+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "sambodj1983",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:19+02:00",
+        "expiration": "2025-10-04T17:27:19+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "sambodj1983",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-10T09:16:35+00:00",
+        "expiration": "2025-10-10T09:16:35+00:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "rilozu10",
+    "email": "rilozu10@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "rilozu10",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:21+02:00",
+        "expiration": "2025-10-04T17:27:21+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "rilozu10",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:22+02:00",
+        "expiration": "2025-10-04T17:27:22+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "rilozu10",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-17T08:19:16+00:00",
+        "expiration": "2025-10-17T08:19:16+00:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "becerrazeladamanuel",
+    "email": "becerrazeladamanuel@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "becerrazeladamanuel",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:24+02:00",
+        "expiration": "2025-10-04T17:27:24+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "becerrazeladamanuel",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:24+02:00",
+        "expiration": "2025-10-04T17:27:24+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "becerrazeladamanuel",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:24+02:00",
+        "expiration": "2025-10-04T17:27:24+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "kokorecontraloko",
+    "email": "juancarlosperna-basura@yahoo.com.ar",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "kokorecontraloko",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:25+02:00",
+        "expiration": "2025-10-04T17:27:25+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "kokorecontraloko",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:26+02:00",
+        "expiration": "2025-10-04T17:27:26+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "kokorecontraloko",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:26+02:00",
+        "expiration": "2025-10-04T17:27:26+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "CristianNino",
+    "email": "cristiannino3006@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "CristianNino",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:28+02:00",
+        "expiration": "2025-10-04T17:27:28+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "CristianNino",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:29+02:00",
+        "expiration": "2025-10-04T17:27:29+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "CristianNino",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:29+02:00",
+        "expiration": "2025-10-04T17:27:29+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "djdexterdc",
+    "email": "djdexterdc@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "djdexterdc",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:31+02:00",
+        "expiration": "2025-10-04T17:27:31+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "djdexterdc",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:32+02:00",
+        "expiration": "2025-10-04T17:27:32+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "djdexterdc",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:32+02:00",
+        "expiration": "2025-10-04T17:27:32+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "Dreamers_Academy",
+    "email": "djdexter1204@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "Dreamers_Academy",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:34+02:00",
+        "expiration": "2025-10-04T17:27:34+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "Dreamers_Academy",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:35+02:00",
+        "expiration": "2025-10-04T17:27:35+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "Dreamers_Academy",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:35+02:00",
+        "expiration": "2025-10-04T17:27:35+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "CR0N0RU113R",
+    "email": "r_loana@outlook.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "CR0N0RU113R",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:37+02:00",
+        "expiration": "2025-10-04T17:27:37+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "CR0N0RU113R",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:37+02:00",
+        "expiration": "2025-10-04T17:27:37+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "CR0N0RU113R",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:38+02:00",
+        "expiration": "2025-10-04T17:27:38+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "fabri2207",
+    "email": "fabri.200107@icloud.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "fabri2207",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:38+02:00",
+        "expiration": "2025-10-04T17:27:38+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "fabri2207",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:39+02:00",
+        "expiration": "2025-10-04T17:27:39+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "fabri2207",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:40+02:00",
+        "expiration": "2025-10-04T17:27:40+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "ExequielAvile2024",
+    "email": "exequielavile@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "ExequielAvile2024",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:41+02:00",
+        "expiration": "2025-10-04T17:27:41+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "ExequielAvile2024",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:42+02:00",
+        "expiration": "2025-10-04T17:27:42+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "ExequielAvile2024",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:43+02:00",
+        "expiration": "2025-10-04T17:27:43+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "rparras68",
+    "email": "rafaelparras2009@hotmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "rparras68",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:44+02:00",
+        "expiration": "2025-10-04T17:27:44+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "rparras68",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:44+02:00",
+        "expiration": "2025-10-04T17:27:44+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "rparras68",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:44+02:00",
+        "expiration": "2025-10-04T17:27:44+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "acostatradings",
+    "email": "acostatradings@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "acostatradings",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:45+02:00",
+        "expiration": "2025-10-04T17:27:45+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "acostatradings",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:46+02:00",
+        "expiration": "2025-10-04T17:27:46+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "acostatradings",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:46+02:00",
+        "expiration": "2025-10-04T17:27:46+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "lucasklug020",
+    "email": "lucasklug020@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "lucasklug020",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:47+02:00",
+        "expiration": "2025-10-04T17:27:47+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "lucasklug020",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:47+02:00",
+        "expiration": "2025-10-04T17:27:47+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "lucasklug020",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:48+02:00",
+        "expiration": "2025-10-04T17:27:48+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "estebanvgb",
+    "email": "estebanvgb@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "estebanvgb",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:49+02:00",
+        "expiration": "2025-10-04T17:27:49+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "estebanvgb",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:50+02:00",
+        "expiration": "2025-10-04T17:27:50+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "estebanvgb",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:51+02:00",
+        "expiration": "2025-10-04T17:27:51+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "etrex2_trader",
+    "email": "etrex2@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "etrex2_trader",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:52+02:00",
+        "expiration": "2025-10-04T17:27:52+02:00",
+        "status": "Failure"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "etrex2_trader",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:52+02:00",
+        "expiration": "2025-10-04T17:27:52+02:00",
+        "status": "Failure"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "etrex2_trader",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:53+02:00",
+        "expiration": "2025-10-04T17:27:53+02:00",
+        "status": "Failure"
+      }
+    ]
+  },
+  {
+    "tv_username": "ArielFCruzPR",
+    "email": "arielfcruz2@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "ArielFCruzPR",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:54+02:00",
+        "expiration": "2025-10-04T17:27:54+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "ArielFCruzPR",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:54+02:00",
+        "expiration": "2025-10-04T17:27:54+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "ArielFCruzPR",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:55+02:00",
+        "expiration": "2025-10-04T17:27:55+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "BearBullM",
+    "email": "msialerflores@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "BearBullM",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:56+02:00",
+        "expiration": "2025-10-04T17:27:56+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "BearBullM",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:56+02:00",
+        "expiration": "2025-10-04T17:27:56+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "BearBullM",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:57+02:00",
+        "expiration": "2025-10-04T17:27:57+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "sotopao2420",
+    "email": "psoto@uees.edu.ec",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "sotopao2420",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:58+02:00",
+        "expiration": "2025-10-04T17:27:58+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "sotopao2420",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:58+02:00",
+        "expiration": "2025-10-04T17:27:58+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "sotopao2420",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:27:59+02:00",
+        "expiration": "2025-10-04T17:27:59+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "kunshadows",
+    "email": "cristianleu007@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "kunshadows",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:00+02:00",
+        "expiration": "2025-10-04T17:28:00+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "kunshadows",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:00+02:00",
+        "expiration": "2025-10-04T17:28:00+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "kunshadows",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:00+02:00",
+        "expiration": "2025-10-04T17:28:00+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "milysol",
+    "email": "milysol@gmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "milysol",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:02+02:00",
+        "expiration": "2025-10-04T17:28:02+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "milysol",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:02+02:00",
+        "expiration": "2025-10-04T17:28:02+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "milysol",
+        "hasAccess": false,
+        "noExpiration": false,
+        "currentExpiration": "2025-10-04T17:28:02+02:00",
+        "expiration": "2026-10-04T17:28:02+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "cmdz",
+    "email": "hectormora@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "cmdz",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:04+02:00",
+        "expiration": "2025-10-04T17:28:04+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "cmdz",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:04+02:00",
+        "expiration": "2025-10-04T17:28:04+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "cmdz",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:05+02:00",
+        "expiration": "2025-10-04T17:28:05+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "lufemase@gmail.com",
+    "email": "lufemase@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "lufemase@gmail.com",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:06+02:00",
+        "expiration": "2025-10-04T17:28:06+02:00",
+        "status": "Failure"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "lufemase@gmail.com",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:07+02:00",
+        "expiration": "2025-10-04T17:28:07+02:00",
+        "status": "Failure"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "lufemase@gmail.com",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:07+02:00",
+        "expiration": "2025-10-04T17:28:07+02:00",
+        "status": "Failure"
+      }
+    ]
+  },
+  {
+    "tv_username": "walteribanezcosta23",
+    "email": "walteribanezcosta23@gmail.com",
+    "status": "success",
+    "indicators_granted": 3,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "walteribanezcosta23",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:09+02:00",
+        "expiration": "2025-10-04T17:28:09+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "walteribanezcosta23",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:10+02:00",
+        "expiration": "2025-10-04T17:28:10+02:00",
+        "status": "Success"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "walteribanezcosta23",
+        "hasAccess": false,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:10+02:00",
+        "expiration": "2025-10-04T17:28:10+02:00",
+        "status": "Success"
+      }
+    ]
+  },
+  {
+    "tv_username": "DsiKorp",
+    "email": "jcdelgadop76@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "DsiKorp",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:12+02:00",
+        "expiration": "2025-10-04T17:28:12+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "DsiKorp",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:12+02:00",
+        "expiration": "2025-10-04T17:28:12+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "DsiKorp",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:12+02:00",
+        "expiration": "2025-10-04T17:28:12+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "Jheanprieto",
+    "email": "jheanprieto@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "Jheanprieto",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:13+02:00",
+        "expiration": "2025-10-04T17:28:13+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "Jheanprieto",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:13+02:00",
+        "expiration": "2025-10-04T17:28:13+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "Jheanprieto",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:13+02:00",
+        "expiration": "2025-10-04T17:28:13+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "edm019",
+    "email": "edm.09@hotmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "edm019",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:15+02:00",
+        "expiration": "2025-10-04T17:28:15+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "edm019",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:15+02:00",
+        "expiration": "2025-10-04T17:28:15+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "edm019",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:15+02:00",
+        "expiration": "2025-10-04T17:28:15+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "danieldiaz0403",
+    "email": "danieldiaz0403@gmail.com",
+    "status": "success",
+    "indicators_granted": 0,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "danieldiaz0403",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:16+02:00",
+        "expiration": "2025-10-04T17:28:16+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "danieldiaz0403",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:17+02:00",
+        "expiration": "2025-10-04T17:28:17+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "danieldiaz0403",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:17+02:00",
+        "expiration": "2025-10-04T17:28:17+02:00",
+        "status": "Not Applied"
+      }
+    ]
+  },
+  {
+    "tv_username": "dar1971",
+    "email": "diegoa_rodriguez@hotmail.com",
+    "status": "success",
+    "indicators_granted": 1,
+    "tv_response": [
+      {
+        "pine_id": "PUB;af43255c0c144618842478be41c7ec18",
+        "username": "dar1971",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:18+02:00",
+        "expiration": "2025-10-04T17:28:18+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;7c7e236c6da54dc4af78a87b788f126a",
+        "username": "dar1971",
+        "hasAccess": true,
+        "noExpiration": true,
+        "currentExpiration": "2025-10-04T17:28:19+02:00",
+        "expiration": "2025-10-04T17:28:19+02:00",
+        "status": "Not Applied"
+      },
+      {
+        "pine_id": "PUB;ebd861d70a9f478bb06fe60c5d8f469c",
+        "username": "dar1971",
+        "hasAccess": true,
+        "noExpiration": false,
+        "currentExpiration": "2025-09-27T17:15:09.722554+00:00",
+        "expiration": "2025-10-04T19:15:09+02:00",
+        "status": "Success"
+      }
+    ]
+  }
+]

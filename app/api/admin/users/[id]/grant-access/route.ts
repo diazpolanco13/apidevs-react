@@ -155,6 +155,12 @@ export async function POST(
     // Verificar si la respuesta es exitosa (el endpoint retorna un array)
     const isSuccess = Array.isArray(tvResult) && tvResult.length > 0 && tvResult[0].status === 'Success';
 
+    // ✅ CRÍTICO: Usar la fecha de expiración QUE TRADINGVIEW RETORNA
+    // Esto garantiza sincronización 100% entre TradingView y Supabase
+    const tvExpiration = isSuccess && tvResult[0]?.expiration 
+      ? tvResult[0].expiration 
+      : (expiresAt?.toISOString() || null);
+
     // Preparar datos del acceso
     const accessData = {
       user_id: userId,
@@ -162,11 +168,11 @@ export async function POST(
       tradingview_username: targetUser.tradingview_username,
       status: isSuccess ? 'active' : 'failed',
       granted_at: isSuccess ? new Date().toISOString() : null,
-      expires_at: expiresAt?.toISOString() || null,
+      expires_at: tvExpiration, // ✅ Fecha real de TradingView
       duration_type,
       access_source: 'manual',
       granted_by: user.id,
-      tradingview_response: tvResult,
+      tradingview_response: tvResult, // ✅ Guardamos respuesta completa para auditoría
       error_message: isSuccess ? null : (tvResult.error || tvResult[0]?.error || 'Error desconocido')
     };
 

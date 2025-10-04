@@ -163,16 +163,19 @@ export async function POST(
       const isSuccess = tvResultItem?.status === 'Success';
 
       if (isSuccess) {
+        // ✅ CRÍTICO: Usar la fecha de expiración QUE TRADINGVIEW RETORNA
+        const tvExpiration = tvResultItem?.expiration || (expiresAt?.toISOString() || null);
+
         await supabase
           .from('indicator_access')
           .update({
-            expires_at: expiresAt?.toISOString() || null,
+            expires_at: tvExpiration, // ✅ Fecha real de TradingView
             duration_type,
             last_renewed_at: now,
             renewal_count: (access as any).renewal_count
               ? (access as any).renewal_count + 1
               : 1,
-            tradingview_response: tvResultItem
+            tradingview_response: tvResultItem // ✅ Guardamos respuesta completa
           })
           .eq('id', access.id);
       }
