@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 
-const TRADINGVIEW_API = 'http://89.116.30.133:5555';
+const TRADINGVIEW_API = 'http://185.218.124.241:5001';
 
 type BulkOperationResult = {
   user_id: string;
@@ -17,10 +17,10 @@ export async function POST(request: Request) {
 
     // Verificar autenticación
     const {
-      data: { user }
+      data: { user: adminUser }
     } = await supabase.auth.getUser();
 
-    if (!user || user.email !== 'api@apidevs.io') {
+    if (!adminUser || adminUser.email !== 'api@apidevs.io') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     }
 
     // Filtrar usuarios sin tradingview_username
-    const validUsers = users?.filter((u) => u.tradingview_username) || [];
+    const validUsers = (users as any[] || []).filter((u: any) => u.tradingview_username);
     const usersWithoutTV = (users?.length || 0) - validUsers.length;
 
     if (validUsers.length === 0) {
@@ -92,12 +92,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Obtener datos de indicadores
+    // 2. Obtener datos de indicadores (status en español)
     const { data: indicators, error: indicatorsError } = await supabase
       .from('indicators')
       .select('id, pine_id, name, access_tier')
       .in('id', indicator_ids)
-      .eq('status', 'active');
+      .eq('status', 'activo');
 
     if (indicatorsError) {
       console.error('❌ Error obteniendo indicadores:', indicatorsError);
@@ -118,10 +118,38 @@ export async function POST(request: Request) {
     const results: BulkOperationResult[] = [];
     const accessRecords: any[] = [];
 
-    for (const user of validUsers) {
-      for (const indicator of indicators) {
+    for (const user of validUsers as any[]) {
+      for (const indicator of (indicators || []) as any[]) {
         try {
-          // Llamar al microservicio de TradingView (endpoint individual)
+          // 🔍 PASO 1: Verificar si existe acceso previo
+          const { data: existingAccess } = await supabase
+            .from('indicator_access')
+            .select('id, duration_type, status')
+            .eq('user_id', user.id)
+            .eq('indicator_id', indicator.id)
+            .eq('status', 'active')
+            .maybeSingle();
+
+          // 🗑️ PASO 2: Si existe acceso, REVOCAR primero (permite degradaciones)
+          if (existingAccess) {
+            console.log(`🔄 Reemplazando acceso existente: ${(existingAccess as any).duration_type} → ${duration}`);
+            
+            const deleteResponse = await fetch(
+              `${TRADINGVIEW_API}/api/access/${user.tradingview_username}`,
+              {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  pine_ids: [indicator.pine_id]
+                })
+              }
+            );
+            
+            await deleteResponse.json(); // Esperar respuesta
+            console.log(`🗑️ Acceso anterior revocado`);
+          }
+
+          // ✨ PASO 3: Conceder nuevo acceso
           const tvResponse = await fetch(
             `${TRADINGVIEW_API}/api/access/${user.tradingview_username}`,
             {
@@ -166,12 +194,15 @@ export async function POST(request: Request) {
             accessRecords.push({
               user_id: user.id,
               indicator_id: indicator.id,
-              access_status: 'active',
-              access_source: 'admin_bulk',
+              tradingview_username: user.tradingview_username,
+              status: 'active',
+              access_source: 'bulk',
+              duration_type: duration,
               granted_at: new Date().toISOString(),
               expires_at: expiration,
-              granted_by_admin_id: user.id, // El admin actual
-              auto_renew: false
+              granted_by: adminUser.id,
+              auto_renew: false,
+              tradingview_response: tvResult[0]
             });
           } else {
             results.push({
@@ -198,19 +229,45 @@ export async function POST(request: Request) {
 
     // 4. Guardar accesos exitosos en Supabase (upsert)
     if (accessRecords.length > 0) {
-      const { error: insertError } = await supabase
+      const { data: upsertedData, error: insertError } = await supabase
         .from('indicator_access')
-        .upsert(accessRecords, {
+        .upsert(accessRecords as any, {
           onConflict: 'user_id,indicator_id',
           ignoreDuplicates: false
-        });
+        })
+        .select();
 
       if (insertError) {
         console.error('⚠️ Error guardando accesos en Supabase:', insertError);
       } else {
-        console.log(
-          `✅ ${accessRecords.length} accesos guardados en Supabase`
-        );
+        console.log(`✅ ${accessRecords.length} accesos guardados en Supabase`);
+        
+        // 4.1 Guardar en LOG de auditoría (cada operación = nuevo registro)
+        const logRecords = accessRecords.map((record: any, index: number) => ({
+          user_id: record.user_id,
+          indicator_id: record.indicator_id,
+          tradingview_username: record.tradingview_username,
+          operation_type: 'grant',
+          access_source: record.access_source,
+          status: record.status,
+          granted_at: record.granted_at,
+          expires_at: record.expires_at,
+          duration_type: record.duration_type,
+          tradingview_response: record.tradingview_response,
+          performed_by: adminUser.id,
+          indicator_access_id: (upsertedData as any)?.[index]?.id || null,
+          notes: `Asignación masiva - ${duration}`
+        }));
+        
+        const { error: logError } = await supabase
+          .from('indicator_access_log')
+          .insert(logRecords as any);
+        
+        if (logError) {
+          console.error('⚠️ Error guardando LOG:', logError);
+        } else {
+          console.log(`✅ ${logRecords.length} operaciones en LOG de auditoría`);
+        }
       }
     }
 

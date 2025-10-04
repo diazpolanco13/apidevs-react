@@ -37,13 +37,15 @@ export default function IndicatorSelectionStep({
       const response = await fetch('/api/admin/indicators');
       if (response.ok) {
         const data = await response.json();
-        // Solo indicadores activos
+        console.log('📊 Indicadores recibidos:', data.indicators);
+        // Solo indicadores activos (el status en BD es 'activo' en español)
         setIndicators(
-          data.indicators?.filter((ind: Indicator) => ind.status === 'active') || []
+          data.indicators?.filter((ind: Indicator) => ind.status === 'activo') || []
         );
+        console.log('✅ Indicadores activos filtrados:', data.indicators?.filter((ind: Indicator) => ind.status === 'activo').length || 0);
       }
     } catch (error) {
-      console.error('Error cargando indicadores:', error);
+      console.error('❌ Error cargando indicadores:', error);
     } finally {
       setLoading(false);
     }

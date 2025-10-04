@@ -5,6 +5,8 @@ import { CheckCircle2 } from 'lucide-react';
 import UserSelectionStep from './UserSelectionStep';
 import IndicatorSelectionStep from './IndicatorSelectionStep';
 import ConfigurationStep from './ConfigurationStep';
+import BulkOperationResultModal from './BulkOperationResultModal';
+import BulkOperationProgressModal from './BulkOperationProgressModal';
 
 type User = {
   id: string;
@@ -34,6 +36,12 @@ export default function BulkAssignmentTab() {
   const [selectedIndicators, setSelectedIndicators] = useState<Indicator[]>([]);
   const [durationType, setDurationType] = useState<'7D' | '30D' | '1Y' | '1L'>('1Y');
   const [executing, setExecuting] = useState(false);
+  
+  // Modal state
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [operationSuccess, setOperationSuccess] = useState(false);
+  const [operationSummary, setOperationSummary] = useState<any>(null);
+  const [operationError, setOperationError] = useState<string | undefined>(undefined);
 
   const steps = [
     { number: 1, title: 'Seleccionar Usuarios', description: 'Filtrar y elegir usuarios' },
@@ -70,30 +78,59 @@ export default function BulkAssignmentTab() {
       const result = await response.json();
 
       if (response.ok) {
-        alert(
-          `✅ Operación masiva completada!\n\n` +
-            `Exitosas: ${result.summary?.successful || 0}\n` +
-            `Fallidas: ${result.summary?.failed || 0}\n` +
-            `Total: ${result.summary?.total || 0}`
-        );
+        // Mostrar modal de éxito
+        setOperationSuccess(true);
+        setOperationSummary(result.summary);
+        setOperationError(undefined);
+        setShowResultModal(true);
 
-        // Reset wizard
-        setCurrentStep(1);
-        setSelectedUsers([]);
-        setSelectedIndicators([]);
+        // Reset wizard después de cerrar modal
+        setTimeout(() => {
+          setCurrentStep(1);
+          setSelectedUsers([]);
+          setSelectedIndicators([]);
+        }, 500);
       } else {
-        alert(`❌ Error: ${result.error || 'Error desconocido'}`);
+        // Mostrar modal de error
+        setOperationSuccess(false);
+        setOperationSummary(null);
+        setOperationError(result.error || 'Error desconocido');
+        setShowResultModal(true);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error ejecutando operación masiva:', error);
-      alert('❌ Error ejecutando operación masiva');
+      // Mostrar modal de error de conexión
+      setOperationSuccess(false);
+      setOperationSummary(null);
+      setOperationError('Error de conexión. Por favor, intenta de nuevo.');
+      setShowResultModal(true);
     } finally {
       setExecuting(false);
     }
   };
 
+  const totalOperations = selectedUsers.length * selectedIndicators.length;
+
   return (
-    <div className="space-y-6">
+    <>
+      {/* Modal de progreso durante la ejecución */}
+      <BulkOperationProgressModal
+        isOpen={executing}
+        totalOperations={totalOperations}
+        usersCount={selectedUsers.length}
+        indicatorsCount={selectedIndicators.length}
+      />
+
+      {/* Result Modal */}
+      <BulkOperationResultModal
+        isOpen={showResultModal}
+        onClose={() => setShowResultModal(false)}
+        summary={operationSummary}
+        isSuccess={operationSuccess}
+        errorMessage={operationError}
+      />
+
+      <div className="space-y-6">
       {/* Header */}
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
         <div className="flex items-center gap-4 mb-6">
@@ -232,6 +269,7 @@ export default function BulkAssignmentTab() {
         )}
       </div>
     </div>
+    </>
   );
 }
 
