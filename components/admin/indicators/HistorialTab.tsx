@@ -1,0 +1,555 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { 
+  Search, 
+  Calendar, 
+  TrendingUp, 
+  Users, 
+  Activity,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  Download
+} from 'lucide-react';
+
+type AccessRecord = {
+  id: string;
+  status: string;
+  granted_at: string | null;
+  expires_at: string | null;
+  revoked_at: string | null;
+  duration_type: string | null;
+  access_source: string;
+  error_message: string | null;
+  tradingview_response: any;
+  renewal_count: number;
+  last_renewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+  user: {
+    id: string;
+    email: string;
+    full_name: string | null;
+    tradingview_username: string | null;
+  } | null;
+  indicator: {
+    id: string;
+    name: string;
+    pine_id: string;
+    category: string;
+    access_tier: string;
+  } | null;
+  granted_by_user: {
+    id: string;
+    email: string;
+    full_name: string | null;
+  } | null;
+  revoked_by_user: {
+    id: string;
+    email: string;
+    full_name: string | null;
+  } | null;
+};
+
+type AccessStats = {
+  period_days: number;
+  total_operations: number;
+  successful_operations: number;
+  failed_operations: number;
+  success_rate: number;
+  unique_users: number;
+  unique_indicators: number;
+  active_accesses: number;
+  expired_accesses: number;
+  revoked_accesses: number;
+  by_source: {
+    manual: number;
+    purchase: number;
+    trial: number;
+    bulk: number;
+    renewal: number;
+    promo: number;
+    admin_bulk: number;
+  };
+  by_operation: {
+    grants: number;
+    revokes: number;
+    renewals: number;
+  };
+};
+
+export default function HistorialTab() {
+  const [stats, setStats] = useState<AccessStats | null>(null);
+  const [records, setRecords] = useState<AccessRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingRecords, setLoadingRecords] = useState(false);
+  
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit] = useState(50);
+  
+  // Filtros
+  const [filterSource, setFilterSource] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Cargar estadísticas al montar
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  // Cargar registros cuando cambien filtros o página
+  useEffect(() => {
+    loadRecords();
+  }, [currentPage, filterSource, filterStatus, filterDateFrom, filterDateTo]);
+
+  const loadStats = async () => {
+    try {
+      const response = await fetch('/api/admin/access-stats?period=30');
+      const data = await response.json();
+      
+      if (data.success !== false) {
+        setStats(data);
+      }
+    } catch (error) {
+      console.error('Error cargando estadísticas:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadRecords = async () => {
+    setLoadingRecords(true);
+    try {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: limit.toString()
+      });
+
+      if (filterSource) params.append('access_source', filterSource);
+      if (filterStatus) params.append('status', filterStatus);
+      if (filterDateFrom) params.append('date_from', filterDateFrom);
+      if (filterDateTo) params.append('date_to', filterDateTo);
+
+      const response = await fetch(`/api/admin/access-audit?${params}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setRecords(data.records);
+        setTotalPages(data.totalPages);
+        setTotal(data.total);
+      }
+    } catch (error) {
+      console.error('Error cargando registros:', error);
+    } finally {
+      setLoadingRecords(false);
+    }
+  };
+
+  const clearFilters = () => {
+    setFilterSource('');
+    setFilterStatus('');
+    setFilterDateFrom('');
+    setFilterDateTo('');
+    setCurrentPage(1);
+  };
+
+  const getStatusBadge = (status: string) => {
+    const badges: Record<string, { bg: string; text: string; icon: any }> = {
+      active: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', icon: CheckCircle2 },
+      granted: { bg: 'bg-blue-500/20', text: 'text-blue-400', icon: CheckCircle2 },
+      pending: { bg: 'bg-amber-500/20', text: 'text-amber-400', icon: Clock },
+      expired: { bg: 'bg-gray-500/20', text: 'text-gray-400', icon: Clock },
+      revoked: { bg: 'bg-red-500/20', text: 'text-red-400', icon: XCircle },
+      failed: { bg: 'bg-red-500/20', text: 'text-red-400', icon: XCircle }
+    };
+
+    const badge = badges[status] || badges.pending;
+    const Icon = badge.icon;
+
+    return (
+      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}>
+        <Icon className="w-3 h-3" />
+        {status}
+      </span>
+    );
+  };
+
+  const getSourceBadge = (source: string) => {
+    const colors: Record<string, string> = {
+      manual: 'bg-purple-500/20 text-purple-400',
+      purchase: 'bg-green-500/20 text-green-400',
+      trial: 'bg-blue-500/20 text-blue-400',
+      bulk: 'bg-orange-500/20 text-orange-400',
+      admin_bulk: 'bg-orange-500/20 text-orange-400',
+      renewal: 'bg-cyan-500/20 text-cyan-400',
+      promo: 'bg-pink-500/20 text-pink-400'
+    };
+
+    return (
+      <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${colors[source] || 'bg-gray-500/20 text-gray-400'}`}>
+        {source}
+      </span>
+    );
+  };
+
+  const formatDate = (date: string | null) => {
+    if (!date) return '-';
+    return new Date(date).toLocaleString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-apidevs-primary mx-auto mb-4"></div>
+          <p className="text-gray-400">Cargando historial...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Activity className="w-8 h-8 text-apidevs-primary" />
+              <span className="text-xs text-gray-400">Últimos 30 días</span>
+            </div>
+            <div className="text-3xl font-bold text-white mb-1">
+              {stats.total_operations.toLocaleString()}
+            </div>
+            <div className="text-sm text-gray-400">Total Operaciones</div>
+            <div className="mt-2 text-xs text-emerald-400">
+              {stats.success_rate}% tasa de éxito
+            </div>
+          </div>
+
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+              <span className="text-xs text-gray-400">Activos ahora</span>
+            </div>
+            <div className="text-3xl font-bold text-white mb-1">
+              {stats.active_accesses.toLocaleString()}
+            </div>
+            <div className="text-sm text-gray-400">Accesos Activos</div>
+            <div className="mt-2 text-xs text-gray-400">
+              {stats.expired_accesses} expirados (7d)
+            </div>
+          </div>
+
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Users className="w-8 h-8 text-blue-400" />
+              <span className="text-xs text-gray-400">Únicos</span>
+            </div>
+            <div className="text-3xl font-bold text-white mb-1">
+              {stats.unique_users.toLocaleString()}
+            </div>
+            <div className="text-sm text-gray-400">Usuarios Afectados</div>
+            <div className="mt-2 text-xs text-gray-400">
+              {stats.unique_indicators} indicadores
+            </div>
+          </div>
+
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <TrendingUp className="w-8 h-8 text-purple-400" />
+              <span className="text-xs text-gray-400">Distribución</span>
+            </div>
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-400">Manual:</span>
+                <span className="text-white font-medium">{stats.by_source.manual + stats.by_source.admin_bulk}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-400">Compras:</span>
+                <span className="text-white font-medium">{stats.by_source.purchase}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-400">Renovaciones:</span>
+                <span className="text-white font-medium">{stats.by_operation.renewals}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filtros */}
+      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 text-sm font-medium text-white hover:text-apidevs-primary transition-colors"
+          >
+            <Filter className="w-4 h-4" />
+            Filtros
+            {(filterSource || filterStatus || filterDateFrom || filterDateTo) && (
+              <span className="ml-2 px-2 py-0.5 bg-apidevs-primary/20 text-apidevs-primary rounded-full text-xs">
+                Activos
+              </span>
+            )}
+          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={clearFilters}
+              className="text-xs text-gray-400 hover:text-white transition-colors"
+            >
+              Limpiar filtros
+            </button>
+            <button
+              onClick={loadRecords}
+              className="flex items-center gap-1 px-3 py-1 bg-apidevs-primary/10 hover:bg-apidevs-primary/20 text-apidevs-primary rounded-lg text-xs transition-colors"
+            >
+              <Activity className="w-3 h-3" />
+              Actualizar
+            </button>
+          </div>
+        </div>
+
+        {showFilters && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-4 border-t border-gray-700/50">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Fuente de Acceso</label>
+              <select
+                value={filterSource}
+                onChange={(e) => {
+                  setFilterSource(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-apidevs-primary"
+              >
+                <option value="">Todas</option>
+                <option value="manual">Manual</option>
+                <option value="admin_bulk">Admin Bulk</option>
+                <option value="purchase">Compra</option>
+                <option value="trial">Trial</option>
+                <option value="renewal">Renovación</option>
+                <option value="promo">Promoción</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Estado</label>
+              <select
+                value={filterStatus}
+                onChange={(e) => {
+                  setFilterStatus(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-apidevs-primary"
+              >
+                <option value="">Todos</option>
+                <option value="active">Activo</option>
+                <option value="granted">Concedido</option>
+                <option value="pending">Pendiente</option>
+                <option value="expired">Expirado</option>
+                <option value="revoked">Revocado</option>
+                <option value="failed">Fallido</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Fecha Desde</label>
+              <input
+                type="date"
+                value={filterDateFrom}
+                onChange={(e) => {
+                  setFilterDateFrom(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-apidevs-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Fecha Hasta</label>
+              <input
+                type="date"
+                value={filterDateTo}
+                onChange={(e) => {
+                  setFilterDateTo(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-apidevs-primary"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Tabla de Registros */}
+      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl overflow-hidden">
+        <div className="p-4 border-b border-gray-700/50">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white">
+              Historial de Operaciones
+            </h3>
+            <div className="text-sm text-gray-400">
+              {total.toLocaleString()} registros totales
+            </div>
+          </div>
+        </div>
+
+        {loadingRecords ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-apidevs-primary"></div>
+          </div>
+        ) : records.length === 0 ? (
+          <div className="text-center py-12">
+            <Calendar className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-400">No hay registros para mostrar</p>
+            <p className="text-sm text-gray-500 mt-1">
+              Prueba ajustando los filtros
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-900/50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Fecha
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Usuario
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Indicador
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Fuente
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Duración
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Expira
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700/50">
+                  {records.map((record) => (
+                    <tr key={record.id} className="hover:bg-gray-700/30 transition-colors">
+                      <td className="px-4 py-3 text-sm text-gray-300">
+                        {formatDate(record.created_at)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-sm text-white font-medium">
+                          {record.user?.email || 'N/A'}
+                        </div>
+                        {record.user?.tradingview_username && (
+                          <div className="text-xs text-gray-400">
+                            @{record.user.tradingview_username}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-sm text-white">
+                          {record.indicator?.name || 'N/A'}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {record.indicator?.access_tier}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {getStatusBadge(record.status)}
+                      </td>
+                      <td className="px-4 py-3">
+                        {getSourceBadge(record.access_source)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-300">
+                        {record.duration_type || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-300">
+                        {formatDate(record.expires_at)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Paginación */}
+            <div className="px-4 py-3 border-t border-gray-700/50 flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                Página {currentPage} de {totalPages} · Mostrando {records.length} de {total.toLocaleString()} registros
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg bg-gray-700/50 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4 text-white" />
+                </button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                          currentPage === pageNum
+                            ? 'bg-apidevs-primary text-white'
+                            : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg bg-gray-700/50 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4 text-white" />
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
