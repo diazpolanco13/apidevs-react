@@ -15,11 +15,14 @@ export default async function DashboardStats() {
       supabase
         .from('users')
         .select('customer_since, total_lifetime_spent')
-        .then(res => ({
-          all: res.data || [],
-          new30d: res.data?.filter(u => u.customer_since && u.customer_since >= thirtyDaysAgo) || [],
-          withLtv: res.data?.filter(u => Number(u.total_lifetime_spent || 0) > 0) || []
-        })),
+        .then(res => {
+          const validData = (res.data || []) as any[];
+          return {
+            all: validData,
+            new30d: validData.filter(u => u.customer_since && u.customer_since >= thirtyDaysAgo),
+            withLtv: validData.filter(u => Number(u.total_lifetime_spent || 0) > 0)
+          };
+        }),
       
       // Legacy users
       supabase

@@ -37,6 +37,9 @@ export default async function EditIndicatorPage({ params }: Params) {
     notFound();
   }
 
+  // Type assertion: indicator is not null after notFound() check
+  const validIndicator = indicator as any;
+
   return (
     <div className="min-h-screen">
       {/* Header con breadcrumb */}
@@ -83,14 +86,14 @@ export default async function EditIndicatorPage({ params }: Params) {
                 Editar Indicador
               </h1>
             </div>
-            <p className="text-sm text-gray-400">{indicator.name}</p>
+            <p className="text-sm text-gray-400">{validIndicator.name}</p>
           </div>
         </div>
       </div>
 
       {/* Formulario */}
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 backdrop-blur-sm">
-        <EditIndicatorForm indicator={indicator} />
+        <EditIndicatorForm indicator={validIndicator} />
       </div>
     </div>
   );

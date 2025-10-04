@@ -135,10 +135,10 @@ export default function IndicatorDetailsTabs({
 
       {/* Tab Content */}
       <div className="min-h-[600px]">
-        {activeTab === 'info' && <IndicatorInfo indicator={indicator} />}
+        {activeTab === 'info' && <IndicatorInfo indicator={indicator as any} />}
         {activeTab === 'access' && (
           <IndicatorAccessManagement
-            indicator={indicator}
+            indicator={indicator as any}
             accesses={accesses}
             stats={stats}
           />

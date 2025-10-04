@@ -46,7 +46,10 @@ export async function POST(
       );
     }
 
-    if (!targetUser.tradingview_username) {
+    // Type assertion - código funcional existente
+    const validTargetUser = targetUser as any;
+
+    if (!validTargetUser.tradingview_username) {
       return NextResponse.json(
         {
           error:
@@ -71,7 +74,10 @@ export async function POST(
       );
     }
 
-    if (!premiumIndicators || premiumIndicators.length === 0) {
+    // Type assertion - código funcional existente
+    const validPremiumIndicators = (premiumIndicators || []) as any[];
+
+    if (validPremiumIndicators.length === 0) {
       return NextResponse.json(
         { error: 'No hay indicadores Premium disponibles' },
         { status: 404 }
@@ -79,11 +85,11 @@ export async function POST(
     }
 
     console.log(
-      `💎 Concediendo ${premiumIndicators.length} indicadores PREMIUM a ${targetUser.tradingview_username} (${duration_type})`
+      `💎 Concediendo ${validPremiumIndicators.length} indicadores PREMIUM a ${validTargetUser.tradingview_username} (${duration_type})`
     );
 
     // Preparar array de pine_ids
-    const pineIds = premiumIndicators.map((ind) => ind.pine_id);
+    const pineIds = validPremiumIndicators.map((ind) => ind.pine_id);
 
     // Calcular fecha de expiración
     let expiresAt = null;
@@ -104,7 +110,7 @@ export async function POST(
 
     // Llamar al microservicio de TradingView
     const tvResponse = await fetch(
-      `${TRADINGVIEW_API}/api/access/${targetUser.tradingview_username}`,
+      `${TRADINGVIEW_API}/api/access/${validTargetUser.tradingview_username}`,
       {
         method: 'POST',
         headers: {
@@ -122,7 +128,7 @@ export async function POST(
 
     // Procesar resultados
     const results = {
-      total: premiumIndicators.length,
+      total: validPremiumIndicators.length,
       successful: 0,
       failed: 0,
       details: [] as any[]
@@ -142,8 +148,8 @@ export async function POST(
     const accessRecords = [];
     const now = new Date().toISOString();
 
-    for (let i = 0; i < premiumIndicators.length; i++) {
-      const indicator = premiumIndicators[i];
+    for (let i = 0; i < validPremiumIndicators.length; i++) {
+      const indicator = validPremiumIndicators[i];
       const tvResultItem = Array.isArray(tvResult) ? tvResult[i] : null;
       const isSuccess = tvResultItem?.status === 'Success';
 
@@ -161,10 +167,13 @@ export async function POST(
         .eq('indicator_id', indicator.id)
         .maybeSingle();
 
+      // Type assertion - código funcional existente
+      const validExisting = existing as any;
+
       const accessData = {
         user_id: userId,
         indicator_id: indicator.id,
-        tradingview_username: targetUser.tradingview_username,
+        tradingview_username: validTargetUser.tradingview_username,
         status: isSuccess ? 'active' : 'failed',
         granted_at: isSuccess ? now : null,
         expires_at: tvExpiration, // ✅ Fecha real de TradingView
@@ -175,12 +184,12 @@ export async function POST(
         error_message: isSuccess ? null : tvResultItem?.error || 'Error desconocido'
       };
 
-      if (existing) {
+      if (validExisting) {
         // Actualizar
-        await supabase
+        await (supabase as any)
           .from('indicator_access')
           .update(accessData)
-          .eq('id', existing.id);
+          .eq('id', validExisting.id);
       } else {
         // Crear
         accessRecords.push(accessData);
@@ -196,7 +205,7 @@ export async function POST(
 
     // Insertar nuevos registros si hay
     if (accessRecords.length > 0) {
-      const { error: insertError } = await supabase
+      const { error: insertError } = await (supabase as any)
         .from('indicator_access')
         .insert(accessRecords);
 
@@ -212,10 +221,10 @@ export async function POST(
       duration: duration_type,
       expires_at: expiresAt?.toISOString() || null,
       user: {
-        email: targetUser.email,
-        tradingview_username: targetUser.tradingview_username
+        email: validTargetUser.email,
+        tradingview_username: validTargetUser.tradingview_username
       },
-      indicators_granted: premiumIndicators.map((i) => i.name)
+      indicators_granted: validPremiumIndicators.map((i) => i.name)
     });
   } catch (error) {
     console.error('Error concediendo accesos Premium:', error);

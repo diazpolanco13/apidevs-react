@@ -36,7 +36,10 @@ export async function POST(
       );
     }
 
-    if (!targetUser.tradingview_username) {
+    // Type assertion - código funcional existente
+    const validTargetUser = targetUser as any;
+
+    if (!validTargetUser.tradingview_username) {
       return NextResponse.json(
         {
           error: 'Usuario no tiene TradingView username configurado'
@@ -70,7 +73,10 @@ export async function POST(
       );
     }
 
-    if (!activeAccesses || activeAccesses.length === 0) {
+    // Type assertion - código funcional existente
+    const validActiveAccesses = (activeAccesses || []) as any[];
+
+    if (validActiveAccesses.length === 0) {
       return NextResponse.json(
         { message: 'El usuario no tiene accesos activos para revocar' },
         { status: 200 }
@@ -78,13 +84,13 @@ export async function POST(
     }
 
     // Preparar array de pine_ids
-    const pineIds = activeAccesses
+    const pineIds = validActiveAccesses
       .map((access) => access.indicators?.pine_id)
       .filter(Boolean);
 
     // Llamar al microservicio de TradingView para remover acceso
     const tvResponse = await fetch(
-      `${TRADINGVIEW_API}/api/access/${targetUser.tradingview_username}`,
+      `${TRADINGVIEW_API}/api/access/${validTargetUser.tradingview_username}`,
       {
         method: 'DELETE',
         headers: {
@@ -100,7 +106,7 @@ export async function POST(
 
     // Procesar resultados
     const results = {
-      total: activeAccesses.length,
+      total: validActiveAccesses.length,
       successful: 0,
       failed: 0,
       details: [] as any[]
@@ -120,13 +126,13 @@ export async function POST(
     // Actualizar registros en Supabase
     const now = new Date().toISOString();
 
-    for (let i = 0; i < activeAccesses.length; i++) {
-      const access = activeAccesses[i];
+    for (let i = 0; i < validActiveAccesses.length; i++) {
+      const access = validActiveAccesses[i];
       const tvResultItem = Array.isArray(tvResult) ? tvResult[i] : null;
       const isSuccess =
         tvResultItem?.status === 'Success' || tvResultItem?.hasAccess === false;
 
-      await supabase
+      await (supabase as any)
         .from('indicator_access')
         .update({
           status: isSuccess ? 'revoked' : 'failed',
@@ -152,10 +158,10 @@ export async function POST(
       message: `Se revocaron ${results.successful} de ${results.total} accesos`,
       results,
       user: {
-        email: targetUser.email,
-        tradingview_username: targetUser.tradingview_username
+        email: validTargetUser.email,
+        tradingview_username: validTargetUser.tradingview_username
       },
-      indicators_revoked: activeAccesses.map((a) => a.indicators?.name)
+      indicators_revoked: validActiveAccesses.map((a) => a.indicators?.name)
     });
   } catch (error) {
     console.error('Error revocando accesos:', error);

@@ -317,7 +317,7 @@ export default function IndicatorsTable({ initialIndicators }: Props) {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center">
-                        <span className="text-2xl font-bold text-emerald-400">
+                        <span className="text-base font-semibold text-emerald-400">
                           {indicator.active_users || 0}
                         </span>
                       </div>

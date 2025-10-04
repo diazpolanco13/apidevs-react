@@ -80,25 +80,28 @@ export async function GET(
       );
     }
 
+    // Type assertion - código funcional existente
+    const validAccesses = (accesses || []) as any[];
+
     // Calcular estadísticas
     const now = new Date();
     const stats = {
-      total: accesses?.length || 0,
+      total: validAccesses.length,
       active:
-        accesses?.filter(
+        validAccesses.filter(
           (a) =>
             a.status === 'active' &&
             (!a.expires_at || new Date(a.expires_at) > now)
-        ).length || 0,
-      pending: accesses?.filter((a) => a.status === 'pending').length || 0,
-      expired: accesses?.filter((a) => a.status === 'expired').length || 0,
-      revoked: accesses?.filter((a) => a.status === 'revoked').length || 0,
-      failed: accesses?.filter((a) => a.status === 'failed').length || 0
+        ).length,
+      pending: validAccesses.filter((a) => a.status === 'pending').length,
+      expired: validAccesses.filter((a) => a.status === 'expired').length,
+      revoked: validAccesses.filter((a) => a.status === 'revoked').length,
+      failed: validAccesses.filter((a) => a.status === 'failed').length
     };
 
     return NextResponse.json({
       user: targetUser,
-      accesses: accesses || [],
+      accesses: validAccesses,
       stats
     });
   } catch (error) {

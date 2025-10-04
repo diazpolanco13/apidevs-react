@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Search, 
   Calendar, 
@@ -92,7 +92,7 @@ export default function HistorialTab() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [limit] = useState(50);
+  const [limit] = useState(20);
   
   // Filtros
   const [filterSource, setFilterSource] = useState('');
@@ -107,32 +107,49 @@ export default function HistorialTab() {
   const [exportError, setExportError] = useState<string | null>(null);
   const [exportSuccess, setExportSuccess] = useState(false);
 
+  // Refs para evitar llamadas duplicadas
+  const statsLoadedRef = useRef(false);
+  const loadingStatsRef = useRef(false);
+  const loadingRecordsRef = useRef(false);
+
   // Cargar estadísticas al montar
   useEffect(() => {
-    loadStats();
+    if (!statsLoadedRef.current && !loadingStatsRef.current) {
+      loadStats();
+    }
   }, []);
 
   // Cargar registros cuando cambien filtros o página
   useEffect(() => {
-    loadRecords();
+    if (!loadingRecordsRef.current) {
+      loadRecords();
+    }
   }, [currentPage, filterSource, filterStatus, filterDateFrom, filterDateTo, searchQuery]);
 
   const loadStats = async () => {
+    if (loadingStatsRef.current) return;
+    
+    loadingStatsRef.current = true;
     try {
       const response = await fetch('/api/admin/access-stats?period=30');
       const data = await response.json();
       
       if (data.success !== false) {
         setStats(data);
+        statsLoadedRef.current = true;
       }
     } catch (error) {
       console.error('Error cargando estadísticas:', error);
     } finally {
       setLoading(false);
+      loadingStatsRef.current = false;
     }
   };
 
   const loadRecords = async () => {
+    if (loadingRecordsRef.current) return;
+    
+    loadingRecordsRef.current = true;
     setLoadingRecords(true);
     try {
       const params = new URLSearchParams({
@@ -158,6 +175,7 @@ export default function HistorialTab() {
       console.error('Error cargando registros:', error);
     } finally {
       setLoadingRecords(false);
+      loadingRecordsRef.current = false;
     }
   };
 

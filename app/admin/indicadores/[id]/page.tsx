@@ -55,19 +55,23 @@ export default async function IndicatorDetailPage({ params }: Params) {
     .eq('indicator_id', params.id)
     .order('created_at', { ascending: false });
 
+  // Type assertion for accesses
+  const validAccesses = (accesses || []) as any[];
+  const validIndicator = indicator as any;
+
   // Calcular estadísticas
   const stats = {
-    total_accesses: accesses?.length || 0,
+    total_accesses: validAccesses.length,
     active_accesses:
-      accesses?.filter(
+      validAccesses.filter(
         (a) =>
           a.status === 'active' &&
           (!a.expires_at || new Date(a.expires_at) > new Date())
-      ).length || 0,
-    pending_accesses: accesses?.filter((a) => a.status === 'pending').length || 0,
-    expired_accesses: accesses?.filter((a) => a.status === 'expired').length || 0,
-    revoked_accesses: accesses?.filter((a) => a.status === 'revoked').length || 0,
-    failed_accesses: accesses?.filter((a) => a.status === 'failed').length || 0
+      ).length,
+    pending_accesses: validAccesses.filter((a) => a.status === 'pending').length,
+    expired_accesses: validAccesses.filter((a) => a.status === 'expired').length,
+    revoked_accesses: validAccesses.filter((a) => a.status === 'revoked').length,
+    failed_accesses: validAccesses.filter((a) => a.status === 'failed').length
   };
 
   return (
@@ -97,36 +101,36 @@ export default async function IndicatorDetailPage({ params }: Params) {
         <div className="flex items-start justify-between">
           <div>
             <div className="mb-2 flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-white">{indicator.name}</h1>
+              <h1 className="text-3xl font-bold text-white">{validIndicator.name}</h1>
               {/* Badge de categoría */}
               <span
                 className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${
-                  indicator.category === 'indicador'
+                  validIndicator.category === 'indicador'
                     ? 'border-blue-500/30 bg-blue-500/20 text-blue-400'
-                    : indicator.category === 'escaner'
+                    : validIndicator.category === 'escaner'
                       ? 'border-cyan-500/30 bg-cyan-500/20 text-cyan-400'
                       : 'border-purple-500/30 bg-purple-500/20 text-purple-400'
                 }`}
               >
-                {indicator.category}
+                {validIndicator.category}
               </span>
               {/* Badge de status */}
               <span
                 className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${
-                  indicator.status === 'activo'
+                  validIndicator.status === 'activo'
                     ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400'
-                    : indicator.status === 'desactivado'
+                    : validIndicator.status === 'desactivado'
                       ? 'border-red-500/30 bg-red-500/20 text-red-400'
                       : 'border-yellow-500/30 bg-yellow-500/20 text-yellow-400'
                 }`}
               >
-                {indicator.status}
+                {validIndicator.status}
               </span>
             </div>
             <p className="text-sm text-gray-400">
               Pine ID:{' '}
               <code className="rounded bg-zinc-800 px-2 py-1 text-xs text-emerald-400">
-                {indicator.pine_id}
+                {validIndicator.pine_id}
               </code>
             </p>
           </div>
@@ -242,8 +246,8 @@ export default async function IndicatorDetailPage({ params }: Params) {
 
       {/* Tabs de contenido */}
       <IndicatorDetailsTabs
-        indicator={indicator}
-        accesses={accesses || []}
+        indicator={validIndicator}
+        accesses={validAccesses}
         stats={stats}
       />
     </div>

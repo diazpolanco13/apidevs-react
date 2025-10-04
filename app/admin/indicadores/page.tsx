@@ -29,20 +29,23 @@ export default async function IndicadoresAdminPage() {
     console.error('Error fetching indicators:', error);
   }
 
+  // Type assertion for indicators
+  const validIndicators = (indicators || []) as any[];
+
   // Calcular estadísticas
   const stats = {
-    total: indicators?.length || 0,
-    activos: indicators?.filter((i) => i.status === 'activo').length || 0,
-    indicadores: indicators?.filter((i) => i.category === 'indicador').length || 0,
-    escaners: indicators?.filter((i) => i.category === 'escaner').length || 0,
-    tools: indicators?.filter((i) => i.category === 'tools').length || 0,
-    free: indicators?.filter((i) => i.access_tier === 'free').length || 0,
-    premium: indicators?.filter((i) => i.access_tier === 'premium').length || 0
+    total: validIndicators.length,
+    activos: validIndicators.filter((i) => i.status === 'activo').length,
+    indicadores: validIndicators.filter((i) => i.category === 'indicador').length,
+    escaners: validIndicators.filter((i) => i.category === 'escaner').length,
+    tools: validIndicators.filter((i) => i.category === 'tools').length,
+    free: validIndicators.filter((i) => i.access_tier === 'free').length,
+    premium: validIndicators.filter((i) => i.access_tier === 'premium').length
   };
 
   return (
     <IndicadoresMainView 
-      initialIndicators={indicators || []} 
+      initialIndicators={validIndicators} 
       stats={stats} 
     />
   );

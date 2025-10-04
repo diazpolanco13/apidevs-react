@@ -130,7 +130,10 @@ export const updateSession = async (request: NextRequest) => {
       
       // Log in development only
       if (process.env.NODE_ENV === 'development') {
-        console.log(`⚡ Skipped auth check for ${pathname} (no cookies) - ${Date.now() - startTime}ms`);
+        const hasCookie = !!request.cookies.get('sb-zzieiqxlxfydvexalbsr-auth-token');
+        if (hasCookie) {
+          console.log(`⚡ Auth skipped for ${pathname} (public route, cookie present)`);
+        }
       }
       
       return response;
@@ -144,9 +147,7 @@ export const updateSession = async (request: NextRequest) => {
     if (authToken) {
       const cached = sessionCache.get(authToken);
       if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`⚡ Using cached auth for ${pathname} - ${Date.now() - startTime}ms`);
-        }
+        // Using cached auth
         return response;
       }
     }
@@ -199,7 +200,7 @@ export const updateSession = async (request: NextRequest) => {
       error.message?.includes('refresh_token_not_found') ||
       error.message?.includes('invalid_grant')
     )) {
-      console.warn('Auth error requiring cookie reset:', error.message);
+      console.warn('⚠️ COOKIE CORRUPTA DETECTADA - Limpiando cookies:', error.message);
       
       // Clear the invalid session cookies
       const clearedResponse = NextResponse.next({
@@ -216,10 +217,17 @@ export const updateSession = async (request: NextRequest) => {
       return clearedResponse;
     }
 
-    // Log successful auth checks in development
-    if (process.env.NODE_ENV === 'development' && user) {
-      console.log(`✅ Auth verified for ${pathname} - ${Date.now() - startTime}ms`);
+    // Log otros errores de auth en desarrollo (para detectar cookies problemáticas)
+    if (error && process.env.NODE_ENV === 'development' && authToken) {
+      console.warn('⚠️ Auth error (cookie presente pero inválida):', {
+        path: pathname,
+        error: error.message,
+        cookiePresent: !!authToken
+      });
     }
+
+    // Log successful auth checks in development
+    // Auth verified
 
     // Track visitor para páginas públicas (no admin, no auth)
     const shouldTrack = !pathname.startsWith('/admin') && 

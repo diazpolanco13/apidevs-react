@@ -144,7 +144,7 @@ async function main() {
   }
 
   // Calcular tier para cada cliente
-  for (const stats of customerStatsMap.values()) {
+  for (const stats of Array.from(Array.from(customerStatsMap.values()))) {
     stats.tier = calculateTier(stats.total_spent);
   }
 
@@ -160,7 +160,7 @@ async function main() {
     free: 0
   };
 
-  for (const stats of customerStatsMap.values()) {
+  for (const stats of Array.from(customerStatsMap.values())) {
     tierDistribution[stats.tier as keyof typeof tierDistribution]++;
   }
 
@@ -175,7 +175,7 @@ async function main() {
   console.log('═══════════════════════════════════════\n');
 
   // 4. Top 10 clientes
-  const topClients = Array.from(customerStatsMap.values())
+  const topClients = Array.from(Array.from(customerStatsMap.values()))
     .sort((a, b) => b.total_spent - a.total_spent)
     .slice(0, 10);
 
@@ -213,7 +213,7 @@ async function main() {
   const updates = [];
   let notFound = 0;
 
-  for (const stats of customerStatsMap.values()) {
+  for (const stats of Array.from(customerStatsMap.values())) {
     const userId = emailToIdMap.get(stats.email);
     
     if (!userId) {

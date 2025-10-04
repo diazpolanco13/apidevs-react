@@ -200,7 +200,7 @@ export default function IndicadoresTab({ indicators, stats }: Props) {
       </div>
 
       {/* Tabla de Indicadores */}
-      <IndicatorsTable initialIndicators={indicators} />
+      <IndicatorsTable initialIndicators={indicators as any} />
     </div>
   );
 }

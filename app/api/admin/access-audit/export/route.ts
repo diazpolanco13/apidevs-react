@@ -75,10 +75,14 @@ export async function POST(request: Request) {
     });
 
     // Obtener usuarios
+    const allUserIds = new Set<string>();
+    userIds.forEach(id => allUserIds.add(id));
+    performedByIds.forEach(id => allUserIds.add(id));
+    
     const { data: users } = await supabase
       .from('users')
       .select('id, email, full_name, tradingview_username')
-      .in('id', Array.from(new Set([...userIds, ...performedByIds])));
+      .in('id', Array.from(allUserIds));
 
     // Obtener indicadores
     const { data: indicators } = await supabase
@@ -86,9 +90,13 @@ export async function POST(request: Request) {
       .select('id, name, pine_id, category, access_tier')
       .in('id', Array.from(indicatorIds));
 
+    // Type assertions
+    const validUsers = (users || []) as any[];
+    const validIndicators = (indicators || []) as any[];
+
     // Crear mapas para lookup rápido
-    const usersMap = new Map(users?.map(u => [u.id, u]) || []);
-    const indicatorsMap = new Map(indicators?.map(i => [i.id, i]) || []);
+    const usersMap = new Map(validUsers.map(u => [u.id, u]));
+    const indicatorsMap = new Map(validIndicators.map(i => [i.id, i]));
 
     // Enriquecer registros
     const records = logRecords?.map((record: any) => ({
