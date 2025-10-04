@@ -26,13 +26,6 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    console.log(`✅ ${indicators?.length || 0} indicadores obtenidos`);
-    
-    // Debug: Ver access_tier de cada indicador
-    console.log('🔍 Access tier de indicadores:', 
-      indicators?.map((i: any) => ({ name: i.name, access_tier: i.access_tier }))
-    );
-
     // Calcular estadísticas
     const stats = {
       total: indicators?.length || 0,
@@ -43,8 +36,6 @@ export async function GET() {
       free: indicators?.filter((i: any) => i.access_tier === 'free').length || 0,
       premium: indicators?.filter((i: any) => i.access_tier === 'premium').length || 0
     };
-    
-    console.log('📊 Stats calculadas:', stats);
 
     return NextResponse.json({ 
       indicators: indicators || [],
@@ -118,7 +109,7 @@ export async function POST(req: Request) {
     }
 
     // Insertar indicador
-    const { data: indicator, error } = await supabase
+    const { data: indicator, error } = await (supabase as any)
       .from('indicators')
       .insert({
         pine_id,

@@ -60,7 +60,7 @@ export async function PUT(
     }
 
     // Actualizar indicador
-    const { data: indicator, error } = await supabase
+    const { data: indicator, error } = await (supabase as any)
       .from('indicators')
       .update({
         pine_id,

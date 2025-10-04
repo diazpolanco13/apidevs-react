@@ -32,12 +32,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('🔍 Obteniendo historial de accesos...');
-
     // Parsear query params
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
     const offset = (page - 1) * limit;
 
     // Filtros opcionales
@@ -157,52 +155,38 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    console.log(`✅ ${records?.length || 0} registros obtenidos de ${count || 0} totales`);
+    // Enriquecer registros con datos de usuarios e indicadores (OPTIMIZADO: bulk queries)
+    // Extraer IDs únicos
+    const userIds = Array.from(new Set((records || []).map((r: any) => r.user_id).filter(Boolean)));
+    const indicatorIds = Array.from(new Set((records || []).map((r: any) => r.indicator_id).filter(Boolean)));
+    const performedByIds = Array.from(new Set((records || []).map((r: any) => r.performed_by).filter(Boolean)));
+    const allUserIds = Array.from(new Set([...userIds, ...performedByIds]));
 
-    // Enriquecer registros con datos de usuarios e indicadores
-    const enrichedRecords = await Promise.all(
-      (records || []).map(async (record: any) => {
-        // Obtener datos del usuario (puede ser null si es legacy sin registro)
-        let user = null;
-        if (record.user_id) {
-          const { data: userData } = await supabase
-            .from('users')
+    // Hacer queries bulk
+    const [usersData, indicatorsData] = await Promise.all([
+      allUserIds.length > 0 
+        ? supabase.from('users')
             .select('id, email, full_name, tradingview_username')
-            .eq('id', record.user_id)
-            .maybeSingle();
-          user = userData;
-        }
-
-        // Obtener datos del indicador
-        let indicator = null;
-        if (record.indicator_id) {
-          const { data: indicatorData } = await supabase
-            .from('indicators')
+            .in('id', allUserIds)
+        : Promise.resolve({ data: [] }),
+      indicatorIds.length > 0
+        ? supabase.from('indicators')
             .select('id, name, pine_id, category, access_tier')
-            .eq('id', record.indicator_id)
-            .maybeSingle();
-          indicator = indicatorData;
-        }
+            .in('id', indicatorIds)
+        : Promise.resolve({ data: [] })
+    ]);
 
-        // Obtener datos del usuario que ejecutó la operación
-        let performedByUser = null;
-        if (record.performed_by) {
-          const { data: performedByData } = await supabase
-            .from('users')
-            .select('id, email, full_name')
-            .eq('id', record.performed_by)
-            .maybeSingle();
-          performedByUser = performedByData;
-        }
+    // Crear maps para lookup rápido
+    const usersMap = new Map((usersData.data || []).map((u: any) => [u.id, u]));
+    const indicatorsMap = new Map((indicatorsData.data || []).map((i: any) => [i.id, i]));
 
-        return {
-          ...record,
-          user,
-          indicator,
-          performed_by_user: performedByUser
-        };
-      })
-    );
+    // Enriquecer registros (sin queries adicionales)
+    const enrichedRecords = (records || []).map((record: any) => ({
+      ...record,
+      user: record.user_id ? usersMap.get(record.user_id) || null : null,
+      indicator: record.indicator_id ? indicatorsMap.get(record.indicator_id) || null : null,
+      performed_by_user: record.performed_by ? usersMap.get(record.performed_by) || null : null
+    }));
 
     // Calcular información de paginación
     const totalPages = count ? Math.ceil(count / limit) : 0;

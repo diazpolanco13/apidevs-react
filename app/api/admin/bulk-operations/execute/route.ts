@@ -56,13 +56,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log('🚀 Iniciando operación masiva:', {
-      users: user_ids.length,
-      indicators: indicator_ids.length,
-      total_operations: user_ids.length * indicator_ids.length,
-      duration,
-      operation_type
-    });
+    // Operación masiva iniciada
 
     // 1. Obtener datos de usuarios
     const { data: users, error: usersError } = await supabase
@@ -149,7 +143,6 @@ export async function POST(request: Request) {
             }
 
             // 🗑️ PASO 2: Revocar en TradingView
-            console.log(`🗑️ Revocando ${user.email} - ${indicator.name}`);
             const deleteResponse = await fetch(
               `${TRADINGVIEW_API}/api/access/${user.tradingview_username}`,
               {
@@ -304,8 +297,6 @@ export async function POST(request: Request) {
       if (insertError) {
         console.error('⚠️ Error guardando accesos en Supabase:', insertError);
       } else {
-        console.log(`✅ ${accessRecords.length} accesos guardados en Supabase`);
-        
         // 4.1 Guardar en LOG de auditoría (cada operación = nuevo registro)
         const logRecords = accessRecords.map((record: any, index: number) => ({
           user_id: record.user_id,
@@ -329,8 +320,6 @@ export async function POST(request: Request) {
         
         if (logError) {
           console.error('⚠️ Error guardando LOG:', logError);
-        } else {
-          console.log(`✅ ${logRecords.length} operaciones en LOG de auditoría`);
         }
       }
     }
@@ -376,21 +365,12 @@ export async function POST(request: Request) {
       
       if (revokeLogError) {
         console.error('⚠️ Error guardando LOG de revocaciones:', revokeLogError);
-      } else {
-        console.log(`✅ ${revokeLogRecords.length} revocaciones en LOG de auditoría`);
       }
     }
 
     // 5. Calcular resumen
     const successful = results.filter((r) => r.success).length;
     const failed = results.filter((r) => !r.success).length;
-
-    console.log('📊 Operación masiva completada:', {
-      total: results.length,
-      successful,
-      failed,
-      skipped_users: usersWithoutTV
-    });
 
     return NextResponse.json({
       success: true,

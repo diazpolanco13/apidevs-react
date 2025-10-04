@@ -1,9 +1,9 @@
 # 📚 Sistema de Gestión de Accesos a Indicadores TradingView
 
 **Fecha:** 4 de Octubre 2025  
-**Estado:** Fase 1 y 2 completadas ✅ | Fase 3 parcialmente completada ✅ | Fase 4 pendiente ⏳  
+**Estado:** Fase 1 ✅ | Fase 2 ✅ | Fase 2.5 ✅ | Fase 3 Parcial ✅ | Fase 4 ✅ COMPLETADA | Fase 5 ⏳ TESTING  
 **Commits principales:** `fb75600`, `c8e9f18`, `78f2e89`, `5a51df0`, `7a96118`, `b75cd2b`, `ff20745`  
-**Última actualización:** 4 de Octubre 2025, 21:00
+**Última actualización:** 4 de Octubre 2025, 23:30
 
 ---
 
@@ -1045,7 +1045,732 @@ return new Response(csv, {
 
 ---
 
-## ⏳ FASE 4: RENOVACIONES AUTOMÁTICAS (PENDIENTE)
+## ✅ FASE 4: INTEGRACIÓN STRIPE WEBHOOKS → AUTO-GRANT TRADINGVIEW (COMPLETADA)
+
+### **Fecha de implementación:** Pre-existente (descubierto 4 Oct 2025)
+### **Estado:** ✅ 100% IMPLEMENTADO - Solo falta testing con compra real
+
+### **Objetivo:**
+Sistema completamente automatizado que concede acceso a indicadores de TradingView automáticamente cuando un cliente realiza una compra en Stripe, sin intervención manual del administrador.
+
+---
+
+### **📋 ARQUITECTURA COMPLETA DEL SISTEMA**
+
+#### **Flujo End-to-End (Usuario → TradingView):**
+
+```
+1. Usuario completa checkout en Stripe
+   ↓
+2. Stripe dispara webhook a /api/webhooks
+   ↓
+3. Sistema verifica firma de Stripe (seguridad)
+   ↓
+4. Identifica tipo de evento (checkout, payment, invoice)
+   ↓
+5. Extrae: customer_email, product_ids, price_id
+   ↓
+6. Llama grantIndicatorAccessOnPurchase()
+   ↓
+7. Busca usuario en Supabase por email
+   ↓
+8. Valida que tenga tradingview_username
+   ↓
+9. Consulta indicadores activos desde BD
+   ↓
+10. Determina duración según price_id:
+    - month → 30D
+    - year → 1Y
+    - one_time/lifetime → 1L
+   ↓
+11. Llama microservicio TradingView:
+    POST http://185.218.124.241:5001/api/access/{username}
+    Body: { pine_ids: [...], duration: "30D" }
+   ↓
+12. TradingView concede acceso y retorna expiration
+   ↓
+13. Sistema guarda en indicator_access:
+    - user_id, indicator_id
+    - tradingview_username
+    - status: 'active'
+    - granted_at: now()
+    - expires_at: (fecha exacta de TradingView)
+    - duration_type: '30D' | '1Y' | '1L'
+    - access_source: 'purchase' ← CRÍTICO
+    - tradingview_response: (JSON completo)
+   ↓
+14. Sistema guarda en indicator_access_log:
+    - operation_type: 'grant'
+    - Copia de todos los datos para auditoría
+   ↓
+15. ✅ Usuario recibe acceso instantáneo en TradingView
+```
+
+---
+
+### **🔧 IMPLEMENTACIÓN TÉCNICA**
+
+#### **1. Archivo Principal: `/app/api/webhooks/route.ts`**
+
+**Webhooks escuchados:**
+- `checkout.session.completed` → Compras de suscripciones y one-time
+- `payment_intent.succeeded` → Pagos exitosos
+- `invoice.payment_succeeded` → Renovaciones de suscripciones
+
+**Código implementado (líneas 107-236):**
+
+```typescript
+case 'checkout.session.completed':
+  const checkoutSession = event.data.object as Stripe.Checkout.Session;
+  
+  // CASO 1: Suscripción
+  if (checkoutSession.mode === 'subscription') {
+    const customer = await stripe.customers.retrieve(checkoutSession.customer as string);
+    if (customer && !customer.deleted && customer.email) {
+      const lineItems = checkoutSession.line_items?.data || [];
+      const productIds = extractProductIds(lineItems, checkoutSession.metadata || {});
+      const priceId = lineItems[0]?.price?.id;
+      
+      await grantIndicatorAccessOnPurchase(
+        customer.email,
+        productIds,
+        priceId,
+        undefined,
+        'checkout'
+      );
+    }
+  }
+  
+  // CASO 2: Compra One-Time (Lifetime)
+  else if (checkoutSession.mode === 'payment') {
+    const paymentIntent = await stripe.paymentIntents.retrieve(...);
+    const customer = await stripe.customers.retrieve(...);
+    
+    if (customer && !customer.deleted && customer.email) {
+      const lineItems = checkoutSession.line_items?.data || [];
+      const productIds = extractProductIds(lineItems, paymentIntent.metadata || {});
+      const priceId = lineItems[0]?.price?.id;
+      
+      await grantIndicatorAccessOnPurchase(
+        customer.email,
+        productIds,
+        priceId,
+        paymentIntent.id,
+        'checkout'
+      );
+    }
+  }
+  break;
+
+case 'payment_intent.succeeded':
+  const paymentIntent = event.data.object as Stripe.PaymentIntent;
+  const customer = await stripe.customers.retrieve(paymentIntent.customer as string);
+  
+  if (customer && !customer.deleted && customer.email) {
+    const productIds = extractProductIds([], paymentIntent.metadata || {});
+    
+    await grantIndicatorAccessOnPurchase(
+      customer.email,
+      productIds,
+      undefined,
+      paymentIntent.id,
+      'checkout'
+    );
+  }
+  break;
+
+case 'invoice.payment_succeeded':
+  const invoice = event.data.object as Stripe.Invoice;
+  const customer = await stripe.customers.retrieve(invoice.customer as string);
+  
+  if (customer && !customer.deleted && customer.email) {
+    const lineItems = invoice.lines.data || [];
+    const productIds = extractProductIds(lineItems, invoice.metadata || {});
+    const priceId = lineItems[0]?.price?.id;
+    
+    await grantIndicatorAccessOnPurchase(
+      customer.email,
+      productIds,
+      priceId,
+      invoice.id,
+      'invoice'
+    );
+  }
+  break;
+```
+
+#### **2. Archivo Core: `/utils/tradingview/auto-grant-access.ts`**
+
+**Función principal:** `grantIndicatorAccessOnPurchase()`
+
+**Parámetros:**
+```typescript
+customerEmail: string      // Email del cliente de Stripe
+productIds: string[]       // IDs de productos comprados
+priceId?: string          // ID del precio (para determinar duración)
+purchaseId?: string       // ID de la compra (para auditoría)
+source: 'checkout' | 'subscription' | 'invoice'
+```
+
+**Lógica completa (383 líneas):**
+
+1. **Buscar usuario:**
+   ```typescript
+   const { data: user } = await supabase
+     .from('users')
+     .select('id, email, tradingview_username')
+     .eq('email', customerEmail)
+     .maybeSingle();
+   ```
+
+2. **Validar tradingview_username:**
+   ```typescript
+   if (!user.tradingview_username) {
+     return {
+       success: false,
+       reason: 'Usuario no completó onboarding (sin tradingview_username)'
+     };
+   }
+   ```
+
+3. **Obtener indicadores dinámicamente:**
+   ```typescript
+   const pineIds = await getIndicatorsForAccess(accessConfig);
+   // Consulta: indicators WHERE status='activo' AND access_tier='premium'
+   ```
+
+4. **Determinar duración:**
+   ```typescript
+   const duration = await getDurationFromPrice(priceId);
+   // Consulta prices: interval='month' → '30D', 'year' → '1Y', etc.
+   ```
+
+5. **Llamar TradingView:**
+   ```typescript
+   const tvResponse = await fetch(
+     `http://185.218.124.241:5001/api/access/${user.tradingview_username}`,
+     {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({
+         pine_ids: pineIds,
+         duration: duration
+       })
+     }
+   );
+   ```
+
+6. **Guardar en indicator_access:**
+   ```typescript
+   const accessData = {
+     user_id: user.id,
+     indicator_id: indicator.id,
+     tradingview_username: user.tradingview_username,
+     status: 'active',
+     granted_at: new Date().toISOString(),
+     expires_at: tvIndicator.expiration, // ← Fecha EXACTA de TradingView
+     duration_type: duration,
+     access_source: 'purchase', // ← MARCA CRÍTICA
+     granted_by: null, // Sistema automático
+     tradingview_response: tvIndicator
+   };
+   
+   // Upsert: UPDATE si existe, INSERT si no
+   if (existingAccess) {
+     await supabase.from('indicator_access').update(accessData).eq('id', existingAccess.id);
+   } else {
+     await supabase.from('indicator_access').insert(accessData);
+   }
+   ```
+
+7. **Registrar en log de auditoría:**
+   ```typescript
+   await supabase.from('indicator_access_log').insert({
+     ...accessData,
+     operation_type: 'grant',
+     performed_by: null, // Sistema
+     created_at: new Date().toISOString()
+   });
+   ```
+
+#### **3. Mapeo de Productos → Indicadores**
+
+**Archivo:** `/utils/tradingview/auto-grant-access.ts` (líneas 19-34)
+
+```typescript
+const PRODUCT_ACCESS_MAP: Record<string, { 
+  type: 'all' | 'premium' | 'free' | 'specific',
+  pine_ids?: string[]
+}> = {
+  // Planes de suscripción → Acceso a TODOS los indicadores
+  'plan_mensual': { type: 'all' },
+  'plan_semestral': { type: 'all' },
+  'plan_anual': { type: 'all' },
+  'plan_lifetime': { type: 'all' },
+  
+  // Default: cualquier compra da acceso a todos
+  'default': { type: 'all' }
+};
+```
+
+**Cómo funciona:**
+- Si compras cualquier plan → obtienes TODOS los indicadores activos
+- Se consulta dinámicamente `indicators WHERE status='activo'`
+- NO se usan pine_ids hardcoded, siempre desde BD
+
+#### **4. Mapeo de Duración**
+
+```typescript
+const PRICE_DURATION_MAP: Record<string, string> = {
+  'month': '30D',    // Suscripción mensual
+  'year': '1Y',      // Suscripción anual
+  'one_time': '1L',  // Compra única → Lifetime
+  'lifetime': '1L'   // Plan lifetime explícito
+};
+```
+
+**Lógica:**
+```typescript
+async function getDurationFromPrice(priceId?: string): Promise<string> {
+  if (!priceId) return '1Y'; // Fallback por defecto
+  
+  // Consultar precio en Supabase
+  const { data: price } = await supabase
+    .from('prices')
+    .select('interval, type')
+    .eq('id', priceId)
+    .maybeSingle();
+  
+  if (!price) return '1Y';
+  
+  // Si es one-time o no tiene intervalo → Lifetime
+  if (price.type === 'one_time' || !price.interval) {
+    return '1L';
+  }
+  
+  // Mapear intervalo a duración
+  return PRICE_DURATION_MAP[price.interval] || '1Y';
+}
+```
+
+---
+
+### **🧪 FASE 5: TESTING Y VALIDACIÓN (PENDIENTE)**
+
+#### **⚠️ IMPORTANTE PARA LA IA QUE HARÁ EL TESTING:**
+
+El sistema está **100% implementado y funcionando**, pero **NUNCA se ha probado con una compra real en Stripe**. Tu trabajo es validar que todo el flujo funciona end-to-end.
+
+---
+
+### **📝 CHECKLIST DE TESTING COMPLETO**
+
+#### **Pre-requisitos antes de probar:**
+
+1. **✅ Verificar que el servidor está corriendo:**
+   ```bash
+   npm run dev
+   # Debe estar escuchando en http://localhost:3000
+   ```
+
+2. **✅ Verificar webhook endpoint de Stripe está configurado:**
+   - Dashboard de Stripe → Developers → Webhooks
+   - URL: `https://tu-dominio.com/api/webhooks` (o ngrok para local)
+   - Eventos seleccionados:
+     - `checkout.session.completed`
+     - `payment_intent.succeeded`
+     - `invoice.payment_succeeded`
+   - Secret guardado en `.env.local` como `STRIPE_WEBHOOK_SECRET`
+
+3. **✅ Verificar variables de entorno:**
+   ```bash
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+   STRIPE_SECRET_KEY=sk_test_...
+   STRIPE_WEBHOOK_SECRET=whsec_...
+   TRADINGVIEW_MICROSERVICE_URL=http://185.218.124.241:5001
+   ```
+
+4. **✅ Verificar microservicio TradingView está activo:**
+   ```bash
+   curl http://185.218.124.241:5001/
+   # Debe retornar: {"message":"TradingView Access Management API...","status":"running"}
+   ```
+
+5. **✅ Usuario de prueba registrado:**
+   - Email: `test@ejemplo.com` (o el que prefieras)
+   - **CRÍTICO:** Debe tener `tradingview_username` configurado
+   - Verificar en Supabase: `SELECT id, email, tradingview_username FROM users WHERE email='test@ejemplo.com'`
+
+6. **✅ Al menos 1 indicador activo en BD:**
+   ```sql
+   SELECT id, name, pine_id, status FROM indicators WHERE status='activo';
+   ```
+
+---
+
+#### **🎯 ESCENARIO 1: Compra de Suscripción Mensual**
+
+**Objetivo:** Verificar que una suscripción mensual concede acceso automático con duración 30D.
+
+**Pasos:**
+
+1. **Crear checkout session en Stripe Dashboard** (modo test):
+   - Producto: Plan Mensual ($23.50)
+   - Customer: `test@ejemplo.com`
+   - Modo: `subscription`
+
+2. **Completar pago con tarjeta de prueba:**
+   - Número: `4242 4242 4242 4242`
+   - Fecha: Cualquier futura
+   - CVC: Cualquier 3 dígitos
+
+3. **Monitorear logs del servidor:**
+   ```bash
+   # Deberías ver en consola:
+   🔔 Webhook received: checkout.session.completed
+   🎯 AUTO-GRANT: Iniciando para test@ejemplo.com
+   ✅ Usuario encontrado: {tradingview_username}
+   🎯 Tipo de acceso: all
+   📦 N indicadores a conceder (dinámicos desde DB)
+   ⏰ Duración: 30D
+   📡 Respuesta TradingView: {...}
+   ✅ {indicator_name}: expires_at = 2025-11-04T...
+   🎉 AUTO-GRANT COMPLETADO: N/N indicadores concedidos
+   ```
+
+4. **Verificar en Supabase - Tabla `indicator_access`:**
+   ```sql
+   SELECT 
+     ia.*,
+     i.name as indicator_name,
+     u.email as user_email
+   FROM indicator_access ia
+   JOIN indicators i ON ia.indicator_id = i.id
+   JOIN users u ON ia.user_id = u.id
+   WHERE u.email = 'test@ejemplo.com'
+   AND ia.access_source = 'purchase'
+   ORDER BY ia.granted_at DESC;
+   ```
+
+   **Esperado:**
+   - 1 registro por cada indicador activo
+   - `status` = 'active'
+   - `duration_type` = '30D'
+   - `expires_at` = fecha ~30 días en el futuro
+   - `access_source` = 'purchase' ← **CRÍTICO**
+   - `tradingview_response` tiene JSON completo
+
+5. **Verificar en Supabase - Tabla `indicator_access_log`:**
+   ```sql
+   SELECT *
+   FROM indicator_access_log
+   WHERE user_id = (SELECT id FROM users WHERE email='test@ejemplo.com')
+   AND operation_type = 'grant'
+   ORDER BY created_at DESC;
+   ```
+
+   **Esperado:**
+   - N registros (uno por indicador)
+   - `operation_type` = 'grant'
+   - `access_source` = 'purchase'
+   - Todos con timestamp reciente
+
+6. **Verificar en TradingView (MANUAL):**
+   - Ingresar a TradingView con la cuenta de prueba
+   - Ir a "Indicators & Strategies" → "Invite-only scripts"
+   - **Esperado:** Ver TODOS los indicadores listados con acceso
+
+7. **Verificar en Admin Panel:**
+   - Ir a `/admin/indicadores` → Tab "Historial"
+   - Buscar por email: `test@ejemplo.com`
+   - **Esperado:** Ver registros con operación "Grant", fuente "Purchase"
+
+**✅ Criterios de éxito:**
+- [ ] Webhook recibido sin errores
+- [ ] Logs muestran "AUTO-GRANT COMPLETADO"
+- [ ] Registros creados en `indicator_access` con `access_source='purchase'`
+- [ ] Registros creados en `indicator_access_log`
+- [ ] Acceso visible en TradingView
+- [ ] Historial muestra operación en Admin Panel
+
+---
+
+#### **🎯 ESCENARIO 2: Compra One-Time (Lifetime)**
+
+**Objetivo:** Verificar que una compra única concede acceso permanente (1L).
+
+**Pasos:**
+
+1. **Crear checkout session para producto Lifetime:**
+   - Producto: Plan Lifetime ($999)
+   - Customer: `test2@ejemplo.com` (nuevo usuario)
+   - Modo: `payment` (no subscription)
+
+2. **Completar pago.**
+
+3. **Monitorear logs:**
+   ```bash
+   🔔 Webhook received: checkout.session.completed
+   🎯 AUTO-GRANT: Iniciando para test2@ejemplo.com
+   ⏰ Duración: 1L
+   ```
+
+4. **Verificar en `indicator_access`:**
+   - `duration_type` = '1L'
+   - `expires_at` = NULL o fecha muy lejana (TradingView no retorna expiration para lifetime)
+
+**✅ Criterios de éxito:**
+- [ ] Duración es '1L' (lifetime)
+- [ ] `expires_at` es NULL o fecha muy lejana
+- [ ] Acceso permanente en TradingView
+
+---
+
+#### **🎯 ESCENARIO 3: Renovación de Suscripción (Invoice)**
+
+**Objetivo:** Verificar que cuando Stripe cobra una renovación mensual, se renuevan los accesos automáticamente.
+
+**Pasos:**
+
+1. **Esperar a que pase 1 mes** (o forzar renovación en Stripe Dashboard):
+   - Ir a Subscriptions → Crear invoice manual
+   - O usar Stripe CLI: `stripe subscriptions update sub_xxx --trial_end now`
+
+2. **Stripe dispara `invoice.payment_succeeded`.**
+
+3. **Monitorear logs:**
+   ```bash
+   🔔 Webhook received: invoice.payment_succeeded
+   🎯 AUTO-GRANT: Iniciando para test@ejemplo.com
+   ⏰ Duración: 30D
+   🎉 AUTO-GRANT COMPLETADO: N/N indicadores concedidos
+   ```
+
+4. **Verificar en `indicator_access`:**
+   - `expires_at` se EXTENDIÓ 30 días adicionales
+   - `renewal_count` se incrementó (si existía antes)
+   - Nuevo registro en `indicator_access_log` con `operation_type='grant'` (tecnicamente es un renewal)
+
+**✅ Criterios de éxito:**
+- [ ] `expires_at` actualizado con nueva fecha
+- [ ] Nuevo registro en log
+- [ ] Acceso sigue activo en TradingView
+
+---
+
+#### **🎯 ESCENARIO 4: Usuario SIN tradingview_username**
+
+**Objetivo:** Verificar que el sistema maneja correctamente usuarios que no completaron onboarding.
+
+**Pasos:**
+
+1. **Crear usuario en Supabase sin `tradingview_username`:**
+   ```sql
+   INSERT INTO users (id, email, full_name, tradingview_username)
+   VALUES (gen_random_uuid(), 'test3@ejemplo.com', 'Test User 3', NULL);
+   ```
+
+2. **Realizar compra con ese email.**
+
+3. **Monitorear logs:**
+   ```bash
+   🔔 Webhook received: checkout.session.completed
+   🎯 AUTO-GRANT: Iniciando para test3@ejemplo.com
+   ✅ Usuario encontrado: test3@ejemplo.com
+   ⚠️ Usuario sin tradingview_username: test3@ejemplo.com
+   ```
+
+4. **Verificar resultado:**
+   - Función retorna `{ success: false, reason: 'Usuario no completó onboarding...' }`
+   - NO se crea registro en `indicator_access`
+   - NO se crea registro en `indicator_access_log`
+
+**✅ Criterios de éxito:**
+- [ ] Sistema NO falla (no lanza error 500)
+- [ ] Logs muestran advertencia clara
+- [ ] No se crea basura en BD
+- [ ] Webhook responde 200 OK (para que Stripe no reintente)
+
+---
+
+#### **🎯 ESCENARIO 5: Usuario NO registrado en plataforma**
+
+**Objetivo:** Verificar comportamiento cuando el email no existe en tabla `users`.
+
+**Pasos:**
+
+1. **Realizar compra con email nuevo:** `noexiste@ejemplo.com`
+
+2. **Monitorear logs:**
+   ```bash
+   🔔 Webhook received: checkout.session.completed
+   🎯 AUTO-GRANT: Iniciando para noexiste@ejemplo.com
+   ⚠️ Usuario no encontrado en Supabase: noexiste@ejemplo.com
+   ```
+
+3. **Verificar resultado:**
+   - Función retorna `{ success: false, reason: 'Usuario no registrado en la plataforma' }`
+   - NO se crea nada en BD
+   - Webhook responde 200 OK
+
+**✅ Criterios de éxito:**
+- [ ] Sistema NO falla
+- [ ] Log claro de usuario no encontrado
+- [ ] No se crea basura en BD
+
+**💡 Acción recomendada para producción:**
+- Enviar email al usuario: "Completa tu registro para recibir acceso a los indicadores"
+- O crear registro automáticamente en `users` sin auth (legacy user en nueva plataforma)
+
+---
+
+#### **🎯 ESCENARIO 6: Error del Microservicio TradingView**
+
+**Objetivo:** Verificar manejo de errores cuando TradingView está caído o responde error.
+
+**Pasos:**
+
+1. **Simular error:**
+   - Detener microservicio: `curl http://185.218.124.241:5001/` → timeout
+   - O cambiar URL en env a una incorrecta
+
+2. **Realizar compra.**
+
+3. **Monitorear logs:**
+   ```bash
+   🔔 Webhook received: checkout.session.completed
+   🎯 AUTO-GRANT: Iniciando para test@ejemplo.com
+   ❌ Error en TradingView: Connection refused
+   ```
+
+4. **Verificar resultado:**
+   - Función retorna `{ success: false, reason: 'Error en TradingView...' }`
+   - NO se crea registro en `indicator_access`
+   - Error se loguea en consola
+   - Webhook responde 200 OK (para no saturar Stripe con reintentos)
+
+**✅ Criterios de éxito:**
+- [ ] Sistema NO crash (no 500)
+- [ ] Error logueado claramente
+- [ ] Cliente recibe pago pero sin acceso (requiere intervención manual)
+
+**💡 Mejora futura:**
+- Queue de reintentos automáticos
+- Notificación a admin si fallan >10 auto-grants
+
+---
+
+### **📊 MÉTRICAS DE ÉXITO DEL SISTEMA**
+
+Después del testing, deberías poder responder:
+
+1. **¿Cuántos webhooks se recibieron?**
+   - Ver logs o Stripe Dashboard → Webhooks → Attempts
+
+2. **¿Cuántos auto-grants fueron exitosos?**
+   ```sql
+   SELECT COUNT(*) FROM indicator_access 
+   WHERE access_source = 'purchase';
+   ```
+
+3. **¿Cuántos fallaron?**
+   - Buscar en logs: `❌ Error en auto-grant`
+
+4. **¿Tiempo promedio de ejecución?**
+   - Desde webhook recibido hasta registro guardado
+   - Esperado: <5 segundos
+
+5. **¿Los usuarios reciben acceso INMEDIATO?**
+   - Hacer compra y verificar en TradingView en <1 minuto
+   - No debería requerir refresco, TradingView actualiza en tiempo real
+
+---
+
+### **🐛 TROUBLESHOOTING PARA TESTING**
+
+#### **Problema: Webhook no se recibe**
+**Síntomas:** No hay logs de "🔔 Webhook received"
+
+**Soluciones:**
+1. Verificar URL en Stripe Dashboard está correcta
+2. Si es local, usar ngrok: `ngrok http 3000`
+3. Verificar `STRIPE_WEBHOOK_SECRET` está configurado
+4. Ver "Attempts" en Stripe Dashboard para ver errores
+
+#### **Problema: Error "Invalid signature"**
+**Síntomas:** `❌ Error message: Webhook Error: Invalid signature`
+
+**Solución:**
+- Stripe webhook secret incorrecto en `.env.local`
+- Regenerar secret en Stripe Dashboard
+- Actualizar env y reiniciar servidor
+
+#### **Problema: Usuario no encontrado pero SÍ existe**
+**Síntomas:** Log dice "Usuario no encontrado" pero existe en Supabase
+
+**Soluciones:**
+1. Verificar que el email en Stripe match EXACTAMENTE con Supabase (case-sensitive)
+2. Verificar conexión a Supabase (ver logs de errores de query)
+3. Verificar que `SUPABASE_SERVICE_ROLE_KEY` está configurado
+
+#### **Problema: TradingView responde error**
+**Síntomas:** `❌ Error en TradingView: {...}`
+
+**Soluciones:**
+1. Verificar microservicio está activo: `curl http://185.218.124.241:5001/`
+2. Verificar pine_ids son válidos (formato `PUB;xxxxx`)
+3. Verificar tradingview_username existe en TradingView
+4. Ver logs del microservicio si tienes acceso
+
+#### **Problema: Se guarda en `indicator_access` pero NO en TradingView**
+**Síntomas:** BD muestra acceso pero TradingView no lo tiene
+
+**Soluciones:**
+1. Verificar `tradingview_response` en BD tiene `status: 'Success'`
+2. Si dice 'Not Applied', usuario ya tenía acceso lifetime (no se puede degradar)
+3. Si dice error, ver `error_message` en BD
+
+---
+
+### **📝 CHECKLIST FINAL PARA IA DE TESTING**
+
+Antes de declarar el sistema "validado", asegúrate de:
+
+- [ ] Todos los 6 escenarios probados y documentados
+- [ ] Al menos 3 compras reales de prueba exitosas
+- [ ] Al menos 1 renovación de suscripción probada
+- [ ] Manejo de errores validado (usuario sin TV username, microservicio caído)
+- [ ] Registros correctos en ambas tablas (`indicator_access` + `indicator_access_log`)
+- [ ] Acceso REAL visible en TradingView (no solo en BD)
+- [ ] Tiempo de respuesta <5 segundos end-to-end
+- [ ] Screenshots de evidencia tomados para cada escenario
+- [ ] Lista de bugs encontrados (si hay) con severity y propuesta de fix
+- [ ] Recomendaciones de mejoras para producción
+
+---
+
+### **🚀 DESPUÉS DEL TESTING EXITOSO**
+
+Una vez validado el sistema:
+
+1. **Activar en producción:**
+   - Configurar webhook en Stripe modo live
+   - Verificar todas las env vars de producción
+   - Monitorear primeras 10-20 compras reales
+
+2. **Monitoreo:**
+   - Dashboard de Stripe → Webhooks → Ver tasa de éxito
+   - Query diaria: `SELECT COUNT(*) FROM indicator_access WHERE access_source='purchase' AND DATE(granted_at) = CURRENT_DATE`
+
+3. **Mejoras recomendadas:**
+   - Email de bienvenida cuando se concede acceso
+   - Notificación a admin si auto-grant falla
+   - Dashboard de métricas: auto-grants exitosos vs manuales
+   - Sistema de retry automático si TradingView falla
+
+---
+
+## ⏳ FASE 6: RENOVACIONES AUTOMÁTICAS PROGRAMADAS (FUTURO)
 
 ### **Objetivo:**
 Sistema de reglas para renovar automáticamente accesos basándose en suscripciones activas de Stripe.

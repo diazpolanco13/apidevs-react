@@ -46,12 +46,18 @@ export async function POST(
       );
     }
 
+    // Type assertion
+    const validIndicator = indicator as any;
+
     // Buscar el usuario por tradingview_username
     const { data: targetUser } = await supabase
       .from('users')
       .select('id, email, tradingview_username')
       .eq('tradingview_username', tradingview_username)
       .single();
+
+    // Type assertion
+    const validTargetUser = targetUser as any;
 
     // Verificar si ya existe un acceso para este usuario e indicador
     const { data: existingAccess } = await supabase
@@ -61,7 +67,10 @@ export async function POST(
       .eq('tradingview_username', tradingview_username)
       .single();
 
-    if (existingAccess && existingAccess.status === 'active') {
+    // Type assertion
+    const validExistingAccess = existingAccess as any;
+
+    if (validExistingAccess && validExistingAccess.status === 'active') {
       return NextResponse.json(
         { error: 'Este usuario ya tiene acceso activo a este indicador' },
         { status: 400 }
@@ -88,7 +97,7 @@ export async function POST(
     // Llamar al microservicio de TradingView
     console.log('Concediendo acceso a TradingView:', {
       users: [tradingview_username],
-      pine_ids: [indicator.pine_id],
+      pine_ids: [validIndicator.pine_id],
       duration: duration_type
     });
 
@@ -100,7 +109,7 @@ export async function POST(
       },
       body: JSON.stringify({
         users: [tradingview_username],
-        pine_ids: [indicator.pine_id],
+        pine_ids: [validIndicator.pine_id],
         duration: duration_type,
         options: {
           preValidateUsers: false,
@@ -121,7 +130,7 @@ export async function POST(
 
     // Crear o actualizar el registro de acceso
     const accessData = {
-      user_id: targetUser?.id || null,
+      user_id: validTargetUser?.id || null,
       indicator_id: indicatorId,
       tradingview_username,
       status: isSuccess ? 'active' : 'failed',
@@ -134,12 +143,12 @@ export async function POST(
     };
 
     let savedAccess;
-    if (existingAccess) {
+    if (validExistingAccess) {
       // Actualizar acceso existente
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('indicator_access')
         .update(accessData)
-        .eq('id', existingAccess.id)
+        .eq('id', validExistingAccess.id)
         .select()
         .single();
 
@@ -147,7 +156,7 @@ export async function POST(
       savedAccess = data;
     } else {
       // Crear nuevo acceso
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('indicator_access')
         .insert(accessData)
         .select()

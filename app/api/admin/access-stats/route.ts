@@ -22,8 +22,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('📊 Calculando estadísticas de accesos...');
-
     // Parsear query params
     const { searchParams } = new URL(request.url);
     const period = parseInt(searchParams.get('period') || '30');
@@ -99,6 +97,9 @@ export async function GET(request: Request) {
       .select('access_source')
       .gte('created_at', dateFrom.toISOString());
 
+    // Type assertion
+    const validSourceDistribution = (sourceDistribution || []) as any[];
+
     const bySource = {
       manual: 0,
       purchase: 0,
@@ -109,7 +110,7 @@ export async function GET(request: Request) {
       admin_bulk: 0 // Añadido para compatibilidad con sistema actual
     };
 
-    sourceDistribution?.forEach((record) => {
+    validSourceDistribution.forEach((record) => {
       const source = record.access_source as keyof typeof bySource;
       if (source in bySource) {
         bySource[source]++;
@@ -122,13 +123,16 @@ export async function GET(request: Request) {
       .select('operation_type')
       .gte('created_at', dateFrom.toISOString());
 
+    // Type assertion
+    const validOperationDistribution = (operationDistribution || []) as any[];
+
     const byOperation = {
       grants: 0,
       revokes: 0,
       renewals: 0
     };
 
-    operationDistribution?.forEach((record: any) => {
+    validOperationDistribution.forEach((record: any) => {
       if (record.operation_type === 'grant') {
         byOperation.grants++;
       } else if (record.operation_type === 'revoke') {
@@ -145,9 +149,12 @@ export async function GET(request: Request) {
       .gte('created_at', dateFrom.toISOString())
       .order('created_at', { ascending: true });
 
+    // Type assertion
+    const validTimelineData = (timelineData || []) as any[];
+
     // Agrupar por día
     const timelineMap = new Map<string, number>();
-    timelineData?.forEach((record) => {
+    validTimelineData.forEach((record) => {
       const date = new Date(record.created_at).toISOString().split('T')[0];
       timelineMap.set(date, (timelineMap.get(date) || 0) + 1);
     });
@@ -162,8 +169,6 @@ export async function GET(request: Request) {
       totalOperations && totalOperations > 0
         ? Math.round(((successfulOperations || 0) / totalOperations) * 100)
         : 0;
-
-    console.log(`✅ Estadísticas calculadas: ${totalOperations || 0} operaciones totales`);
 
     return NextResponse.json({
       success: true,

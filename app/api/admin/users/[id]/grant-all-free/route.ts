@@ -36,7 +36,10 @@ export async function POST(
       );
     }
 
-    if (!targetUser.tradingview_username) {
+    // Type assertion - código funcional existente
+    const validTargetUser = targetUser as any;
+
+    if (!validTargetUser.tradingview_username) {
       return NextResponse.json(
         {
           error:
@@ -68,16 +71,19 @@ export async function POST(
       );
     }
 
+    // Type assertion - código funcional existente
+    const validFreeIndicators = freeIndicators as any[];
+
     console.log(
-      `🎁 Concediendo ${freeIndicators.length} indicadores FREE a ${targetUser.tradingview_username}`
+      `🎁 Concediendo ${validFreeIndicators.length} indicadores FREE a ${validTargetUser.tradingview_username}`
     );
 
     // Preparar array de pine_ids
-    const pineIds = freeIndicators.map((ind) => ind.pine_id);
+    const pineIds = validFreeIndicators.map((ind) => ind.pine_id);
 
     // Llamar al microservicio de TradingView (endpoint individual)
     const tvResponse = await fetch(
-      `${TRADINGVIEW_API}/api/access/${targetUser.tradingview_username}`,
+      `${TRADINGVIEW_API}/api/access/${validTargetUser.tradingview_username}`,
       {
         method: 'POST',
         headers: {
@@ -116,8 +122,8 @@ export async function POST(
     const accessRecords = [];
     const now = new Date().toISOString();
 
-    for (let i = 0; i < freeIndicators.length; i++) {
-      const indicator = freeIndicators[i];
+    for (let i = 0; i < validFreeIndicators.length; i++) {
+      const indicator = validFreeIndicators[i];
       const tvResultItem = Array.isArray(tvResult) ? tvResult[i] : null;
       const isSuccess = tvResultItem?.status === 'Success';
 
@@ -135,10 +141,13 @@ export async function POST(
         .eq('indicator_id', indicator.id)
         .maybeSingle();
 
+      // Type assertion - código funcional existente
+      const validExisting = existing as any;
+
       const accessData = {
         user_id: userId,
         indicator_id: indicator.id,
-        tradingview_username: targetUser.tradingview_username,
+        tradingview_username: validTargetUser.tradingview_username,
         status: isSuccess ? 'active' : 'failed',
         granted_at: isSuccess ? now : null,
         expires_at: tvExpiration, // ✅ Fecha real de TradingView (null para Lifetime)
@@ -149,12 +158,12 @@ export async function POST(
         error_message: isSuccess ? null : tvResultItem?.error || 'Error desconocido'
       };
 
-      if (existing) {
+      if (validExisting) {
         // Actualizar
-        await supabase
+        await (supabase as any)
           .from('indicator_access')
           .update(accessData)
-          .eq('id', existing.id);
+          .eq('id', validExisting.id);
       } else {
         // Crear
         accessRecords.push(accessData);
@@ -170,7 +179,7 @@ export async function POST(
 
     // Insertar nuevos registros si hay
     if (accessRecords.length > 0) {
-      const { error: insertError } = await supabase
+      const { error: insertError } = await (supabase as any)
         .from('indicator_access')
         .insert(accessRecords);
 
@@ -184,10 +193,10 @@ export async function POST(
       message: `Se concedieron ${results.successful} de ${results.total} indicadores FREE`,
       results,
       user: {
-        email: targetUser.email,
-        tradingview_username: targetUser.tradingview_username
+        email: validTargetUser.email,
+        tradingview_username: validTargetUser.tradingview_username
       },
-      indicators_granted: freeIndicators.map((i) => i.name)
+      indicators_granted: validFreeIndicators.map((i) => i.name)
     });
   } catch (error) {
     console.error('Error concediendo accesos Free:', error);

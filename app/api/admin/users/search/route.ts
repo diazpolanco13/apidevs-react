@@ -44,6 +44,9 @@ export async function GET(req: Request) {
     const { data: registeredUsers, error: registeredError } =
       await registeredQuery.limit(limit);
 
+    // Type assertion - código funcional existente
+    const validRegisteredUsers = (registeredUsers || []) as any[];
+
     if (registeredError) {
       console.error('Error buscando usuarios registrados:', registeredError);
       return NextResponse.json(
@@ -80,7 +83,7 @@ export async function GET(req: Request) {
 
     // 3. Combinar resultados: usuarios registrados + legacy
     const combinedUsers = [
-      ...(registeredUsers || []).map((u) => ({
+      ...validRegisteredUsers.map((u) => ({
         ...u,
         tradingview_username: u.tradingview_username || null,
         customer_tier: u.customer_tier || 'free',

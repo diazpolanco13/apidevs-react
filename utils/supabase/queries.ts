@@ -17,8 +17,6 @@ export const getSubscription = async (supabase: SupabaseClient<any, "public", an
     return null;
   }
 
-  console.log('🔍 Fetching subscription for user:', user.id);
-
   const { data: subscriptions, error } = await supabase
     .from('subscriptions')
     .select('*, prices(*, products(*))')
@@ -33,8 +31,6 @@ export const getSubscription = async (supabase: SupabaseClient<any, "public", an
     console.error('❌ Error fetching subscription:', error);
     return null;
   }
-
-  console.log('✅ Subscription found:', subscription ? `${subscription.status} - ${subscription.id}` : 'null');
 
   return subscription;
 };

@@ -1,0 +1,22 @@
+
+> build
+> next build
+
+  ▲ Next.js 14.2.3
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/api/admin/users/[id]/revoke-all/route.ts:88:31
+Type error: Property 'indicators' does not exist on type 'never'.
+
+[0m [90m 86 |[39m     [90m// Preparar array de pine_ids[39m[0m
+[0m [90m 87 |[39m     [36mconst[39m pineIds [33m=[39m activeAccesses[0m
+[0m[31m[1m>[22m[39m[90m 88 |[39m       [33m.[39mmap((access) [33m=>[39m access[33m.[39mindicators[33m?[39m[33m.[39mpine_id)[0m
+[0m [90m    |[39m                               [31m[1m^[22m[39m[0m
+[0m [90m 89 |[39m       [33m.[39mfilter([33mBoolean[39m)[33m;[39m[0m
+[0m [90m 90 |[39m[0m
+[0m [90m 91 |[39m     [90m// Llamar al microservicio de TradingView para remover acceso[39m[0m

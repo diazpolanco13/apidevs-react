@@ -54,7 +54,10 @@ export async function POST(
       );
     }
 
-    if (!targetUser.tradingview_username) {
+    // Type assertion - código funcional existente
+    const validTargetUser = targetUser as any;
+
+    if (!validTargetUser.tradingview_username) {
       return NextResponse.json(
         {
           error:
@@ -78,7 +81,10 @@ export async function POST(
       );
     }
 
-    if (indicator.status !== 'activo') {
+    // Type assertion - código funcional existente
+    const validIndicator = indicator as any;
+
+    if (validIndicator.status !== 'activo') {
       return NextResponse.json(
         { error: 'El indicador no está activo' },
         { status: 400 }
@@ -93,18 +99,21 @@ export async function POST(
       .eq('indicator_id', indicator_id)
       .maybeSingle();
 
+    // Type assertion - código funcional existente
+    const validExistingAccess = existingAccess as any;
+
     // Si tiene acceso activo y no ha expirado, rechazar
     if (
-      existingAccess &&
-      existingAccess.status === 'active' &&
-      existingAccess.expires_at &&
-      new Date(existingAccess.expires_at) > new Date()
+      validExistingAccess &&
+      validExistingAccess.status === 'active' &&
+      validExistingAccess.expires_at &&
+      new Date(validExistingAccess.expires_at) > new Date()
     ) {
       return NextResponse.json(
         {
           error: 'El usuario ya tiene acceso activo y vigente a este indicador',
-          existing_access: existingAccess,
-          expires_at: existingAccess.expires_at
+          existing_access: validExistingAccess,
+          expires_at: validExistingAccess.expires_at
         },
         { status: 400 }
       );
@@ -129,21 +138,21 @@ export async function POST(
 
     // Llamar al microservicio de TradingView (endpoint individual - no requiere API key)
     console.log('🚀 Concediendo acceso a TradingView:', {
-      user: targetUser.tradingview_username,
-      indicator: indicator.name,
-      pine_id: indicator.pine_id,
+      user: validTargetUser.tradingview_username,
+      indicator: validIndicator.name,
+      pine_id: validIndicator.pine_id,
       duration: duration_type
     });
 
     const tvResponse = await fetch(
-      `${TRADINGVIEW_API}/api/access/${targetUser.tradingview_username}`,
+      `${TRADINGVIEW_API}/api/access/${validTargetUser.tradingview_username}`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          pine_ids: [indicator.pine_id],
+          pine_ids: [validIndicator.pine_id],
           duration: duration_type
         })
       }
@@ -164,8 +173,8 @@ export async function POST(
     // Preparar datos del acceso
     const accessData = {
       user_id: userId,
-      indicator_id: indicator.id,
-      tradingview_username: targetUser.tradingview_username,
+      indicator_id: validIndicator.id,
+      tradingview_username: validTargetUser.tradingview_username,
       status: isSuccess ? 'active' : 'failed',
       granted_at: isSuccess ? new Date().toISOString() : null,
       expires_at: tvExpiration, // ✅ Fecha real de TradingView
@@ -178,12 +187,12 @@ export async function POST(
 
     let savedAccess;
 
-    if (existingAccess) {
+    if (validExistingAccess) {
       // Actualizar acceso existente
-      const { data, error: updateError } = await supabase
+      const { data, error: updateError } = await (supabase as any)
         .from('indicator_access')
         .update(accessData)
-        .eq('id', existingAccess.id)
+        .eq('id', validExistingAccess.id)
         .select(
           `
           *,
@@ -207,7 +216,7 @@ export async function POST(
       savedAccess = data;
     } else {
       // Crear nuevo acceso
-      const { data, error: insertError } = await supabase
+      const { data, error: insertError } = await (supabase as any)
         .from('indicator_access')
         .insert(accessData)
         .select(
@@ -247,17 +256,17 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: `Acceso concedido exitosamente a ${indicator.name}`,
+      message: `Acceso concedido exitosamente a ${validIndicator.name}`,
       access: savedAccess,
       tradingview_response: tvResult,
       user: {
-        email: targetUser.email,
-        full_name: targetUser.full_name,
-        tradingview_username: targetUser.tradingview_username
+        email: validTargetUser.email,
+        full_name: validTargetUser.full_name,
+        tradingview_username: validTargetUser.tradingview_username
       },
       indicator: {
-        name: indicator.name,
-        pine_id: indicator.pine_id
+        name: validIndicator.name,
+        pine_id: validIndicator.pine_id
       },
       expires_at: expiresAt?.toISOString() || null
     });

@@ -46,6 +46,9 @@ export async function POST(
       );
     }
 
+    // Type assertion - código funcional existente, solo para compilación
+    const validIndicator = indicator as any;
+
     // Obtener el acceso
     const { data: access, error: accessError } = await supabase
       .from('indicator_access')
@@ -63,7 +66,7 @@ export async function POST(
     // Llamar al microservicio de TradingView para revocar el acceso
     console.log('Revocando acceso en TradingView:', {
       users: [tradingview_username],
-      pine_ids: [indicator.pine_id]
+      pine_ids: [validIndicator.pine_id]
     });
 
     const tvResponse = await fetch(
@@ -76,7 +79,7 @@ export async function POST(
         },
         body: JSON.stringify({
           users: [tradingview_username],
-          pine_ids: [indicator.pine_id],
+          pine_ids: [validIndicator.pine_id],
           options: {
             preValidateUsers: false
           }
@@ -88,7 +91,7 @@ export async function POST(
     console.log('Respuesta de TradingView:', tvResult);
 
     // Actualizar el registro de acceso
-    const { data: updatedAccess, error: updateError } = await supabase
+    const { data: updatedAccess, error: updateError } = await (supabase as any)
       .from('indicator_access')
       .update({
         status: 'revoked',

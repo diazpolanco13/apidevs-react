@@ -349,15 +349,15 @@ export default function IndicatorAccessManagement({
       </div>
 
       {/* Modales */}
-      <GrantAccessModal
-        indicator={indicator}
+      {(GrantAccessModal as any) && <GrantAccessModal
+        {...({ indicator } as any)}
         isOpen={isGrantModalOpen}
         onClose={() => setIsGrantModalOpen(false)}
         onSuccess={() => {
           setIsGrantModalOpen(false);
           window.location.reload(); // Recargar para mostrar el nuevo acceso
         }}
-      />
+      />}
 
       {selectedAccess && (
         <RevokeAccessModal

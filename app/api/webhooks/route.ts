@@ -215,7 +215,7 @@ export async function POST(req: Request) {
             if (invoice.customer) {
               const customer = await stripe.customers.retrieve(invoice.customer as string);
               if (customer && !customer.deleted && customer.email) {
-                const lineItems = invoice.lines.data || [];
+                const lineItems = (invoice.lines.data || []) as any[];
                 const productIds = extractProductIds(lineItems, invoice.metadata || {});
                 const priceId = lineItems[0]?.price?.id;
                 

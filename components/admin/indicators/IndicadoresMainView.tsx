@@ -75,7 +75,7 @@ export default function IndicadoresMainView({ initialIndicators, stats }: Props)
       {/* Tabs Navigation */}
       <div className="mb-8">
         <div className="border-b border-gray-800">
-          <nav className="flex space-x-1 -mb-px">
+          <nav className="flex justify-start space-x-1 -mb-px">
             {/* Tab Indicadores */}
             <button
               onClick={() => setActiveTab('indicadores')}
@@ -122,7 +122,7 @@ export default function IndicadoresMainView({ initialIndicators, stats }: Props)
                     {stats.total}
                   </span>
                 </span>
-                <span className="text-xs text-gray-500 mt-0.5">
+                <span className="text-xs text-gray-500 text-left mt-0.5">
                   Catálogo de indicadores TradingView
                 </span>
               </div>
@@ -167,7 +167,7 @@ export default function IndicadoresMainView({ initialIndicators, stats }: Props)
                 <span className="flex items-center gap-2">
                   Gestión de Usuarios
                 </span>
-                <span className="text-xs text-gray-500 mt-0.5">
+                <span className="text-xs text-gray-500 text-left mt-0.5">
                   Administración de accesos por usuario
                 </span>
               </div>
@@ -212,7 +212,7 @@ export default function IndicadoresMainView({ initialIndicators, stats }: Props)
                 <span className="flex items-center gap-2">
                   Asignación Masiva
                 </span>
-                <span className="text-xs text-gray-500 mt-0.5">
+                <span className="text-xs text-gray-500 text-left mt-0.5">
                   Operaciones bulk a múltiples usuarios
                 </span>
               </div>
@@ -256,11 +256,8 @@ export default function IndicadoresMainView({ initialIndicators, stats }: Props)
               <div className="flex flex-col items-start">
                 <span className="flex items-center gap-2">
                   Historial
-                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-400">
-                    Nuevo
-                  </span>
                 </span>
-                <span className="text-xs text-gray-500 mt-0.5">
+                <span className="text-xs text-gray-500 text-left mt-0.5">
                   Auditoría y seguimiento de operaciones
                 </span>
               </div>
