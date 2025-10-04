@@ -1,9 +1,9 @@
 # 📚 Sistema de Gestión de Accesos a Indicadores TradingView
 
 **Fecha:** 4 de Octubre 2025  
-**Estado:** Fase 1 y 2 completadas ✅ | Fase 3 y 4 pendientes ⏳  
-**Commits principales:** `fb75600`, `c8e9f18`, `78f2e89`, `5a51df0`, `7a96118`  
-**Última actualización:** 4 de Octubre 2025, 17:30
+**Estado:** Fase 1 y 2 completadas ✅ | Fase 3 parcialmente completada ✅ | Fase 4 pendiente ⏳  
+**Commits principales:** `fb75600`, `c8e9f18`, `78f2e89`, `5a51df0`, `7a96118`, `b75cd2b`, `ff20745`  
+**Última actualización:** 4 de Octubre 2025, 21:00
 
 ---
 
@@ -77,7 +77,36 @@ Sistema administrativo completo para gestionar accesos de usuarios a indicadores
 UNIQUE(user_id, indicator_id)
 ```
 
-#### 3. `users` - Usuarios Registrados
+#### 3. `indicator_access_log` - Log de Auditoría (NUEVO - 4 Oct 2025)
+```sql
+- id (uuid)
+- user_id (uuid) → users.id
+- indicator_id (uuid) → indicators.id
+- tradingview_username (text) -- NOT NULL
+- operation_type (text) -- 'grant', 'revoke', 'renew'
+- access_source (text) -- 'manual', 'purchase', 'trial', 'bulk', 'renewal', 'promo'
+- status (text) -- 'active', 'revoked', 'expired', 'failed'
+- granted_at (timestamptz)
+- expires_at (timestamptz)
+- revoked_at (timestamptz)
+- duration_type (text) -- '7D', '30D', '1Y', '1L'
+- subscription_id (text)
+- payment_intent_id (text)
+- indicator_access_id (uuid) -- Referencia al registro en indicator_access
+- tradingview_response (jsonb)
+- error_message (text)
+- performed_by (uuid) -- Admin que ejecutó la operación
+- notes (text)
+- metadata (jsonb)
+- created_at (timestamptz)
+
+-- SIN UNIQUE constraint (permite múltiples registros por user+indicator)
+-- Cada operación = nuevo registro para auditoría completa
+```
+
+> 📝 **Nota importante:** Esta tabla fue creada el 4 de Octubre 2025 para resolver el problema de auditoría. La tabla `indicator_access` se actualiza con `upsert` (sobrescribe registros), pero `indicator_access_log` guarda CADA operación como un nuevo registro, permitiendo un historial completo.
+
+#### 4. `users` - Usuarios Registrados
 ```sql
 - id (uuid)
 - email (text, unique)
@@ -568,7 +597,234 @@ CREATE INDEX idx_legacy_users_purchase_count ON legacy_users(purchase_count DESC
 
 ---
 
-## ⏳ FASE 3: HISTORIAL Y AUDITORÍA (PENDIENTE)
+## ✅ FASE 2.5: REVOCACIÓN MASIVA Y MEJORAS UX (COMPLETADA)
+
+### **Fecha de implementación:** 4 de Octubre 2025
+### **Commits:** `b75cd2b`, `ff20745`
+
+### **Ubicación:** `/admin/indicadores` → Tab "Asignación Masiva" (ampliado)
+
+### **Funcionalidades Implementadas:**
+
+#### 1. **Sistema de Revocación Masiva**
+
+**Selector de Tipo de Operación:**
+- Toggle visual entre "Conceder Acceso" y "Revocar Acceso"
+- Colores contextuales: Emerald (grant) vs Red (revoke)
+- Mismo wizard de 3 pasos reutilizado para ambas operaciones
+
+**Flujo de Revocación:**
+```typescript
+POST /api/admin/bulk-operations/execute
+Body: {
+  user_ids: string[]
+  indicator_ids: string[]
+  duration: '7D' | '30D' | '1Y' | '1L'  // Solo para grant
+  operation_type: 'grant' | 'revoke'     // NUEVO
+}
+```
+
+**Lógica de Revocación (3 pasos):**
+1. **Verificar acceso existente:** Query a `indicator_access` por user_id + indicator_id
+2. **Si NO tiene acceso:** Continuar sin error (omitir usuario)
+3. **Si SÍ tiene acceso:**
+   - Llamar DELETE al microservicio TradingView
+   - Actualizar registro en `indicator_access`: `status='revoked'`, `revoked_at=now()`
+   - Insertar en `indicator_access_log` con `operation_type='revoke'`
+
+**Características:**
+- ✅ Manejo inteligente de usuarios sin acceso (no detiene el proceso)
+- ✅ UI dinámica según operación (textos, colores, iconos)
+- ✅ Modal de progreso unificado para ambas operaciones
+- ✅ Auditoría completa en `indicator_access_log`
+
+#### 2. **Modal de Progreso en Tiempo Real**
+
+**Componente:** `BulkOperationProgressModal.tsx`
+
+**Características:**
+- Barra de progreso animada (0-95%)
+- Estimación de tiempo: `~(totalOperaciones / 2) segundos`
+- Contador de usuarios y operaciones
+- Spinner animado durante ejecución
+- Funciona tanto para grant como revoke
+
+#### 3. **Sistema de Historial con Búsqueda**
+
+**Ubicación:** `/admin/indicadores` → Tab "Historial"
+
+**Componente:** `HistorialTab.tsx`
+
+**Búsqueda Implementada:**
+- Input de búsqueda por email o TradingView username
+- Búsqueda preliminar en tabla `users`
+- Filtrado de registros de `indicator_access_log` por user_id
+- Funciona en combinación con otros filtros (fecha, tipo, status)
+
+**Endpoint actualizado:**
+```typescript
+GET /api/admin/access-audit?search={query}&page=1&limit=50&filters={...}
+```
+
+**Lógica de búsqueda:**
+```typescript
+// 1. Si hay query de búsqueda, buscar usuarios primero
+const { data: matchingUsers } = await supabase
+  .from('users')
+  .select('id')
+  .or(`email.ilike.%${searchQuery}%,tradingview_username.ilike.%${searchQuery}%`);
+
+// 2. Filtrar logs por user_ids encontrados
+query = query.in('user_id', userIds);
+```
+
+#### 4. **Tabla `indicator_access_log` - Auditoría Completa**
+
+**Problema resuelto:**
+- `indicator_access` usa `upsert` con UNIQUE constraint → sobrescribe registros
+- No se podía ver historial de operaciones previas
+- Las revocaciones no quedaban registradas
+
+**Solución:**
+- Nueva tabla `indicator_access_log` SIN unique constraint
+- Cada operación = nuevo registro (INSERT siempre, nunca UPDATE)
+- Campo `tradingview_username` NOT NULL (resuelto en commit `ff20745`)
+- Lectura de historial desde `indicator_access_log` ordenado por `created_at DESC`
+
+**Migración SQL:**
+```sql
+CREATE TABLE indicator_access_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  indicator_id UUID REFERENCES indicators(id),
+  tradingview_username TEXT NOT NULL,
+  operation_type TEXT, -- 'grant', 'revoke', 'renew'
+  access_source TEXT,
+  status TEXT,
+  granted_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+  revoked_at TIMESTAMPTZ,
+  duration_type TEXT,
+  subscription_id TEXT,
+  payment_intent_id TEXT,
+  indicator_access_id UUID,
+  tradingview_response JSONB,
+  error_message TEXT,
+  performed_by UUID,
+  notes TEXT,
+  metadata JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_indicator_access_log_user ON indicator_access_log(user_id);
+CREATE INDEX idx_indicator_access_log_indicator ON indicator_access_log(indicator_id);
+CREATE INDEX idx_indicator_access_log_created ON indicator_access_log(created_at DESC);
+CREATE INDEX idx_indicator_access_log_operation ON indicator_access_log(operation_type);
+```
+
+#### 5. **Modal de Resultados Personalizado**
+
+**Componente:** `BulkOperationResultModal.tsx`
+
+**Reemplaza:** Alertas nativas de navegador (`alert()`)
+
+**Características:**
+- Diseño profesional consistente con la aplicación
+- Iconos animados: CheckCircle (éxito) / XCircle (error)
+- Estadísticas visuales en grid:
+  - Total operaciones
+  - Exitosas
+  - Fallidas
+- Colores contextuales (emerald, red, blue)
+- Botón "Aceptar" para cerrar
+
+**También implementado en:**
+- `QuickActionsDropdown.tsx` (acciones rápidas en gestión de usuarios)
+- Reemplazados TODOS los `alert()` del sistema
+
+#### 6. **Mejoras UX en Tabla de Indicadores**
+
+**Archivo:** `IndicatorsTable.tsx`
+
+**Cambios:**
+- ❌ Botón "Ver detalles →" (grande, inconsistente)
+- ✅ Ícono de ojo compacto (p-2, consistente)
+- ✅ Tooltip "Ver detalles" en hover
+- ✅ Mismo tamaño que botones Editar y Eliminar
+- ✅ Uniformidad visual total
+
+#### 7. **Sincronización de Duración en Wizard**
+
+**Problema:** El `durationType` del wizard no se sincronizaba entre pasos
+
+**Solución:**
+- State elevado a `BulkAssignmentTab.tsx`
+- Props `durationType` y `onDurationChange` pasadas a `ConfigurationStep.tsx`
+- Ambos botones (grande y pequeño) ahora ejecutan con la duración correcta
+
+### **Componentes Modificados:**
+
+```
+✅ components/admin/indicators/BulkAssignmentTab.tsx
+✅ components/admin/indicators/ConfigurationStep.tsx
+✅ components/admin/indicators/BulkOperationProgressModal.tsx (NUEVO)
+✅ components/admin/indicators/BulkOperationResultModal.tsx (NUEVO)
+✅ components/admin/indicators/HistorialTab.tsx
+✅ components/admin/indicators/QuickActionsDropdown.tsx
+✅ components/admin/IndicatorsTable.tsx
+✅ app/api/admin/bulk-operations/execute/route.ts
+✅ app/api/admin/access-audit/route.ts
+✅ app/api/admin/users/[id]/revoke-all/route.ts
+```
+
+### **Endpoints Actualizados:**
+
+```typescript
+// Operaciones masivas con revocación
+POST /api/admin/bulk-operations/execute
+Body: {
+  user_ids: string[]
+  indicator_ids: string[]
+  duration?: '7D' | '30D' | '1Y' | '1L'
+  operation_type: 'grant' | 'revoke'  // NUEVO
+}
+
+// Historial con búsqueda
+GET /api/admin/access-audit?search={query}&page=1&limit=50&dateFrom=...&dateTo=...&status=...
+
+// Revocación individual (limpiado)
+POST /api/admin/users/[id]/revoke-all
+Response: {
+  success: boolean
+  message: string
+  results: {
+    total: number
+    successful: number
+    failed: number
+  }
+}
+```
+
+### **Fixes Críticos Aplicados:**
+
+1. **tradingview_username faltante en logs de revocación**
+   - Error: `null value in column "tradingview_username" violates not-null constraint`
+   - Solución: Agregado `tradingview_username` a `revokeRecords` y `revokeLogRecords`
+   - Commit: `ff20745`
+
+2. **Registros no aparecían en historial después de bulk operations**
+   - Causa: `upsert` en `indicator_access` sobrescribía registros
+   - Solución: Insert adicional en `indicator_access_log` después de cada operación
+   - Commit: `b75cd2b`
+
+3. **Degradaciones bloqueadas en bulk operations**
+   - Problema: No se podía cambiar Lifetime → 7D en operaciones masivas
+   - Solución: Flujo DELETE + POST para reemplazar acceso sin validar jerarquía
+   - Commit: `b75cd2b`
+
+---
+
+## ⏳ FASE 3: HISTORIAL Y AUDITORÍA (PARCIALMENTE COMPLETADA)
 
 ### **Objetivo:**
 Sistema completo de auditoría para rastrear todas las operaciones de acceso realizadas en el sistema.
@@ -1220,6 +1476,8 @@ jobs:
 | `78f2e89` | 4 Oct 2025 | Asignación masiva + tiers + fix "Recuperado" | 8 |
 | `5a51df0` | 4 Oct 2025 | Documentación completa para continuidad | 1 |
 | `7a96118` | 4 Oct 2025 | Fix: búsqueda usuarios formato response | 1 |
+| `b75cd2b` | 4 Oct 2025 | Operaciones masivas con progreso + tabla indicator_access_log | 9 |
+| `ff20745` | 4 Oct 2025 | Revocación masiva + modales personalizados + UX mejoras | 6 |
 
 ---
 
@@ -1384,16 +1642,28 @@ POST   /api/admin/bulk-operations/execute
 - [x] Migración SQL para legacy_users
 - [x] Endpoint search mejorado (users + legacy_users)
 
-### **Fase 3: Historial y Auditoría** ⏳
-- [ ] Componente HistorialTab
-- [ ] Tabla de operaciones con paginación
-- [ ] Filtros avanzados
-- [ ] Stats dashboard
-- [ ] Endpoint GET /api/admin/access-audit
-- [ ] Endpoint GET /api/admin/access-stats
-- [ ] Endpoint POST /api/admin/access-audit/export
+### **Fase 2.5: Revocación Masiva y Mejoras UX** ✅
+- [x] Sistema de revocación masiva
+- [x] Selector de tipo de operación (grant/revoke)
+- [x] Modal de progreso en tiempo real
+- [x] Tabla indicator_access_log para auditoría
+- [x] Búsqueda en historial por email/username
+- [x] Modal de resultados personalizado
+- [x] Mejoras UX en tabla de indicadores
+- [x] Sincronización de duración en wizard
+- [x] Reemplazo de alert() por modales custom
+
+### **Fase 3: Historial y Auditoría** 🔄 PARCIAL
+- [x] Componente HistorialTab
+- [x] Tabla de operaciones con paginación
+- [x] Búsqueda por email/username
+- [x] Filtros avanzados
+- [x] Endpoint GET /api/admin/access-audit
+- [ ] Stats dashboard (pendiente)
+- [ ] Endpoint GET /api/admin/access-stats (pendiente)
+- [ ] Endpoint POST /api/admin/access-audit/export (pendiente)
 - [ ] Gráficas (opcional)
-- [ ] Export CSV funcional
+- [ ] Export CSV funcional (pendiente)
 
 ### **Fase 4: Renovaciones Automáticas** ⏳
 - [ ] Migración SQL (renewal_rules, renewal_executions)
@@ -1582,16 +1852,21 @@ POST   /api/admin/bulk-operations/execute
 ✅ Concesión individual de accesos  
 ✅ Quick Actions (todos free, todos premium, renovar, revocar)  
 ✅ Asignación masiva con wizard de 3 pasos  
+✅ **NUEVO:** Sistema de revocación masiva completo  
+✅ **NUEVO:** Modal de progreso en tiempo real  
+✅ **NUEVO:** Tabla indicator_access_log para auditoría  
+✅ **NUEVO:** Historial con búsqueda por email/username  
+✅ **NUEVO:** Modales personalizados (sin alert())  
 ✅ Filtros avanzados por tier, tipo, estado  
 ✅ Cálculo automático de tiers para legacy users  
 ✅ Distinción clara: Activo, Legacy, Recuperado  
 ✅ Integración completa con microservicio TradingView  
 
 ### **Lo que falta desarrollar:**
-⏳ Tab 3: Historial y Auditoría (paginación, filtros, export CSV)  
+⏳ Tab 3: Stats dashboard, export CSV (parcialmente completado)  
 ⏳ Tab 4: Renovaciones Automáticas (reglas, cron job)  
 ⏳ Notificaciones por email a usuarios  
-⏳ Webhooks de Stripe para auto-gestión  
+⏳ Webhooks de Stripe para auto-gestión de accesos  
 ⏳ Testing automatizado  
 
 ### **Archivos más importantes:**
@@ -1609,11 +1884,20 @@ POST   /api/admin/bulk-operations/execute
 
 ---
 
-**Última actualización:** 4 de Octubre 2025, 17:45  
+**Última actualización:** 4 de Octubre 2025, 21:00  
 **Mantenido por:** Claude Sonnet 4.5 (Anthropic) + Usuario APIDevs  
-**Commits clave:** `fb75600`, `c8e9f18`, `78f2e89`, `5a51df0`, `7a96118`  
-**Estado del sistema:** ✅ 100% funcional (Fase 1 y 2), listo para producción  
+**Commits clave:** `fb75600`, `c8e9f18`, `78f2e89`, `5a51df0`, `7a96118`, `b75cd2b`, `ff20745`  
+**Estado del sistema:** ✅ 100% funcional (Fase 1, 2, 2.5 y 3 parcial), listo para producción  
 **Próxima IA:** Lee esta documentación completa antes de tocar código  
+
+**🎯 Progreso Hoy (4 Oct 2025):**
+- ✅ Sistema de revocación masiva implementado
+- ✅ Tabla indicator_access_log para auditoría completa
+- ✅ Historial con búsqueda por email/username
+- ✅ Modales personalizados (UX profesional)
+- ✅ 15 archivos modificados/creados
+- ✅ +1,000 líneas de código
+- 🎯 **PRÓXIMO:** Webhooks Stripe para auto-grant de accesos
 
 ---
 
