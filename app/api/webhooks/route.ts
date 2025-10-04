@@ -106,6 +106,14 @@ export async function POST(req: Request) {
           break;
         case 'checkout.session.completed':
           const checkoutSession = event.data.object as Stripe.Checkout.Session;
+          
+          // 🔍 CRÍTICO: Obtener line_items expandidos (no vienen por defecto en webhooks)
+          const sessionLineItems = await stripe.checkout.sessions.listLineItems(
+            checkoutSession.id,
+            { expand: ['data.price.product'] }
+          );
+          const lineItems = sessionLineItems.data || [];
+          
           if (checkoutSession.mode === 'subscription') {
             const subscriptionId = checkoutSession.subscription;
             await manageSubscriptionStatusChange(
@@ -117,9 +125,12 @@ export async function POST(req: Request) {
             // 🎯 AUTO-GRANT: Conceder acceso automático a indicadores
             const customer = await stripe.customers.retrieve(checkoutSession.customer as string);
             if (customer && !customer.deleted && customer.email) {
-              const lineItems = checkoutSession.line_items?.data || [];
               const productIds = extractProductIds(lineItems, checkoutSession.metadata || {});
               const priceId = lineItems[0]?.price?.id;
+              
+              console.log(`🎯 Webhook auto-grant (subscription): ${customer.email}`);
+              console.log(`   Price ID: ${priceId}`);
+              console.log(`   Product IDs: ${productIds.join(', ')}`);
               
               try {
                 await grantIndicatorAccessOnPurchase(
@@ -144,9 +155,12 @@ export async function POST(req: Request) {
               
               // 🎯 AUTO-GRANT: Conceder acceso automático a indicadores
               if (customer.email) {
-                const lineItems = checkoutSession.line_items?.data || [];
                 const productIds = extractProductIds(lineItems, paymentIntent.metadata || {});
                 const priceId = lineItems[0]?.price?.id;
+                
+                console.log(`🎯 Webhook auto-grant (one-time): ${customer.email}`);
+                console.log(`   Price ID: ${priceId}`);
+                console.log(`   Product IDs: ${productIds.join(', ')}`);
                 
                 try {
                   await grantIndicatorAccessOnPurchase(
