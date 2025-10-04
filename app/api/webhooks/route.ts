@@ -12,6 +12,10 @@ import {
   upsertInvoiceRecord
 } from '@/utils/supabase/admin';
 import { updateReactivationStatus } from '@/data/migration/update_reactivation';
+import { 
+  grantIndicatorAccessOnPurchase, 
+  extractProductIds 
+} from '@/utils/tradingview/auto-grant-access';
 
 const relevantEvents = new Set([
   'product.created',
@@ -109,6 +113,27 @@ export async function POST(req: Request) {
               checkoutSession.customer as string,
               true
             );
+            
+            // 🎯 AUTO-GRANT: Conceder acceso automático a indicadores
+            const customer = await stripe.customers.retrieve(checkoutSession.customer as string);
+            if (customer && !customer.deleted && customer.email) {
+              const lineItems = checkoutSession.line_items?.data || [];
+              const productIds = extractProductIds(lineItems, checkoutSession.metadata || {});
+              const priceId = lineItems[0]?.price?.id;
+              
+              try {
+                await grantIndicatorAccessOnPurchase(
+                  customer.email,
+                  productIds,
+                  priceId,
+                  undefined,
+                  'checkout'
+                );
+              } catch (error) {
+                console.error('⚠️ Error en auto-grant (checkout subscription):', error);
+                // No fallar el webhook por esto
+              }
+            }
           } else if (checkoutSession.mode === 'payment' && checkoutSession.payment_intent) {
             // Manejar compras one-time
             const paymentIntent = await stripe.paymentIntents.retrieve(checkoutSession.payment_intent as string);
@@ -116,6 +141,26 @@ export async function POST(req: Request) {
             
             if (customer && !customer.deleted) {
               await createPurchaseRecord(paymentIntent, customer);
+              
+              // 🎯 AUTO-GRANT: Conceder acceso automático a indicadores
+              if (customer.email) {
+                const lineItems = checkoutSession.line_items?.data || [];
+                const productIds = extractProductIds(lineItems, paymentIntent.metadata || {});
+                const priceId = lineItems[0]?.price?.id;
+                
+                try {
+                  await grantIndicatorAccessOnPurchase(
+                    customer.email,
+                    productIds,
+                    priceId,
+                    paymentIntent.id,
+                    'checkout'
+                  );
+                } catch (error) {
+                  console.error('⚠️ Error en auto-grant (checkout one-time):', error);
+                  // No fallar el webhook por esto
+                }
+              }
             }
           }
           break;
@@ -132,6 +177,24 @@ export async function POST(req: Request) {
             const customer = await stripe.customers.retrieve(paymentIntent.customer as string);
             if (customer && !customer.deleted) {
               await createPurchaseRecord(paymentIntent, customer);
+              
+              // 🎯 AUTO-GRANT: Conceder acceso automático a indicadores
+              if (customer.email) {
+                const productIds = extractProductIds([], paymentIntent.metadata || {});
+                
+                try {
+                  await grantIndicatorAccessOnPurchase(
+                    customer.email,
+                    productIds,
+                    undefined,
+                    paymentIntent.id,
+                    'checkout'
+                  );
+                } catch (error) {
+                  console.error('⚠️ Error en auto-grant (payment_intent):', error);
+                  // No fallar el webhook por esto
+                }
+              }
             }
           }
           break;
@@ -147,6 +210,29 @@ export async function POST(req: Request) {
           // Crear purchase record solo si payment_succeeded
           if (event.type === 'invoice.payment_succeeded') {
             await handleInvoicePayment(invoice);
+            
+            // 🎯 AUTO-GRANT: Conceder acceso automático a indicadores (suscripciones)
+            if (invoice.customer) {
+              const customer = await stripe.customers.retrieve(invoice.customer as string);
+              if (customer && !customer.deleted && customer.email) {
+                const lineItems = invoice.lines.data || [];
+                const productIds = extractProductIds(lineItems, invoice.metadata || {});
+                const priceId = lineItems[0]?.price?.id;
+                
+                try {
+                  await grantIndicatorAccessOnPurchase(
+                    customer.email,
+                    productIds,
+                    priceId,
+                    invoice.id,
+                    'invoice'
+                  );
+                } catch (error) {
+                  console.error('⚠️ Error en auto-grant (invoice):', error);
+                  // No fallar el webhook por esto
+                }
+              }
+            }
           }
           break;
         case 'charge.refunded':
