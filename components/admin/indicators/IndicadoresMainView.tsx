@@ -4,6 +4,7 @@ import { useState } from 'react';
 import IndicadoresTab from './IndicadoresTab';
 import GestionUsuariosTab from './GestionUsuariosTab';
 import BulkAssignmentTab from './BulkAssignmentTab';
+import HistorialTab from './HistorialTab';
 
 type Indicator = {
   id: string;
@@ -38,7 +39,7 @@ type Props = {
 };
 
 export default function IndicadoresMainView({ initialIndicators, stats }: Props) {
-  const [activeTab, setActiveTab] = useState<'indicadores' | 'usuarios' | 'asignacion'>('indicadores');
+  const [activeTab, setActiveTab] = useState<'indicadores' | 'usuarios' | 'asignacion' | 'historial'>('indicadores');
 
   return (
     <div className="min-h-screen">
@@ -210,9 +211,6 @@ export default function IndicadoresMainView({ initialIndicators, stats }: Props)
               <div className="flex flex-col items-start">
                 <span className="flex items-center gap-2">
                   Asignación Masiva
-                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-400">
-                    Nuevo
-                  </span>
                 </span>
                 <span className="text-xs text-gray-500 mt-0.5">
                   Operaciones bulk a múltiples usuarios
@@ -221,6 +219,54 @@ export default function IndicadoresMainView({ initialIndicators, stats }: Props)
 
               {/* Active indicator */}
               {activeTab === 'asignacion' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-apidevs-primary to-green-400" />
+              )}
+            </button>
+
+            {/* Tab Historial */}
+            <button
+              onClick={() => setActiveTab('historial')}
+              className={`
+                group relative flex items-center gap-3 px-6 py-4 border-b-2 font-medium text-sm transition-all
+                ${
+                  activeTab === 'historial'
+                    ? 'border-apidevs-primary text-apidevs-primary'
+                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-700'
+                }
+              `}
+            >
+              <svg
+                className={`h-5 w-5 ${
+                  activeTab === 'historial'
+                    ? 'text-apidevs-primary'
+                    : 'text-gray-400 group-hover:text-gray-300'
+                }`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+
+              <div className="flex flex-col items-start">
+                <span className="flex items-center gap-2">
+                  Historial
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-400">
+                    Nuevo
+                  </span>
+                </span>
+                <span className="text-xs text-gray-500 mt-0.5">
+                  Auditoría y seguimiento de operaciones
+                </span>
+              </div>
+
+              {/* Active indicator */}
+              {activeTab === 'historial' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-apidevs-primary to-green-400" />
               )}
             </button>
@@ -235,6 +281,7 @@ export default function IndicadoresMainView({ initialIndicators, stats }: Props)
         )}
         {activeTab === 'usuarios' && <GestionUsuariosTab />}
         {activeTab === 'asignacion' && <BulkAssignmentTab />}
+        {activeTab === 'historial' && <HistorialTab />}
       </div>
     </div>
   );
