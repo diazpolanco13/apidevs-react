@@ -28,11 +28,13 @@ export async function POST(request: Request) {
     const {
       user_ids,
       indicator_ids,
-      duration = '1Y'
+      duration = '1Y',
+      operation_type = 'grant'
     }: {
       user_ids: string[];
       indicator_ids: string[];
       duration: '7D' | '30D' | '1Y' | '1L';
+      operation_type: 'grant' | 'revoke';
     } = body;
 
     // Validaciones
@@ -58,7 +60,8 @@ export async function POST(request: Request) {
       users: user_ids.length,
       indicators: indicator_ids.length,
       total_operations: user_ids.length * indicator_ids.length,
-      duration
+      duration,
+      operation_type
     });
 
     // 1. Obtener datos de usuarios
@@ -117,23 +120,36 @@ export async function POST(request: Request) {
     // 3. Ejecutar operaciones masivas
     const results: BulkOperationResult[] = [];
     const accessRecords: any[] = [];
+    const revokeRecords: any[] = [];
 
     for (const user of validUsers as any[]) {
       for (const indicator of (indicators || []) as any[]) {
         try {
-          // 🔍 PASO 1: Verificar si existe acceso previo
-          const { data: existingAccess } = await supabase
-            .from('indicator_access')
-            .select('id, duration_type, status')
-            .eq('user_id', user.id)
-            .eq('indicator_id', indicator.id)
-            .eq('status', 'active')
-            .maybeSingle();
+          if (operation_type === 'revoke') {
+            // ═══════════════ FLUJO DE REVOCACIÓN ═══════════════
+            // 🔍 PASO 1: Verificar si el usuario tiene acceso activo
+            const { data: existingAccess } = await supabase
+              .from('indicator_access')
+              .select('id, duration_type, status')
+              .eq('user_id', user.id)
+              .eq('indicator_id', indicator.id)
+              .eq('status', 'active')
+              .maybeSingle();
 
-          // 🗑️ PASO 2: Si existe acceso, REVOCAR primero (permite degradaciones)
-          if (existingAccess) {
-            console.log(`🔄 Reemplazando acceso existente: ${(existingAccess as any).duration_type} → ${duration}`);
-            
+            // Si NO tiene acceso, simplemente continuar (no es error)
+            if (!existingAccess) {
+              console.log(`⏭️  Saltando ${user.email} - ${indicator.name}: Sin acceso activo`);
+              results.push({
+                user_id: user.id,
+                indicator_id: indicator.id,
+                success: true,
+                error: 'Usuario sin acceso activo (omitido)'
+              });
+              continue;
+            }
+
+            // 🗑️ PASO 2: Revocar en TradingView
+            console.log(`🗑️ Revocando ${user.email} - ${indicator.name}`);
             const deleteResponse = await fetch(
               `${TRADINGVIEW_API}/api/access/${user.tradingview_username}`,
               {
@@ -144,73 +160,121 @@ export async function POST(request: Request) {
                 })
               }
             );
+
+            const deleteResult = await deleteResponse.json();
             
-            await deleteResponse.json(); // Esperar respuesta
-            console.log(`🗑️ Acceso anterior revocado`);
-          }
-
-          // ✨ PASO 3: Conceder nuevo acceso
-          const tvResponse = await fetch(
-            `${TRADINGVIEW_API}/api/access/${user.tradingview_username}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                pine_ids: [indicator.pine_id],
-                duration: duration
-              })
-            }
-          );
-
-          const tvResult = await tvResponse.json();
-
-          // Verificar éxito
-          const isSuccess =
-            Array.isArray(tvResult) &&
-            tvResult.length > 0 &&
-            tvResult[0].status === 'Success';
-
-          if (isSuccess) {
+            // Marcar como exitoso (revocación siempre debería funcionar)
             results.push({
               user_id: user.id,
               indicator_id: indicator.id,
               success: true,
-              tv_response: tvResult[0]
+              tv_response: deleteResult
             });
 
-            // Calcular fecha de expiración
-            let expiration: string | null = null;
-            if (tvResult[0].expiration) {
-              expiration = new Date(tvResult[0].expiration).toISOString();
-            } else if (duration !== '1L') {
-              const now = new Date();
-              if (duration === '7D') now.setDate(now.getDate() + 7);
-              else if (duration === '30D') now.setDate(now.getDate() + 30);
-              else if (duration === '1Y') now.setFullYear(now.getFullYear() + 1);
-              expiration = now.toISOString();
-            }
-
-            // Preparar registro de acceso
-            accessRecords.push({
+            // Preparar actualización de registro (marcar como revoked)
+            revokeRecords.push({
+              id: (existingAccess as any).id,
               user_id: user.id,
               indicator_id: indicator.id,
               tradingview_username: user.tradingview_username,
-              status: 'active',
-              access_source: 'bulk',
-              duration_type: duration,
-              granted_at: new Date().toISOString(),
-              expires_at: expiration,
-              granted_by: adminUser.id,
-              auto_renew: false,
-              tradingview_response: tvResult[0]
+              status: 'revoked',
+              revoked_at: new Date().toISOString(),
+              revoked_by: adminUser.id
             });
+
           } else {
-            results.push({
-              user_id: user.id,
-              indicator_id: indicator.id,
-              success: false,
-              error: tvResult.error || 'Error desconocido de TradingView'
-            });
+            // ═══════════════ FLUJO DE CONCESIÓN ═══════════════
+            // 🔍 PASO 1: Verificar si existe acceso previo
+            const { data: existingAccess } = await supabase
+              .from('indicator_access')
+              .select('id, duration_type, status')
+              .eq('user_id', user.id)
+              .eq('indicator_id', indicator.id)
+              .eq('status', 'active')
+              .maybeSingle();
+
+            // 🗑️ PASO 2: Si existe acceso, REVOCAR primero (permite degradaciones)
+            if (existingAccess) {
+              console.log(`🔄 Reemplazando acceso existente: ${(existingAccess as any).duration_type} → ${duration}`);
+              
+              const deleteResponse = await fetch(
+                `${TRADINGVIEW_API}/api/access/${user.tradingview_username}`,
+                {
+                  method: 'DELETE',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    pine_ids: [indicator.pine_id]
+                  })
+                }
+              );
+              
+              await deleteResponse.json(); // Esperar respuesta
+              console.log(`🗑️ Acceso anterior revocado`);
+            }
+
+            // ✨ PASO 3: Conceder nuevo acceso
+            const tvResponse = await fetch(
+              `${TRADINGVIEW_API}/api/access/${user.tradingview_username}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  pine_ids: [indicator.pine_id],
+                  duration: duration
+                })
+              }
+            );
+
+            const tvResult = await tvResponse.json();
+
+            // Verificar éxito
+            const isSuccess =
+              Array.isArray(tvResult) &&
+              tvResult.length > 0 &&
+              tvResult[0].status === 'Success';
+
+            if (isSuccess) {
+              results.push({
+                user_id: user.id,
+                indicator_id: indicator.id,
+                success: true,
+                tv_response: tvResult[0]
+              });
+
+              // Calcular fecha de expiración
+              let expiration: string | null = null;
+              if (tvResult[0].expiration) {
+                expiration = new Date(tvResult[0].expiration).toISOString();
+              } else if (duration !== '1L') {
+                const now = new Date();
+                if (duration === '7D') now.setDate(now.getDate() + 7);
+                else if (duration === '30D') now.setDate(now.getDate() + 30);
+                else if (duration === '1Y') now.setFullYear(now.getFullYear() + 1);
+                expiration = now.toISOString();
+              }
+
+              // Preparar registro de acceso
+              accessRecords.push({
+                user_id: user.id,
+                indicator_id: indicator.id,
+                tradingview_username: user.tradingview_username,
+                status: 'active',
+                access_source: 'bulk',
+                duration_type: duration,
+                granted_at: new Date().toISOString(),
+                expires_at: expiration,
+                granted_by: adminUser.id,
+                auto_renew: false,
+                tradingview_response: tvResult[0]
+              });
+            } else {
+              results.push({
+                user_id: user.id,
+                indicator_id: indicator.id,
+                success: false,
+                error: tvResult.error || 'Error desconocido de TradingView'
+              });
+            }
           }
         } catch (error: any) {
           console.error(
@@ -268,6 +332,52 @@ export async function POST(request: Request) {
         } else {
           console.log(`✅ ${logRecords.length} operaciones en LOG de auditoría`);
         }
+      }
+    }
+
+    // 4.2 Guardar revocaciones en Supabase (update)
+    if (revokeRecords.length > 0) {
+      // Actualizar registros existentes a status='revoked'
+      for (const record of revokeRecords as any[]) {
+        const updateData: any = {
+          status: 'revoked',
+          revoked_at: record.revoked_at,
+          revoked_by: record.revoked_by
+        };
+        
+        const { error: updateError } = await (supabase.from('indicator_access') as any)
+          .update(updateData)
+          .eq('id', record.id);
+
+        if (updateError) {
+          console.error(`⚠️ Error actualizando acceso ${record.id}:`, updateError);
+        }
+      }
+      
+      console.log(`✅ ${revokeRecords.length} revocaciones guardadas en Supabase`);
+      
+      // 4.3 Guardar en LOG de auditoría
+      const revokeLogRecords = revokeRecords.map((record: any) => ({
+        user_id: record.user_id,
+        indicator_id: record.indicator_id,
+        tradingview_username: record.tradingview_username,
+        operation_type: 'revoke',
+        access_source: 'bulk',
+        status: 'revoked',
+        revoked_at: record.revoked_at,
+        performed_by: adminUser.id,
+        indicator_access_id: record.id,
+        notes: `Revocación masiva`
+      }));
+      
+      const { error: revokeLogError } = await supabase
+        .from('indicator_access_log')
+        .insert(revokeLogRecords as any);
+      
+      if (revokeLogError) {
+        console.error('⚠️ Error guardando LOG de revocaciones:', revokeLogError);
+      } else {
+        console.log(`✅ ${revokeLogRecords.length} revocaciones en LOG de auditoría`);
       }
     }
 
