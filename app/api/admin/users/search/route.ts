@@ -1,6 +1,9 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 
+// Force dynamic rendering (uses cookies for auth)
+export const dynamic = 'force-dynamic';
+
 // GET - Buscar usuarios por email o tradingview_username
 export async function GET(req: Request) {
   try {
