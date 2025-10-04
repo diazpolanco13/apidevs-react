@@ -75,7 +75,8 @@ export default function GestionUsuariosTab() {
         throw new Error('Error buscando usuarios');
       }
 
-      const users = await response.json();
+      const data = await response.json();
+      const users = data.users || data; // Soporte para ambos formatos
       setSearchResults(users);
 
       if (users.length === 0) {
