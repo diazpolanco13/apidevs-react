@@ -1,9 +1,7 @@
 import { Suspense } from 'react';
 import DashboardStats from '@/components/admin/DashboardStats';
 import RecentActivity from '@/components/admin/RecentActivity';
-import QuickActions from '@/components/admin/QuickActions';
-import Link from 'next/link';
-import { Users, BarChart3, ArrowRight, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export default async function AdminDashboard() {
   return (
@@ -26,49 +24,12 @@ export default async function AdminDashboard() {
         <DashboardStats />
       </Suspense>
 
-      {/* Quick Access Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Link
-          href="/admin/users"
-          className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-6 hover:border-blue-500/50 transition-all group"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <Users className="w-8 h-8 text-blue-400" />
-            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
-          </div>
-          <h3 className="text-lg font-semibold text-white mb-2">Usuarios Legacy</h3>
-          <p className="text-sm text-gray-400">Gestionar base de datos completa de 6,477 usuarios</p>
-        </Link>
-
-        <Link
-          href="/account"
-          className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 hover:border-purple-500/50 transition-all group"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <BarChart3 className="w-8 h-8 text-purple-400" />
-            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
-          </div>
-          <h3 className="text-lg font-semibold text-white mb-2">Mi Perfil Personal</h3>
-          <p className="text-sm text-gray-400">Ir a mi cuenta de usuario y suscripción</p>
-        </Link>
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activity - 2 columnas */}
-        <div className="lg:col-span-2">
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h3 className="text-xl font-bold text-white mb-6">Actividad Reciente</h3>
-            <Suspense fallback={<ActivityLoadingSkeleton />}>
-              <RecentActivity />
-            </Suspense>
-          </div>
-        </div>
-
-        {/* Quick Actions - 1 columna */}
-        <div className="lg:col-span-1">
-          <QuickActions />
-        </div>
+      {/* Recent Activity - Ancho Completo */}
+      <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+        <h3 className="text-xl font-bold text-white mb-6">Actividad Reciente</h3>
+        <Suspense fallback={<ActivityLoadingSkeleton />}>
+          <RecentActivity />
+        </Suspense>
       </div>
 
       {/* Status Message */}
