@@ -162,6 +162,37 @@ export default function HistorialTab() {
     setCurrentPage(1);
   };
 
+  const exportToCSV = async () => {
+    try {
+      const filters: any = {};
+      if (filterSource) filters.access_source = filterSource;
+      if (filterStatus) filters.status = filterStatus;
+      if (filterDateFrom) filters.date_from = filterDateFrom;
+      if (filterDateTo) filters.date_to = filterDateTo;
+
+      const response = await fetch('/api/admin/access-audit/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(filters)
+      });
+
+      if (!response.ok) throw new Error('Error exportando');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `historial-accesos-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error exportando:', error);
+      alert('Error al exportar. Intenta de nuevo.');
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { bg: string; text: string; icon: any }> = {
       active: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', icon: CheckCircle2 },
@@ -315,6 +346,14 @@ export default function HistorialTab() {
               className="text-xs text-gray-400 hover:text-white transition-colors"
             >
               Limpiar filtros
+            </button>
+            <button
+              onClick={exportToCSV}
+              className="flex items-center gap-1 px-3 py-1 bg-green-500/10 hover:bg-green-500/20 text-green-400 rounded-lg text-xs transition-colors"
+              title="Exportar a CSV"
+            >
+              <Download className="w-3 h-3" />
+              Exportar CSV
             </button>
             <button
               onClick={loadRecords}
