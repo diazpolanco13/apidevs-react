@@ -8,24 +8,29 @@ const TRADINGVIEW_API = 'http://185.218.124.241:5001';
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 /**
- * 🎯 MAPEO DE PRODUCTOS STRIPE → INDICADORES TRADINGVIEW
+ * 🎯 MAPEO DE PRODUCTOS STRIPE → TIER DE ACCESO
  * 
- * Actualiza este mapeo cuando agregues nuevos productos/indicadores
+ * Define qué tipo de acceso da cada producto:
+ * - 'all': Todos los indicadores (free + premium)
+ * - 'premium': Solo indicadores premium
+ * - 'free': Solo indicadores free
+ * - 'specific': Indicadores específicos (lista de pine_ids)
  */
-const PRODUCT_TO_INDICATORS_MAP: Record<string, string[]> = {
-  // Planes de suscripción → Todos los indicadores
-  'plan_mensual': ['PUB;af43255c0c144618842478be41c7ec18'], // Position Size
-  'plan_semestral': ['PUB;af43255c0c144618842478be41c7ec18'],
-  'plan_anual': ['PUB;af43255c0c144618842478be41c7ec18'],
-  'plan_lifetime': ['PUB;af43255c0c144618842478be41c7ec18'],
+const PRODUCT_ACCESS_MAP: Record<string, { 
+  type: 'all' | 'premium' | 'free' | 'specific',
+  pine_ids?: string[]
+}> = {
+  // Planes de suscripción → Acceso a TODOS los indicadores
+  'plan_mensual': { type: 'all' },
+  'plan_semestral': { type: 'all' },
+  'plan_anual': { type: 'all' },
+  'plan_lifetime': { type: 'all' },
   
-  // Indicadores individuales
-  'position_size': ['PUB;af43255c0c144618842478be41c7ec18'],
-  'rsi_bands': ['PUB;7c7e236c6da54dc4af78a87b788f126a'],
-  'rsi_scanner': ['PUB;ebd861d70a9f478bb06fe60c5d8f469c'],
+  // Si agregas productos específicos para indicadores individuales
+  // 'producto_indicador_x': { type: 'specific', pine_ids: ['PUB;xxxxx'] },
   
-  // Por defecto, cualquier compra da acceso a Position Size
-  'default': ['PUB;af43255c0c144618842478be41c7ec18']
+  // Por defecto, cualquier compra da acceso a todos los indicadores
+  'default': { type: 'all' }
 };
 
 /**
@@ -100,22 +105,26 @@ export async function grantIndicatorAccessOnPurchase(
 
     console.log(`   ✅ Usuario encontrado: ${user.tradingview_username}`);
 
-    // 2. Mapear productos → indicadores TradingView
-    const pineIds = mapProductsToIndicators(productIds);
+    // 2. Determinar qué tipo de acceso corresponde al producto
+    const accessConfig = getAccessConfigForProducts(productIds);
+    console.log(`   🎯 Tipo de acceso: ${accessConfig.type}`);
+
+    // 3. Obtener indicadores dinámicamente desde Supabase
+    const pineIds = await getIndicatorsForAccess(accessConfig);
     
     if (pineIds.length === 0) {
-      console.log(`   ⚠️ No se encontraron indicadores para los productos: ${productIds.join(', ')}`);
+      console.log(`   ⚠️ No se encontraron indicadores activos en la plataforma`);
       return {
         success: false,
         userId: user.id,
         tradingviewUsername: user.tradingview_username,
-        reason: 'No hay indicadores asociados a los productos comprados'
+        reason: 'No hay indicadores activos en la plataforma'
       };
     }
 
-    console.log(`   📦 ${pineIds.length} indicadores a conceder: ${pineIds.join(', ')}`);
+    console.log(`   📦 ${pineIds.length} indicadores a conceder (dinámicos desde DB)`);
 
-    // 3. Determinar duración del acceso
+    // 4. Determinar duración del acceso
     const duration = await getDurationFromPrice(priceId);
     console.log(`   ⏰ Duración: ${duration}`);
 
@@ -230,22 +239,67 @@ export async function grantIndicatorAccessOnPurchase(
 }
 
 /**
- * 🗺️ Mapea productos de Stripe a indicadores de TradingView
+ * 🗺️ Determina la configuración de acceso para los productos comprados
  */
-function mapProductsToIndicators(productIds: string[]): string[] {
-  const pineIds = new Set<string>();
+function getAccessConfigForProducts(productIds: string[]): { 
+  type: 'all' | 'premium' | 'free' | 'specific',
+  pine_ids?: string[]
+} {
+  // Si no hay productos, usar default
+  if (!productIds || productIds.length === 0) {
+    return PRODUCT_ACCESS_MAP['default'] || { type: 'all' };
+  }
 
+  // Buscar configuración para cada producto
   for (const productId of productIds) {
     // Normalizar el ID del producto (lowercase, sin espacios)
     const normalizedId = productId.toLowerCase().replace(/\s+/g, '_');
     
-    // Buscar en el mapeo
-    const indicators = PRODUCT_TO_INDICATORS_MAP[normalizedId] || PRODUCT_TO_INDICATORS_MAP['default'];
-    
-    indicators.forEach(id => pineIds.add(id));
+    // Si encuentra configuración específica, usarla
+    if (PRODUCT_ACCESS_MAP[normalizedId]) {
+      return PRODUCT_ACCESS_MAP[normalizedId];
+    }
   }
 
-  return Array.from(pineIds);
+  // Si no encuentra nada, usar default
+  return PRODUCT_ACCESS_MAP['default'] || { type: 'all' };
+}
+
+/**
+ * 📦 Obtiene los indicadores dinámicamente desde Supabase según el tipo de acceso
+ */
+async function getIndicatorsForAccess(accessConfig: { 
+  type: 'all' | 'premium' | 'free' | 'specific',
+  pine_ids?: string[]
+}): Promise<string[]> {
+  
+  // Si es acceso específico, retornar directamente
+  if (accessConfig.type === 'specific' && accessConfig.pine_ids) {
+    return accessConfig.pine_ids;
+  }
+
+  // Consultar indicadores activos desde Supabase
+  let query = supabase
+    .from('indicators')
+    .select('pine_id')
+    .eq('status', 'activo'); // Solo indicadores activos
+
+  // Filtrar por tier si es necesario
+  if (accessConfig.type === 'premium') {
+    query = query.eq('access_tier', 'premium');
+  } else if (accessConfig.type === 'free') {
+    query = query.eq('access_tier', 'free');
+  }
+  // Si es 'all', no filtrar por tier
+
+  const { data: indicators, error } = await query;
+
+  if (error || !indicators) {
+    console.error('❌ Error obteniendo indicadores:', error);
+    return [];
+  }
+
+  return indicators.map(ind => ind.pine_id);
 }
 
 /**
