@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { AlertCircle, Users, Target, Clock, Zap } from 'lucide-react';
 
 type User = {
@@ -22,15 +21,20 @@ type ConfigurationStepProps = {
   selectedIndicators: Indicator[];
   onExecute: (durationType: '7D' | '30D' | '1Y' | '1L') => void;
   executing: boolean;
+  durationType: '7D' | '30D' | '1Y' | '1L';
+  onDurationChange: (durationType: '7D' | '30D' | '1Y' | '1L') => void;
+  operationType: 'grant' | 'revoke';
 };
 
 export default function ConfigurationStep({
   selectedUsers,
   selectedIndicators,
   onExecute,
-  executing
+  executing,
+  durationType,
+  onDurationChange,
+  operationType
 }: ConfigurationStepProps) {
-  const [durationType, setDurationType] = useState<'7D' | '30D' | '1Y' | '1L'>('1Y');
 
   const totalOperations = selectedUsers.length * selectedIndicators.length;
 
@@ -44,18 +48,38 @@ export default function ConfigurationStep({
   return (
     <div className="space-y-6">
       {/* Warning Banner */}
-      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
+      <div className={`rounded-lg border p-4 ${
+        operationType === 'grant'
+          ? 'border-amber-500/30 bg-amber-500/10'
+          : 'border-red-500/30 bg-red-500/10'
+      }`}>
         <div className="flex gap-3">
-          <AlertCircle className="h-5 w-5 flex-shrink-0 text-amber-400" />
+          <AlertCircle className={`h-5 w-5 flex-shrink-0 ${
+            operationType === 'grant' ? 'text-amber-400' : 'text-red-400'
+          }`} />
           <div className="text-sm">
-            <p className="font-medium text-amber-300">
+            <p className={`font-medium ${
+              operationType === 'grant' ? 'text-amber-300' : 'text-red-300'
+            }`}>
               Estás a punto de realizar una operación masiva
             </p>
-            <p className="mt-1 text-amber-400/70">
-              Esta acción concederá acceso a {selectedIndicators.length} indicador
-              {selectedIndicators.length !== 1 ? 'es' : ''} para {selectedUsers.length}{' '}
-              usuario{selectedUsers.length !== 1 ? 's' : ''}. Total: {totalOperations}{' '}
-              operaciones en TradingView.
+            <p className={`mt-1 ${
+              operationType === 'grant' ? 'text-amber-400/70' : 'text-red-400/70'
+            }`}>
+              {operationType === 'grant' ? (
+                <>
+                  Esta acción <strong>concederá acceso</strong> a {selectedIndicators.length} indicador
+                  {selectedIndicators.length !== 1 ? 'es' : ''} para {selectedUsers.length}{' '}
+                  usuario{selectedUsers.length !== 1 ? 's' : ''}.
+                </>
+              ) : (
+                <>
+                  Esta acción <strong>revocará acceso</strong> de {selectedIndicators.length} indicador
+                  {selectedIndicators.length !== 1 ? 'es' : ''} para {selectedUsers.length}{' '}
+                  usuario{selectedUsers.length !== 1 ? 's' : ''}.
+                </>
+              )}{' '}
+              Total: {totalOperations} operaciones en TradingView.
             </p>
           </div>
         </div>
@@ -105,32 +129,34 @@ export default function ConfigurationStep({
         </div>
       </div>
 
-      {/* Duration Selection */}
-      <div>
-        <label className="mb-3 flex items-center gap-2 text-sm font-medium text-gray-300">
-          <Clock className="h-4 w-4" />
-          Duración del Acceso
-        </label>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {durationOptions.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => setDurationType(option.value)}
-              className={`group rounded-lg border-2 p-4 text-left transition-all ${
-                durationType === option.value
-                  ? 'border-emerald-500 bg-emerald-500/10'
-                  : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600 hover:bg-zinc-800'
-              }`}
-            >
-              <div className="mb-2 text-2xl">{option.icon}</div>
-              <div className="font-semibold text-white">{option.label}</div>
-              <div className="mt-1 text-xs text-gray-400">
-                {option.value === '1L' ? 'Sin expiración' : `Expira en ${option.label}`}
-              </div>
-            </button>
-          ))}
+      {/* Duration Selection - Solo para grant */}
+      {operationType === 'grant' && (
+        <div>
+          <label className="mb-3 flex items-center gap-2 text-sm font-medium text-gray-300">
+            <Clock className="h-4 w-4" />
+            Duración del Acceso
+          </label>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {durationOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => onDurationChange(option.value)}
+                className={`group rounded-lg border-2 p-4 text-left transition-all ${
+                  durationType === option.value
+                    ? 'border-emerald-500 bg-emerald-500/10'
+                    : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600 hover:bg-zinc-800'
+                }`}
+              >
+                <div className="mb-2 text-2xl">{option.icon}</div>
+                <div className="font-semibold text-white">{option.label}</div>
+                <div className="mt-1 text-xs text-gray-400">
+                  {option.value === '1L' ? 'Sin expiración' : `Expira en ${option.label}`}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* User Preview */}
       <div>
@@ -199,22 +225,43 @@ export default function ConfigurationStep({
       </div>
 
       {/* Execute Button */}
-      <div className="rounded-lg border border-purple-500/30 bg-purple-500/10 p-6">
-        <h3 className="mb-3 flex items-center gap-2 font-semibold text-purple-300">
+      <div className={`rounded-lg border p-6 ${
+        operationType === 'grant'
+          ? 'border-purple-500/30 bg-purple-500/10'
+          : 'border-red-500/30 bg-red-500/10'
+      }`}>
+        <h3 className={`mb-3 flex items-center gap-2 font-semibold ${
+          operationType === 'grant' ? 'text-purple-300' : 'text-red-300'
+        }`}>
           <Zap className="h-5 w-5" />
           Confirmación Final
         </h3>
-        <p className="mb-4 text-sm text-purple-400/70">
-          Se concederá acceso de <strong>{durationOptions.find((o) => o.value === durationType)?.label}</strong> a{' '}
-          <strong>{selectedIndicators.length}</strong> indicadores para{' '}
-          <strong>{selectedUsers.length}</strong> usuarios.
+        <p className={`mb-4 text-sm ${
+          operationType === 'grant' ? 'text-purple-400/70' : 'text-red-400/70'
+        }`}>
+          {operationType === 'grant' ? (
+            <>
+              Se concederá acceso de <strong>{durationOptions.find((o) => o.value === durationType)?.label}</strong> a{' '}
+              <strong>{selectedIndicators.length}</strong> indicadores para{' '}
+              <strong>{selectedUsers.length}</strong> usuarios.
+            </>
+          ) : (
+            <>
+              Se revocará el acceso de <strong>{selectedIndicators.length}</strong> indicadores para{' '}
+              <strong>{selectedUsers.length}</strong> usuarios.
+            </>
+          )}
           <br />
           Tiempo estimado: ~{Math.ceil(totalOperations / 2)} segundos
         </p>
         <button
           onClick={() => onExecute(durationType)}
           disabled={executing}
-          className="w-full rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 py-3 font-semibold text-white transition-all hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`w-full rounded-lg py-3 font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+            operationType === 'grant'
+              ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600'
+              : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
+          }`}
         >
           {executing ? (
             <span className="flex items-center justify-center gap-2">
@@ -240,7 +287,9 @@ export default function ConfigurationStep({
               Ejecutando... {totalOperations} operaciones
             </span>
           ) : (
-            <span>⚡ Ejecutar Asignación Masiva</span>
+            <span>
+              {operationType === 'grant' ? '⚡ Ejecutar Asignación Masiva' : '🗑️ Ejecutar Revocación Masiva'}
+            </span>
           )}
         </button>
       </div>

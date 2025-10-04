@@ -77,10 +77,6 @@ export async function POST(
       );
     }
 
-    console.log(
-      `🚫 Revocando ${activeAccesses.length} accesos de ${targetUser.tradingview_username}`
-    );
-
     // Preparar array de pine_ids
     const pineIds = activeAccesses
       .map((access) => access.indicators?.pine_id)
@@ -101,7 +97,6 @@ export async function POST(
     );
 
     const tvResult = await tvResponse.json();
-    console.log('📡 Respuesta de TradingView (Revoke):', tvResult);
 
     // Procesar resultados
     const results = {

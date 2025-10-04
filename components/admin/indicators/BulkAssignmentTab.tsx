@@ -29,12 +29,14 @@ type Indicator = {
 };
 
 type WizardStep = 1 | 2 | 3;
+type OperationType = 'grant' | 'revoke';
 
 export default function BulkAssignmentTab() {
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [selectedIndicators, setSelectedIndicators] = useState<Indicator[]>([]);
   const [durationType, setDurationType] = useState<'7D' | '30D' | '1Y' | '1L'>('1Y');
+  const [operationType, setOperationType] = useState<OperationType>('grant');
   const [executing, setExecuting] = useState(false);
   
   // Modal state
@@ -71,7 +73,8 @@ export default function BulkAssignmentTab() {
         body: JSON.stringify({
           user_ids: selectedUsers.map((u) => u.id),
           indicator_ids: selectedIndicators.map((i) => i.id),
-          duration: durationType
+          duration: durationType,
+          operation_type: operationType
         })
       });
 
@@ -207,6 +210,39 @@ export default function BulkAssignmentTab() {
         </div>
       </div>
 
+      {/* Operation Type Selector */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-gray-400">Tipo de Operación:</span>
+          </div>
+          <div className="flex gap-2 rounded-lg bg-zinc-800 p-1">
+            <button
+              onClick={() => setOperationType('grant')}
+              className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all ${
+                operationType === 'grant'
+                  ? 'bg-emerald-500 text-white shadow-lg'
+                  : 'text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              <span className="text-lg">✨</span>
+              Conceder Acceso
+            </button>
+            <button
+              onClick={() => setOperationType('revoke')}
+              className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all ${
+                operationType === 'revoke'
+                  ? 'bg-red-500 text-white shadow-lg'
+                  : 'text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              <span className="text-lg">🗑️</span>
+              Revocar Acceso
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Step Content */}
       <div className="min-h-[500px] rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
         {currentStep === 1 && (
@@ -229,6 +265,9 @@ export default function BulkAssignmentTab() {
             selectedIndicators={selectedIndicators}
             onExecute={handleExecute}
             executing={executing}
+            durationType={durationType}
+            onDurationChange={setDurationType}
+            operationType={operationType}
           />
         )}
       </div>
@@ -260,9 +299,9 @@ export default function BulkAssignmentTab() {
           </button>
         ) : (
           <button
-            onClick={() => alert('Ejecutar operación masiva')}
+            onClick={() => handleExecute(durationType)}
             disabled={executing}
-            className="rounded-lg bg-purple-500 px-6 py-3 font-medium text-white transition-colors hover:bg-purple-600 disabled:opacity-50"
+            className="rounded-lg bg-purple-500 px-6 py-3 font-medium text-white transition-colors hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {executing ? 'Ejecutando...' : '⚡ Ejecutar Asignación'}
           </button>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Gift, Zap, RefreshCw, Ban } from 'lucide-react';
+import { ChevronDown, Gift, Zap, RefreshCw, Ban, CheckCircle, XCircle } from 'lucide-react';
 
 type Props = {
   userId: string;
@@ -17,6 +17,12 @@ export default function QuickActionsDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [actionResult, setActionResult] = useState<{
+    success: boolean;
+    message: string;
+    results?: any;
+  } | null>(null);
   const [selectedAction, setSelectedAction] = useState<{
     type: string;
     title: string;
@@ -88,17 +94,25 @@ export default function QuickActionsDropdown({
         throw new Error(result.error || 'Error ejecutando acción');
       }
 
-      alert(
-        `✅ ${selectedAction.title}\n\n${result.message}\n\n` +
-          `Exitosos: ${result.results?.successful || 0}\n` +
-          `Fallidos: ${result.results?.failed || 0}`
-      );
-
-      onActionComplete();
+      // Mostrar modal de resultados
+      setActionResult({
+        success: true,
+        message: result.message || 'Operación completada',
+        results: result.results
+      });
+      setShowResultModal(true);
       setShowConfirmModal(false);
-      setSelectedAction(null);
+      
+      onActionComplete();
     } catch (error: any) {
-      alert(`❌ Error: ${error.message}`);
+      // Mostrar modal de error
+      setActionResult({
+        success: false,
+        message: error.message || 'Error desconocido',
+        results: null
+      });
+      setShowResultModal(true);
+      setShowConfirmModal(false);
     } finally {
       setLoading(false);
     }
@@ -208,6 +222,72 @@ export default function QuickActionsDropdown({
                 {loading ? 'Ejecutando...' : 'Confirmar'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Resultados */}
+      {showResultModal && actionResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl">
+            <div className="mb-6">
+              {actionResult.success ? (
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20">
+                    <CheckCircle className="h-6 w-6 text-emerald-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">✅ Operación Exitosa</h3>
+                    <p className="text-sm text-gray-400">{actionResult.message}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/20">
+                    <XCircle className="h-6 w-6 text-red-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">❌ Error</h3>
+                    <p className="text-sm text-gray-400">{actionResult.message}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Estadísticas de resultados */}
+              {actionResult.results && (
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
+                    <p className="text-xs text-gray-400">Total</p>
+                    <p className="text-2xl font-bold text-white">
+                      {actionResult.results.total || 0}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
+                    <p className="text-xs text-gray-400">Exitosos</p>
+                    <p className="text-2xl font-bold text-emerald-400">
+                      {actionResult.results.successful || 0}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3">
+                    <p className="text-xs text-gray-400">Fallidos</p>
+                    <p className="text-2xl font-bold text-red-400">
+                      {actionResult.results.failed || 0}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => {
+                setShowResultModal(false);
+                setActionResult(null);
+                setSelectedAction(null);
+              }}
+              className="w-full rounded-lg bg-emerald-500 px-4 py-3 font-medium text-white transition-colors hover:bg-emerald-600"
+            >
+              Aceptar
+            </button>
           </div>
         </div>
       )}
