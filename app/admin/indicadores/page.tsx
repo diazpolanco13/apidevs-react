@@ -33,11 +33,11 @@ export default async function IndicadoresAdminPage() {
   const stats = {
     total: indicators?.length || 0,
     activos: indicators?.filter((i) => i.status === 'activo').length || 0,
-    privados: indicators?.filter((i) => i.type === 'privado').length || 0,
-    publicos: indicators?.filter((i) => i.type === 'publico').length || 0,
     indicadores: indicators?.filter((i) => i.category === 'indicador').length || 0,
     escaners: indicators?.filter((i) => i.category === 'escaner').length || 0,
-    tools: indicators?.filter((i) => i.category === 'tools').length || 0
+    tools: indicators?.filter((i) => i.category === 'tools').length || 0,
+    free: indicators?.filter((i) => i.access_tier === 'free').length || 0,
+    premium: indicators?.filter((i) => i.access_tier === 'premium').length || 0
   };
 
   return (

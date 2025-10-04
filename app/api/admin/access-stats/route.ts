@@ -30,42 +30,44 @@ export async function GET(request: Request) {
     const dateFrom = new Date();
     dateFrom.setDate(dateFrom.getDate() - period);
 
-    // Total de operaciones en el período
+    // Total de operaciones en el período (desde indicator_access_log)
     const { count: totalOperations } = await supabase
-      .from('indicator_access')
+      .from('indicator_access_log')
       .select('id', { count: 'exact', head: true })
       .gte('created_at', dateFrom.toISOString());
 
-    // Operaciones exitosas (status = active o granted)
+    // Operaciones exitosas (access_status = active, granted, o success)
     const { count: successfulOperations } = await supabase
-      .from('indicator_access')
+      .from('indicator_access_log')
       .select('id', { count: 'exact', head: true })
       .gte('created_at', dateFrom.toISOString())
-      .in('status', ['active', 'granted']);
+      .in('access_status', ['active', 'granted', 'success']);
 
     // Operaciones fallidas
     const { count: failedOperations } = await supabase
-      .from('indicator_access')
+      .from('indicator_access_log')
       .select('id', { count: 'exact', head: true })
       .gte('created_at', dateFrom.toISOString())
-      .eq('status', 'failed');
+      .eq('access_status', 'failed');
 
     // Usuarios únicos afectados
     const { data: uniqueUsersData } = await supabase
-      .from('indicator_access')
+      .from('indicator_access_log')
       .select('user_id')
-      .gte('created_at', dateFrom.toISOString());
+      .gte('created_at', dateFrom.toISOString())
+      .not('user_id', 'is', null);
 
-    const uniqueUsers = new Set(uniqueUsersData?.map((r) => r.user_id) || []).size;
+    const uniqueUsers = new Set(uniqueUsersData?.map((r: any) => r.user_id).filter(Boolean) || []).size;
 
     // Indicadores únicos asignados
     const { data: uniqueIndicatorsData } = await supabase
-      .from('indicator_access')
+      .from('indicator_access_log')
       .select('indicator_id')
-      .gte('created_at', dateFrom.toISOString());
+      .gte('created_at', dateFrom.toISOString())
+      .not('indicator_id', 'is', null);
 
     const uniqueIndicators = new Set(
-      uniqueIndicatorsData?.map((r) => r.indicator_id) || []
+      uniqueIndicatorsData?.map((r: any) => r.indicator_id).filter(Boolean) || []
     ).size;
 
     // Accesos activos actualmente
@@ -93,7 +95,7 @@ export async function GET(request: Request) {
 
     // Distribución por fuente de acceso
     const { data: sourceDistribution } = await supabase
-      .from('indicator_access')
+      .from('indicator_access_log')
       .select('access_source')
       .gte('created_at', dateFrom.toISOString());
 
@@ -114,10 +116,10 @@ export async function GET(request: Request) {
       }
     });
 
-    // Distribución por tipo de operación
-    const { data: statusDistribution } = await supabase
-      .from('indicator_access')
-      .select('status')
+    // Distribución por tipo de operación (usando operation_type del log)
+    const { data: operationDistribution } = await supabase
+      .from('indicator_access_log')
+      .select('operation_type')
       .gte('created_at', dateFrom.toISOString());
 
     const byOperation = {
@@ -126,26 +128,19 @@ export async function GET(request: Request) {
       renewals: 0
     };
 
-    statusDistribution?.forEach((record) => {
-      if (record.status === 'granted' || record.status === 'active') {
+    operationDistribution?.forEach((record: any) => {
+      if (record.operation_type === 'grant') {
         byOperation.grants++;
-      } else if (record.status === 'revoked') {
+      } else if (record.operation_type === 'revoke') {
         byOperation.revokes++;
+      } else if (record.operation_type === 'renew') {
+        byOperation.renewals++;
       }
     });
 
-    // Contar renovaciones por renewal_count > 0
-    const { data: renewalsData } = await supabase
-      .from('indicator_access')
-      .select('renewal_count')
-      .gte('created_at', dateFrom.toISOString())
-      .gt('renewal_count', 0);
-
-    byOperation.renewals = renewalsData?.length || 0;
-
     // Timeline: operaciones por día (últimos N días)
     const { data: timelineData } = await supabase
-      .from('indicator_access')
+      .from('indicator_access_log')
       .select('created_at')
       .gte('created_at', dateFrom.toISOString())
       .order('created_at', { ascending: true });

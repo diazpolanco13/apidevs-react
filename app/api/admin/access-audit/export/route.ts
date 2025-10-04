@@ -40,61 +40,71 @@ export async function POST(request: Request) {
       indicator_id
     } = body;
 
-    // Construir query
+    // Construir query - LEER DE indicator_access_log (sin joins, enriquecer después)
     let query = supabase
-      .from('indicator_access')
-      .select(
-        `
-        id,
-        status,
-        granted_at,
-        expires_at,
-        revoked_at,
-        duration_type,
-        access_source,
-        error_message,
-        renewal_count,
-        created_at,
-        user:users!indicator_access_user_id_fkey (
-          email,
-          full_name,
-          tradingview_username
-        ),
-        indicator:indicators!indicator_access_indicator_id_fkey (
-          name,
-          pine_id,
-          category,
-          access_tier
-        ),
-        granted_by_user:users!indicator_access_granted_by_fkey (
-          email,
-          full_name
-        )
-      `
-      )
+      .from('indicator_access_log')
+      .select('*')
       .order('created_at', { ascending: false });
 
     // Aplicar filtros
     if (date_from) query = query.gte('created_at', date_from);
     if (date_to) query = query.lte('created_at', date_to);
     if (access_source) query = query.eq('access_source', access_source);
-    if (status) query = query.eq('status', status);
+    if (status) query = query.eq('access_status', status);
     if (user_id) query = query.eq('user_id', user_id);
     if (indicator_id) query = query.eq('indicator_id', indicator_id);
 
-    const { data: records, error } = await query;
+    const { data: logRecords, error } = await query;
 
     if (error) {
       console.error('❌ Error obteniendo registros:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    console.log(`✅ ${records?.length || 0} registros para exportar`);
+    console.log(`✅ ${logRecords?.length || 0} registros obtenidos del log`);
+
+    // Enriquecer datos: obtener usuarios e indicadores
+    const userIds = new Set<string>();
+    const performedByIds = new Set<string>();
+    const indicatorIds = new Set<string>();
+
+    logRecords?.forEach((record: any) => {
+      if (record.user_id) userIds.add(record.user_id);
+      if (record.performed_by) performedByIds.add(record.performed_by);
+      if (record.indicator_id) indicatorIds.add(record.indicator_id);
+    });
+
+    // Obtener usuarios
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, email, full_name, tradingview_username')
+      .in('id', Array.from(new Set([...userIds, ...performedByIds])));
+
+    // Obtener indicadores
+    const { data: indicators } = await supabase
+      .from('indicators')
+      .select('id, name, pine_id, category, access_tier')
+      .in('id', Array.from(indicatorIds));
+
+    // Crear mapas para lookup rápido
+    const usersMap = new Map(users?.map(u => [u.id, u]) || []);
+    const indicatorsMap = new Map(indicators?.map(i => [i.id, i]) || []);
+
+    // Enriquecer registros
+    const records = logRecords?.map((record: any) => ({
+      ...record,
+      user: record.user_id ? usersMap.get(record.user_id) : null,
+      indicator: record.indicator_id ? indicatorsMap.get(record.indicator_id) : null,
+      performed_by_user: record.performed_by ? usersMap.get(record.performed_by) : null
+    }));
+
+    console.log(`✅ ${records?.length || 0} registros enriquecidos para exportar`);
 
     // Generar CSV
     const headers = [
       'Fecha',
       'Hora',
+      'Operación',
       'Usuario Email',
       'Usuario TradingView',
       'Indicador',
@@ -104,17 +114,14 @@ export async function POST(request: Request) {
       'Estado',
       'Fuente',
       'Duración',
-      'Fecha Concesión',
-      'Fecha Expiración',
-      'Fecha Revocación',
-      'Renovaciones',
-      'Admin Concedió',
-      'Error'
+      'Admin Ejecutó',
+      'Error',
+      'Respuesta TradingView'
     ];
 
     const csvRows = [headers.join(',')];
 
-    records?.forEach((record) => {
+    records?.forEach((record: any) => {
       const createdAt = new Date(record.created_at);
       const fecha = createdAt.toLocaleDateString('es-ES');
       const hora = createdAt.toLocaleTimeString('es-ES');
@@ -122,21 +129,19 @@ export async function POST(request: Request) {
       const row = [
         fecha,
         hora,
+        escapeCsvField(record.operation_type || 'N/A'),
         escapeCsvField(record.user?.email || 'N/A'),
-        escapeCsvField(record.user?.tradingview_username || 'N/A'),
+        escapeCsvField(record.tradingview_username || record.user?.tradingview_username || 'N/A'),
         escapeCsvField(record.indicator?.name || 'N/A'),
         escapeCsvField(record.indicator?.pine_id || 'N/A'),
         escapeCsvField(record.indicator?.category || 'N/A'),
         escapeCsvField(record.indicator?.access_tier || 'N/A'),
-        record.status,
-        record.access_source,
-        record.duration_type || 'N/A',
-        record.granted_at ? formatDate(record.granted_at) : 'N/A',
-        record.expires_at ? formatDate(record.expires_at) : 'N/A',
-        record.revoked_at ? formatDate(record.revoked_at) : 'N/A',
-        record.renewal_count?.toString() || '0',
-        escapeCsvField(record.granted_by_user?.email || 'N/A'),
-        escapeCsvField(record.error_message || '')
+        escapeCsvField(record.access_status || 'N/A'),
+        escapeCsvField(record.access_source || 'N/A'),
+        escapeCsvField(record.duration_type || 'N/A'),
+        escapeCsvField(record.performed_by_user?.email || 'N/A'),
+        escapeCsvField(record.error_message || ''),
+        escapeCsvField(JSON.stringify(record.tradingview_response || {}))
       ];
 
       csvRows.push(row.join(','));

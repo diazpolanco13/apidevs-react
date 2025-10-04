@@ -27,14 +27,24 @@ export async function GET() {
     }
 
     console.log(`✅ ${indicators?.length || 0} indicadores obtenidos`);
+    
+    // Debug: Ver access_tier de cada indicador
+    console.log('🔍 Access tier de indicadores:', 
+      indicators?.map((i: any) => ({ name: i.name, access_tier: i.access_tier }))
+    );
 
     // Calcular estadísticas
     const stats = {
       total: indicators?.length || 0,
       activos: indicators?.filter((i: any) => i.status === 'activo').length || 0,
-      privados: indicators?.filter((i: any) => i.type === 'privado').length || 0,
+      indicadores: indicators?.filter((i: any) => i.category === 'indicador').length || 0,
+      escaners: indicators?.filter((i: any) => i.category === 'escaner').length || 0,
+      tools: indicators?.filter((i: any) => i.category === 'tools').length || 0,
+      free: indicators?.filter((i: any) => i.access_tier === 'free').length || 0,
       premium: indicators?.filter((i: any) => i.access_tier === 'premium').length || 0
     };
+    
+    console.log('📊 Stats calculadas:', stats);
 
     return NextResponse.json({ 
       indicators: indicators || [],

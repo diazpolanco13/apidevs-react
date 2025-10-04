@@ -101,6 +101,11 @@ export default function HistorialTab() {
   const [filterDateTo, setFilterDateTo] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Estados para exportación
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   // Cargar estadísticas al montar
   useEffect(() => {
@@ -166,6 +171,10 @@ export default function HistorialTab() {
   };
 
   const exportToCSV = async () => {
+    setExporting(true);
+    setExportError(null);
+    setExportSuccess(false);
+    
     try {
       const filters: any = {};
       if (filterSource) filters.access_source = filterSource;
@@ -179,7 +188,10 @@ export default function HistorialTab() {
         body: JSON.stringify(filters)
       });
 
-      if (!response.ok) throw new Error('Error exportando');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error exportando');
+      }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -190,9 +202,14 @@ export default function HistorialTab() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (error) {
+      
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 3000);
+    } catch (error: any) {
       console.error('Error exportando:', error);
-      alert('Error al exportar. Intenta de nuevo.');
+      setExportError(error.message || 'Error al exportar. Intenta de nuevo.');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -374,6 +391,20 @@ export default function HistorialTab() {
           </button>
 
           <div className="flex items-center gap-2">
+            {/* Mensajes de feedback */}
+            {exportSuccess && (
+              <div className="flex items-center gap-1 px-3 py-1 bg-green-500/10 text-green-400 rounded-lg text-xs">
+                <CheckCircle2 className="w-3 h-3" />
+                ¡CSV exportado exitosamente!
+              </div>
+            )}
+            {exportError && (
+              <div className="flex items-center gap-1 px-3 py-1 bg-red-500/10 text-red-400 rounded-lg text-xs">
+                <XCircle className="w-3 h-3" />
+                {exportError}
+              </div>
+            )}
+            
             <button
               onClick={clearFilters}
               className="text-xs text-gray-400 hover:text-white transition-colors"
@@ -382,11 +413,21 @@ export default function HistorialTab() {
             </button>
             <button
               onClick={exportToCSV}
-              className="flex items-center gap-1 px-3 py-1 bg-green-500/10 hover:bg-green-500/20 text-green-400 rounded-lg text-xs transition-colors"
+              disabled={exporting}
+              className="flex items-center gap-1 px-3 py-1 bg-green-500/10 hover:bg-green-500/20 text-green-400 rounded-lg text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Exportar a CSV"
             >
-              <Download className="w-3 h-3" />
-              Exportar CSV
+              {exporting ? (
+                <>
+                  <div className="w-3 h-3 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
+                  Exportando...
+                </>
+              ) : (
+                <>
+                  <Download className="w-3 h-3" />
+                  Exportar CSV
+                </>
+              )}
             </button>
             <button
               onClick={loadRecords}

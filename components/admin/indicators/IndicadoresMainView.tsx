@@ -26,11 +26,11 @@ type Indicator = {
 type Stats = {
   total: number;
   activos: number;
-  privados: number;
-  publicos: number;
   indicadores: number;
   escaners: number;
   tools: number;
+  free: number;
+  premium: number;
 };
 
 type Props = {
