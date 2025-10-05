@@ -275,7 +275,7 @@ export async function grantIndicatorAccessOnPurchase(
         indicator_id: indicator.id,
         tradingview_username: user.tradingview_username,
         operation_type: existingAccess ? 'renew' : 'grant',
-        access_source: 'stripe', // ✅ Identifica que viene de compra Stripe
+        access_source: 'purchase', // ✅ Identifica que viene de compra Stripe
         status: 'active',
         granted_at: grantedAt,
         expires_at: expiresAt,
@@ -283,7 +283,7 @@ export async function grantIndicatorAccessOnPurchase(
         tradingview_response: tvIndicator,
         performed_by: null, // Sistema automático
         indicator_access_id: savedAccessId,
-        notes: `Compra automática vía Stripe (${source}) - ${purchaseId || 'N/A'}`
+        notes: `Auto-grant vía Stripe (${source}) - Purchase ID: ${purchaseId || 'N/A'}`
       };
 
       await supabase
