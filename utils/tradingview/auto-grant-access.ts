@@ -20,16 +20,25 @@ const PRODUCT_ACCESS_MAP: Record<string, {
   type: 'all' | 'premium' | 'free' | 'specific',
   pine_ids?: string[]
 }> = {
-  // Planes de suscripción → Acceso a TODOS los indicadores
+  // Plan FREE → Solo indicadores gratuitos (access_tier='free')
+  'apidevs_indicator_-_free_plan': { type: 'free' },
+  'free_plan': { type: 'free' },
+  'free': { type: 'free' },
+  
+  // Planes PRO → Acceso a TODOS los indicadores
   'plan_mensual': { type: 'all' },
   'plan_semestral': { type: 'all' },
   'plan_anual': { type: 'all' },
+  'apidevs_indicator_-_pro': { type: 'all' },
+  
+  // Plan Lifetime → Acceso a TODOS los indicadores
   'plan_lifetime': { type: 'all' },
+  'apidevs_trading_indicators': { type: 'all' }, // Producto genérico PRO
   
   // Si agregas productos específicos para indicadores individuales
   // 'producto_indicador_x': { type: 'specific', pine_ids: ['PUB;xxxxx'] },
   
-  // Por defecto, cualquier compra da acceso a todos los indicadores
+  // Por defecto, si no coincide con nada, dar acceso a todos (planes PRO)
   'default': { type: 'all' }
 };
 
