@@ -42,7 +42,7 @@ export default async function AccountDashboard() {
     .eq('duration_type', '1L')
     .limit(1);
 
-  const hasLifetimeAccess = lifetimeAccess && lifetimeAccess.length > 0;
+  const hasLifetimeAccess = !!(lifetimeAccess && lifetimeAccess.length > 0);
 
   const productName = subscription?.prices?.products?.name || 'Free';
   
@@ -62,27 +62,21 @@ export default async function AccountDashboard() {
   }
   
   const isLifetime = hasLifetimeAccess || productName.toLowerCase().includes('lifetime');
-  const hasPremium = subscription?.status === 'active' || hasLifetimeAccess;
+  const hasPremium = !!(subscription?.status === 'active' || hasLifetimeAccess);
   const isPro = hasPremium && !isLifetime;
 
   // Obtener indicadores para mostrar en stats
-  const { data: indicatorsCount } = await supabase
-    .from('indicators')
-    .select('access_tier', { count: 'exact', head: true })
-    .eq('status', 'activo');
-
-  const { count: totalIndicators } = indicatorsCount || {};
   const { count: premiumIndicators } = await supabase
     .from('indicators')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'activo')
-    .eq('access_tier', 'premium') || {};
+    .eq('access_tier', 'premium');
 
   const { count: freeIndicators } = await supabase
     .from('indicators')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'activo')
-    .eq('access_tier', 'free') || {};
+    .eq('access_tier', 'free');
 
   // Quick stats - diferente para FREE vs PRO
   const stats = hasPremium ? [
