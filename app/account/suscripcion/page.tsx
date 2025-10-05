@@ -21,22 +21,33 @@ export default async function SuscripcionPage() {
     return redirect('/signin');
   }
 
+  // 🔍 Verificar si tiene accesos Lifetime activos (compra one-time)
+  const { data: lifetimeAccess } = await supabase
+    .from('indicator_access')
+    .select('id, duration_type, granted_at')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .eq('duration_type', '1L')
+    .limit(1);
+
+  const hasLifetimeAccess = lifetimeAccess && lifetimeAccess.length > 0;
+
   // Obtener el último payment intent exitoso para mostrar el precio REAL pagado y la fecha
   let actualPricePaid: number | null = null;
   let lastPaymentDate: string | null = null;
-  if (subscription) {
-    const { data: paymentIntents } = await supabase
-      .from('payment_intents')
-      .select('amount, status, created')
-      .eq('user_id', user.id)
-      .eq('status', 'succeeded')
-      .order('created', { ascending: false })
-      .limit(1) as { data: { amount: number; status: string; created: string }[] | null };
+  
+  // Buscar último pago (incluye compras Lifetime)
+  const { data: paymentIntents } = await supabase
+    .from('payment_intents')
+    .select('amount, status, created')
+    .eq('user_id', user.id)
+    .eq('status', 'succeeded')
+    .order('created', { ascending: false })
+    .limit(1) as { data: { amount: number; status: string; created: string }[] | null };
 
-    if (paymentIntents && paymentIntents.length > 0) {
-      actualPricePaid = paymentIntents[0].amount;
-      lastPaymentDate = paymentIntents[0].created;
-    }
+  if (paymentIntents && paymentIntents.length > 0) {
+    actualPricePaid = paymentIntents[0].amount;
+    lastPaymentDate = paymentIntents[0].created;
   }
 
   const productName = subscription?.prices?.products?.name || 'Free';
@@ -44,7 +55,9 @@ export default async function SuscripcionPage() {
   
   // Mapear nombres técnicos a nombres amigables
   let userPlan = productName;
-  if (productName === 'APIDevs Trading Indicators' && interval) {
+  if (hasLifetimeAccess) {
+    userPlan = 'Plan Lifetime Access';
+  } else if (productName === 'APIDevs Trading Indicators' && interval) {
     userPlan = interval === 'year' 
       ? 'Plan PRO Anual' 
       : interval === 'month' 
@@ -54,10 +67,10 @@ export default async function SuscripcionPage() {
     userPlan = 'Plan Lifetime Access';
   }
   
-  // Detectar si es premium: cualquier suscripción activa es premium
-  const isPro = subscription?.status === 'active' && !productName.toLowerCase().includes('lifetime');
-  const isLifetime = productName.toLowerCase().includes('lifetime');
-  const hasPremium = subscription?.status === 'active';
+  // Detectar si es premium: suscripción activa O accesos Lifetime
+  const isPro = subscription?.status === 'active' && !productName.toLowerCase().includes('lifetime') && !hasLifetimeAccess;
+  const isLifetime = hasLifetimeAccess || productName.toLowerCase().includes('lifetime');
+  const hasPremium = subscription?.status === 'active' || hasLifetimeAccess;
 
   return (
     <div className="space-y-6">
@@ -142,21 +155,32 @@ export default async function SuscripcionPage() {
                   <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="text-green-400 font-medium mb-2">
-                      Suscripción Activa
+                      {isLifetime ? 'Acceso Lifetime Activo' : 'Suscripción Activa'}
                     </div>
                     <div className="text-gray-300 text-sm">
-                      Estás suscrito al plan {subscription.prices?.products?.name}.
-                      {subscription.current_period_end && (
-                        <span>
-                          {' '}Próxima renovación: {' '}
-                          <span className="font-semibold text-white">
-                            {new Date(subscription.current_period_end).toLocaleDateString('es-ES', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })}
+                      {isLifetime ? (
+                        <>
+                          Tienes acceso de por vida a todos los indicadores premium.
+                          <span className="block mt-1 text-purple-400 font-semibold">
+                            ✨ Sin renovaciones ni cargos adicionales
                           </span>
-                        </span>
+                        </>
+                      ) : (
+                        <>
+                          Estás suscrito al plan {subscription.prices?.products?.name}.
+                          {subscription.current_period_end && !isPro && (
+                            <span>
+                              {' '}Próxima renovación: {' '}
+                              <span className="font-semibold text-white">
+                                {new Date(subscription.current_period_end).toLocaleDateString('es-ES', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric'
+                                })}
+                              </span>
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
