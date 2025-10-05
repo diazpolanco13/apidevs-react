@@ -71,7 +71,7 @@ export default async function AccountDashboard() {
     .select('indicator_id, indicators(access_tier)')
     .eq('user_id', user.id)
     .eq('status', 'active')
-    .gt('expires_at', new Date().toISOString());
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
 
   // Definir tipo para la respuesta de indicator_access con relación indicators
   type IndicatorAccessWithTier = {
@@ -223,57 +223,120 @@ export default async function AccountDashboard() {
         </div>
       )}
 
-      {/* Free Plan Motivational Banner - Solo mostrar si NO tiene premium */}
+      {/* Banner dinámico según indicadores activos */}
       {!hasPremium && (
-        <div className="bg-gradient-to-r from-apidevs-primary/10 via-green-400/10 to-apidevs-primary/10 border-2 border-apidevs-primary/30 rounded-2xl p-8 relative overflow-hidden">
-          {/* Animated glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-apidevs-primary/5 via-transparent to-apidevs-primary/5 animate-pulse blur-xl"></div>
-          
-          <div className="relative z-10">
-            <div className="flex items-center justify-between flex-wrap gap-6">
-              <div className="flex-1 min-w-[300px]">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 bg-apidevs-primary/20 rounded-full flex items-center justify-center">
-                    <Rocket className="w-6 h-6 text-apidevs-primary" />
+        <>
+          {/* Si tiene indicadores FREE activos - Banner de Plan FREE Activo */}
+          {freeIndicators > 0 ? (
+            <div className="bg-gradient-to-r from-gray-800/50 via-gray-700/50 to-gray-800/50 border-2 border-gray-600/50 rounded-2xl p-8 relative overflow-hidden">
+              {/* Subtle glow */}
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-600/5 via-transparent to-gray-600/5 blur-xl"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between flex-wrap gap-6">
+                  <div className="flex-1 min-w-[300px]">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
+                        <CheckCircle className="w-6 h-6 text-green-400" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                          ✅ Plan FREE Activo
+                        </h2>
+                        <p className="text-sm text-gray-400">Tienes acceso a {freeIndicators} indicadores gratuitos</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 mb-4 max-w-2xl">
+                      ¡Excelente! Ya puedes usar tus indicadores en TradingView. 
+                      <span className="text-apidevs-primary font-semibold"> Actualiza a PRO</span> para desbloquear {blockedIndicators} indicadores premium adicionales y funciones avanzadas.
+                    </p>
+                    <div className="flex flex-wrap gap-3 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-green-400 bg-green-500/10 px-3 py-1.5 rounded-lg border border-green-500/30">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>{freeIndicators} indicadores activos</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-400 bg-white/5 px-3 py-1.5 rounded-lg">
+                        <Lock className="w-4 h-4 flex-shrink-0" />
+                        <span>{blockedIndicators} indicadores premium</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-400 bg-white/5 px-3 py-1.5 rounded-lg">
+                        <Zap className="w-4 h-4 flex-shrink-0" />
+                        <span>Alertas en tiempo real</span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                      🎁 Desbloquea Todo el Potencial
-                    </h2>
-                    <p className="text-sm text-gray-400">Obtén acceso a indicadores de trading profesionales</p>
+                  <div className="flex flex-col gap-3">
+                    <Link
+                      href="/pricing"
+                      className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-apidevs-primary to-green-400 hover:from-green-400 hover:to-apidevs-primary text-black font-bold text-lg rounded-xl shadow-lg shadow-apidevs-primary/30 hover:shadow-apidevs-primary/50 transition-all transform hover:scale-105"
+                    >
+                      <Sparkles className="w-5 h-5" />
+                      Actualizar a PRO
+                    </Link>
+                    <Link
+                      href="/indicadores"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-2 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl border border-white/20 hover:border-apidevs-primary/50 transition-all"
+                    >
+                      Ver Mis Indicadores
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
                   </div>
                 </div>
-                <p className="text-gray-300 mb-4 max-w-2xl">
-                  Activa tu cuenta para acceder a indicadores de trading, alertas en tiempo real, y análisis avanzados. 
-                  <span className="text-apidevs-primary font-semibold"> Comienza gratis</span> o elige un plan PRO para desbloquear todo.
-                </p>
-                <div className="flex flex-wrap gap-3 mb-4">
-                  <div className="flex items-center gap-2 text-sm text-white bg-white/5 px-3 py-1.5 rounded-lg">
-                    <CheckCircle className="w-4 h-4 text-apidevs-primary flex-shrink-0" />
-                    <span>2 indicadores premium</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-white bg-white/5 px-3 py-1.5 rounded-lg">
-                    <CheckCircle className="w-4 h-4 text-apidevs-primary flex-shrink-0" />
-                    <span>Alertas ilimitadas</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-white bg-white/5 px-3 py-1.5 rounded-lg">
-                    <CheckCircle className="w-4 h-4 text-apidevs-primary flex-shrink-0" />
-                    <span>Soporte prioritario</span>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <Link
-                  href="/pricing"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-apidevs-primary to-green-400 hover:from-green-400 hover:to-apidevs-primary text-black font-bold text-lg rounded-xl shadow-lg shadow-apidevs-primary/30 hover:shadow-apidevs-primary/50 transition-all transform hover:scale-105"
-                >
-                  <Sparkles className="w-5 h-5" />
-                  Obtén tu Prueba Gratuita
-                </Link>
               </div>
             </div>
-          </div>
-        </div>
+          ) : (
+            /* Si NO tiene indicadores - Banner de activación */
+            <div className="bg-gradient-to-r from-apidevs-primary/10 via-green-400/10 to-apidevs-primary/10 border-2 border-apidevs-primary/30 rounded-2xl p-8 relative overflow-hidden">
+              {/* Animated glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-apidevs-primary/5 via-transparent to-apidevs-primary/5 animate-pulse blur-xl"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between flex-wrap gap-6">
+                  <div className="flex-1 min-w-[300px]">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-12 h-12 bg-apidevs-primary/20 rounded-full flex items-center justify-center">
+                        <Rocket className="w-6 h-6 text-apidevs-primary" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                          🎁 Desbloquea Todo el Potencial
+                        </h2>
+                        <p className="text-sm text-gray-400">Obtén acceso a indicadores de trading profesionales</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 mb-4 max-w-2xl">
+                      Activa tu cuenta para acceder a indicadores de trading, alertas en tiempo real, y análisis avanzados. 
+                      <span className="text-apidevs-primary font-semibold"> Comienza gratis</span> o elige un plan PRO para desbloquear todo.
+                    </p>
+                    <div className="flex flex-wrap gap-3 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-white bg-white/5 px-3 py-1.5 rounded-lg">
+                        <CheckCircle className="w-4 h-4 text-apidevs-primary flex-shrink-0" />
+                        <span>2 indicadores premium</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-white bg-white/5 px-3 py-1.5 rounded-lg">
+                        <CheckCircle className="w-4 h-4 text-apidevs-primary flex-shrink-0" />
+                        <span>Alertas ilimitadas</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-white bg-white/5 px-3 py-1.5 rounded-lg">
+                        <CheckCircle className="w-4 h-4 text-apidevs-primary flex-shrink-0" />
+                        <span>Soporte prioritario</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <Link
+                      href="/pricing"
+                      className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-apidevs-primary to-green-400 hover:from-green-400 hover:to-apidevs-primary text-black font-bold text-lg rounded-xl shadow-lg shadow-apidevs-primary/30 hover:shadow-apidevs-primary/50 transition-all transform hover:scale-105"
+                    >
+                      <Sparkles className="w-5 h-5" />
+                      Obtén tu Prueba Gratuita
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Stats Grid */}
