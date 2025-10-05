@@ -65,18 +65,43 @@ export default async function AccountDashboard() {
   const hasPremium = !!(subscription?.status === 'active' || hasLifetimeAccess);
   const isPro = hasPremium && !isLifetime;
 
-  // Obtener indicadores para mostrar en stats
-  const { count: premiumIndicators } = await supabase
+  // Obtener indicadores ACTIVOS del usuario (desde indicator_access)
+  const { data: userActiveIndicators } = await supabase
+    .from('indicator_access')
+    .select('indicator_id, indicators(access_tier)')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .gt('expires_at', new Date().toISOString());
+
+  // Definir tipo para la respuesta de indicator_access con relación indicators
+  type IndicatorAccessWithTier = {
+    indicator_id: string;
+    indicators: {
+      access_tier: string | null;
+    } | null;
+  };
+
+  // Contar indicadores FREE activos del usuario
+  const freeIndicators = (userActiveIndicators as IndicatorAccessWithTier[] | null)?.filter(
+    (access) => access.indicators?.access_tier === 'free'
+  ).length || 0;
+
+  // Contar indicadores PREMIUM activos del usuario
+  const activePremiumIndicators = (userActiveIndicators as IndicatorAccessWithTier[] | null)?.filter(
+    (access) => access.indicators?.access_tier === 'premium'
+  ).length || 0;
+
+  // Contar total de indicadores PREMIUM en la DB (para mostrar cuántos están bloqueados)
+  const { count: totalPremiumIndicators } = await supabase
     .from('indicators')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'activo')
     .eq('access_tier', 'premium');
 
-  const { count: freeIndicators } = await supabase
-    .from('indicators')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'activo')
-    .eq('access_tier', 'free');
+  // Calcular indicadores bloqueados (solo para usuarios FREE)
+  const blockedIndicators = hasPremium 
+    ? 0 
+    : (totalPremiumIndicators || 0) - activePremiumIndicators;
 
   // Quick stats - diferente para FREE vs PRO
   const stats = hasPremium ? [
@@ -84,8 +109,20 @@ export default async function AccountDashboard() {
     { name: 'Alertas Activas', value: '0', change: '0', icon: Bell },
     { name: 'Sesiones Este Mes', value: '0', change: '+0', icon: CheckCircle },
   ] : [
-    { name: 'Indicadores Gratuitos', value: (freeIndicators || 0).toString(), change: 'Disponibles', icon: TrendingUp, color: 'text-green-400' },
-    { name: 'Indicadores Bloqueados', value: (premiumIndicators || 0).toString(), change: '🔒 Premium', icon: Lock, color: 'text-orange-400' },
+    { 
+      name: 'Indicadores Activos', 
+      value: (freeIndicators || 0).toString(), 
+      change: freeIndicators > 0 ? 'Disponibles' : 'Obtén acceso', 
+      icon: TrendingUp, 
+      color: freeIndicators > 0 ? 'text-green-400' : 'text-gray-400' 
+    },
+    { 
+      name: 'Indicadores Bloqueados', 
+      value: (blockedIndicators || 0).toString(), 
+      change: '🔒 Premium', 
+      icon: Lock, 
+      color: 'text-orange-400' 
+    },
     { name: 'Plan Actual', value: 'Free', change: 'Mejorar ahora', icon: Shield, color: 'text-gray-400' },
   ];
 
@@ -203,12 +240,12 @@ export default async function AccountDashboard() {
                     <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                       🎁 Desbloquea Todo el Potencial
                     </h2>
-                    <p className="text-sm text-gray-400">Comienza con indicadores gratuitos</p>
+                    <p className="text-sm text-gray-400">Obtén acceso a indicadores de trading profesionales</p>
                   </div>
                 </div>
                 <p className="text-gray-300 mb-4 max-w-2xl">
-                  Accede a indicadores premium, alertas en tiempo real, y análisis avanzados. 
-                  <span className="text-apidevs-primary font-semibold"> Empieza tu prueba gratuita</span> y lleva tu trading al siguiente nivel.
+                  Activa tu cuenta para acceder a indicadores de trading, alertas en tiempo real, y análisis avanzados. 
+                  <span className="text-apidevs-primary font-semibold"> Comienza gratis</span> o elige un plan PRO para desbloquear todo.
                 </p>
                 <div className="flex flex-wrap gap-3 mb-4">
                   <div className="flex items-center gap-2 text-sm text-white bg-white/5 px-3 py-1.5 rounded-lg">
@@ -315,7 +352,7 @@ export default async function AccountDashboard() {
               </div>
               <div className="flex-1">
                 <h4 className="font-semibold text-white mb-1">Suscríbete y desbloquea indicadores</h4>
-                <p className="text-sm text-gray-400 mb-3">Accede a {premiumIndicators} indicadores premium y alertas en tiempo real</p>
+                <p className="text-sm text-gray-400 mb-3">Accede a {totalPremiumIndicators} indicadores premium y alertas en tiempo real</p>
                 <Link 
                   href="/pricing"
                   className="inline-flex items-center gap-2 text-sm font-medium text-apidevs-primary hover:text-green-400 transition-colors"
