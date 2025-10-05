@@ -59,6 +59,7 @@ export async function POST(
     }
 
     // Obtener TODOS los accesos activos del usuario
+    // ✅ FILTRAR: Solo indicadores con fecha de expiración (excluir Lifetime)
     const { data: activeAccesses, error: accessError } = await supabase
       .from('indicator_access')
       .select(
@@ -76,7 +77,9 @@ export async function POST(
       `
       )
       .eq('user_id', userId)
-      .eq('status', 'active');
+      .eq('status', 'active')
+      .not('duration_type', 'eq', '1L')  // ✅ Excluir Lifetime
+      .not('expires_at', 'is', null);     // ✅ Solo con fecha de expiración
 
     if (accessError) {
       console.error('Error fetching accesses:', accessError);
@@ -91,7 +94,15 @@ export async function POST(
 
     if (validActiveAccesses.length === 0) {
       return NextResponse.json(
-        { message: 'El usuario no tiene accesos activos para renovar' },
+        { 
+          success: false,
+          message: 'El usuario no tiene accesos renovables. Solo tiene accesos Lifetime que no requieren renovación.',
+          results: {
+            total: 0,
+            successful: 0,
+            failed: 0
+          }
+        },
         { status: 200 }
       );
     }

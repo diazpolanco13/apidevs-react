@@ -27,14 +27,12 @@ type Access = {
   id: string;
   user_id: string;
   indicator_id: string;
-  tradingview_username: string;
   status: string;
   granted_at: string | null;
   expires_at: string | null;
   revoked_at: string | null;
   duration_type: string | null;
-  subscription_id: string | null;
-  error_message: string | null;
+  access_source: string;
   created_at: string;
   users: {
     id: string;

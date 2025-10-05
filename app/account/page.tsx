@@ -3,7 +3,7 @@ import { checkOnboardingStatus } from '@/utils/auth-helpers/onboarding';
 import { getUser, getSubscription } from '@/utils/supabase/queries';
 import { getUserLoyaltyProfile } from '@/utils/supabase/loyalty';
 import { redirect } from 'next/navigation';
-import { TrendingUp, User, Shield, Bell, Zap, Crown, CheckCircle, ArrowRight, Sparkles, BookOpen, Video, LineChart, Target, Rocket, Lock } from 'lucide-react';
+import { TrendingUp, User, Shield, Bell, Zap, Crown, CheckCircle, ArrowRight, Sparkles, BookOpen, Video, LineChart, Target, Rocket, Lock, Gift } from 'lucide-react';
 import Link from 'next/link';
 import DashboardWelcome from '@/components/account/DashboardWelcome';
 import LegacyHeroBanner from '@/components/account/LegacyHeroBanner';
@@ -68,28 +68,42 @@ export default async function AccountDashboard() {
   // Obtener indicadores ACTIVOS del usuario (desde indicator_access)
   const { data: userActiveIndicators } = await supabase
     .from('indicator_access')
-    .select('indicator_id, indicators(access_tier)')
+    .select('indicator_id, duration_type, expires_at, indicators(access_tier)')
     .eq('user_id', user.id)
-    .eq('status', 'active')
-    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+    .eq('status', 'active');
 
   // Definir tipo para la respuesta de indicator_access con relación indicators
   type IndicatorAccessWithTier = {
     indicator_id: string;
+    duration_type: string | null;
+    expires_at: string | null;
     indicators: {
       access_tier: string | null;
     } | null;
   };
 
+  // Función helper para validar si un acceso está realmente activo
+  const isAccessActive = (access: IndicatorAccessWithTier): boolean => {
+    // Si es Lifetime (1L), siempre está activo
+    if (access.duration_type === '1L') return true;
+    // Si no tiene fecha de expiración, está activo
+    if (!access.expires_at) return true;
+    // Si tiene fecha de expiración, verificar que sea futura
+    return new Date(access.expires_at) > new Date();
+  };
+
+  // Filtrar solo los realmente activos
+  const validActiveIndicators = (userActiveIndicators as IndicatorAccessWithTier[] | null)?.filter(isAccessActive) || [];
+
   // Contar indicadores FREE activos del usuario
-  const freeIndicators = (userActiveIndicators as IndicatorAccessWithTier[] | null)?.filter(
+  const freeIndicators = validActiveIndicators.filter(
     (access) => access.indicators?.access_tier === 'free'
-  ).length || 0;
+  ).length;
 
   // Contar indicadores PREMIUM activos del usuario
-  const activePremiumIndicators = (userActiveIndicators as IndicatorAccessWithTier[] | null)?.filter(
+  const activePremiumIndicators = validActiveIndicators.filter(
     (access) => access.indicators?.access_tier === 'premium'
-  ).length || 0;
+  ).length;
 
   // Contar total de indicadores PREMIUM en la DB (para mostrar cuántos están bloqueados)
   const { count: totalPremiumIndicators } = await supabase
@@ -103,27 +117,54 @@ export default async function AccountDashboard() {
     ? 0 
     : (totalPremiumIndicators || 0) - activePremiumIndicators;
 
+  // Total de indicadores activos (free + premium) - usar el array ya filtrado
+  const totalActiveIndicators = validActiveIndicators.length;
+
   // Quick stats - diferente para FREE vs PRO
   const stats = hasPremium ? [
-    { name: 'Indicadores Usados', value: '0', change: '+0%', icon: TrendingUp },
-    { name: 'Alertas Activas', value: '0', change: '0', icon: Bell },
-    { name: 'Sesiones Este Mes', value: '0', change: '+0', icon: CheckCircle },
+    { 
+      name: 'Indicadores Totales', 
+      value: totalActiveIndicators.toString(), 
+      change: 'Activos', 
+      icon: TrendingUp,
+      color: 'text-apidevs-primary'
+    },
+    { 
+      name: 'Indicadores Free', 
+      value: freeIndicators.toString(), 
+      change: 'Gratuitos', 
+      icon: Gift,
+      color: 'text-emerald-400'
+    },
+    { 
+      name: 'Indicadores Premium', 
+      value: activePremiumIndicators.toString(), 
+      change: 'Premium', 
+      icon: Crown,
+      color: 'text-amber-400'
+    },
   ] : [
     { 
-      name: 'Indicadores Activos', 
-      value: (freeIndicators || 0).toString(), 
-      change: freeIndicators > 0 ? 'Disponibles' : 'Obtén acceso', 
+      name: 'Indicadores Totales', 
+      value: totalActiveIndicators.toString(), 
+      change: totalActiveIndicators > 0 ? 'Activos' : 'Sin acceso', 
       icon: TrendingUp, 
-      color: freeIndicators > 0 ? 'text-green-400' : 'text-gray-400' 
+      color: totalActiveIndicators > 0 ? 'text-apidevs-primary' : 'text-gray-400' 
+    },
+    { 
+      name: 'Indicadores Free', 
+      value: freeIndicators.toString(), 
+      change: freeIndicators > 0 ? 'Disponibles' : 'Ninguno', 
+      icon: Gift, 
+      color: freeIndicators > 0 ? 'text-emerald-400' : 'text-gray-400' 
     },
     { 
       name: 'Indicadores Bloqueados', 
       value: (blockedIndicators || 0).toString(), 
-      change: '🔒 Premium', 
+      change: '🔒 Requiere PRO', 
       icon: Lock, 
       color: 'text-orange-400' 
     },
-    { name: 'Plan Actual', value: 'Free', change: 'Mejorar ahora', icon: Shield, color: 'text-gray-400' },
   ];
 
   return (

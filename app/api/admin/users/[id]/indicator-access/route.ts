@@ -89,9 +89,19 @@ export async function GET(
       total: validAccesses.length,
       active:
         validAccesses.filter(
-          (a) =>
-            a.status === 'active' &&
-            (!a.expires_at || new Date(a.expires_at) > now)
+          (a) => {
+            // Si el status no es 'active', no contar
+            if (a.status !== 'active') return false;
+            
+            // Si es Lifetime (1L) y está activo, SIEMPRE contar
+            if (a.duration_type === '1L') return true;
+            
+            // Si tiene expires_at null (Lifetime sin duration_type), contar
+            if (!a.expires_at) return true;
+            
+            // Para accesos con expiración, verificar que no haya expirado
+            return new Date(a.expires_at) > now;
+          }
         ).length,
       pending: validAccesses.filter((a) => a.status === 'pending').length,
       expired: validAccesses.filter((a) => a.status === 'expired').length,

@@ -3,6 +3,7 @@ import { getUser, getSubscription } from '@/utils/supabase/queries';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { TrendingUp, Lock, Zap, ArrowRight } from 'lucide-react';
+import UserIndicatorsList from '@/components/account/UserIndicatorsList';
 
 export default async function IndicadoresPage() {
   const supabase = createClient();
@@ -15,10 +16,38 @@ export default async function IndicadoresPage() {
     return redirect('/signin');
   }
 
+  // Obtener los accesos a indicadores del usuario
+  const { data: indicatorAccesses } = await supabase
+    .from('indicator_access')
+    .select(`
+      id,
+      status,
+      granted_at,
+      expires_at,
+      duration_type,
+      access_source,
+      indicators:indicator_id (
+        id,
+        pine_id,
+        name,
+        description,
+        category,
+        access_tier,
+        tradingview_url,
+        public_script_url,
+        image_1
+      )
+    `)
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .order('granted_at', { ascending: false });
+
+  const validAccesses = (indicatorAccesses || []) as any[];
+
   const userPlan = subscription?.prices?.products?.name || 'Free';
   const isPro = userPlan.toLowerCase().includes('pro');
   const isLifetime = userPlan.toLowerCase().includes('lifetime');
-  const hasPremium = isPro || isLifetime;
+  const hasPremium = isPro || isLifetime || validAccesses.length > 0;
 
   // Si no tiene acceso premium, mostrar página de upgrade
   if (!hasPremium) {
@@ -81,7 +110,7 @@ export default async function IndicadoresPage() {
     );
   }
 
-  // Usuario con acceso premium
+  // Usuario con acceso premium o con indicadores
   return (
     <div className="space-y-6">
       <div>
@@ -89,28 +118,25 @@ export default async function IndicadoresPage() {
         <p className="text-gray-400">Gestiona y configura tus indicadores de trading</p>
       </div>
 
-      <div className="bg-gradient-to-r from-apidevs-primary/10 to-green-400/10 border border-apidevs-primary/30 rounded-2xl p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-full flex items-center justify-center">
-              <Zap className="w-6 h-6 text-black" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white">Plan PRO Activo</h3>
-              <p className="text-sm text-gray-300">Acceso completo a todos los indicadores</p>
+      {validAccesses.length > 0 && (
+        <div className="bg-gradient-to-r from-apidevs-primary/10 to-green-400/10 border border-apidevs-primary/30 rounded-2xl p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-full flex items-center justify-center">
+                <Zap className="w-6 h-6 text-black" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">
+                  {validAccesses.length} {validAccesses.length === 1 ? 'Indicador Activo' : 'Indicadores Activos'}
+                </h3>
+                <p className="text-sm text-gray-300">Acceso completo a tus herramientas de trading</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="text-center py-20">
-        <TrendingUp className="w-20 h-20 text-apidevs-primary mx-auto mb-6" />
-        <h2 className="text-2xl font-bold text-white mb-4">Próximamente</h2>
-        <p className="text-gray-400">
-          Estamos trabajando en esta sección para que puedas gestionar 
-          todos tus indicadores desde aquí.
-        </p>
-      </div>
+      <UserIndicatorsList accesses={validAccesses} />
     </div>
   );
 }

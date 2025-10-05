@@ -17,7 +17,9 @@ export default function QuickActionsDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showDurationModal, setShowDurationModal] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
+  const [selectedDuration, setSelectedDuration] = useState<'7D' | '30D' | '1Y' | '1L'>('30D');
   const [actionResult, setActionResult] = useState<{
     success: boolean;
     message: string;
@@ -44,7 +46,7 @@ export default function QuickActionsDropdown({
     {
       type: 'grant-all-premium',
       title: 'Conceder todos los Premium',
-      description: 'Otorgar acceso (1 año) a todos los indicadores premium',
+      description: 'Otorgar acceso a todos los indicadores premium',
       endpoint: `/api/admin/users/${userId}/grant-all-premium`,
       color: 'amber',
       icon: <Zap className="h-5 w-5" />
@@ -69,7 +71,14 @@ export default function QuickActionsDropdown({
 
   const handleActionClick = (action: typeof actions[0]) => {
     setSelectedAction(action);
-    setShowConfirmModal(true);
+    
+    // Si es "Renovar todos activos" o "Conceder Premium", mostrar primero selector de duración
+    if (action.type === 'renew-all' || action.type === 'grant-all-premium') {
+      setShowDurationModal(true);
+    } else {
+      setShowConfirmModal(true);
+    }
+    
     setIsOpen(false);
   };
 
@@ -84,7 +93,9 @@ export default function QuickActionsDropdown({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          duration_type: selectedAction.type === 'grant-all-premium' ? '1Y' : undefined
+          duration_type: (selectedAction.type === 'grant-all-premium' || selectedAction.type === 'renew-all')
+            ? selectedDuration 
+            : undefined
         })
       });
 
@@ -166,6 +177,160 @@ export default function QuickActionsDropdown({
         )}
       </div>
 
+      {/* Modal de Selección de Duración */}
+      {showDurationModal && selectedAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl">
+            <h3 className="mb-2 text-xl font-bold text-white">
+              ⏰ Seleccionar Duración
+            </h3>
+            <p className="mb-6 text-sm text-gray-400">
+              Elige por cuánto tiempo deseas renovar los accesos activos
+            </p>
+
+            <div className="mb-6 grid grid-cols-2 gap-3">
+              {/* 7 Días */}
+              <button
+                onClick={() => setSelectedDuration('7D')}
+                className={`group relative overflow-hidden rounded-xl border p-4 transition-all ${
+                  selectedDuration === '7D'
+                    ? 'border-emerald-500 bg-emerald-500/10'
+                    : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                    selectedDuration === '7D'
+                      ? 'bg-emerald-500/20 text-emerald-400'
+                      : 'bg-blue-500/20 text-blue-400'
+                  }`}>
+                    <span className="text-lg font-bold">7</span>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-white">7 Días</p>
+                    <p className="text-xs text-gray-400">Prueba corta</p>
+                  </div>
+                </div>
+                {selectedDuration === '7D' && (
+                  <div className="absolute right-2 top-2">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  </div>
+                )}
+              </button>
+
+              {/* 30 Días */}
+              <button
+                onClick={() => setSelectedDuration('30D')}
+                className={`group relative overflow-hidden rounded-xl border p-4 transition-all ${
+                  selectedDuration === '30D'
+                    ? 'border-emerald-500 bg-emerald-500/10'
+                    : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                    selectedDuration === '30D'
+                      ? 'bg-emerald-500/20 text-emerald-400'
+                      : 'bg-cyan-500/20 text-cyan-400'
+                  }`}>
+                    <span className="text-lg font-bold">30</span>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-white">30 Días</p>
+                    <p className="text-xs text-gray-400">Mensual</p>
+                  </div>
+                </div>
+                {selectedDuration === '30D' && (
+                  <div className="absolute right-2 top-2">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  </div>
+                )}
+              </button>
+
+              {/* 1 Año */}
+              <button
+                onClick={() => setSelectedDuration('1Y')}
+                className={`group relative overflow-hidden rounded-xl border p-4 transition-all ${
+                  selectedDuration === '1Y'
+                    ? 'border-emerald-500 bg-emerald-500/10'
+                    : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                    selectedDuration === '1Y'
+                      ? 'bg-emerald-500/20 text-emerald-400'
+                      : 'bg-purple-500/20 text-purple-400'
+                  }`}>
+                    <span className="text-lg font-bold">1Y</span>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-white">1 Año</p>
+                    <p className="text-xs text-gray-400">Anual</p>
+                  </div>
+                </div>
+                {selectedDuration === '1Y' && (
+                  <div className="absolute right-2 top-2">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  </div>
+                )}
+              </button>
+
+              {/* Lifetime */}
+              <button
+                onClick={() => setSelectedDuration('1L')}
+                className={`group relative overflow-hidden rounded-xl border p-4 transition-all ${
+                  selectedDuration === '1L'
+                    ? 'border-emerald-500 bg-emerald-500/10'
+                    : 'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                    selectedDuration === '1L'
+                      ? 'bg-emerald-500/20 text-emerald-400'
+                      : 'bg-amber-500/20 text-amber-400'
+                  }`}>
+                    <span className="text-lg font-bold">∞</span>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-white">Lifetime</p>
+                    <p className="text-xs text-gray-400">Permanente</p>
+                  </div>
+                </div>
+                {selectedDuration === '1L' && (
+                  <div className="absolute right-2 top-2">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  </div>
+                )}
+              </button>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDurationModal(false);
+                  setSelectedAction(null);
+                  setSelectedDuration('30D');
+                }}
+                className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 font-medium text-gray-300 transition-colors hover:bg-zinc-800"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  setShowDurationModal(false);
+                  setShowConfirmModal(true);
+                }}
+                className="flex-1 rounded-lg bg-emerald-500 px-4 py-3 font-medium text-white transition-colors hover:bg-emerald-600"
+              >
+                Continuar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal de Confirmación */}
       {showConfirmModal && selectedAction && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -189,6 +354,23 @@ export default function QuickActionsDropdown({
                 <p className="text-sm text-gray-400">{selectedAction.description}</p>
               </div>
 
+              {selectedAction.type === 'renew-all' && (
+                <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4">
+                  <p className="mb-1 text-sm font-medium text-blue-400">
+                    📅 Duración seleccionada:
+                  </p>
+                  <p className="text-lg font-bold text-white">
+                    {selectedDuration === '7D' && '7 Días'}
+                    {selectedDuration === '30D' && '30 Días (Mensual)'}
+                    {selectedDuration === '1Y' && '1 Año'}
+                    {selectedDuration === '1L' && 'Lifetime (Permanente)'}
+                  </p>
+                  <p className="mt-2 text-xs text-gray-400">
+                    ℹ️ Solo se renovarán los indicadores que tengan fecha de expiración. Los indicadores Lifetime existentes se omitirán automáticamente.
+                  </p>
+                </div>
+              )}
+
               {selectedAction.type === 'revoke-all' && (
                 <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4">
                   <p className="text-sm text-red-400">
@@ -204,6 +386,7 @@ export default function QuickActionsDropdown({
                 onClick={() => {
                   setShowConfirmModal(false);
                   setSelectedAction(null);
+                  setSelectedDuration('30D');
                 }}
                 className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 font-medium text-gray-300 transition-colors hover:bg-zinc-800"
                 disabled={loading}
