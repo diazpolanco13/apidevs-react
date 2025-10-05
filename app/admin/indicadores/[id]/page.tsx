@@ -37,37 +37,52 @@ export default async function IndicatorDetailPage({ params }: Params) {
     notFound();
   }
 
-  // Obtener accesos del indicador con información de usuarios
-  const { data: accesses } = await supabase
+  // Obtener accesos del indicador (sin join - lo haremos manualmente)
+  const { data: accessesRaw, error: accessesError } = await supabase
     .from('indicator_access')
-    .select(
-      `
-      *,
-      users:user_id (
-        id,
-        email,
-        full_name,
-        tradingview_username,
-        avatar_url
-      )
-    `
-    )
+    .select('*')
     .eq('indicator_id', params.id)
-    .order('created_at', { ascending: false });
+    .order('granted_at', { ascending: false });
 
-  // Type assertion for accesses
-  const validAccesses = (accesses || []) as any[];
+  if (accessesError) {
+    console.error('Error fetching accesses:', accessesError);
+  }
+
+  console.log('📊 Accesos RAW encontrados:', accessesRaw?.length || 0);
+
+  // Obtener información de usuarios para cada acceso
+  const validAccesses = await Promise.all(
+    (accessesRaw || []).map(async (access: any) => {
+      const { data: user } = await supabase
+        .from('users')
+        .select('id, email, full_name, tradingview_username, avatar_url')
+        .eq('id', access.user_id)
+        .single();
+
+      return {
+        ...access,
+        users: user
+      };
+    })
+  );
+
   const validIndicator = indicator as any;
 
-  // Calcular estadísticas
+  console.log('📊 Accesos con usuarios:', validAccesses.length);
+  console.log('📊 Primer acceso:', validAccesses[0]);
+
+  // Calcular estadísticas (incluir Lifetime en activos)
   const stats = {
     total_accesses: validAccesses.length,
-    active_accesses:
-      validAccesses.filter(
-        (a) =>
-          a.status === 'active' &&
-          (!a.expires_at || new Date(a.expires_at) > new Date())
-      ).length,
+    active_accesses: validAccesses.filter((a) => {
+      if (a.status !== 'active') return false;
+      // Lifetime siempre está activo
+      if (a.duration_type === '1L') return true;
+      // Sin expiración está activo
+      if (!a.expires_at) return true;
+      // Con expiración futura está activo
+      return new Date(a.expires_at) > new Date();
+    }).length,
     pending_accesses: validAccesses.filter((a) => a.status === 'pending').length,
     expired_accesses: validAccesses.filter((a) => a.status === 'expired').length,
     revoked_accesses: validAccesses.filter((a) => a.status === 'revoked').length,

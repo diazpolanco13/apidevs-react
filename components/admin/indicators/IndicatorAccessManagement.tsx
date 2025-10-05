@@ -16,14 +16,12 @@ type Access = {
   id: string;
   user_id: string;
   indicator_id: string;
-  tradingview_username: string;
   status: string;
   granted_at: string | null;
   expires_at: string | null;
   revoked_at: string | null;
   duration_type: string | null;
-  subscription_id: string | null;
-  error_message: string | null;
+  access_source: string;
   created_at: string;
   users: {
     id: string;
@@ -72,17 +70,24 @@ export default function IndicatorAccessManagement({
 
     const matchesSearch =
       searchTerm === '' ||
-      access.tradingview_username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      access.users?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      access.users?.tradingview_username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      access.users?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       access.users?.full_name?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesFilter && matchesSearch;
   });
 
-  const getStatusColor = (status: string, expiresAt: string | null) => {
+  const getStatusColor = (status: string, expiresAt: string | null, durationType: string | null) => {
+    // Si es Lifetime, siempre mostrar como activo (ignorar expires_at)
+    if (durationType === '1L' && status === 'active') {
+      return 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400';
+    }
+    
+    // Si tiene fecha de expiración y ya expiró, mostrar como expirado
     if (expiresAt && new Date(expiresAt) < new Date()) {
       return 'border-gray-500/30 bg-gray-500/20 text-gray-400';
     }
+    
     switch (status) {
       case 'active':
         return 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400';
@@ -210,7 +215,7 @@ export default function IndicatorAccessManagement({
                   Duración
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">
-                  Expira
+                  Concedido
                 </th>
                 <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-400">
                   Acciones
@@ -258,19 +263,25 @@ export default function IndicatorAccessManagement({
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <code className="rounded bg-zinc-800 px-2 py-1 text-xs text-cyan-400">
-                        {access.tradingview_username}
-                      </code>
+                      {access.users?.tradingview_username ? (
+                        <code className="rounded bg-zinc-800 px-2 py-1 text-xs text-cyan-400">
+                          @{access.users.tradingview_username}
+                        </code>
+                      ) : (
+                        <span className="text-sm text-gray-500">Sin username</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${getStatusColor(
                           access.status,
-                          access.expires_at
+                          access.expires_at,
+                          access.duration_type
                         )}`}
                       >
-                        {access.expires_at &&
-                        new Date(access.expires_at) < new Date()
+                        {access.duration_type === '1L'
+                          ? 'Activo'
+                          : access.expires_at && new Date(access.expires_at) < new Date()
                           ? 'Expirado'
                           : access.status}
                       </span>
@@ -281,22 +292,23 @@ export default function IndicatorAccessManagement({
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      {access.expires_at ? (
+                      {access.granted_at ? (
                         <span className="text-sm text-gray-300">
                           {format(
-                            new Date(access.expires_at),
+                            new Date(access.granted_at),
                             "d 'de' MMM yyyy",
                             { locale: es }
                           )}
                         </span>
                       ) : (
-                        <span className="text-sm text-gray-500">Permanente</span>
+                        <span className="text-sm text-gray-500">Sin fecha</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         {access.status === 'active' &&
-                          (!access.expires_at ||
+                          (access.duration_type === '1L' ||
+                            !access.expires_at ||
                             new Date(access.expires_at) > new Date()) && (
                             <button
                               onClick={() => handleRevoke(access)}
@@ -318,26 +330,6 @@ export default function IndicatorAccessManagement({
                               </svg>
                             </button>
                           )}
-                        {access.error_message && (
-                          <button
-                            className="rounded-lg bg-orange-500/10 p-2 text-orange-400"
-                            title={access.error_message}
-                          >
-                            <svg
-                              className="h-4 w-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                              />
-                            </svg>
-                          </button>
-                        )}
                       </div>
                     </td>
                   </tr>

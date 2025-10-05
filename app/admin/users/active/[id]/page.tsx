@@ -10,6 +10,7 @@ import ActiveUserTabs from '@/components/admin/active-users/ActiveUserTabs';
 import ActiveUserBilling from '@/components/admin/active-users/ActiveUserBilling';
 import ActiveUserActions from '@/components/admin/active-users/ActiveUserActions';
 import ActiveUserTimeline from '@/components/admin/active-users/ActiveUserTimeline';
+import AdminIndicatorAccessList from '@/components/admin/active-users/AdminIndicatorAccessList';
 
 interface ActiveUserDetailPageProps {
   params: {
@@ -106,42 +107,39 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
     (sub: any) => ['active', 'trialing'].includes(sub.status)
   );
 
-  // 4.5 🔍 Verificar accesos Lifetime (compras one-time)
-  const { data: lifetimeAccess, error: lifetimeError } = await supabase
+  // 5. Accesos a TradingView - usar SOLO indicator_access (tabla nueva)
+  const { data: allIndicatorAccess, error: accessError } = await supabase
     .from('indicator_access')
-    .select('id, duration_type, granted_at, indicator_id, indicators(name, pine_id)')
-    .eq('user_id', params.id)
-    .eq('status', 'active')
-    .eq('duration_type', '1L');
-
-  const hasLifetimeAccess = !!(lifetimeAccess && lifetimeAccess.length > 0);
-
-  if (lifetimeError) {
-    console.error('Error fetching lifetime access:', lifetimeError);
-  }
-
-  // 5. Accesos a TradingView
-  const { data: indicatorAccess, error: accessError } = await supabase
-    .from('user_indicator_access')
     .select(`
-      *,
-      tradingview_indicators (*)
+      id,
+      status,
+      granted_at,
+      expires_at,
+      duration_type,
+      access_source,
+      indicator_id,
+      indicators:indicator_id (
+        id,
+        pine_id,
+        name,
+        description,
+        category,
+        access_tier,
+        tradingview_url,
+        public_script_url,
+        image_1
+      )
     `)
-    .eq('user_id', params.id);
+    .eq('user_id', params.id)
+    .order('granted_at', { ascending: false });
 
   if (accessError) {
     console.error('Error fetching indicator access:', accessError);
   }
-  
-  // Combinar accesos de ambas fuentes
-  const allIndicatorAccess = [
-    ...(indicatorAccess || []),
-    ...(lifetimeAccess || []).map((access: any) => ({
-      ...access,
-      access_type: 'lifetime',
-      tradingview_indicators: access.indicators
-    }))
-  ];
+
+  // 4.5 🔍 Verificar si tiene accesos Lifetime (para el banner)
+  const lifetimeAccess = allIndicatorAccess?.filter((a: any) => a.duration_type === '1L') || [];
+  const hasLifetimeAccess = lifetimeAccess.length > 0;
 
   // 6. Payment Intents desde Supabase
   const { data: paymentIntents, error: paymentIntentsError } = await supabase
@@ -222,31 +220,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
 
         {/* Indicator Access */}
         {allIndicatorAccess && allIndicatorAccess.length > 0 && (
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Accesos a Indicadores TradingView</h3>
-            <div className="space-y-3">
-              {allIndicatorAccess.map((access: any) => (
-                <div 
-                  key={access.id}
-                  className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10"
-                >
-                  <div>
-                    <p className="text-white font-medium">
-                      {access.tradingview_indicators?.name || 'Indicador Desconocido'}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      Estado: <span className="text-green-400">{access.access_status}</span>
-                    </p>
-                  </div>
-                  {access.expires_at && (
-                    <div className="text-right text-xs text-gray-400">
-                      Expira: {new Date(access.expires_at).toLocaleDateString('es-ES')}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+          <AdminIndicatorAccessList accesses={allIndicatorAccess as any} />
         )}
       </div>
     </div>

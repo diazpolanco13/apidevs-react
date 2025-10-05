@@ -29,8 +29,27 @@ export default async function IndicadoresAdminPage() {
     console.error('Error fetching indicators:', error);
   }
 
+  // Para cada indicador, contar usuarios activos con acceso válido
+  const indicatorsWithCounts = await Promise.all(
+    (indicators || []).map(async (indicator: any) => {
+      // Contar usuarios activos con acceso válido (status = 'active' y no expirado)
+      const { count: activeUsersCount } = await supabase
+        .from('indicator_access')
+        .select('*', { count: 'exact', head: true })
+        .eq('indicator_id', indicator.id)
+        .eq('status', 'active')
+        .or(`duration_type.eq.1L,expires_at.gt.${new Date().toISOString()}`);
+
+      return {
+        ...indicator,
+        active_users: activeUsersCount || 0,
+        total_users: activeUsersCount || 0 // Por ahora igual, pero podríamos contar histórico
+      };
+    })
+  );
+
   // Type assertion for indicators
-  const validIndicators = (indicators || []) as any[];
+  const validIndicators = indicatorsWithCounts as any[];
 
   // Calcular estadísticas
   const stats = {
