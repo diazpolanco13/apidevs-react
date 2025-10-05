@@ -1,25 +1,118 @@
-# Next.js Subscription Payments Starter
+# 📊 APIDevs Trading Platform
 
+**Plataforma de trading moderna con indicadores técnicos, suscripciones y gestión de accesos TradingView**
 
-> [!WARNING]  
-> This repo has been sunset and replaced by a new template: https://github.com/nextjs/saas-starter
+> [!IMPORTANT]
+> **Estado del proyecto:** MVP Completo ✅
+> **Usuarios migrados:** 6,477 usuarios legacy
+> **Documentación completa:** Disponible en `/docs-site`
 
-## Features
+## 🎯 Características Principales
 
-- Secure user management and authentication with [Supabase](https://supabase.io/docs/guides/auth)
-- Powerful data access & management tooling on top of PostgreSQL with [Supabase](https://supabase.io/docs/guides/database)
-- Integration with [Stripe Checkout](https://stripe.com/docs/payments/checkout) and the [Stripe customer portal](https://stripe.com/docs/billing/subscriptions/customer-portal)
-- Automatic syncing of pricing plans and subscription statuses via [Stripe webhooks](https://stripe.com/docs/webhooks)
+- ✅ **Sistema de TradingView** - Gestión completa de accesos a 500+ indicadores
+- ✅ **Suscripciones Stripe** - 4 planes de precio con renovaciones automáticas
+- ✅ **Dashboard Admin** - 6 secciones críticas completamente funcionales
+- ✅ **Geo-Analytics** - Tracking de visitantes con mapas interactivos
+- ✅ **Sistema de Cookies** - Consentimiento GDPR compliant
+- ✅ **Customer Portal** - Gestión autónoma de suscripciones
 
-## Demo
+## 📚 Documentación
 
-- https://subscription-payments.vercel.app/
+La documentación técnica completa está disponible en el sitio Docusaurus dedicado:
 
-[![Screenshot of demo](./public/demo.png)](https://subscription-payments.vercel.app/)
+### 🚀 **Inicio Rápido**
+```bash
+# Iniciar documentación local
+./scripts/start-docs.sh
 
-## Architecture
+# O manualmente
+cd docs-site && npm start
+```
 
-![Architecture diagram](./public/architecture_diagram.png)
+**URL Local:** http://localhost:4000
+**URL Producción:** https://docs.apidevs-platform.com
+
+### 📖 **Contenido Disponible**
+- **[Sistema TradingView](docs-site/docs/systems/tradingview-access/overview.md)** - 3,369 líneas de documentación técnica
+- **[Sistema de Compras](docs-site/docs/systems/purchases/overview.md)** - Dashboard admin completo
+- **[Proyecto General](docs-site/docs/project/overview.md)** - Arquitectura y contexto completo
+- **Templates Estandarizados** - Para mantener consistencia
+
+## 🛠️ Stack Tecnológico
+
+- **Frontend:** Next.js 14.2.3 + TypeScript + Tailwind CSS
+- **Backend:** Next.js API Routes + Supabase PostgreSQL
+- **Pagos:** Stripe (webhooks automáticos)
+- **Trading:** API TradingView con microservicio Python
+- **Deployment:** Vercel + GitHub CI/CD
+- **Documentación:** Docusaurus v3.9.1
+
+## 🚀 Inicio Rápido
+
+### Desarrollo Local
+```bash
+# Instalar dependencias
+npm install
+
+# Configurar variables de entorno (.env.local)
+cp .env.example .env.local
+
+# Iniciar servidor de desarrollo
+npm run dev
+```
+
+### Variables de Entorno Requeridas
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role
+
+# Stripe
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# TradingView
+TRADINGVIEW_API_KEY=your_tradingview_key
+
+# App
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+## 🏗️ Arquitectura del Sistema
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    USUARIO FINAL                             │
+├─────────────────────────────────────────────────────────────┤
+│  • Landing page con showcase de indicadores                 │
+│  • Checkout personalizado con geolocalización               │
+│  • Customer Portal para gestión de suscripciones            │
+│  • Dashboard de indicadores con TradingView                 │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 DASHBOARD ADMIN (/admin)                    │
+├─────────────────────────────────────────────────────────────┤
+│  • Gestión de usuarios legacy (6,477 migrados)              │
+│  • Sistema de accesos TradingView                           │
+│  • Analytics de compras y revenue                           │
+│  • Geo-analytics con mapas Plotly                           │
+│  • Gestión de cookies y tracking                            │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│              SISTEMAS EXTERNOS                              │
+├─────────────────────────────────────────────────────────────┤
+│  • Supabase (BD + Auth)                                     │
+│  • Stripe (Pagos + Webhooks)                                │
+│  • TradingView (Indicadores + API)                          │
+│  • Vercel (Hosting + Analytics)                             │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## Step-by-step setup
 
@@ -259,3 +352,4 @@ To run the project in live mode and process payments with Stripe, switch Stripe 
 Afterward, you will need to rebuild your production deployment for the changes to take effect. Within your project Dashboard, navigate to the "Deployments" tab, select the most recent deployment, click the overflow menu button (next to the "Visit" button) and select "Redeploy" (do NOT enable the "Use existing Build Cache" option).
 
 To verify you are running in production mode, test checking out with the [Stripe test card](https://stripe.com/docs/testing). The test card should not work.
+# Test change for husky
