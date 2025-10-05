@@ -131,7 +131,8 @@ export async function grantIndicatorAccessOnPurchase(
       };
     }
 
-    console.log(`   📦 ${pineIds.length} indicadores a conceder (dinámicos desde DB)`);
+    console.log(`   📦 ${pineIds.length} indicadores a conceder (dinámicos desde DB):`);
+    console.log(`      ${pineIds.join(', ')}`);
 
     // 4. Determinar duración del acceso
     const duration = await getDurationFromPrice(priceId);
@@ -286,8 +287,11 @@ function getAccessConfigForProducts(productIds: string[]): {
   type: 'all' | 'premium' | 'free' | 'specific',
   pine_ids?: string[]
 } {
+  console.log(`   🔍 Buscando configuración de acceso para productos:`, productIds);
+  
   // Si no hay productos, usar default
   if (!productIds || productIds.length === 0) {
+    console.log(`   ⚠️ No hay productos, usando default: 'all'`);
     return PRODUCT_ACCESS_MAP['default'] || { type: 'all' };
   }
 
@@ -295,14 +299,17 @@ function getAccessConfigForProducts(productIds: string[]): {
   for (const productId of productIds) {
     // Normalizar el ID del producto (lowercase, sin espacios)
     const normalizedId = productId.toLowerCase().replace(/\s+/g, '_');
+    console.log(`   🔄 Producto normalizado: '${productId}' → '${normalizedId}'`);
     
     // Si encuentra configuración específica, usarla
     if (PRODUCT_ACCESS_MAP[normalizedId]) {
+      console.log(`   ✅ Coincidencia encontrada! Tipo: '${PRODUCT_ACCESS_MAP[normalizedId].type}'`);
       return PRODUCT_ACCESS_MAP[normalizedId];
     }
   }
 
   // Si no encuentra nada, usar default
+  console.log(`   ⚠️ No se encontró coincidencia, usando default: 'all'`);
   return PRODUCT_ACCESS_MAP['default'] || { type: 'all' };
 }
 
@@ -314,22 +321,29 @@ async function getIndicatorsForAccess(accessConfig: {
   pine_ids?: string[]
 }): Promise<string[]> {
   
+  console.log(`   📚 Obteniendo indicadores para tipo: '${accessConfig.type}'`);
+  
   // Si es acceso específico, retornar directamente
   if (accessConfig.type === 'specific' && accessConfig.pine_ids) {
+    console.log(`   ✅ Acceso específico: ${accessConfig.pine_ids.length} indicadores`);
     return accessConfig.pine_ids;
   }
 
   // Consultar indicadores activos desde Supabase
   let query = supabase
     .from('indicators')
-    .select('pine_id')
+    .select('pine_id, name, access_tier')
     .eq('status', 'activo'); // Solo indicadores activos
 
   // Filtrar por tier si es necesario
   if (accessConfig.type === 'premium') {
+    console.log(`   🔍 Filtrando por access_tier = 'premium'`);
     query = query.eq('access_tier', 'premium');
   } else if (accessConfig.type === 'free') {
+    console.log(`   🔍 Filtrando por access_tier = 'free'`);
     query = query.eq('access_tier', 'free');
+  } else {
+    console.log(`   🔍 Sin filtro de tier (obtener TODOS los indicadores activos)`);
   }
   // Si es 'all', no filtrar por tier
 
@@ -339,6 +353,11 @@ async function getIndicatorsForAccess(accessConfig: {
     console.error('❌ Error obteniendo indicadores:', error);
     return [];
   }
+
+  console.log(`   ✅ ${indicators.length} indicadores obtenidos desde DB:`);
+  indicators.forEach(ind => {
+    console.log(`      - ${ind.name} [${ind.access_tier}] (${ind.pine_id})`);
+  });
 
   return indicators.map(ind => ind.pine_id);
 }
