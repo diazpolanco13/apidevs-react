@@ -69,7 +69,7 @@ duration: 1 año
 
 ### Flujo de Tracking
 
-```mermaid
+```
 Usuario visita página
   ↓
 Middleware intercepta request
@@ -141,7 +141,7 @@ const response = await fetch('/api/tracking/conversion', {
 // En tu webhook de Stripe
 if (event.type === 'checkout.session.completed') {
   const session = event.data.object;
-  
+
   await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/tracking/conversion`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -162,7 +162,7 @@ if (event.type === 'checkout.session.completed') {
 
 ```sql
 -- Ver últimas 10 visitas
-SELECT 
+SELECT
   session_id,
   country_name,
   city,
@@ -179,7 +179,7 @@ LIMIT 10;
 
 ```sql
 -- Ver conversiones por campaña UTM
-SELECT 
+SELECT
   utm_campaign,
   COUNT(*) as total_visits,
   COUNT(*) FILTER (WHERE purchased = TRUE) as total_purchases,
@@ -337,4 +337,3 @@ Para issues o preguntas:
 - Revisar cookie `apidevs_session_id`
 
 **Documentación actualizada:** Octubre 2025
-
