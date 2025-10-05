@@ -37,19 +37,19 @@ export async function GET(request: Request) {
       .select('id', { count: 'exact', head: true })
       .gte('created_at', dateFrom.toISOString());
 
-    // Operaciones exitosas (access_status = active, granted, o success)
+    // Operaciones exitosas (status = active, granted, o success)
     const { count: successfulOperations } = await supabase
       .from('indicator_access_log')
       .select('id', { count: 'exact', head: true })
       .gte('created_at', dateFrom.toISOString())
-      .in('access_status', ['active', 'granted', 'success']);
+      .in('status', ['active', 'granted', 'success']);
 
     // Operaciones fallidas
     const { count: failedOperations } = await supabase
       .from('indicator_access_log')
       .select('id', { count: 'exact', head: true })
       .gte('created_at', dateFrom.toISOString())
-      .eq('access_status', 'failed');
+      .eq('status', 'failed');
 
     // Usuarios únicos afectados
     const { data: uniqueUsersData } = await supabase

@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     if (date_from) query = query.gte('created_at', date_from);
     if (date_to) query = query.lte('created_at', date_to);
     if (access_source) query = query.eq('access_source', access_source);
-    if (status) query = query.eq('access_status', status);
+    if (status) query = query.eq('status', status);
     if (user_id) query = query.eq('user_id', user_id);
     if (indicator_id) query = query.eq('indicator_id', indicator_id);
 
@@ -147,7 +147,7 @@ export async function POST(request: Request) {
         escapeCsvField(record.indicator?.pine_id || 'N/A'),
         escapeCsvField(record.indicator?.category || 'N/A'),
         escapeCsvField(record.indicator?.access_tier || 'N/A'),
-        escapeCsvField(record.access_status || 'N/A'),
+        escapeCsvField(record.status || 'N/A'),
         escapeCsvField(record.access_source || 'N/A'),
         escapeCsvField(record.duration_type || 'N/A'),
         escapeCsvField(record.performed_by_user?.email || 'N/A'),
