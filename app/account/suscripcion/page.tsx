@@ -22,13 +22,21 @@ export default async function SuscripcionPage() {
   }
 
   // 🔍 Verificar si tiene accesos Lifetime activos (compra one-time)
-  const { data: lifetimeAccess } = await supabase
+  const { data: lifetimeAccess, error: lifetimeError } = await supabase
     .from('indicator_access')
     .select('id, duration_type, granted_at')
     .eq('user_id', user.id)
     .eq('status', 'active')
     .eq('duration_type', '1L')
     .limit(1);
+
+  // 🐛 DEBUG TEMPORAL
+  console.log('=== DEBUG LIFETIME ACCESS ===');
+  console.log('User ID:', user.id);
+  console.log('Lifetime Access Data:', lifetimeAccess);
+  console.log('Lifetime Access Error:', lifetimeError);
+  console.log('Has Lifetime Access:', lifetimeAccess && lifetimeAccess.length > 0);
+  console.log('============================');
 
   const hasLifetimeAccess = lifetimeAccess && lifetimeAccess.length > 0;
 
