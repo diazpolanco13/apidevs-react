@@ -138,31 +138,64 @@ export async function grantIndicatorAccessOnPurchase(
     const duration = await getDurationFromPrice(priceId);
     console.log(`   ⏰ Duración: ${duration}`);
 
-    // 4. Conceder acceso en TradingView
+    // 5. Conceder acceso en TradingView usando BULK API (más eficiente)
+    const TRADINGVIEW_API_KEY = '92a1e4a8c74e1871c658301f3e8ae31c31ed6bfd68629059617fac621932e1ea';
+    
+    console.log(`   📡 Llamando a API TradingView BULK...`);
+    console.log(`      Endpoint: ${TRADINGVIEW_API}/api/access/bulk`);
+    console.log(`      Users: [${user.tradingview_username}]`);
+    console.log(`      Pine IDs: ${pineIds.length} indicadores`);
+    console.log(`      Duration: ${duration}`);
+    
     const tvResponse = await fetch(
-      `${TRADINGVIEW_API}/api/access/${user.tradingview_username}`,
+      `${TRADINGVIEW_API}/api/access/bulk`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-API-Key': TRADINGVIEW_API_KEY
+        },
         body: JSON.stringify({
+          users: [user.tradingview_username], // Array de usuarios (bulk)
           pine_ids: pineIds,
-          duration: duration
+          duration: duration,
+          options: {
+            preValidateUsers: false,  // Para mejor performance
+            onProgress: false         // Sin callbacks de progreso
+          }
         })
       }
     );
 
     const tvResult = await tvResponse.json();
-    console.log(`   📡 Respuesta TradingView:`, tvResult);
+    console.log(`   📡 Respuesta TradingView BULK:`, JSON.stringify(tvResult, null, 2));
 
-    if (!tvResponse.ok || !Array.isArray(tvResult)) {
-      console.error(`   ❌ Error en TradingView:`, tvResult);
+    if (!tvResponse.ok) {
+      console.error(`   ❌ Error HTTP en TradingView:`, tvResult);
       return {
         success: false,
         userId: user.id,
         tradingviewUsername: user.tradingview_username,
-        reason: `Error en TradingView: ${tvResult.error || 'Unknown'}`
+        reason: `Error en TradingView: ${tvResult.error || tvResult.message || 'Unknown'}`
       };
     }
+
+    // El API bulk retorna un objeto con metadata + resultados por usuario
+    // Formato: { success: N, failed: N, successRate: %, results: { username: [...] } }
+    const userResults = tvResult.results?.[user.tradingview_username] || [];
+    
+    if (!Array.isArray(userResults)) {
+      console.error(`   ❌ Formato inesperado de respuesta:`, tvResult);
+      return {
+        success: false,
+        userId: user.id,
+        tradingviewUsername: user.tradingview_username,
+        reason: `Formato inesperado de respuesta de TradingView`
+      };
+    }
+    
+    console.log(`   ✅ ${userResults.length} resultados recibidos para ${user.tradingview_username}`);
+    console.log(`   📊 Success Rate: ${tvResult.successRate || 'N/A'}%`);
 
     // 5. Obtener indicadores de Supabase para registrar accesos
     const { data: dbIndicators } = await supabase
@@ -173,7 +206,7 @@ export async function grantIndicatorAccessOnPurchase(
     let successCount = 0;
     const errors: string[] = [];
 
-    for (const tvIndicator of tvResult) {
+    for (const tvIndicator of userResults) {
       if (tvIndicator.status !== 'Success') {
         errors.push(`${tvIndicator.pine_id}: ${tvIndicator.error || 'Failed'}`);
         continue;
