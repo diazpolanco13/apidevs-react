@@ -15,6 +15,7 @@ interface User {
   onboarding_completed: boolean | null;
   subscription_status?: string | null;
   has_lifetime_access?: boolean;
+  customer_since?: string | null;
 }
 
 interface ActiveUsersTableProps {
@@ -127,7 +128,7 @@ export default function ActiveUsersTable({
                 Onboarding
               </th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Estado
+                Suscripción
               </th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Acciones
@@ -151,13 +152,13 @@ export default function ActiveUsersTable({
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-apidevs-primary to-green-400 flex items-center justify-center text-black font-semibold text-sm">
-                          {(user.full_name || user.email).charAt(0).toUpperCase()}
+                          {(user.full_name || user.email || 'U').charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <div className="text-sm font-medium text-white">
                             {user.full_name || 'Sin nombre'}
                           </div>
-                          <div className="text-xs text-gray-400">{user.email}</div>
+                          <div className="text-xs text-gray-400">{user.email || 'Sin email'}</div>
                         </div>
                       </div>
                     </div>
@@ -175,7 +176,25 @@ export default function ActiveUsersTable({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                    <span className="text-gray-500">-</span>
+                    {user.customer_since ? (
+                      <div className="flex flex-col">
+                        <span className="text-gray-300">
+                          {new Date(user.customer_since).toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(user.customer_since).toLocaleTimeString('es-ES', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-500">-</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getOnboardingBadge(user.onboarding_completed)}
