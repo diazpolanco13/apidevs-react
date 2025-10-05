@@ -30,7 +30,7 @@ export default async function SuscripcionPage() {
     .eq('duration_type', '1L')
     .limit(1);
 
-  const hasLifetimeAccess = lifetimeAccess && lifetimeAccess.length > 0;
+  const hasLifetimeAccess = !!(lifetimeAccess && lifetimeAccess.length > 0);
 
   // Obtener el último payment intent exitoso para mostrar el precio REAL pagado y la fecha
   let actualPricePaid: number | null = null;

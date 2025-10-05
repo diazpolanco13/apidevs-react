@@ -69,7 +69,7 @@ export const useTradingViewValidation = () => {
       const result: ValidationResult = {
         isValid: true,
         username: validateData.verifiedUserName,
-        profileImage
+        profileImage: profileImage || undefined
       };
 
       setValidationResult(result);

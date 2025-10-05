@@ -114,7 +114,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
     .eq('status', 'active')
     .eq('duration_type', '1L');
 
-  const hasLifetimeAccess = lifetimeAccess && lifetimeAccess.length > 0;
+  const hasLifetimeAccess = !!(lifetimeAccess && lifetimeAccess.length > 0);
 
   if (lifetimeError) {
     console.error('Error fetching lifetime access:', lifetimeError);

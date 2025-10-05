@@ -44,7 +44,7 @@ export default async function AccountLayout({
     .eq('duration_type', '1L')
     .limit(1);
 
-  const hasLifetimeAccess = lifetimeAccess && lifetimeAccess.length > 0;
+  const hasLifetimeAccess = !!(lifetimeAccess && lifetimeAccess.length > 0);
 
   return (
     <AccountDashboardLayout 
