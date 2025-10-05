@@ -16,6 +16,7 @@ type Access = {
   id: string;
   user_id: string;
   indicator_id: string;
+  tradingview_username: string;
   status: string;
   granted_at: string | null;
   expires_at: string | null;
