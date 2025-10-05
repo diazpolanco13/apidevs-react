@@ -54,22 +54,35 @@ export default function ActiveUsersTable({
         </span>
       );
     }
-    // Prioridad 2: Suscripción Activa
+    // Prioridad 2: Suscripción Activa (PRO)
     else if (user.subscription_status === 'active') {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
           <CheckCircle className="w-3 h-3" />
-          Activo
+          PRO Activo
         </span>
       );
-    } else if (user.subscription_status === 'trialing') {
+    } 
+    // Prioridad 3: Trial
+    else if (user.subscription_status === 'trialing') {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
           <Clock className="w-3 h-3" />
           Trial
         </span>
       );
-    } else {
+    } 
+    // Prioridad 4: Plan FREE (con indicadores gratuitos)
+    else if (user.subscription_status === 'free') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+          <CheckCircle className="w-3 h-3" />
+          Plan FREE
+        </span>
+      );
+    }
+    // Sin ningún plan
+    else {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30">
           <XCircle className="w-3 h-3" />

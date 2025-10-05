@@ -79,16 +79,47 @@ export default async function AdminUsersPage({
         .eq('duration_type', '1L')
     : { data: [] };
 
+  // 🆓 Obtener usuarios con indicadores FREE activos (sin suscripción)
+  const { data: freeAccesses } = activeUserIds.length > 0
+    ? await supabase
+        .from('indicator_access')
+        .select('user_id, indicator_id, indicators(access_tier)')
+        .in('user_id', activeUserIds)
+        .eq('status', 'active')
+        .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
+    : { data: [] };
+
+  // Tipo para freeAccesses
+  type FreeAccessWithTier = {
+    user_id: string;
+    indicator_id: string;
+    indicators: { access_tier: string | null } | null;
+  };
+
+  // Identificar usuarios con indicadores FREE activos (y sin suscripción paga)
+  const freeUserIds = new Set<string>();
+  (freeAccesses as FreeAccessWithTier[] || []).forEach((access) => {
+    if (access.indicators?.access_tier === 'free') {
+      freeUserIds.add(access.user_id);
+    }
+  });
+
   // Crear un Set de user_ids con acceso Lifetime para búsqueda rápida
   const lifetimeUserIds = new Set((lifetimeAccesses || []).map((la: any) => la.user_id));
 
-  // Combinar usuarios con sus suscripciones y accesos Lifetime
+  // Combinar usuarios con sus suscripciones, accesos Lifetime y FREE
   const safeSubscriptions: Subscription[] = subscriptions || [];
-  const activeUsersWithSubs = safeActiveUsers.map(user => ({
-    ...user,
-    subscription_status: safeSubscriptions.find(s => s.user_id === user.id)?.status || null,
-    has_lifetime_access: lifetimeUserIds.has(user.id)
-  }));
+  const activeUsersWithSubs = safeActiveUsers.map(user => {
+    const hasSubscription = safeSubscriptions.find(s => s.user_id === user.id)?.status;
+    const hasLifetime = lifetimeUserIds.has(user.id);
+    const hasFree = freeUserIds.has(user.id);
+    
+    return {
+      ...user,
+      subscription_status: hasSubscription || (hasLifetime ? 'lifetime' : hasFree ? 'free' : null),
+      has_lifetime_access: hasLifetime
+    };
+  });
 
   const activeTotalPages = Math.ceil((activeUsersCount || 0) / limit);
 
