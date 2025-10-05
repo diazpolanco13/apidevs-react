@@ -427,43 +427,43 @@ export default async function AccountDashboard() {
         </div>
       )}
 
-      {/* Quick Actions Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Profile Quick View */}
-        <Link
-          href="/account/perfil"
-          className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-6 hover:border-blue-500/50 transition-all group"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              {profile.avatar_url ? (
-                <img 
-                  src={profile.avatar_url} 
-                  alt="Avatar" 
-                  className="w-12 h-12 rounded-full border-2 border-blue-500"
-                />
-              ) : (
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
+      {/* Quick Actions Grid - Solo para usuarios PRO */}
+      {hasPremium && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Profile Quick View */}
+          <Link
+            href="/account/perfil"
+            className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-6 hover:border-blue-500/50 transition-all group"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                {profile.avatar_url ? (
+                  <img 
+                    src={profile.avatar_url} 
+                    alt="Avatar" 
+                    className="w-12 h-12 rounded-full border-2 border-blue-500"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+                    <User className="w-6 h-6 text-white" />
+                  </div>
+                )}
+                <div>
+                  <h3 className="text-lg font-semibold text-white">{profile.full_name || 'Sin nombre'}</h3>
+                  <p className="text-sm text-gray-400">
+                    @{profile.tradingview_username || 'Sin username'}
+                    {profile.city && profile.country && (
+                      <span className="ml-2">• {profile.city}, {profile.country}</span>
+                    )}
+                  </p>
                 </div>
-              )}
-              <div>
-                <h3 className="text-lg font-semibold text-white">{profile.full_name || 'Sin nombre'}</h3>
-                <p className="text-sm text-gray-400">
-                  @{profile.tradingview_username || 'Sin username'}
-                  {profile.city && profile.country && (
-                    <span className="ml-2">• {profile.city}, {profile.country}</span>
-                  )}
-                </p>
               </div>
+              <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
             </div>
-            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
-          </div>
-          <p className="text-sm text-gray-300">Ver y editar perfil completo</p>
-        </Link>
+            <p className="text-sm text-gray-300">Ver y editar perfil completo</p>
+          </Link>
 
-        {/* Indicators Quick Access - Solo PRO */}
-        {hasPremium && (
+          {/* Indicators Quick Access */}
           <Link
             href="/indicadores"
             className="bg-gradient-to-br from-apidevs-primary/10 to-green-400/10 backdrop-blur-xl border border-apidevs-primary/30 rounded-2xl p-6 hover:border-apidevs-primary/50 transition-all group"
@@ -484,30 +484,6 @@ export default async function AccountDashboard() {
             </div>
             <p className="text-sm text-gray-300">Gestiona y configura tus indicadores premium</p>
           </Link>
-        )}
-      </div>
-
-      {/* Premium Features Locked */}
-      {!hasPremium && (
-        <div className="bg-gradient-to-r from-apidevs-primary/10 to-green-400/10 border border-apidevs-primary/30 rounded-2xl p-6">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-apidevs-primary to-green-400 rounded-full flex items-center justify-center flex-shrink-0">
-              <Zap className="w-6 h-6 text-black" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-white mb-2">Desbloquea Todo el Potencial</h3>
-              <p className="text-gray-300 mb-4">
-                Accede a indicadores premium, notificaciones en tiempo real, y mucho más con un plan PRO.
-              </p>
-              <Link
-                href="/pricing"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-apidevs-primary to-green-400 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-apidevs-primary/50 transition-all"
-              >
-                Ver Planes
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
         </div>
       )}
 
