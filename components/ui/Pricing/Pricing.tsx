@@ -105,6 +105,12 @@ export default function Pricing({ user, products, subscription, showHeader = tru
     !price.interval || price.interval === null
   ) || lifetimeProduct?.prices?.[0];
 
+  // Producto FREE
+  const freeProduct = mainProducts.find(p => p.name?.includes('FREE'));
+  const freePrice = freeProduct?.prices?.find(price => 
+    price.unit_amount === 0
+  ) || freeProduct?.prices?.[0];
+
   // Si no hay producto Lifetime en Stripe, crear uno mock para desarrollo
   const lifetimePriceMock = !lifetimePrice ? {
     id: 'price_lifetime_mock',
@@ -234,12 +240,14 @@ export default function Pricing({ user, products, subscription, showHeader = tru
                 <Button
                   variant="slim"
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
+                  loading={priceIdLoading === freePrice?.id}
+                  onClick={() => {
                     if (!user) {
                       router.push('/signin/signup?plan=free');
+                    } else if (freePrice) {
+                      // CRÍTICO: Pasar por checkout de Stripe para crear customer y disparar webhooks
+                      handleStripeCheckout(freePrice);
                     } else {
-                      // Si el usuario ya está logueado, redirigir a account
                       router.push('/account');
                     }
                   }}
