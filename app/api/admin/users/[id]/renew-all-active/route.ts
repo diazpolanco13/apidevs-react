@@ -195,6 +195,25 @@ export async function POST(
             tradingview_response: tvResultItem // ✅ Guardamos respuesta completa
           })
           .eq('id', access.id);
+
+        // 🆕 INSERTAR EN indicator_access_log para auditoría
+        await (supabase as any)
+          .from('indicator_access_log')
+          .insert({
+            user_id: userId,
+            indicator_id: access.indicator_id,
+            tradingview_username: validTargetUser.tradingview_username,
+            operation_type: 'renew',
+            access_source: 'manual',
+            status: 'active',
+            granted_at: access.granted_at,
+            expires_at: tvExpiration,
+            duration_type,
+            tradingview_response: tvResultItem,
+            performed_by: user.id,
+            indicator_access_id: access.id,
+            created_at: now
+          });
       }
 
       results.details.push({

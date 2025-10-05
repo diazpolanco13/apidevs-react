@@ -242,6 +242,26 @@ export async function POST(
       savedAccess = data;
     }
 
+    // 🆕 INSERTAR EN indicator_access_log para auditoría
+    await (supabase as any)
+      .from('indicator_access_log')
+      .insert({
+        user_id: userId,
+        indicator_id: validIndicator.id,
+        tradingview_username: validTargetUser.tradingview_username,
+        operation_type: 'grant',
+        access_source: 'manual',
+        status: isSuccess ? 'active' : 'failed',
+        granted_at: isSuccess ? accessData.granted_at : null,
+        expires_at: tvExpiration,
+        duration_type,
+        tradingview_response: tvResult,
+        error_message: isSuccess ? null : (tvResult.error || tvResult[0]?.error || 'Error desconocido'),
+        performed_by: user.id,
+        indicator_access_id: savedAccess?.id || validExistingAccess?.id || null,
+        created_at: new Date().toISOString()
+      });
+
     if (!isSuccess) {
       return NextResponse.json(
         {

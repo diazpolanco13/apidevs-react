@@ -132,6 +132,7 @@ export async function POST(
       const isSuccess =
         tvResultItem?.status === 'Success' || tvResultItem?.hasAccess === false;
 
+      // Actualizar indicator_access
       await (supabase as any)
         .from('indicator_access')
         .update({
@@ -144,6 +145,24 @@ export async function POST(
             : tvResultItem?.error || 'Error al revocar'
         })
         .eq('id', access.id);
+
+      // 🆕 INSERTAR EN indicator_access_log para auditoría
+      await (supabase as any)
+        .from('indicator_access_log')
+        .insert({
+          user_id: userId,
+          indicator_id: access.indicator_id,
+          tradingview_username: validTargetUser.tradingview_username,
+          operation_type: 'revoke',
+          access_source: 'manual',
+          status: isSuccess ? 'revoked' : 'failed',
+          revoked_at: isSuccess ? now : null,
+          tradingview_response: tvResultItem,
+          error_message: isSuccess ? null : tvResultItem?.error || 'Error al revocar',
+          performed_by: user.id,
+          indicator_access_id: access.id,
+          created_at: now
+        });
 
       results.details.push({
         indicator: access.indicators?.name,
