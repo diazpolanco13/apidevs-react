@@ -13,6 +13,7 @@ type ActiveUser = {
   country: string | null;
   city: string | null;
   onboarding_completed: boolean | null;
+  customer_since?: string | null;
 };
 
 type Subscription = {
@@ -43,7 +44,7 @@ export default async function AdminUsersPage({
   // Query para usuarios activos (tabla users)
   let activeUsersQuery = supabase
     .from('users')
-    .select('id, email, full_name, country, city, onboarding_completed', { count: 'exact' });
+    .select('id, email, full_name, country, city, onboarding_completed, customer_since', { count: 'exact' });
 
   // Aplicar búsqueda a usuarios activos
   if (search) {
@@ -91,16 +92,62 @@ export default async function AdminUsersPage({
 
   const activeTotalPages = Math.ceil((activeUsersCount || 0) / limit);
 
-  // Estadísticas de usuarios activos
-  const { count: activeSubscriptionsCount } = await supabase
-    .from('subscriptions')
-    .select('*', { count: 'exact', head: true })
-    .in('status', ['active', 'trialing']);
-
-  const { count: onboardingPendingCount } = await supabase
+  // ==================== ESTADÍSTICAS DETALLADAS ====================
+  
+  // Contar nuevos usuarios (últimos 30 días)
+  const { count: newUsers30d } = await supabase
     .from('users')
     .select('*', { count: 'exact', head: true })
-    .eq('onboarding_completed', false);
+    .gte('customer_since', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+  
+  const { count: users30_60d } = await supabase
+    .from('users')
+    .select('*', { count: 'exact', head: true })
+    .gte('customer_since', new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString())
+    .lt('customer_since', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+  
+  // Calcular tasa de crecimiento
+  const growthRate = users30_60d && users30_60d > 0
+    ? (((newUsers30d || 0) - users30_60d) / users30_60d * 100)
+    : (newUsers30d || 0) > 0 ? 100 : 0;
+  
+  // Contar usuarios con suscripciones activas (PRO Mensual/Anual)
+  const { data: activeSubscriptions } = await supabase
+    .from('subscriptions')
+    .select('user_id, price_id, prices(interval, interval_count)')
+    .in('status', ['active', 'trialing']);
+  
+  // Definir tipo para las suscripciones con precios
+  type SubscriptionWithPrice = {
+    user_id: string;
+    price_id: string;
+    prices: {
+      interval: string | null;
+      interval_count: number | null;
+    } | null;
+  };
+  
+  const proMonthlyUsers = (activeSubscriptions as SubscriptionWithPrice[] | null)?.filter(s => 
+    s.prices && s.prices.interval === 'month' && s.prices.interval_count === 1
+  ).length || 0;
+  
+  const proAnnualUsers = (activeSubscriptions as SubscriptionWithPrice[] | null)?.filter(s => 
+    s.prices && s.prices.interval === 'year'
+  ).length || 0;
+  
+  const totalProUsers = proMonthlyUsers + proAnnualUsers;
+  
+  // Contar usuarios Lifetime
+  const lifetimeUsersCount = lifetimeUserIds.size;
+  
+  // Calcular usuarios FREE (sin ninguna suscripción ni lifetime)
+  const totalPaidUsers = totalProUsers + lifetimeUsersCount;
+  const realFreeUsers = (activeUsersCount || 0) - totalPaidUsers;
+  
+  // Calcular tasa de conversión FREE → PAGO (cualquier modalidad)
+  const conversionRate = (activeUsersCount || 0) > 0
+    ? (totalPaidUsers / (activeUsersCount || 1) * 100)
+    : 0;
 
   // ==================== USUARIOS LEGACY ====================
   // Query para usuarios legacy
@@ -155,7 +202,7 @@ export default async function AdminUsersPage({
     .select('*', { count: 'exact', head: true })
     .eq('reactivation_status', 'pending');
 
-  // Estadísticas para usuarios activos
+  // Estadísticas mejoradas para usuarios activos
   const activeStats = [
     {
       name: 'Total Usuarios',
@@ -163,34 +210,52 @@ export default async function AdminUsersPage({
       icon: UsersIcon,
       color: 'text-blue-400',
       bgColor: 'from-blue-500/10 to-cyan-500/10',
-      borderColor: 'border-blue-500/30'
+      borderColor: 'border-blue-500/30',
+      subtitle: `${newUsers30d || 0} nuevos (30d)`,
+      details: [
+        { label: 'Crecimiento', value: `${growthRate > 0 ? '+' : ''}${growthRate.toFixed(0)}%` },
+        { label: 'Periodo anterior', value: `${users30_60d || 0} usuarios` }
+      ]
     },
     {
-      name: 'Suscripciones Activas',
-      value: activeSubscriptionsCount?.toLocaleString() || '0',
-      icon: Sparkles,
-      color: 'text-green-400',
-      bgColor: 'from-green-500/10 to-emerald-500/10',
-      borderColor: 'border-green-500/30',
-      subtitle: `${((activeSubscriptionsCount || 0) / (activeUsersCount || 1) * 100).toFixed(1)}% conversión`
-    },
-    {
-      name: 'Onboarding Pendiente',
-      value: onboardingPendingCount?.toLocaleString() || '0',
+      name: 'Usuarios FREE',
+      value: realFreeUsers?.toLocaleString() || '0',
       icon: UserX,
-      color: 'text-yellow-400',
-      bgColor: 'from-yellow-500/10 to-orange-500/10',
-      borderColor: 'border-yellow-500/30',
-      subtitle: `${((onboardingPendingCount || 0) / (activeUsersCount || 1) * 100).toFixed(1)}% sin completar`
+      color: 'text-gray-400',
+      bgColor: 'from-gray-500/10 to-slate-500/10',
+      borderColor: 'border-gray-500/30',
+      subtitle: `${((realFreeUsers || 0) / (activeUsersCount || 1) * 100).toFixed(1)}% del total`,
+      details: [
+        { label: 'Pool conversión', value: `${realFreeUsers} potenciales` },
+        { label: 'Indicadores', value: '2 gratuitos' }
+      ]
     },
     {
-      name: 'Tasa de Crecimiento',
-      value: '+0%',
-      icon: TrendingUp,
+      name: 'Usuarios de Pago',
+      value: totalPaidUsers?.toLocaleString() || '0',
+      icon: Sparkles,
       color: 'text-purple-400',
       bgColor: 'from-purple-500/10 to-pink-500/10',
       borderColor: 'border-purple-500/30',
-      subtitle: 'Últimos 30 días'
+      subtitle: `${((totalPaidUsers || 0) / (activeUsersCount || 1) * 100).toFixed(1)}% del total`,
+      details: [
+        { label: 'PRO Mensual', value: `${proMonthlyUsers} usuarios` },
+        { label: 'PRO Anual', value: `${proAnnualUsers} usuarios` },
+        { label: 'Lifetime', value: `${lifetimeUsersCount} usuarios` }
+      ]
+    },
+    {
+      name: 'Conversión FREE → PAGO',
+      value: `${conversionRate.toFixed(1)}%`,
+      icon: TrendingUp,
+      color: conversionRate > 10 ? 'text-green-400' : conversionRate > 5 ? 'text-yellow-400' : 'text-red-400',
+      bgColor: conversionRate > 10 ? 'from-green-500/10 to-emerald-500/10' : conversionRate > 5 ? 'from-yellow-500/10 to-orange-500/10' : 'from-red-500/10 to-rose-500/10',
+      borderColor: conversionRate > 10 ? 'border-green-500/30' : conversionRate > 5 ? 'border-yellow-500/30' : 'border-red-500/30',
+      subtitle: `${totalPaidUsers || 0} de ${activeUsersCount || 0} convirtieron`,
+      details: [
+        { label: 'Industria SaaS', value: '2-5% promedio' },
+        { label: 'Tu rendimiento', value: conversionRate > 10 ? '🟢 Excelente' : conversionRate > 5 ? '🟡 Bueno' : '🔴 Mejorar' }
+      ]
     },
   ];
 
@@ -252,6 +317,18 @@ export default async function AdminUsersPage({
               <div className="text-sm text-gray-400">{stat.name}</div>
               {stat.subtitle && (
                 <div className="text-xs text-gray-500 mt-1">{stat.subtitle}</div>
+              )}
+              
+              {/* Detalles adicionales */}
+              {stat.details && stat.details.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-700/50 space-y-2">
+                  {stat.details.map((detail: { label: string; value: string }, idx: number) => (
+                    <div key={idx} className="flex justify-between items-center text-xs">
+                      <span className="text-gray-500">{detail.label}</span>
+                      <span className="text-gray-300 font-medium">{detail.value}</span>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           );
