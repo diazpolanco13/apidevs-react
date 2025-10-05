@@ -48,17 +48,24 @@ interface ActiveUserSubscriptionProps {
   subscriptions: Subscription[];
   stripeCustomerId?: string | null;
   paymentIntents?: PaymentIntent[];
+  hasLifetimeAccess?: boolean;
+  lifetimeAccessDetails?: any[];
 }
 
 export default function ActiveUserSubscription({
   subscriptions,
   stripeCustomerId,
-  paymentIntents = []
+  paymentIntents = [],
+  hasLifetimeAccess = false,
+  lifetimeAccessDetails = []
 }: ActiveUserSubscriptionProps) {
   
   const activeSubscription = subscriptions.find(
     sub => ['active', 'trialing'].includes(sub.status)
   );
+  
+  // Si tiene Lifetime, mostrar eso como la suscripción principal
+  const hasPremiumAccess = activeSubscription || hasLifetimeAccess;
 
   /**
    * Obtiene el precio REAL que pagó el usuario para una suscripción.
@@ -172,7 +179,55 @@ export default function ActiveUserSubscription({
           )}
         </div>
 
-        {activeSubscription ? (
+        {hasLifetimeAccess && !activeSubscription ? (
+          <div className="space-y-6">
+            {/* Header de Lifetime Access */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-gray-700">
+              <div className="flex-1">
+                <h4 className="text-2xl font-bold text-white mb-2">
+                  Plan Lifetime Access 👑
+                </h4>
+                <p className="text-sm text-gray-400">
+                  Acceso de por vida a todos los indicadores premium sin renovaciones
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                  <CheckCircle className="w-4 h-4" />
+                  Lifetime Activo
+                </span>
+              </div>
+            </div>
+            
+            {/* Detalles de Lifetime Access */}
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 p-4 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                <DollarSign className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm text-gray-400 mb-1">Tipo de Compra</p>
+                  <p className="text-white font-medium">Compra Única (One-Time Payment)</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 p-4 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                <Calendar className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm text-gray-400 mb-1">Accesos Otorgados</p>
+                  <p className="text-white font-medium">{lifetimeAccessDetails.length} indicador(es) premium</p>
+                  {lifetimeAccessDetails[0]?.granted_at && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Desde: {new Date(lifetimeAccessDetails[0].granted_at).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : activeSubscription ? (
           <div className="space-y-6">
             {/* Header de Suscripción */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-gray-700">

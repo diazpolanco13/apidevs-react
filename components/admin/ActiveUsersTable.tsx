@@ -14,6 +14,7 @@ interface User {
   city: string | null;
   onboarding_completed: boolean | null;
   subscription_status?: string | null;
+  has_lifetime_access?: boolean;
 }
 
 interface ActiveUsersTableProps {
@@ -43,7 +44,17 @@ export default function ActiveUsersTable({
   };
   
   const getStatusBadge = (user: User) => {
-    if (user.subscription_status === 'active') {
+    // Prioridad 1: Lifetime Access
+    if (user.has_lifetime_access) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+          <CheckCircle className="w-3 h-3" />
+          Lifetime
+        </span>
+      );
+    }
+    // Prioridad 2: Suscripción Activa
+    else if (user.subscription_status === 'active') {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
           <CheckCircle className="w-3 h-3" />

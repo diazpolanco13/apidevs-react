@@ -106,6 +106,20 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
     (sub: any) => ['active', 'trialing'].includes(sub.status)
   );
 
+  // 4.5 🔍 Verificar accesos Lifetime (compras one-time)
+  const { data: lifetimeAccess, error: lifetimeError } = await supabase
+    .from('indicator_access')
+    .select('id, duration_type, granted_at, indicator_id, indicators(name, pine_id)')
+    .eq('user_id', params.id)
+    .eq('status', 'active')
+    .eq('duration_type', '1L');
+
+  const hasLifetimeAccess = lifetimeAccess && lifetimeAccess.length > 0;
+
+  if (lifetimeError) {
+    console.error('Error fetching lifetime access:', lifetimeError);
+  }
+
   // 5. Accesos a TradingView
   const { data: indicatorAccess, error: accessError } = await supabase
     .from('user_indicator_access')
@@ -118,6 +132,16 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
   if (accessError) {
     console.error('Error fetching indicator access:', accessError);
   }
+  
+  // Combinar accesos de ambas fuentes
+  const allIndicatorAccess = [
+    ...(indicatorAccess || []),
+    ...(lifetimeAccess || []).map((access: any) => ({
+      ...access,
+      access_type: 'lifetime',
+      tradingview_indicators: access.indicators
+    }))
+  ];
 
   // 6. Payment Intents desde Supabase
   const { data: paymentIntents, error: paymentIntentsError } = await supabase
@@ -180,7 +204,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
           lastLoginDate={lastLoginDate}
           onboardingCompleted={(user as any).onboarding_completed || false}
           subscriptionsCount={subscriptions?.length || 0}
-          indicatorAccessCount={indicatorAccess?.length || 0}
+          indicatorAccessCount={allIndicatorAccess?.length || 0}
           customerTier={(user as any).customer_tier}
           totalLifetimeSpent={(user as any).total_lifetime_spent ? Number((user as any).total_lifetime_spent) / 100 : null}
           purchaseCount={(user as any).purchase_count}
@@ -192,14 +216,16 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
           subscriptions={(subscriptions as any) || []}
           stripeCustomerId={(customer as any)?.stripe_customer_id}
           paymentIntents={(paymentIntents as any) || []}
+          hasLifetimeAccess={hasLifetimeAccess}
+          lifetimeAccessDetails={(lifetimeAccess as any) || []}
         />
 
         {/* Indicator Access */}
-        {indicatorAccess && indicatorAccess.length > 0 && (
+        {allIndicatorAccess && allIndicatorAccess.length > 0 && (
           <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Accesos a Indicadores</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Accesos a Indicadores TradingView</h3>
             <div className="space-y-3">
-              {indicatorAccess.map((access: any) => (
+              {allIndicatorAccess.map((access: any) => (
                 <div 
                   key={access.id}
                   className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10"
@@ -273,9 +299,13 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
               <h1 className="text-2xl font-bold text-white">
                 {(user as any).full_name || 'Usuario sin nombre'}
               </h1>
-              {activeSubscription && (
-                <span className="px-3 py-1 bg-green-500/20 text-green-400 text-sm font-medium rounded-full border border-green-500/30">
-                  Cliente Activo
+              {(activeSubscription || hasLifetimeAccess) && (
+                <span className={`px-3 py-1 text-sm font-medium rounded-full border ${
+                  hasLifetimeAccess 
+                    ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' 
+                    : 'bg-green-500/20 text-green-400 border-green-500/30'
+                }`}>
+                  {hasLifetimeAccess ? 'Lifetime Access' : 'Cliente Activo'}
                 </span>
               )}
               {!(user as any).onboarding_completed && (

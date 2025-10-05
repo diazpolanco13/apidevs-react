@@ -42,10 +42,16 @@ interface AccountDashboardLayoutProps {
   userProfile?: any;
   loyaltyTier?: string;
   isLegacy?: boolean;
+  hasLifetimeAccess?: boolean;
 }
 
 // Función para mapear nombres técnicos a nombres amigables
-const mapProductName = (productName: string, interval?: string): string => {
+const mapProductName = (productName: string, interval?: string, hasLifetime?: boolean): string => {
+  // Prioridad 1: Si tiene Lifetime Access, siempre mostrar eso
+  if (hasLifetime) {
+    return 'Plan Lifetime Access';
+  }
+  
   if (productName === 'APIDevs Trading Indicators') {
     if (interval === 'year') return 'Plan PRO Anual';
     if (interval === 'month') return 'Plan PRO Mensual';
@@ -63,7 +69,8 @@ export default function AccountDashboardLayout({
   subscription,
   userProfile,
   loyaltyTier,
-  isLegacy
+  isLegacy,
+  hasLifetimeAccess = false
 }: AccountDashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
@@ -71,10 +78,10 @@ export default function AccountDashboardLayout({
   // Determinar plan del usuario
   const productName = subscription?.prices?.products?.name || 'Free';
   const interval = subscription?.prices?.interval;
-  const userPlan = mapProductName(productName, interval);
+  const userPlan = mapProductName(productName, interval, hasLifetimeAccess);
   const isPro = productName === 'APIDevs Trading Indicators' || productName.toLowerCase().includes('pro');
-  const isLifetime = productName.toLowerCase().includes('lifetime');
-  const hasPremium = isPro || isLifetime;
+  const isLifetime = hasLifetimeAccess || productName.toLowerCase().includes('lifetime');
+  const hasPremium = isPro || isLifetime || hasLifetimeAccess;
 
   const navigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/account', icon: HomeIcon },

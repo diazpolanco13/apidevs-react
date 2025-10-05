@@ -33,11 +33,36 @@ export default async function AccountDashboard() {
   // Get loyalty profile for welcome modal
   const loyaltyProfile = await getUserLoyaltyProfile(supabase as any, user.id);
 
-  const userPlan = subscription?.prices?.products?.name || 'Free';
-  const isLifetime = userPlan.toLowerCase().includes('lifetime');
+  // 🔍 Verificar si tiene accesos Lifetime activos (compra one-time)
+  const { data: lifetimeAccess } = await supabase
+    .from('indicator_access')
+    .select('id, duration_type')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .eq('duration_type', '1L')
+    .limit(1);
+
+  const hasLifetimeAccess = lifetimeAccess && lifetimeAccess.length > 0;
+
+  const productName = subscription?.prices?.products?.name || 'Free';
   
-  // Si tiene suscripción activa, es premium (independientemente del nombre del producto)
-  const hasPremium = subscription?.status === 'active';
+  // Determinar el plan del usuario
+  let userPlan = productName;
+  if (hasLifetimeAccess) {
+    userPlan = 'Plan Lifetime Access';
+  } else if (productName === 'APIDevs Trading Indicators' && subscription?.prices?.interval) {
+    const interval = subscription.prices.interval;
+    userPlan = interval === 'year' 
+      ? 'Plan PRO Anual' 
+      : interval === 'month' 
+        ? 'Plan PRO Mensual' 
+        : 'Plan PRO';
+  } else if (productName.toLowerCase().includes('lifetime')) {
+    userPlan = 'Plan Lifetime Access';
+  }
+  
+  const isLifetime = hasLifetimeAccess || productName.toLowerCase().includes('lifetime');
+  const hasPremium = subscription?.status === 'active' || hasLifetimeAccess;
   const isPro = hasPremium && !isLifetime;
 
   // Quick stats

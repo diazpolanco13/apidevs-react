@@ -35,6 +35,17 @@ export default async function AccountLayout({
   // Get loyalty profile
   const loyaltyProfile = await getUserLoyaltyProfile(supabase, user.id);
 
+  // 🔍 Verificar si tiene accesos Lifetime activos
+  const { data: lifetimeAccess } = await supabase
+    .from('indicator_access')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .eq('duration_type', '1L')
+    .limit(1);
+
+  const hasLifetimeAccess = lifetimeAccess && lifetimeAccess.length > 0;
+
   return (
     <AccountDashboardLayout 
       user={user} 
@@ -42,6 +53,7 @@ export default async function AccountLayout({
       userProfile={profile}
       loyaltyTier={loyaltyProfile?.customer_tier}
       isLegacy={loyaltyProfile?.is_legacy_user}
+      hasLifetimeAccess={hasLifetimeAccess}
     >
       {children}
     </AccountDashboardLayout>
