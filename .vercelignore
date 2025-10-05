@@ -1,0 +1,17 @@
+# Excluir la documentación de Docusaurus del deployment de Vercel
+docs-site/**
+
+# Excluir archivos de desarrollo
+.env*
+!.env.example
+
+# Excluir archivos temporales
+*.log
+.DS_Store
+Thumbs.db
+
+# Excluir dependencias de desarrollo (ya se excluyen por defecto)
+node_modules/**
+
+# Excluir archivos de documentación archivada
+docs-archive/**
