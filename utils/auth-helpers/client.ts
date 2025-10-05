@@ -17,6 +17,12 @@ export async function handleRequest(
   const formData = new FormData(e.currentTarget);
   const redirectUrl: string = await requestFunc(formData);
 
+  // Validar que redirectUrl existe
+  if (!redirectUrl) {
+    console.error('❌ Error: redirectUrl is undefined');
+    return;
+  }
+
   if (router) {
     // If client-side router is provided, use it to redirect
     return router.push(redirectUrl);

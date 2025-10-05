@@ -158,18 +158,29 @@ export async function POST(req: Request) {
                 const productIds = extractProductIds(lineItems, paymentIntent.metadata || {});
                 const priceId = lineItems[0]?.price?.id;
                 
-                console.log(`🎯 Webhook auto-grant (one-time): ${customer.email}`);
-                console.log(`   Price ID: ${priceId}`);
-                console.log(`   Product IDs: ${productIds.join(', ')}`);
+                console.log('\n🎯 ========== AUTO-GRANT DEBUG (checkout.session.completed) ==========');
+                console.log('📧 Customer Email:', customer.email);
+                console.log('📦 Product IDs:', productIds);
+                console.log('💰 Price ID:', priceId);
+                console.log('🔖 Price Type:', lineItems[0]?.price?.type);
+                console.log('💵 Unit Amount:', lineItems[0]?.price?.unit_amount);
+                console.log('💳 Payment Intent:', paymentIntent.id);
+                console.log('=====================================================================\n');
                 
                 try {
-                  await grantIndicatorAccessOnPurchase(
+                  const result = await grantIndicatorAccessOnPurchase(
                     customer.email,
                     productIds,
                     priceId,
                     paymentIntent.id,
                     'checkout'
                   );
+                  
+                  console.log('\n✅ AUTO-GRANT RESULT:');
+                  console.log('   Success:', result.success);
+                  console.log('   Indicators Granted:', result.indicatorsGranted);
+                  console.log('   Errors:', result.errors || 'None');
+                  console.log('=====================================================================\n');
                 } catch (error) {
                   console.error('⚠️ Error en auto-grant (checkout one-time):', error);
                   // No fallar el webhook por esto
