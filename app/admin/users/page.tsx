@@ -60,6 +60,7 @@ export default async function AdminUsersPage({
   // Obtener suscripciones activas para los usuarios activos
   const safeActiveUsers: ActiveUser[] = activeUsers || [];
   const activeUserIds = safeActiveUsers.map(u => u.id);
+  
   const { data: subscriptions } = activeUserIds.length > 0
     ? await supabase
         .from('subscriptions')
@@ -67,11 +68,25 @@ export default async function AdminUsersPage({
         .in('user_id', activeUserIds)
     : { data: [] };
 
-  // Combinar usuarios con sus suscripciones
+  // 🔍 Obtener accesos Lifetime para los usuarios activos
+  const { data: lifetimeAccesses } = activeUserIds.length > 0
+    ? await supabase
+        .from('indicator_access')
+        .select('user_id, duration_type')
+        .in('user_id', activeUserIds)
+        .eq('status', 'active')
+        .eq('duration_type', '1L')
+    : { data: [] };
+
+  // Crear un Set de user_ids con acceso Lifetime para búsqueda rápida
+  const lifetimeUserIds = new Set((lifetimeAccesses || []).map((la: any) => la.user_id));
+
+  // Combinar usuarios con sus suscripciones y accesos Lifetime
   const safeSubscriptions: Subscription[] = subscriptions || [];
   const activeUsersWithSubs = safeActiveUsers.map(user => ({
     ...user,
-    subscription_status: safeSubscriptions.find(s => s.user_id === user.id)?.status || null
+    subscription_status: safeSubscriptions.find(s => s.user_id === user.id)?.status || null,
+    has_lifetime_access: lifetimeUserIds.has(user.id)
   }));
 
   const activeTotalPages = Math.ceil((activeUsersCount || 0) / limit);

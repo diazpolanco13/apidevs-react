@@ -30,14 +30,6 @@ export default async function SuscripcionPage() {
     .eq('duration_type', '1L')
     .limit(1);
 
-  // 🐛 DEBUG TEMPORAL
-  console.log('=== DEBUG LIFETIME ACCESS ===');
-  console.log('User ID:', user.id);
-  console.log('Lifetime Access Data:', lifetimeAccess);
-  console.log('Lifetime Access Error:', lifetimeError);
-  console.log('Has Lifetime Access:', lifetimeAccess && lifetimeAccess.length > 0);
-  console.log('============================');
-
   const hasLifetimeAccess = lifetimeAccess && lifetimeAccess.length > 0;
 
   // Obtener el último payment intent exitoso para mostrar el precio REAL pagado y la fecha
@@ -114,7 +106,7 @@ export default async function SuscripcionPage() {
             <div>
               <h2 className="text-2xl font-bold text-white">{userPlan}</h2>
               <p className="text-sm text-gray-400">
-                {subscription?.status === 'active' ? 'Activo' : 'Inactivo'}
+                {hasPremium ? 'Activo' : 'Inactivo'}
               </p>
             </div>
           </div>
@@ -136,9 +128,33 @@ export default async function SuscripcionPage() {
 
         {/* Plan Status */}
         <div className="bg-black/30 rounded-2xl p-4 mb-4">
-          {subscription ? (
+          {hasPremium ? (
             <>
-              {subscription.cancel_at_period_end ? (
+              {isLifetime ? (
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-purple-400 font-medium mb-2">
+                      Acceso Lifetime Activo
+                    </div>
+                    <div className="text-gray-300 text-sm">
+                      Tienes acceso de por vida a todos los indicadores premium.
+                      <span className="block mt-1 text-purple-400 font-semibold">
+                        ✨ Sin renovaciones ni cargos adicionales
+                      </span>
+                      {actualPricePaid && (
+                        <span className="block mt-2 text-gray-400">
+                          Precio pagado: {new Intl.NumberFormat('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                            minimumFractionDigits: 2
+                          }).format(actualPricePaid / 100)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : subscription?.cancel_at_period_end ? (
                 <div className="flex items-start gap-3">
                   <XCircle className="w-6 h-6 text-orange-400 flex-shrink-0 mt-0.5" />
                   <div>
@@ -163,32 +179,21 @@ export default async function SuscripcionPage() {
                   <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="text-green-400 font-medium mb-2">
-                      {isLifetime ? 'Acceso Lifetime Activo' : 'Suscripción Activa'}
+                      Suscripción Activa
                     </div>
                     <div className="text-gray-300 text-sm">
-                      {isLifetime ? (
-                        <>
-                          Tienes acceso de por vida a todos los indicadores premium.
-                          <span className="block mt-1 text-purple-400 font-semibold">
-                            ✨ Sin renovaciones ni cargos adicionales
+                      Estás suscrito al plan {subscription?.prices?.products?.name}.
+                      {subscription?.current_period_end && (
+                        <span>
+                          {' '}Próxima renovación: {' '}
+                          <span className="font-semibold text-white">
+                            {new Date(subscription.current_period_end).toLocaleDateString('es-ES', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
                           </span>
-                        </>
-                      ) : (
-                        <>
-                          Estás suscrito al plan {subscription.prices?.products?.name}.
-                          {subscription.current_period_end && !isPro && (
-                            <span>
-                              {' '}Próxima renovación: {' '}
-                              <span className="font-semibold text-white">
-                                {new Date(subscription.current_period_end).toLocaleDateString('es-ES', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
-                                })}
-                              </span>
-                            </span>
-                          )}
-                        </>
+                        </span>
                       )}
                     </div>
                   </div>
@@ -212,14 +217,19 @@ export default async function SuscripcionPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3">
-          {!subscription ? (
+          {!hasPremium ? (
             <Link
               href="/pricing"
               className="flex-1 px-6 py-3 bg-gradient-to-r from-apidevs-primary to-green-400 hover:from-green-400 hover:to-apidevs-primary text-black font-semibold rounded-2xl transition-all transform hover:scale-105 text-center shadow-lg shadow-apidevs-primary/30"
             >
               Elegir Plan
             </Link>
-          ) : (
+          ) : isLifetime ? (
+            <div className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-purple-400 font-semibold rounded-2xl text-center flex items-center justify-center gap-2">
+              <Crown className="w-5 h-5" />
+              <span>Acceso de Por Vida Activo</span>
+            </div>
+          ) : subscription ? (
             <>
               <div className="flex-1">
                 <CustomerPortalForm subscription={subscription} />
@@ -233,7 +243,7 @@ export default async function SuscripcionPage() {
                 </Link>
               )}
             </>
-          )}
+          ) : null}
         </div>
       </div>
 
