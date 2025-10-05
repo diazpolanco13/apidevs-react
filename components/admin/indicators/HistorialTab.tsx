@@ -69,6 +69,7 @@ type AccessStats = {
   by_source: {
     manual: number;
     purchase: number;
+    stripe: number; // 🆕 Compras automáticas vía Stripe
     trial: number;
     bulk: number;
     renewal: number;
@@ -256,6 +257,7 @@ export default function HistorialTab() {
     const colors: Record<string, string> = {
       manual: 'bg-purple-500/20 text-purple-400',
       purchase: 'bg-green-500/20 text-green-400',
+      stripe: 'bg-green-500/20 text-green-400', // 🆕 Compras automáticas vía Stripe
       trial: 'bg-blue-500/20 text-blue-400',
       bulk: 'bg-orange-500/20 text-orange-400',
       admin_bulk: 'bg-orange-500/20 text-orange-400',
@@ -348,6 +350,10 @@ export default function HistorialTab() {
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">Manual:</span>
                 <span className="text-white font-medium">{stats.by_source.manual + stats.by_source.admin_bulk}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-400">Stripe (Auto):</span>
+                <span className="text-white font-medium">{stats.by_source.stripe}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">Compras:</span>
@@ -472,6 +478,7 @@ export default function HistorialTab() {
                 <option value="">Todas</option>
                 <option value="manual">Manual</option>
                 <option value="admin_bulk">Admin Bulk</option>
+                <option value="stripe">Stripe (Automático)</option>
                 <option value="purchase">Compra</option>
                 <option value="trial">Trial</option>
                 <option value="renewal">Renovación</option>

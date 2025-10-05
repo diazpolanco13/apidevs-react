@@ -106,6 +106,7 @@ export async function GET(request: Request) {
     const bySource = {
       manual: 0,
       purchase: 0,
+      stripe: 0, // 🆕 Compras automáticas vía Stripe webhooks
       trial: 0,
       bulk: 0,
       renewal: 0,

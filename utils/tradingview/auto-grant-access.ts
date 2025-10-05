@@ -179,6 +179,7 @@ export async function grantIndicatorAccessOnPurchase(
 
       // ✅ CRÍTICO: Usar la fecha de expiración QUE TRADINGVIEW RETORNA
       const expiresAt = tvIndicator.expiration || null;
+      const grantedAt = new Date().toISOString();
 
       // Verificar si ya existe el acceso
       const { data: existingAccess } = await supabase
@@ -193,7 +194,7 @@ export async function grantIndicatorAccessOnPurchase(
         indicator_id: indicator.id,
         tradingview_username: user.tradingview_username,
         status: 'active',
-        granted_at: new Date().toISOString(),
+        granted_at: grantedAt,
         expires_at: expiresAt, // ✅ Fecha EXACTA de TradingView
         duration_type: duration,
         access_source: 'purchase', // ✅ Marca que fue por compra
@@ -202,21 +203,52 @@ export async function grantIndicatorAccessOnPurchase(
         error_message: null
       };
 
+      let savedAccessId: string | null = null;
+
       if (existingAccess) {
         // Actualizar acceso existente (renovación)
-        await supabase
+        const { data: updated } = await supabase
           .from('indicator_access')
           .update(accessData)
-          .eq('id', existingAccess.id);
+          .eq('id', existingAccess.id)
+          .select('id')
+          .single();
+        
+        savedAccessId = updated?.id || existingAccess.id;
       } else {
         // Crear nuevo acceso
-        await supabase
+        const { data: created } = await supabase
           .from('indicator_access')
-          .insert(accessData);
+          .insert(accessData)
+          .select('id')
+          .single();
+        
+        savedAccessId = created?.id || null;
       }
 
+      // 🔍 NUEVO: Registrar en indicator_access_log para auditoría
+      const logEntry = {
+        user_id: user.id,
+        indicator_id: indicator.id,
+        tradingview_username: user.tradingview_username,
+        operation_type: existingAccess ? 'renew' : 'grant',
+        access_source: 'stripe', // ✅ Identifica que viene de compra Stripe
+        status: 'active',
+        granted_at: grantedAt,
+        expires_at: expiresAt,
+        duration_type: duration,
+        tradingview_response: tvIndicator,
+        performed_by: null, // Sistema automático
+        indicator_access_id: savedAccessId,
+        notes: `Compra automática vía Stripe (${source}) - ${purchaseId || 'N/A'}`
+      };
+
+      await supabase
+        .from('indicator_access_log')
+        .insert(logEntry);
+
       successCount++;
-      console.log(`   ✅ ${indicator.name}: expires_at = ${expiresAt || 'LIFETIME'}`);
+      console.log(`   ✅ ${indicator.name}: expires_at = ${expiresAt || 'LIFETIME'} [LOG REGISTRADO]`);
     }
 
     console.log(`\n   🎉 AUTO-GRANT COMPLETADO: ${successCount}/${pineIds.length} indicadores concedidos`);
