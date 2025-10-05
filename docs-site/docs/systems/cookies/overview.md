@@ -1,7 +1,7 @@
 # 🚀 Plan Unificado: Cookies + Tracking + Marketing
 
-**Fecha**: Implementación 3 de octubre de 2025  
-**Tiempo Estimado**: 4-6 horas  
+**Fecha**: Implementación 3 de octubre de 2025
+**Tiempo Estimado**: 4-6 horas
 **Objetivo**: Conectar sistema de cookies con base de datos y crear dashboard admin para marketing
 
 ---
@@ -144,7 +144,7 @@ SELECT u.email, MAX(ual.created_at) as last_visit
 FROM users u
 JOIN user_activity_log ual ON u.id = ual.user_id
 GROUP BY u.email
-HAVING MAX(ual.created_at) < NOW() - INTERVAL '30 days';
+HAVING MAX(ual.created_at) \< NOW() - INTERVAL '30 days';
 ```
 → Email: "Te echamos de menos! Nuevos indicadores disponibles"
 
@@ -166,8 +166,8 @@ HAVING MAX(ual.created_at) < NOW() - INTERVAL '30 days';
         ↓                                       ↓
 ┌──────────────────┐                  ┌──────────────────────┐
 │   localStorage   │                  │  Supabase Database   │
-│  (navegador)     │                  │ user_cookie_prefs    │
-│                  │◄────sync────────►│                      │
+│  (navegador)     │◄────sync────────►│ user_cookie_prefs    │
+│                  │                  │                      │
 └──────────────────┘                  └──────────────────────┘
         ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -243,11 +243,11 @@ HAVING MAX(ual.created_at) < NOW() - INTERVAL '30 days';
 
 Al terminar mañana tendremos:
 
-✅ Sistema de cookies sincronizado con Supabase  
-✅ Tracking de eventos real funcionando  
-✅ Admin puede ver preferencias y actividad de cada usuario  
-✅ Queries listas para campañas de marketing brutales  
-✅ Todo funcionando en compliance con GDPR/CCPA/LGPD  
+✅ Sistema de cookies sincronizado con Supabase
+✅ Tracking de eventos real funcionando
+✅ Admin puede ver preferencias y actividad de cada usuario
+✅ Queries listas para campañas de marketing brutales
+✅ Todo funcionando en compliance con GDPR/CCPA/LGPD
 
 ---
 
@@ -258,4 +258,3 @@ Al terminar mañana tendremos:
 - *SESSION-HANDOFF.md*
 - *COOKIE-BANNER-INTEGRATION.md*
 - *COOKIES-POLICY.md*
-
