@@ -49,15 +49,27 @@ export const useTradingViewValidation = () => {
       }
 
       // 2. Obtener imagen de perfil (a través de nuestra API route)
-      const profileResponse = await fetch(`${API_BASE}/profile/${validateData.verifiedUserName}`);
-      const profileData = await profileResponse.json();
-
-      console.log('Profile data received:', profileData); // Debug
+      // ✅ Hacer esto NO bloqueante - si falla, continuar sin imagen
+      let profileImage: string | null = null;
+      
+      try {
+        const profileResponse = await fetch(`${API_BASE}/profile/${validateData.verifiedUserName}`);
+        
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json();
+          console.log('Profile data received:', profileData); // Debug
+          profileImage = profileData.profile_image || profileData.profileImage || null;
+        } else {
+          console.log('Profile not found, continuing without image (status:', profileResponse.status, ')');
+        }
+      } catch (profileError) {
+        console.warn('Could not fetch profile image, continuing without it:', profileError);
+      }
 
       const result: ValidationResult = {
         isValid: true,
         username: validateData.verifiedUserName,
-        profileImage: profileData.profile_image || profileData.profileImage || null
+        profileImage
       };
 
       setValidationResult(result);
