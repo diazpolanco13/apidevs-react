@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Filter, ChevronLeft, ChevronRight, ExternalLink, CheckCircle, Clock, XCircle, RefreshCw } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, ExternalLink, CheckCircle, Clock, XCircle, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Purchase } from '@/types/purchases';
 
 interface PurchasesTableProps {
@@ -13,11 +13,14 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'date' | 'amount' | 'customer'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // desc = más recientes primero
   
   const itemsPerPage = 10;
 
-  // Filtrar compras
-  const filteredPurchases = purchases.filter(purchase => {
+  // Filtrar y ordenar compras
+  let filteredPurchases = purchases.filter(purchase => {
     const matchesSearch = 
       purchase.customer_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       purchase.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -25,8 +28,24 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
       purchase.order_number.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || purchase.status === statusFilter;
+    const matchesType = typeFilter === 'all' || purchase.type === typeFilter;
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesType;
+  });
+
+  // Ordenar compras
+  filteredPurchases = [...filteredPurchases].sort((a, b) => {
+    let comparison = 0;
+    
+    if (sortBy === 'date') {
+      comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    } else if (sortBy === 'amount') {
+      comparison = a.amount - b.amount;
+    } else if (sortBy === 'customer') {
+      comparison = a.customer_email.localeCompare(b.customer_email);
+    }
+    
+    return sortOrder === 'asc' ? comparison : -comparison;
   });
 
   // Paginación
@@ -34,6 +53,17 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentPurchases = filteredPurchases.slice(startIndex, endIndex);
+
+  // Handler para cambiar ordenamiento
+  const handleSort = (column: 'date' | 'amount' | 'customer') => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('desc');
+    }
+    setCurrentPage(1);
+  };
 
   // Formatear moneda
   // NOTA: amount ya viene en centavos desde page.tsx, NO dividir de nuevo
@@ -93,39 +123,82 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
   return (
     <div className="bg-gradient-to-br from-gray-800/30 to-gray-900/30 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        {/* Search */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-          <input
-            type="text"
-            placeholder="Buscar por email, nombre, producto..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-apidevs-primary transition-all"
-          />
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Buscar por email, nombre, producto, orden..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-apidevs-primary transition-all"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <div className="relative w-full sm:w-48">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-10 pr-8 py-2.5 bg-gray-800/50 border border-gray-700 rounded-xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-apidevs-primary transition-all cursor-pointer"
+            >
+              <option value="all">Todos los estados</option>
+              <option value="completed">Completado</option>
+              <option value="pending">Pendiente</option>
+              <option value="refunded">Reembolsado</option>
+              <option value="failed">Fallido</option>
+            </select>
+          </div>
+
+          {/* Type Filter */}
+          <div className="relative w-full sm:w-48">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+            <select
+              value={typeFilter}
+              onChange={(e) => {
+                setTypeFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-10 pr-8 py-2.5 bg-gray-800/50 border border-gray-700 rounded-xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-apidevs-primary transition-all cursor-pointer"
+            >
+              <option value="all">Todos los tipos</option>
+              <option value="subscription">Suscripción</option>
+              <option value="lifetime">Lifetime</option>
+              <option value="one-time">One-Time</option>
+            </select>
+          </div>
         </div>
 
-        {/* Status Filter */}
-        <div className="relative">
-          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="pl-10 pr-8 py-2.5 bg-gray-800/50 border border-gray-700 rounded-xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-apidevs-primary transition-all cursor-pointer"
-          >
-            <option value="all">Todos los estados</option>
-            <option value="completed">Completado</option>
-            <option value="pending">Pendiente</option>
-            <option value="refunded">Reembolsado</option>
-            <option value="failed">Fallido</option>
-          </select>
+        {/* Results Summary */}
+        <div className="flex items-center justify-between text-sm">
+          <div className="text-gray-400">
+            Mostrando {filteredPurchases.length === 0 ? 0 : startIndex + 1}-{Math.min(endIndex, filteredPurchases.length)} de {filteredPurchases.length} resultados
+            {filteredPurchases.length !== purchases.length && (
+              <span className="text-apidevs-primary"> (filtrado de {purchases.length} total)</span>
+            )}
+          </div>
+          {(searchTerm || statusFilter !== 'all' || typeFilter !== 'all') && (
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+                setTypeFilter('all');
+                setCurrentPage(1);
+              }}
+              className="text-apidevs-primary hover:text-apidevs-primary/80 transition-colors"
+            >
+              Limpiar filtros
+            </button>
+          )}
         </div>
       </div>
 
@@ -134,12 +207,55 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-700">
-              <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Cliente</th>
+              {/* Cliente - Sortable */}
+              <th className="text-left py-3 px-4">
+                <button
+                  onClick={() => handleSort('customer')}
+                  className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-white transition-colors group"
+                >
+                  <span>Cliente</span>
+                  {sortBy === 'customer' ? (
+                    sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                  ) : (
+                    <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-50" />
+                  )}
+                </button>
+              </th>
               <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Producto</th>
               <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Tipo</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Monto</th>
+              
+              {/* Monto - Sortable */}
+              <th className="text-left py-3 px-4">
+                <button
+                  onClick={() => handleSort('amount')}
+                  className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-white transition-colors group"
+                >
+                  <span>Monto</span>
+                  {sortBy === 'amount' ? (
+                    sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                  ) : (
+                    <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-50" />
+                  )}
+                </button>
+              </th>
+              
               <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Estado</th>
-              <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Fecha</th>
+              
+              {/* Fecha - Sortable */}
+              <th className="text-left py-3 px-4">
+                <button
+                  onClick={() => handleSort('date')}
+                  className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-white transition-colors group"
+                >
+                  <span>Fecha</span>
+                  {sortBy === 'date' ? (
+                    sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                  ) : (
+                    <ArrowUpDown className="w-3 h-3 opacity-0 group-hover:opacity-50" />
+                  )}
+                </button>
+              </th>
+              
               <th className="text-right py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
@@ -213,11 +329,7 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-700/50">
-          <div className="text-sm text-gray-400">
-            Mostrando {startIndex + 1}-{Math.min(endIndex, filteredPurchases.length)} de {filteredPurchases.length}
-          </div>
-
+        <div className="flex items-center justify-center mt-6 pt-6 border-t border-gray-700/50">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
