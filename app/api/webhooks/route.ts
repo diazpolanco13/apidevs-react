@@ -124,26 +124,53 @@ export async function POST(req: Request) {
             
             // 🎯 AUTO-GRANT: Conceder acceso automático a indicadores
             const customer = await stripe.customers.retrieve(checkoutSession.customer as string);
-            if (customer && !customer.deleted && customer.email) {
+            
+            // ✅ CRÍTICO: Obtener email del customer o de customer_details como fallback
+            const customerEmail = customer && !customer.deleted 
+              ? customer.email 
+              : checkoutSession.customer_details?.email;
+            
+            if (customerEmail) {
               const productIds = extractProductIds(lineItems, checkoutSession.metadata || {});
               const priceId = lineItems[0]?.price?.id;
               
-              console.log(`🎯 Webhook auto-grant (subscription): ${customer.email}`);
-              console.log(`   Price ID: ${priceId}`);
-              console.log(`   Product IDs: ${productIds.join(', ')}`);
+              console.log('\n🎯 ========== AUTO-GRANT DEBUG (subscription) ==========');
+              console.log('📧 Customer Email:', customerEmail);
+              console.log('📦 Product IDs:', productIds);
+              console.log('💰 Price ID:', priceId);
+              console.log('🔖 Subscription ID:', subscriptionId);
+              console.log('📋 Line Items Count:', lineItems.length);
+              console.log('======================================================\n');
               
               try {
-                await grantIndicatorAccessOnPurchase(
-                  customer.email,
+                const result = await grantIndicatorAccessOnPurchase(
+                  customerEmail,
                   productIds,
                   priceId,
-                  undefined,
+                  subscriptionId as string,
                   'checkout'
                 );
+                
+                console.log('\n✅ AUTO-GRANT RESULT (subscription):');
+                console.log('   Success:', result.success);
+                console.log('   User ID:', result.userId);
+                console.log('   TradingView Username:', result.tradingviewUsername);
+                console.log('   Indicators Granted:', result.indicatorsGranted);
+                if (result.errors) {
+                  console.log('   Errors:', result.errors);
+                }
+                if (result.reason) {
+                  console.log('   Reason:', result.reason);
+                }
+                console.log('======================================================\n');
               } catch (error) {
                 console.error('⚠️ Error en auto-grant (checkout subscription):', error);
                 // No fallar el webhook por esto
               }
+            } else {
+              console.error('❌ No se pudo obtener customer email para auto-grant');
+              console.log('   Customer deleted?:', customer?.deleted);
+              console.log('   Customer details:', checkoutSession.customer_details);
             }
           } else if (checkoutSession.mode === 'payment' && checkoutSession.payment_intent) {
             // Manejar compras one-time
@@ -152,40 +179,57 @@ export async function POST(req: Request) {
             
             if (customer && !customer.deleted) {
               await createPurchaseRecord(paymentIntent, customer);
+            }
+            
+            // ✅ CRÍTICO: Obtener email del customer o de customer_details como fallback
+            const customerEmail = customer && !customer.deleted 
+              ? customer.email 
+              : checkoutSession.customer_details?.email;
+            
+            // 🎯 AUTO-GRANT: Conceder acceso automático a indicadores
+            if (customerEmail) {
+              const productIds = extractProductIds(lineItems, paymentIntent.metadata || {});
+              const priceId = lineItems[0]?.price?.id;
               
-              // 🎯 AUTO-GRANT: Conceder acceso automático a indicadores
-              if (customer.email) {
-                const productIds = extractProductIds(lineItems, paymentIntent.metadata || {});
-                const priceId = lineItems[0]?.price?.id;
+              console.log('\n🎯 ========== AUTO-GRANT DEBUG (one-time payment) ==========');
+              console.log('📧 Customer Email:', customerEmail);
+              console.log('📦 Product IDs:', productIds);
+              console.log('💰 Price ID:', priceId);
+              console.log('🔖 Price Type:', lineItems[0]?.price?.type);
+              console.log('💵 Unit Amount:', lineItems[0]?.price?.unit_amount);
+              console.log('💳 Payment Intent:', paymentIntent.id);
+              console.log('📋 Line Items Count:', lineItems.length);
+              console.log('===========================================================\n');
+              
+              try {
+                const result = await grantIndicatorAccessOnPurchase(
+                  customerEmail,
+                  productIds,
+                  priceId,
+                  paymentIntent.id,
+                  'checkout'
+                );
                 
-                console.log('\n🎯 ========== AUTO-GRANT DEBUG (checkout.session.completed) ==========');
-                console.log('📧 Customer Email:', customer.email);
-                console.log('📦 Product IDs:', productIds);
-                console.log('💰 Price ID:', priceId);
-                console.log('🔖 Price Type:', lineItems[0]?.price?.type);
-                console.log('💵 Unit Amount:', lineItems[0]?.price?.unit_amount);
-                console.log('💳 Payment Intent:', paymentIntent.id);
-                console.log('=====================================================================\n');
-                
-                try {
-                  const result = await grantIndicatorAccessOnPurchase(
-                    customer.email,
-                    productIds,
-                    priceId,
-                    paymentIntent.id,
-                    'checkout'
-                  );
-                  
-                  console.log('\n✅ AUTO-GRANT RESULT:');
-                  console.log('   Success:', result.success);
-                  console.log('   Indicators Granted:', result.indicatorsGranted);
-                  console.log('   Errors:', result.errors || 'None');
-                  console.log('=====================================================================\n');
-                } catch (error) {
-                  console.error('⚠️ Error en auto-grant (checkout one-time):', error);
-                  // No fallar el webhook por esto
+                console.log('\n✅ AUTO-GRANT RESULT (one-time payment):');
+                console.log('   Success:', result.success);
+                console.log('   User ID:', result.userId);
+                console.log('   TradingView Username:', result.tradingviewUsername);
+                console.log('   Indicators Granted:', result.indicatorsGranted);
+                if (result.errors) {
+                  console.log('   Errors:', result.errors);
                 }
+                if (result.reason) {
+                  console.log('   Reason:', result.reason);
+                }
+                console.log('===========================================================\n');
+              } catch (error) {
+                console.error('⚠️ Error en auto-grant (checkout one-time):', error);
+                // No fallar el webhook por esto
               }
+            } else {
+              console.error('❌ No se pudo obtener customer email para auto-grant');
+              console.log('   Customer deleted?:', customer?.deleted);
+              console.log('   Customer details:', checkoutSession.customer_details);
             }
           }
           break;
