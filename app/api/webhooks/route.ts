@@ -247,23 +247,10 @@ export async function POST(req: Request) {
             if (customer && !customer.deleted) {
               await createPurchaseRecord(paymentIntent, customer);
               
-              // 🎯 AUTO-GRANT: Conceder acceso automático a indicadores
-              if (customer.email) {
-                const productIds = extractProductIds([], paymentIntent.metadata || {});
-                
-                try {
-                  await grantIndicatorAccessOnPurchase(
-                    customer.email,
-                    productIds,
-                    undefined,
-                    paymentIntent.id,
-                    'checkout'
-                  );
-                } catch (error) {
-                  console.error('⚠️ Error en auto-grant (payment_intent):', error);
-                  // No fallar el webhook por esto
-                }
-              }
+              // ⚠️ NO ejecutar auto-grant aquí - ya se ejecuta en checkout.session.completed
+              // Ejecutar auto-grant desde payment_intent causa registros duplicados porque
+              // Stripe envía AMBOS eventos (checkout.session.completed + payment_intent.succeeded)
+              console.log('ℹ️ Purchase record created. Auto-grant will be handled by checkout.session.completed event.');
             }
           }
           break;

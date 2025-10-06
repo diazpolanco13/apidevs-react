@@ -305,11 +305,11 @@ export default function HistorialTab() {
               <span className="text-xs text-gray-400">Últimos 30 días</span>
             </div>
             <div className="text-3xl font-bold text-white mb-1">
-              {stats.total_operations.toLocaleString()}
+              {(stats.total_operations || 0).toLocaleString()}
             </div>
             <div className="text-sm text-gray-400">Total Operaciones</div>
             <div className="mt-2 text-xs text-emerald-400">
-              {stats.success_rate}% tasa de éxito
+              {stats.success_rate || 0}% tasa de éxito
             </div>
           </div>
 
@@ -319,7 +319,7 @@ export default function HistorialTab() {
               <span className="text-xs text-gray-400">Activos ahora</span>
             </div>
             <div className="text-3xl font-bold text-white mb-1">
-              {stats.active_accesses.toLocaleString()}
+              {(stats.active_accesses || 0).toLocaleString()}
             </div>
             <div className="text-sm text-gray-400">Accesos Activos</div>
             <div className="mt-2 text-xs text-gray-400">
