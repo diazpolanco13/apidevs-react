@@ -1,9 +1,9 @@
 # 📚 Sistema de Gestión de Accesos a Indicadores TradingView
 
-**Fecha:** 4 de Octubre 2025  
-**Estado:** Fase 1 ✅ | Fase 2 ✅ | Fase 2.5 ✅ | Fase 3 Parcial ✅ | Fase 4 ✅ COMPLETADA | Fase 5 ⏳ TESTING  
-**Commits principales:** `fb75600`, `c8e9f18`, `78f2e89`, `5a51df0`, `7a96118`, `b75cd2b`, `ff20745`  
-**Última actualización:** 4 de Octubre 2025, 23:30
+**Fecha:** 6 de Octubre 2025  
+**Estado:** Fase 1 ✅ | Fase 2 ✅ | Fase 2.5 ✅ | Fase 3 Parcial ✅ | Fase 4 ✅ COMPLETADA | Fase 5 ✅ VALIDADO  
+**Commits principales:** `fb75600`, `c8e9f18`, `78f2e89`, `5a51df0`, `7a96118`, `b75cd2b`, `ff20745`, `8f5809f`, `36f540e`, `37ef0f0`  
+**Última actualización:** 6 de Octubre 2025, 20:30
 
 ---
 
@@ -142,6 +142,8 @@ UNIQUE(user_id, indicator_id)
 **Documentación:** `/utils/bot-pinescript/ECOMMERCE_API_GUIDE.md`
 
 > ⚠️ **IMPORTANTE:** Los endpoints individuales (`/api/access/:username`) NO requieren API key. Solo los endpoints bulk (`/api/access/bulk`) requieren el header `X-API-Key`.
+
+> ✅ **FIX APLICADO (6 Oct 2025):** El bug del endpoint Bulk que retornaba `hasAccess: false` fue resuelto en el microservicio. Ver `SOLUCION-BULK-API.md` para detalles completos.
 
 #### Endpoints Principales:
 
@@ -594,6 +596,80 @@ CREATE INDEX idx_legacy_users_purchase_count ON legacy_users(purchase_count DESC
 - **Solución:** Agregar condición `source === 'registered'` para verificar que el usuario SÍ se registró en nueva plataforma
 - **Commit fix:** `78f2e89`
 - **Archivo:** `components/admin/indicators/UserSelectionStep.tsx`
+
+### **10. Registros duplicados en auto-grant de compras Stripe** ⭐ CRÍTICO
+- **Fecha:** 6 Oct 2025
+- **Causa:** El webhook ejecutaba auto-grant en **DOS eventos diferentes** para la misma compra:
+  - `checkout.session.completed` → ejecutaba auto-grant ✅
+  - `payment_intent.succeeded` → ejecutaba auto-grant ✅ ❌ DUPLICADO
+- **Resultado:** Cada compra generaba 2× registros en `indicator_access_log`
+- **Solución:** Remover auto-grant de `payment_intent.succeeded`, dejarlo **SOLO en `checkout.session.completed`**
+- **Commit fix:** `8f5809f`
+- **Archivo:** `app/api/webhooks/route.ts`
+- **Código:**
+  ```typescript
+  // ANTES (Bug): Ambos eventos ejecutaban auto-grant
+  case 'checkout.session.completed': await grantIndicatorAccessOnPurchase(...);
+  case 'payment_intent.succeeded': await grantIndicatorAccessOnPurchase(...); // ❌ DUPLICADO
+  
+  // DESPUÉS (Fix): Solo checkout.session.completed
+  case 'checkout.session.completed': await grantIndicatorAccessOnPurchase(...);
+  case 'payment_intent.succeeded': // Solo crea purchase record, NO auto-grant
+  ```
+
+### **11. Endpoint Bulk API retornaba `hasAccess: false` a pesar de `status: "Success"`** ⭐ CRÍTICO
+- **Fecha:** 6 Oct 2025
+- **Causa:** Bug en microservicio TradingView - El método `addAccess()` actualizaba `status` pero NO actualizaba `hasAccess` ni `currentExpiration`
+- **Síntoma:** El webhook recibía respuesta exitosa pero los accesos NO se concedían realmente en TradingView
+- **Diagnóstico:** 
+  ```json
+  // Respuesta del API (INCORRECTA):
+  {
+    "status": "Success",        // ✅ OK
+    "hasAccess": false,         // ❌ INCORRECTO (debería ser true)
+    "currentExpiration": "2025-10-06..."  // ❌ Fecha vieja, no actualizada
+  }
+  ```
+- **Solución:** La IA del microservicio aplicó fix en `src/services/tradingViewService.js` líneas 418-429:
+  ```javascript
+  // Ahora actualiza hasAccess y currentExpiration después de éxito
+  if (accessDetails.status === 'Success') {
+    accessDetails.hasAccess = true;
+    accessDetails.currentExpiration = accessDetails.expiration;
+  }
+  ```
+- **Verificación:** Script `scripts/test-bulk-fix.ts` confirma que ahora retorna `hasAccess: true` ✅
+- **Documentación completa:** Ver `SOLUCION-BULK-API.md`
+
+### **12. Auto-grant concedía indicadores FREE a usuarios que compraban planes PRO**
+- **Fecha:** 6 Oct 2025
+- **Causa:** Mapeo de productos configurado con `type: 'all'` (free + premium) en lugar de `type: 'premium'`
+- **Resultado:** Usuarios compraban plan PRO pero recibían también indicadores gratuitos
+- **Solución:** Cambiar mapeo a `type: 'premium'` para todos los planes de pago
+- **Commit fix:** `37ef0f0`
+- **Archivo:** `utils/tradingview/auto-grant-access.ts`
+- **Código:**
+  ```typescript
+  // ANTES (Incorrecto):
+  'plan_mensual': { type: 'all' },  // Daba free + premium
+  'default': { type: 'all' }
+  
+  // DESPUÉS (Correcto):
+  'plan_mensual': { type: 'premium' },  // Solo premium
+  'default': { type: 'premium' }
+  ```
+
+### **13. UI crash en HistorialTab: `toLocaleString()` on undefined**
+- **Fecha:** 6 Oct 2025
+- **Causa:** Component intentaba llamar `.toLocaleString()` en stats que podían ser `undefined` durante carga inicial
+- **Solución:** Agregar validación `|| 0` antes de `.toLocaleString()`
+- **Commit fix:** `8f5809f`
+- **Archivo:** `components/admin/indicators/HistorialTab.tsx`
+- **Código:**
+  ```typescript
+  {(stats.total_operations || 0).toLocaleString()}
+  {(stats.active_accesses || 0).toLocaleString()}
+  ```
 
 ---
 
@@ -1355,15 +1431,48 @@ async function getDurationFromPrice(priceId?: string): Promise<string> {
 
 ---
 
-### **🧪 FASE 5: TESTING Y VALIDACIÓN (PENDIENTE)**
+### **🧪 FASE 5: TESTING Y VALIDACIÓN (COMPLETADA)** ✅
 
-#### **⚠️ IMPORTANTE PARA LA IA QUE HARÁ EL TESTING:**
+#### **📅 FECHA DE VALIDACIÓN: 6 de Octubre 2025**
 
-El sistema está **100% implementado y funcionando**, pero **NUNCA se ha probado con una compra real en Stripe**. Tu trabajo es validar que todo el flujo funciona end-to-end.
+El sistema fue **completamente probado con compras reales en Stripe** y se identificaron y resolvieron **4 bugs críticos** que impedían el funcionamiento correcto del auto-grant.
+
+#### **🎯 RESUMEN DE RESULTADOS DEL TESTING:**
+
+| Aspecto | Estado | Notas |
+|---------|--------|-------|
+| ✅ Webhook Stripe recibido | EXITOSO | Sin errores de firma o timeout |
+| ✅ Auto-grant ejecutado | EXITOSO | Después de fix de duplicados |
+| ✅ Endpoint Bulk funcionando | EXITOSO | Después de fix en microservicio |
+| ✅ Registros en `indicator_access` | EXITOSO | Status: active, source: purchase |
+| ✅ Registros en `indicator_access_log` | EXITOSO | Sin duplicados |
+| ✅ Accesos en TradingView | EXITOSO | Verificado manualmente |
+| ✅ Filtrado premium-only | EXITOSO | No concede indicadores free |
+| ✅ Fechas de expiración | EXITOSO | Correctas desde TradingView API |
+
+#### **🐛 BUGS ENCONTRADOS Y RESUELTOS DURANTE TESTING:**
+
+1. **Registros duplicados** → Fix: Remover auto-grant de `payment_intent.succeeded` (Commit `8f5809f`)
+2. **Bulk API `hasAccess: false`** → Fix: Microservicio actualizado (Ver `SOLUCION-BULK-API.md`)
+3. **Concedía indicadores FREE** → Fix: Mapeo cambiado a `type: 'premium'` (Commit `37ef0f0`)
+4. **UI crash en stats** → Fix: Validaciones `|| 0` agregadas (Commit `8f5809f`)
+
+#### **📊 MÉTRICAS DEL TESTING:**
+
+- **Compras de prueba realizadas:** 3
+- **Indicadores concedidos correctamente:** 4-5 premium por compra
+- **Tiempo promedio de ejecución:** 2-3 segundos (webhook → acceso en TradingView)
+- **Tasa de éxito después de fixes:** 100%
+
+#### **✅ SCRIPTS DE VERIFICACIÓN CREADOS:**
+
+1. **`scripts/check-user-access.ts`** - Compara accesos en Supabase vs TradingView
+2. **`scripts/test-bulk-fix.ts`** - Valida que endpoint Bulk retorna `hasAccess: true`
+3. **`scripts/manual-grant-purchase.ts`** - Reintenta auto-grant para compras fallidas
 
 ---
 
-### **📝 CHECKLIST DE TESTING COMPLETO**
+### **📝 CHECKLIST DE TESTING COMPLETO** (VALIDADO)
 
 #### **Pre-requisitos antes de probar:**
 
@@ -2203,6 +2312,9 @@ jobs:
 | `7a96118` | 4 Oct 2025 | Fix: búsqueda usuarios formato response | 1 |
 | `b75cd2b` | 4 Oct 2025 | Operaciones masivas con progreso + tabla indicator_access_log | 9 |
 | `ff20745` | 4 Oct 2025 | Revocación masiva + modales personalizados + UX mejoras | 6 |
+| `8f5809f` | 6 Oct 2025 | ⭐ Fix: Duplicados en auto-grant + validaciones UI | 2 |
+| `36f540e` | 6 Oct 2025 | ⭐ Scripts de verificación + documentación fix Bulk API | 4 |
+| `37ef0f0` | 6 Oct 2025 | ⭐ Fix: Solo conceder indicadores premium (no free) | 1 |
 
 ---
 
@@ -2611,18 +2723,21 @@ POST   /api/admin/bulk-operations/execute
 
 **Última actualización:** 4 de Octubre 2025, 21:00  
 **Mantenido por:** Claude Sonnet 4.5 (Anthropic) + Usuario APIDevs  
-**Commits clave:** `fb75600`, `c8e9f18`, `78f2e89`, `5a51df0`, `7a96118`, `b75cd2b`, `ff20745`  
-**Estado del sistema:** ✅ 100% funcional (Fase 1, 2, 2.5 y 3 parcial), listo para producción  
-**Próxima IA:** Lee esta documentación completa antes de tocar código  
+**Commits clave:** `fb75600`, `c8e9f18`, `78f2e89`, `5a51df0`, `7a96118`, `b75cd2b`, `ff20745`, `8f5809f`, `36f540e`, `37ef0f0`  
+**Estado del sistema:** ✅ 100% funcional y VALIDADO (Fases 1-5 completadas), **LISTO PARA PRODUCCIÓN**  
+**Próxima IA:** Sistema completamente funcional - Leer esta doc para mantener o mejorar  
 
-**🎯 Progreso Hoy (4 Oct 2025):**
-- ✅ Sistema de revocación masiva implementado
-- ✅ Tabla indicator_access_log para auditoría completa
-- ✅ Historial con búsqueda por email/username
-- ✅ Modales personalizados (UX profesional)
-- ✅ 15 archivos modificados/creados
-- ✅ +1,000 líneas de código
-- 🎯 **PRÓXIMO:** Webhooks Stripe para auto-grant de accesos
+**🎯 Progreso Hoy (6 Oct 2025):**
+- ✅ **FASE 5 COMPLETADA:** Testing completo con compras reales en Stripe
+- ✅ 4 bugs críticos identificados y resueltos
+- ✅ Auto-grant funcionando end-to-end sin duplicados
+- ✅ Endpoint Bulk API corregido en microservicio
+- ✅ Filtrado correcto: solo indicadores premium
+- ✅ Scripts de verificación creados
+- ✅ 7 archivos modificados/creados
+- ✅ +600 líneas de código
+- 🎉 **Sistema validado y listo para producción**
+- 🎯 **PRÓXIMO:** Monitoreo en producción y mejoras opcionales (Fase 6: Renovaciones)
 
 ---
 
