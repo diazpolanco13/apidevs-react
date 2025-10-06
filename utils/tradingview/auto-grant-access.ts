@@ -139,7 +139,7 @@ export async function grantIndicatorAccessOnPurchase(
     console.log(`   ⏰ Duración: ${duration}`);
 
     // 5. Conceder acceso en TradingView usando BULK API (más eficiente)
-    const TRADINGVIEW_API_KEY = '92a1e4a8c74e1871c658301f3e8ae31c31ed6bfd68629059617fac621932e1ea';
+    const TRADINGVIEW_API_KEY = process.env.TRADINGVIEW_API_KEY || '92a1e4a8c74e1871c658301f3e8ae31c31ed6bfd68629059617fac621932e1ea';
     
     console.log(`   📡 Llamando a API TradingView BULK...`);
     console.log(`      Endpoint: ${TRADINGVIEW_API}/api/access/bulk`);
@@ -156,13 +156,9 @@ export async function grantIndicatorAccessOnPurchase(
           'X-API-Key': TRADINGVIEW_API_KEY
         },
         body: JSON.stringify({
-          users: [user.tradingview_username], // Array de usuarios (bulk)
+          users: [user.tradingview_username],
           pine_ids: pineIds,
-          duration: duration,
-          options: {
-            preValidateUsers: false,  // Para mejor performance
-            onProgress: false         // Sin callbacks de progreso
-          }
+          duration: duration
         })
       }
     );
@@ -180,9 +176,8 @@ export async function grantIndicatorAccessOnPurchase(
       };
     }
 
-    // El API bulk retorna un objeto con metadata + resultados por usuario
-    // Formato: { success: N, failed: N, successRate: %, results: { username: [...] } }
-    const userResults = tvResult.results?.[user.tradingview_username] || [];
+    // El API bulk retorna { results: [...], success: N, successRate: X }
+    const userResults = tvResult.results || [];
     
     if (!Array.isArray(userResults)) {
       console.error(`   ❌ Formato inesperado de respuesta:`, tvResult);
@@ -194,8 +189,7 @@ export async function grantIndicatorAccessOnPurchase(
       };
     }
     
-    console.log(`   ✅ ${userResults.length} resultados recibidos para ${user.tradingview_username}`);
-    console.log(`   📊 Success Rate: ${tvResult.successRate || 'N/A'}%`);
+    console.log(`   ✅ ${tvResult.success || 0}/${tvResult.total || 0} indicadores concedidos (${tvResult.successRate || 0}% éxito)`);
 
     // 5. Obtener indicadores de Supabase para registrar accesos
     const { data: dbIndicators } = await supabase
@@ -207,8 +201,16 @@ export async function grantIndicatorAccessOnPurchase(
     const errors: string[] = [];
 
     for (const tvIndicator of userResults) {
-      if (tvIndicator.status !== 'Success') {
-        errors.push(`${tvIndicator.pine_id}: ${tvIndicator.error || 'Failed'}`);
+      // Debug: Ver qué retorna TradingView para cada indicador
+      console.log(`   🔍 Procesando: ${tvIndicator.pine_id}`);
+      console.log(`      Status: ${tvIndicator.status}`);
+      console.log(`      Expiration: ${tvIndicator.expiration}`);
+      
+      // ✅ Aceptar tanto "Success" como "Not Applied" (usuario ya tenía acceso)
+      const isSuccess = tvIndicator.status === 'Success' || tvIndicator.status === 'Not Applied';
+      
+      if (!isSuccess) {
+        errors.push(`${tvIndicator.pine_id}: ${tvIndicator.error || tvIndicator.status || 'Failed'}`);
         continue;
       }
 
@@ -223,6 +225,8 @@ export async function grantIndicatorAccessOnPurchase(
       // ✅ CRÍTICO: Usar la fecha de expiración QUE TRADINGVIEW RETORNA
       const expiresAt = tvIndicator.expiration || null;
       const grantedAt = new Date().toISOString();
+      
+      console.log(`   📅 ${indicator.name}: expires_at = ${expiresAt}`);
 
       // Verificar si ya existe el acceso
       const { data: existingAccess } = await supabase
