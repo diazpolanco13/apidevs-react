@@ -25,21 +25,21 @@ const PRODUCT_ACCESS_MAP: Record<string, {
   'free_plan': { type: 'free' },
   'free': { type: 'free' },
   
-  // Planes PRO → Acceso a TODOS los indicadores
-  'plan_mensual': { type: 'all' },
-  'plan_semestral': { type: 'all' },
-  'plan_anual': { type: 'all' },
-  'apidevs_indicator_-_pro': { type: 'all' },
+  // Planes PRO → Solo indicadores PREMIUM (excluye free)
+  'plan_mensual': { type: 'premium' },
+  'plan_semestral': { type: 'premium' },
+  'plan_anual': { type: 'premium' },
+  'apidevs_indicator_-_pro': { type: 'premium' },
   
-  // Plan Lifetime → Acceso a TODOS los indicadores
-  'plan_lifetime': { type: 'all' },
-  'apidevs_trading_indicators': { type: 'all' }, // Producto genérico PRO
+  // Plan Lifetime → Solo indicadores PREMIUM
+  'plan_lifetime': { type: 'premium' },
+  'apidevs_trading_indicators': { type: 'premium' }, // Producto genérico PRO
   
   // Si agregas productos específicos para indicadores individuales
   // 'producto_indicador_x': { type: 'specific', pine_ids: ['PUB;xxxxx'] },
   
-  // Por defecto, si no coincide con nada, dar acceso a todos (planes PRO)
-  'default': { type: 'all' }
+  // Por defecto, si no coincide con nada, dar acceso solo a premium
+  'default': { type: 'premium' }
 };
 
 /**
