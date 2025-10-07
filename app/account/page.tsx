@@ -33,19 +33,21 @@ export default async function AccountDashboard() {
   // Get loyalty profile for welcome modal
   const loyaltyProfile = await getUserLoyaltyProfile(supabase as any, user.id);
 
-  // 🔍 Verificar si tiene compra Lifetime PAGADA (excluir FREE)
-  const { data: lifetimePurchase } = await (supabase as any)
+  // 🏆 JERARQUÍA DE PLANES: Lifetime ($999) > PRO > FREE ($0)
+  const { data: allLifetimePurchases } = await (supabase as any)
     .from('purchases')
-    .select('id, is_lifetime_purchase, order_total_cents, payment_method')
+    .select('id, is_lifetime_purchase, order_total_cents, payment_method, order_date')
     .eq('customer_email', user.email)
     .eq('is_lifetime_purchase', true)
     .eq('payment_status', 'paid')
-    .order('order_date', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order('order_total_cents', { ascending: false }); // Ordenar por VALOR
 
-  // Diferenciar Lifetime PAGADO de FREE (ambos tienen duration 1L)
-  const hasLifetimeAccess = !!(lifetimePurchase && lifetimePurchase.order_total_cents > 0 && lifetimePurchase.payment_method !== 'free');
+  // Filtrar solo compras PAGADAS (excluir FREE)
+  const paidLifetimePurchases = (allLifetimePurchases || []).filter(
+    (p: any) => p.order_total_cents > 0 && p.payment_method !== 'free'
+  );
+  
+  const hasLifetimeAccess = paidLifetimePurchases.length > 0;
 
   const productName = subscription?.prices?.products?.name || 'Free';
   

@@ -26,19 +26,21 @@ export default async function Navbar() {
     userStatus = profile?.user_status || 'online';
     unreadNotifications = profile?.unread_notifications || 0;
 
-    // PRIMERO: Verificar si tiene compra Lifetime PAGADA (excluir FREE)
-    const { data: lifetimePurchase } = await (supabase as any)
+    // 🏆 JERARQUÍA: Lifetime ($999) > PRO > FREE ($0) > Sin suscripción
+    const { data: allLifetimePurchases } = await (supabase as any)
       .from('purchases')
-      .select('id, is_lifetime_purchase, product_name, order_total_cents, payment_method')
+      .select('id, is_lifetime_purchase, product_name, order_total_cents, payment_method, order_date')
       .eq('customer_email', user.email)
       .eq('is_lifetime_purchase', true)
       .eq('payment_status', 'paid')
-      .order('order_date', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .order('order_total_cents', { ascending: false }); // Ordenar por VALOR, no fecha
     
-    // Diferenciar Lifetime PAGADO de FREE (ambos tienen is_lifetime_purchase=true)
-    if (lifetimePurchase && lifetimePurchase.order_total_cents > 0 && lifetimePurchase.payment_method !== 'free') {
+    // Filtrar solo compras PAGADAS (excluir FREE)
+    const paidLifetimePurchases = (allLifetimePurchases || []).filter(
+      (p: any) => p.order_total_cents > 0 && p.payment_method !== 'free'
+    );
+    
+    if (paidLifetimePurchases.length > 0) {
       subscriptionType = 'lifetime';
     } else {
       // SEGUNDO: Si no tiene Lifetime, buscar suscripción activa (mensual/anual)
