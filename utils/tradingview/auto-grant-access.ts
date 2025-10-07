@@ -65,22 +65,21 @@ interface GrantAccessResult {
  * 🚀 FUNCIÓN PRINCIPAL: Conceder acceso automático después de una compra
  * 
  * Esta función se llama desde los webhooks de Stripe cuando:
- * - checkout.session.completed
- * - payment_intent.succeeded  
- * - invoice.payment_succeeded
+ * - checkout.session.completed (compras iniciales)
+ * - invoice.payment_succeeded (renovaciones automáticas)
  * 
  * @param customerEmail - Email del cliente de Stripe
  * @param productIds - IDs de productos comprados (o nombres/metadata)
  * @param priceId - ID del precio de Stripe (para determinar duración)
  * @param purchaseId - ID de la compra en Supabase (para auditoría)
- * @param source - Origen de la compra ('checkout', 'subscription', 'invoice')
+ * @param source - Origen de la compra ('checkout', 'subscription', 'invoice', 'renewal')
  */
 export async function grantIndicatorAccessOnPurchase(
   customerEmail: string,
   productIds: string[],
   priceId?: string,
   purchaseId?: string,
-  source: 'checkout' | 'subscription' | 'invoice' = 'checkout'
+  source: 'checkout' | 'subscription' | 'invoice' | 'renewal' = 'checkout'
 ): Promise<GrantAccessResult> {
   
   console.log(`\n🎯 AUTO-GRANT: Iniciando para ${customerEmail}`);
