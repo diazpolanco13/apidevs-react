@@ -323,7 +323,7 @@ export default function HistorialTab() {
             </div>
             <div className="text-sm text-gray-400">Accesos Activos</div>
             <div className="mt-2 text-xs text-gray-400">
-              {stats.expired_accesses} expirados (7d)
+              {stats.expired_accesses || 0} expirados (7d)
             </div>
           </div>
 
@@ -333,11 +333,11 @@ export default function HistorialTab() {
               <span className="text-xs text-gray-400">Únicos</span>
             </div>
             <div className="text-3xl font-bold text-white mb-1">
-              {stats.unique_users.toLocaleString()}
+              {(stats.unique_users || 0).toLocaleString()}
             </div>
             <div className="text-sm text-gray-400">Usuarios Afectados</div>
             <div className="mt-2 text-xs text-gray-400">
-              {stats.unique_indicators} indicadores
+              {stats.unique_indicators || 0} indicadores
             </div>
           </div>
 
@@ -349,19 +349,19 @@ export default function HistorialTab() {
             <div className="space-y-1">
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">Manual:</span>
-                <span className="text-white font-medium">{stats.by_source.manual + stats.by_source.admin_bulk}</span>
+                <span className="text-white font-medium">{(stats.by_source?.manual || 0) + (stats.by_source?.admin_bulk || 0)}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">Stripe (Auto):</span>
-                <span className="text-white font-medium">{stats.by_source.stripe}</span>
+                <span className="text-white font-medium">{stats.by_source?.stripe || 0}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">Compras:</span>
-                <span className="text-white font-medium">{stats.by_source.purchase}</span>
+                <span className="text-white font-medium">{stats.by_source?.purchase || 0}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">Renovaciones:</span>
-                <span className="text-white font-medium">{stats.by_operation.renewals}</span>
+                <span className="text-white font-medium">{stats.by_operation?.renewals || 0}</span>
               </div>
             </div>
           </div>
