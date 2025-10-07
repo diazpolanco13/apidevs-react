@@ -129,7 +129,7 @@ export default async function AdminUsersPage({
   const lifetimeUserIds = new Set((lifetimeAccesses || []).map((la: any) => la.user_id));
 
   // Combinar usuarios con sus suscripciones, accesos Lifetime y FREE
-  const safeSubscriptions: Subscription[] = subscriptions || [];
+  const safeSubscriptions = (subscriptions || []) as any[];
   let activeUsersWithSubs = safeActiveUsers.map(user => {
     const hasSubscription = safeSubscriptions.find(s => s.user_id === user.id)?.status;
     const hasLifetime = lifetimeUserIds.has(user.id);
