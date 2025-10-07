@@ -267,27 +267,53 @@ export async function POST(req: Request) {
           if (event.type === 'invoice.payment_succeeded') {
             await handleInvoicePayment(invoice);
             
-            // 🎯 AUTO-GRANT: Conceder acceso automático a indicadores (suscripciones)
-            if (invoice.customer) {
+            // 🎯 AUTO-GRANT: Conceder acceso SOLO para renovaciones automáticas
+            // ⚠️ CRÍTICO: NO ejecutar para compras iniciales (billing_reason: 'subscription_create')
+            //             ya que checkout.session.completed ya lo maneja
+            // ✅ Ejecutar solo para: subscription_cycle, subscription_update, subscription_threshold
+            const isRenewalOrUpdate = invoice.billing_reason && [
+              'subscription_cycle',       // Renovación automática mensual/anual
+              'subscription_update',      // Actualización de suscripción
+              'subscription_threshold'    // Billing threshold alcanzado
+            ].includes(invoice.billing_reason);
+            
+            if (isRenewalOrUpdate && invoice.customer) {
+              console.log(`\n🔄 ========== RENOVACIÓN DETECTADA ==========`);
+              console.log('📧 Invoice ID:', invoice.id);
+              console.log('🔖 Billing Reason:', invoice.billing_reason);
+              console.log('💰 Amount Paid:', invoice.amount_paid / 100);
+              
               const customer = await stripe.customers.retrieve(invoice.customer as string);
               if (customer && !customer.deleted && customer.email) {
                 const lineItems = (invoice.lines.data || []) as any[];
                 const productIds = extractProductIds(lineItems, invoice.metadata || {});
                 const priceId = lineItems[0]?.price?.id;
                 
+                console.log('📧 Customer Email:', customer.email);
+                console.log('📦 Product IDs:', productIds);
+                console.log('💰 Price ID:', priceId);
+                console.log('============================================\n');
+                
                 try {
-                  await grantIndicatorAccessOnPurchase(
+                  const result = await grantIndicatorAccessOnPurchase(
                     customer.email,
                     productIds,
                     priceId,
                     invoice.id,
-                    'invoice'
+                    'renewal'  // Cambiar de 'invoice' a 'renewal' para mejor tracking
                   );
+                  
+                  console.log('\n✅ AUTO-GRANT RESULT (renewal):');
+                  console.log('   Success:', result.success);
+                  console.log('   Indicators Granted:', result.indicatorsGranted);
+                  console.log('============================================\n');
                 } catch (error) {
-                  console.error('⚠️ Error en auto-grant (invoice):', error);
+                  console.error('⚠️ Error en auto-grant (renewal):', error);
                   // No fallar el webhook por esto
                 }
               }
+            } else if (invoice.billing_reason === 'subscription_create') {
+              console.log(`ℹ️ Skipping auto-grant for subscription_create (handled by checkout.session.completed)`);
             }
           }
           break;
