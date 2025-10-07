@@ -100,12 +100,12 @@ export default function UserIndicatorsList({ accesses }: Props) {
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
       {/* Header de la tabla */}
-      <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 border-b border-zinc-800 bg-zinc-900/80 px-6 py-4 text-sm font-medium text-gray-400">
+      <div className="grid grid-cols-[3fr_100px_140px_140px_100px] gap-4 border-b border-zinc-800 bg-zinc-900/80 px-6 py-4 text-sm font-medium text-gray-400">
         <div>INDICADOR</div>
-        <div>ESTADO</div>
-        <div>CONCEDIDO</div>
-        <div>EXPIRA</div>
-        <div className="text-right">ACCIÓN</div>
+        <div className="text-center">ESTADO</div>
+        <div className="text-center">CONCEDIDO</div>
+        <div className="text-center">EXPIRA</div>
+        <div className="text-center">ACCIÓN</div>
       </div>
 
       {/* Filas de indicadores */}
@@ -118,7 +118,7 @@ export default function UserIndicatorsList({ accesses }: Props) {
           return (
             <div
               key={access.id}
-              className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center px-6 py-4 transition-colors hover:bg-zinc-800/30"
+              className="grid grid-cols-[3fr_100px_140px_140px_100px] gap-4 items-center px-6 py-4 transition-colors hover:bg-zinc-800/30"
             >
               {/* Columna: Indicador */}
               <div className="flex items-center gap-3">
@@ -149,21 +149,21 @@ export default function UserIndicatorsList({ accesses }: Props) {
               </div>
 
               {/* Columna: Estado */}
-              <div>
+              <div className="flex justify-center">
                 <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
                   active
                 </span>
               </div>
 
               {/* Columna: Concedido */}
-              <div>
+              <div className="text-center">
                 <p className="text-sm text-gray-400">
                   {formatDate(access.granted_at)}
                 </p>
               </div>
 
               {/* Columna: Expira */}
-              <div>
+              <div className="flex justify-center">
                 {isLifetime ? (
                   <div className="flex items-center gap-1.5 text-sm">
                     <Infinity className="h-4 w-4 text-emerald-400" />
@@ -180,7 +180,7 @@ export default function UserIndicatorsList({ accesses }: Props) {
               </div>
 
               {/* Columna: Acción */}
-              <div className="flex justify-end">
+              <div className="flex justify-center">
                 {indicator.public_script_url && (
                   <a
                     href={indicator.public_script_url}

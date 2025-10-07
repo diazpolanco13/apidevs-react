@@ -115,16 +115,6 @@ export default function ActiveUserBilling({
   const totalPaidCents = uniquePayments.reduce((sum, payment) => sum + payment.amount, 0);
   const totalPaid = totalPaidCents / 100;
 
-  // Debug info (solo visible en consola del servidor)
-  if (uniquePayments.length > 0) {
-    console.log(`💰 Billing calculation for user ${userId}:`, {
-      invoicesFound: paidInvoices.length,
-      paymentIntentsFound: succeededPayments.length,
-      uniquePaymentsAfterDedup: uniquePayments.length,
-      totalPaidUSD: totalPaid
-    });
-  }
-
   const totalInvoices = invoices.length;
 
   // Próximo cobro basado en suscripción activa
@@ -328,9 +318,12 @@ export default function ActiveUserBilling({
 
         {paymentIntents.length > 0 ? (
           <div className="space-y-3">
-            {paymentIntents.slice(0, 10).map((payment) => {
-              const hasRefund = payment.amount_refunded && payment.amount_refunded > 0;
-              const isFullyRefunded = payment.refunded;
+            {paymentIntents
+              .filter(payment => payment.status === 'succeeded' || payment.status === 'processing')
+              .slice(0, 10)
+              .map((payment) => {
+              const hasRefund = !!(payment.amount_refunded && payment.amount_refunded > 0);
+              const isFullyRefunded = payment.refunded || false;
               const refundPercentage = hasRefund 
                 ? Math.round((payment.amount_refunded! / payment.amount) * 100)
                 : 0;
@@ -407,6 +400,14 @@ export default function ActiveUserBilling({
                 </div>
               );
             })}
+          </div>
+        ) : paymentIntents.length > 0 ? (
+          <div className="text-center py-8">
+            <CreditCard className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-400">No hay pagos exitosos registrados</p>
+            <p className="text-gray-500 text-xs mt-2">
+              {paymentIntents.filter(p => p.status === 'requires_payment_method' || p.status === 'failed').length} intentos fallidos ocultos
+            </p>
           </div>
         ) : (
           <div className="text-center py-8">

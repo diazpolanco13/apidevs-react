@@ -317,11 +317,24 @@ export default function ActiveUserSubscription({
               </div>
             )}
 
-            {/* ID de Suscripción */}
+            {/* ID de Suscripción y botón de Stripe */}
             <div className="pt-4 border-t border-gray-700">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-400">ID de Suscripción</span>
-                <code className="text-apidevs-primary font-mono">{activeSubscription.id}</code>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">ID de Suscripción:</span>
+                  <code className="text-xs font-mono text-apidevs-primary bg-apidevs-primary/10 px-2 py-1 rounded">
+                    {activeSubscription.id}
+                  </code>
+                </div>
+                <a
+                  href={`https://dashboard.stripe.com/subscriptions/${activeSubscription.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-purple-400 hover:text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-lg transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Ver en Stripe
+                </a>
               </div>
             </div>
           </div>
@@ -347,36 +360,71 @@ export default function ActiveUserSubscription({
               .map((sub) => (
                 <div 
                   key={sub.id}
-                  className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                  className="p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <p className="text-white font-medium">
-                        {sub.prices?.products?.name || 'Plan Desconocido'}
-                      </p>
-                      {getStatusBadge(sub.status)}
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-gray-400">
-                      <span>
-                        Creada: {new Date(sub.created).toLocaleDateString('es-ES')}
-                      </span>
-                      {sub.canceled_at && (
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <p className="text-white font-medium">
+                          {sub.prices?.products?.name || 'Plan Desconocido'}
+                        </p>
+                        {getStatusBadge(sub.status)}
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-gray-400">
                         <span>
-                          Cancelada: {new Date(sub.canceled_at).toLocaleDateString('es-ES')}
+                          Creada: {new Date(sub.created).toLocaleDateString('es-ES', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                          })}
                         </span>
-                      )}
+                        {sub.canceled_at && (
+                          <span>
+                            Cancelada: {new Date(sub.canceled_at).toLocaleDateString('es-ES', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: false
+                            })}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-apidevs-primary">
+                        {formatPrice(
+                          getActualPricePaid(sub.id, sub.prices?.unit_amount ?? null), 
+                          sub.prices?.currency || 'usd'
+                        )}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {formatInterval(sub.prices?.interval, sub.prices?.interval_count)}
+                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-apidevs-primary">
-                      {formatPrice(
-                        getActualPricePaid(sub.id, sub.prices?.unit_amount ?? null), 
-                        sub.prices?.currency || 'usd'
-                      )}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {formatInterval(sub.prices?.interval, sub.prices?.interval_count)}
-                    </p>
+                  
+                  {/* ID de suscripción y botón de Stripe */}
+                  <div className="flex items-center justify-between pt-3 border-t border-white/10">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">ID:</span>
+                      <code className="text-xs font-mono text-gray-400 bg-black/30 px-2 py-1 rounded">
+                        {sub.id}
+                      </code>
+                    </div>
+                    <a
+                      href={`https://dashboard.stripe.com/subscriptions/${sub.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-purple-400 hover:text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-lg transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Ver en Stripe
+                    </a>
                   </div>
                 </div>
               ))}

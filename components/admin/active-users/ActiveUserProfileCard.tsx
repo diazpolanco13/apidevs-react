@@ -75,13 +75,24 @@ export default function ActiveUserProfileCard({
           {user.full_name || 'Usuario sin nombre'}
         </h3>
         
-        {user.customer_tier && (
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/30 text-xs font-medium">
+        {user.customer_tier && user.customer_tier !== 'free' && (
+          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-medium uppercase ${
+            user.customer_tier.toLowerCase() === 'pro' 
+              ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+              : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+          }`}>
             <Shield className="w-3 h-3" />
             {user.customer_tier}
             {user.loyalty_discount_percentage && (
               <span className="ml-1">• {user.loyalty_discount_percentage}% OFF</span>
             )}
+          </div>
+        )}
+        
+        {user.customer_tier === 'free' && (
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-500/20 text-gray-400 rounded-full border border-gray-500/30 text-xs font-medium uppercase">
+            <Shield className="w-3 h-3" />
+            {user.customer_tier}
           </div>
         )}
       </div>

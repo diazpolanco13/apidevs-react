@@ -105,20 +105,20 @@ export default function ActiveUserStats({
 
   if (customerTier) {
     advancedStats.push({
-      name: 'Tier',
-      value: customerTier,
-      subtitle: loyaltyDiscount ? `${loyaltyDiscount}% descuento` : 'Cliente',
+      name: 'Plan',
+      value: customerTier.toUpperCase(),
+      subtitle: loyaltyDiscount ? `${loyaltyDiscount}% descuento` : customerTier.toLowerCase() === 'pro' ? 'Plan activo' : 'Cliente',
       icon: Award,
-      color: 'text-amber-400',
-      bgColor: 'from-amber-500/10 to-yellow-500/10',
-      borderColor: 'border-amber-500/30'
+      color: customerTier.toLowerCase() === 'pro' ? 'text-green-400' : customerTier === 'free' ? 'text-gray-400' : 'text-amber-400',
+      bgColor: customerTier.toLowerCase() === 'pro' ? 'from-green-500/10 to-emerald-500/10' : customerTier === 'free' ? 'from-gray-500/10 to-slate-500/10' : 'from-amber-500/10 to-yellow-500/10',
+      borderColor: customerTier.toLowerCase() === 'pro' ? 'border-green-500/30' : customerTier === 'free' ? 'border-gray-500/30' : 'border-amber-500/30'
     });
   }
 
   const allStats = [...stats, ...advancedStats];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {allStats.map((stat) => {
         const Icon = stat.icon;
         return (
