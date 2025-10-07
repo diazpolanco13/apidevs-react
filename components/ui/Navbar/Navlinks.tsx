@@ -15,9 +15,10 @@ interface NavlinksProps {
   avatarUrl?: string | null;
   userStatus?: string;
   unreadNotifications?: number;
+  subscriptionType?: string | null;
 }
 
-export default function Navlinks({ user, avatarUrl, userStatus = 'online', unreadNotifications = 0 }: NavlinksProps) {
+export default function Navlinks({ user, avatarUrl, userStatus = 'online', unreadNotifications = 0, subscriptionType = null }: NavlinksProps) {
   const router = getRedirectMethod() === 'client' ? useRouter() : null;
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -42,6 +43,22 @@ export default function Navlinks({ user, avatarUrl, userStatus = 'online', unrea
   useEffect(() => {
     setCurrentStatus(userStatus);
   }, [userStatus]);
+
+  // Función para obtener el texto del tipo de usuario
+  const getUserTypeLabel = () => {
+    if (!subscriptionType) return 'Usuario Free';
+    
+    switch (subscriptionType) {
+      case 'lifetime':
+        return 'Usuario Lifetime';
+      case 'pro':
+        return 'Usuario Pro';
+      case 'premium':
+        return 'Usuario Premium';
+      default:
+        return 'Usuario Premium';
+    }
+  };
 
   return (
     <div className="relative flex flex-row justify-between items-center h-16 sm:h-16 md:h-20">
@@ -209,7 +226,7 @@ export default function Navlinks({ user, avatarUrl, userStatus = 'online', unrea
               <div className="py-2">
                 <div className="px-4 py-2 border-b border-apidevs-primary/20">
                   <div className="text-sm font-medium text-white truncate">{user.email}</div>
-                  <div className="text-xs text-gray-400">Usuario Premium</div>
+                  <div className="text-xs text-gray-400">{getUserTypeLabel()}</div>
                 </div>
                 <Link href="/account" className="block px-4 py-2 text-sm text-gray-300 hover:bg-apidevs-primary/10 hover:text-apidevs-primary transition-colors">
                   <div className="flex items-center">
