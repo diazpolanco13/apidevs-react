@@ -35,16 +35,19 @@ export default async function AccountLayout({
   // Get loyalty profile
   const loyaltyProfile = await getUserLoyaltyProfile(supabase, user.id);
 
-  // 🔍 Verificar si tiene accesos Lifetime activos
-  const { data: lifetimeAccess } = await supabase
-    .from('indicator_access')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('status', 'active')
-    .eq('duration_type', '1L')
-    .limit(1);
+  // 🔍 Verificar si tiene compra Lifetime PAGADA (excluir FREE)
+  const { data: lifetimePurchase } = await (supabase as any)
+    .from('purchases')
+    .select('id, is_lifetime_purchase, order_total_cents, payment_method')
+    .eq('customer_email', user.email)
+    .eq('is_lifetime_purchase', true)
+    .eq('payment_status', 'paid')
+    .order('order_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-  const hasLifetimeAccess = !!(lifetimeAccess && lifetimeAccess.length > 0);
+  // Diferenciar Lifetime PAGADO de FREE (ambos tienen duration 1L)
+  const hasLifetimeAccess = !!(lifetimePurchase && lifetimePurchase.order_total_cents > 0 && lifetimePurchase.payment_method !== 'free');
 
   return (
     <AccountDashboardLayout 
