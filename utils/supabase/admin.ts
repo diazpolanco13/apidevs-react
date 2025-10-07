@@ -234,6 +234,7 @@ const manageSubscriptionStatusChange = async (
   // 🐛 DEBUG: Log subscription data
   console.log('\n🔍 ========== SUBSCRIPTION DEBUG ==========');
   console.log('Subscription ID:', subscription.id);
+  console.log('Subscription object keys:', Object.keys(subscription));
   // @ts-ignore - Stripe API type mismatch
   console.log('current_period_start (raw):', subscription.current_period_start);
   // @ts-ignore - Stripe API type mismatch
