@@ -90,15 +90,24 @@ export default async function AdminUsersPage({
         .in('user_id', activeUserIds)
     : { data: [] };
 
-  // 🔍 Obtener accesos Lifetime para los usuarios activos
-  const { data: lifetimeAccesses } = activeUserIds.length > 0
-    ? await supabase
-        .from('indicator_access')
-        .select('user_id, duration_type')
-        .in('user_id', activeUserIds)
-        .eq('status', 'active')
-        .eq('duration_type', '1L')
-    : { data: [] };
+  // 🔍 Obtener usuarios con Lifetime PAGADO (excluir FREE que también es 1L)
+  const { data: lifetimePurchases } = await (supabaseAdmin as any)
+    .from('purchases')
+    .select('customer_email')
+    .eq('is_lifetime_purchase', true)
+    .eq('payment_status', 'paid')
+    .gt('order_total_cents', 0) // Solo compras PAGADAS > $0
+    .neq('payment_method', 'free'); // Excluir plan FREE
+
+  // Mapear emails a user_ids
+  const lifetimePurchaseEmails = new Set((lifetimePurchases || []).map((p: any) => p.customer_email));
+  const lifetimeUserIds = new Set<string>();
+  
+  safeActiveUsers.forEach(user => {
+    if (lifetimePurchaseEmails.has(user.email)) {
+      lifetimeUserIds.add(user.id);
+    }
+  });
 
   // 🆓 Obtener usuarios con PLAN FREE COMPRADO (payment_method='free', order_total_cents=0)
   const { data: freePlanPurchases } = await (supabaseAdmin as any)
@@ -117,9 +126,6 @@ export default async function AdminUsersPage({
       freeUserIds.add(user.id);
     }
   });
-
-  // Crear un Set de user_ids con acceso Lifetime para búsqueda rápida
-  const lifetimeUserIds = new Set((lifetimeAccesses || []).map((la: any) => la.user_id));
 
   // Combinar usuarios con sus suscripciones, accesos Lifetime y FREE
   const safeSubscriptions = (subscriptions || []) as any[];
