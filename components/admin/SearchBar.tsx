@@ -7,20 +7,23 @@ import { useDebounce } from '@/hooks/useDebounce';
 
 interface SearchBarProps {
   placeholder?: string;
+  mode?: 'active' | 'legacy'; // Nuevo: distinguir entre usuarios activos y legacy
 }
 
-export default function SearchBar({ placeholder = "Buscar por email, nombre o username..." }: SearchBarProps) {
+export default function SearchBar({ placeholder = "Buscar por email, nombre o username...", mode = 'legacy' }: SearchBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [showFilters, setShowFilters] = useState(false);
   const debouncedSearch = useDebounce(searchTerm, 500);
 
-  // Estado de filtros
+  // Estado de filtros (dinámico según el modo)
   const [filters, setFilters] = useState({
     status: searchParams.get('status') || '',
     country: searchParams.get('country') || '',
     customerType: searchParams.get('customerType') || '',
+    subscriptionStatus: searchParams.get('subscriptionStatus') || '',
+    onboarding: searchParams.get('onboarding') || '',
   });
 
   useEffect(() => {
@@ -61,12 +64,16 @@ export default function SearchBar({ placeholder = "Buscar por email, nombre o us
       status: '',
       country: '',
       customerType: '',
+      subscriptionStatus: '',
+      onboarding: '',
     });
     
     const params = new URLSearchParams(searchParams.toString());
     params.delete('status');
     params.delete('country');
     params.delete('customerType');
+    params.delete('subscriptionStatus');
+    params.delete('onboarding');
     params.set('page', '1');
     router.push(`?${params.toString()}`);
   };
@@ -140,69 +147,142 @@ export default function SearchBar({ placeholder = "Buscar por email, nombre o us
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Estado de Reactivación */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Estado de Reactivación
-              </label>
-              <select
-                value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-              >
-                <option value="">Todos los estados</option>
-                <option value="pending">⏳ Pendiente</option>
-                <option value="contacted">📧 Contactado</option>
-                <option value="engaged">💬 Interesado</option>
-                <option value="reactivated">✅ Reactivado</option>
-                <option value="churned_final">❌ Churned</option>
-              </select>
-            </div>
+            {mode === 'active' ? (
+              <>
+                {/* Estado de Suscripción (para usuarios activos) */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Estado de Suscripción
+                  </label>
+                  <select
+                    value={filters.subscriptionStatus}
+                    onChange={(e) => handleFilterChange('subscriptionStatus', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  >
+                    <option value="">Todas las suscripciones</option>
+                    <option value="none">❌ Sin suscripción</option>
+                    <option value="free">🆓 Plan FREE</option>
+                    <option value="active">⚡ PRO Activo</option>
+                    <option value="trialing">🎯 En periodo de prueba</option>
+                    <option value="lifetime">👑 Lifetime</option>
+                  </select>
+                </div>
 
-            {/* País */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                País
-              </label>
-              <select
-                value={filters.country}
-                onChange={(e) => handleFilterChange('country', e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-              >
-                <option value="">Todos los países</option>
-                <option value="US">🇺🇸 Estados Unidos</option>
-                <option value="MX">🇲🇽 México</option>
-                <option value="CO">🇨🇴 Colombia</option>
-                <option value="AR">🇦🇷 Argentina</option>
-                <option value="ES">🇪🇸 España</option>
-                <option value="VE">🇻🇪 Venezuela</option>
-                <option value="PE">🇵🇪 Perú</option>
-                <option value="CL">🇨🇱 Chile</option>
-              </select>
-            </div>
+                {/* Estado de Onboarding (para usuarios activos) */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Estado de Onboarding
+                  </label>
+                  <select
+                    value={filters.onboarding}
+                    onChange={(e) => handleFilterChange('onboarding', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  >
+                    <option value="">Todos los estados</option>
+                    <option value="completed">✅ Completado</option>
+                    <option value="pending">⏳ Pendiente</option>
+                  </select>
+                </div>
 
-            {/* Tipo de Cliente */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Tipo de Cliente
-              </label>
-              <select
-                value={filters.customerType}
-                onChange={(e) => handleFilterChange('customerType', e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-              >
-                <option value="">Todos los tipos</option>
-                <option value="legacy">👑 Legacy</option>
-                <option value="new">✨ Nuevo</option>
-                <option value="vip">💎 VIP</option>
-              </select>
-            </div>
+                {/* País */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    País
+                  </label>
+                  <select
+                    value={filters.country}
+                    onChange={(e) => handleFilterChange('country', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  >
+                    <option value="">Todos los países</option>
+                    <option value="US">🇺🇸 Estados Unidos</option>
+                    <option value="MX">🇲🇽 México</option>
+                    <option value="CO">🇨🇴 Colombia</option>
+                    <option value="AR">🇦🇷 Argentina</option>
+                    <option value="ES">🇪🇸 España</option>
+                    <option value="VE">🇻🇪 Venezuela</option>
+                    <option value="PE">🇵🇪 Perú</option>
+                    <option value="CL">🇨🇱 Chile</option>
+                  </select>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Estado de Reactivación (para usuarios legacy) */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Estado de Reactivación
+                  </label>
+                  <select
+                    value={filters.status}
+                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  >
+                    <option value="">Todos los estados</option>
+                    <option value="pending">⏳ Pendiente</option>
+                    <option value="contacted">📧 Contactado</option>
+                    <option value="engaged">💬 Interesado</option>
+                    <option value="reactivated">✅ Reactivado</option>
+                    <option value="churned_final">❌ Churned</option>
+                  </select>
+                </div>
+
+                {/* País */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    País
+                  </label>
+                  <select
+                    value={filters.country}
+                    onChange={(e) => handleFilterChange('country', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  >
+                    <option value="">Todos los países</option>
+                    <option value="US">🇺🇸 Estados Unidos</option>
+                    <option value="MX">🇲🇽 México</option>
+                    <option value="CO">🇨🇴 Colombia</option>
+                    <option value="AR">🇦🇷 Argentina</option>
+                    <option value="ES">🇪🇸 España</option>
+                    <option value="VE">🇻🇪 Venezuela</option>
+                    <option value="PE">🇵🇪 Perú</option>
+                    <option value="CL">🇨🇱 Chile</option>
+                  </select>
+                </div>
+
+                {/* Tipo de Cliente */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Tipo de Cliente
+                  </label>
+                  <select
+                    value={filters.customerType}
+                    onChange={(e) => handleFilterChange('customerType', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  >
+                    <option value="">Todos los tipos</option>
+                    <option value="legacy">👑 Legacy</option>
+                    <option value="new">✨ Nuevo</option>
+                    <option value="vip">💎 VIP</option>
+                  </select>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Resumen de Filtros Activos */}
           {activeFiltersCount > 0 && (
             <div className="mt-4 pt-4 border-t border-white/10">
               <div className="flex flex-wrap gap-2">
+                {filters.subscriptionStatus && (
+                  <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm border border-purple-500/30">
+                    Suscripción: {filters.subscriptionStatus}
+                  </span>
+                )}
+                {filters.onboarding && (
+                  <span className="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-sm border border-green-500/30">
+                    Onboarding: {filters.onboarding}
+                  </span>
+                )}
                 {filters.status && (
                   <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm border border-purple-500/30">
                     Estado: {filters.status}

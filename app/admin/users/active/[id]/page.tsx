@@ -80,14 +80,10 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
 
   if (customerError) {
     console.error('❌ Error fetching customer:', customerError);
-  } else if (!customer) {
-    console.log('ℹ️  Usuario sin registro en Stripe (no ha realizado compras)');
-  } else {
-    console.log('✅ Customer ID encontrado:', customer.stripe_customer_id);
-  }
+  } 
 
   // 4. Suscripción actual - usar supabaseAdmin para evitar RLS
-  const { data: subscriptions, error: subscriptionsError } = await (supabaseAdmin as any)
+  const { data: subscriptions, error: subscriptionsError } = await supabaseAdmin
     .from('subscriptions')
     .select(`
       *,
@@ -101,8 +97,6 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
 
   if (subscriptionsError) {
     console.error('❌ Error fetching subscriptions:', subscriptionsError);
-  } else {
-    console.log(`✅ Suscripciones encontradas: ${subscriptions?.length || 0}`);
   }
 
   const activeSubscription = subscriptions?.find(
@@ -152,8 +146,6 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
 
   if (paymentIntentsError) {
     console.error('❌ Error fetching payment intents:', paymentIntentsError);
-  } else {
-    console.log(`✅ Payment Intents encontrados: ${paymentIntents?.length || 0}`);
   }
 
   // 7. Invoices desde Supabase - usar supabaseAdmin para evitar RLS
@@ -165,8 +157,6 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
 
   if (invoicesError) {
     console.error('❌ Error fetching invoices:', invoicesError);
-  } else {
-    console.log(`✅ Invoices encontrados: ${invoices?.length || 0}`);
   }
 
   // ==================== CÁLCULOS Y MÉTRICAS ====================
@@ -184,6 +174,10 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
   // Email principal con fallback
   const primaryEmail = (user as any).email || authUser?.user?.email || 'Sin email';
 
+  // Calcular tier dinámicamente basado en suscripción activa
+  const hasActiveSubscription = activeSubscription !== undefined && activeSubscription !== null;
+  const dynamicCustomerTier = hasActiveSubscription ? 'PRO' : (user as any).customer_tier || 'free';
+
   // ==================== VISTAS POR TAB ====================
 
   // Vista Overview (Tab 1)
@@ -192,7 +186,10 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
       {/* Left column - User profile */}
       <div className="xl:col-span-1">
         <ActiveUserProfileCard
-          user={user as any}
+          user={{
+            ...(user as any),
+            customer_tier: dynamicCustomerTier
+          }}
           authUser={authUser}
           primaryEmail={primaryEmail}
           emailVerified={emailVerified}
@@ -207,9 +204,9 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
           registeredDays={registeredDays}
           lastLoginDate={lastLoginDate}
           onboardingCompleted={(user as any).onboarding_completed || false}
-          subscriptionsCount={subscriptions?.length || 0}
-          indicatorAccessCount={allIndicatorAccess?.length || 0}
-          customerTier={(user as any).customer_tier}
+          subscriptionsCount={subscriptions?.filter((s: any) => ['active', 'trialing'].includes(s.status)).length || 0}
+          indicatorAccessCount={allIndicatorAccess?.filter((a: any) => a.status === 'active').length || 0}
+          customerTier={dynamicCustomerTier}
           totalLifetimeSpent={(user as any).total_lifetime_spent ? Number((user as any).total_lifetime_spent) / 100 : null}
           purchaseCount={(user as any).purchase_count}
           loyaltyDiscount={(user as any).loyalty_discount_percentage}

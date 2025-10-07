@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
+import { supabaseAdmin } from '@/utils/supabase/admin';
 import { Suspense } from 'react';
 import UsersTable from '@/components/admin/UsersTable';
 import ActiveUsersTable from '@/components/admin/ActiveUsersTable';
@@ -34,11 +35,17 @@ export default async function AdminUsersPage({
   const offset = (page - 1) * limit;
   const search = searchParams.search as string || '';
   const country = searchParams.country as string || '';
+  
+  // Filtros para usuarios legacy
   const status = searchParams.status as string || '';
   const customerType = searchParams.customerType as string || '';
   const migrationStatus = searchParams.migrationStatus as string || '';
   const sortField = searchParams.sortField as string || 'wordpress_created_at';
   const sortDirection = searchParams.sortDirection as string || 'desc';
+  
+  // Filtros para usuarios activos
+  const subscriptionStatus = searchParams.subscriptionStatus as string || '';
+  const onboarding = searchParams.onboarding as string || '';
 
   // ==================== USUARIOS ACTIVOS ====================
   // Query para usuarios activos (tabla users)
@@ -51,6 +58,20 @@ export default async function AdminUsersPage({
     activeUsersQuery = activeUsersQuery.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
   }
 
+  // Aplicar filtro de país
+  if (country) {
+    activeUsersQuery = activeUsersQuery.eq('country', country);
+  }
+
+  // Aplicar filtro de onboarding
+  if (onboarding) {
+    if (onboarding === 'completed') {
+      activeUsersQuery = activeUsersQuery.eq('onboarding_completed', true);
+    } else if (onboarding === 'pending') {
+      activeUsersQuery = activeUsersQuery.or('onboarding_completed.is.null,onboarding_completed.eq.false');
+    }
+  }
+
   // Paginación para usuarios activos
   activeUsersQuery = activeUsersQuery
     .order('id', { ascending: false })
@@ -58,12 +79,12 @@ export default async function AdminUsersPage({
 
   const { data: activeUsers, count: activeUsersCount, error: activeUsersError } = await activeUsersQuery;
 
-  // Obtener suscripciones activas para los usuarios activos
+  // Obtener suscripciones activas para los usuarios activos - usar supabaseAdmin para evitar RLS
   const safeActiveUsers: ActiveUser[] = activeUsers || [];
   const activeUserIds = safeActiveUsers.map(u => u.id);
   
   const { data: subscriptions } = activeUserIds.length > 0
-    ? await supabase
+    ? await supabaseAdmin
         .from('subscriptions')
         .select('user_id, status')
         .in('user_id', activeUserIds)
@@ -109,7 +130,7 @@ export default async function AdminUsersPage({
 
   // Combinar usuarios con sus suscripciones, accesos Lifetime y FREE
   const safeSubscriptions: Subscription[] = subscriptions || [];
-  const activeUsersWithSubs = safeActiveUsers.map(user => {
+  let activeUsersWithSubs = safeActiveUsers.map(user => {
     const hasSubscription = safeSubscriptions.find(s => s.user_id === user.id)?.status;
     const hasLifetime = lifetimeUserIds.has(user.id);
     const hasFree = freeUserIds.has(user.id);
@@ -120,6 +141,29 @@ export default async function AdminUsersPage({
       has_lifetime_access: hasLifetime
     };
   });
+
+  // Aplicar filtro de estado de suscripción
+  if (subscriptionStatus) {
+    activeUsersWithSubs = activeUsersWithSubs.filter(user => {
+      if (subscriptionStatus === 'none') {
+        // Sin suscripción (ni active, ni lifetime, ni free)
+        return !user.subscription_status;
+      } else if (subscriptionStatus === 'free') {
+        // Plan FREE
+        return user.subscription_status === 'free';
+      } else if (subscriptionStatus === 'active') {
+        // PRO Activo (suscripción activa de pago)
+        return user.subscription_status === 'active';
+      } else if (subscriptionStatus === 'trialing') {
+        // En periodo de prueba
+        return user.subscription_status === 'trialing';
+      } else if (subscriptionStatus === 'lifetime') {
+        // Lifetime
+        return user.subscription_status === 'lifetime' || user.has_lifetime_access;
+      }
+      return true;
+    });
+  }
 
   const activeTotalPages = Math.ceil((activeUsersCount || 0) / limit);
 
@@ -142,8 +186,8 @@ export default async function AdminUsersPage({
     ? (((newUsers30d || 0) - users30_60d) / users30_60d * 100)
     : (newUsers30d || 0) > 0 ? 100 : 0;
   
-  // Contar usuarios con suscripciones activas (PRO Mensual/Anual)
-  const { data: activeSubscriptions } = await supabase
+  // Contar usuarios con suscripciones activas (PRO Mensual/Anual) - usar supabaseAdmin para evitar RLS
+  const { data: activeSubscriptions } = await supabaseAdmin
     .from('subscriptions')
     .select('user_id, price_id, prices(interval, interval_count)')
     .in('status', ['active', 'trialing']);
@@ -367,7 +411,7 @@ export default async function AdminUsersPage({
       </div>
 
       {/* Search Bar */}
-      <SearchBar placeholder="Buscar por email o nombre..." />
+      <SearchBar placeholder="Buscar por email o nombre..." mode="active" />
 
       {/* Tabla de Usuarios Activos */}
       <Suspense fallback={<UsersTableSkeleton />}>
@@ -407,7 +451,7 @@ export default async function AdminUsersPage({
       </div>
 
       {/* Search Bar */}
-      <SearchBar placeholder="Buscar por email, nombre o username..." />
+      <SearchBar placeholder="Buscar por email, nombre o username..." mode="legacy" />
 
       {/* Tabla de Usuarios Legacy */}
       <Suspense fallback={<UsersTableSkeleton />}>
