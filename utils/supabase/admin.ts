@@ -213,10 +213,11 @@ const copyBillingDetailsToCustomer = async (
 const manageSubscriptionStatusChange = async (
   subscriptionId: string,
   customerId: string,
-  createAction = false
+  createAction = false,
+  subscriptionObject?: Stripe.Subscription // 🔧 NEW: Accept subscription object directly
 ) => {
   // Get customer's UUID from mapping table.
-  const { data: customerData, error: noCustomerError } = await supabaseAdmin
+  const { data: customerData, error: noCustomerError} = await supabaseAdmin
     .from('customers')
     .select('id')
     .eq('stripe_customer_id', customerId)
@@ -227,7 +228,8 @@ const manageSubscriptionStatusChange = async (
 
   const { id: uuid } = customerData!;
 
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+  // 🔧 FIX: Use provided subscription object if available, otherwise retrieve
+  const subscription = subscriptionObject || await stripe.subscriptions.retrieve(subscriptionId, {
     expand: ['default_payment_method']
   });
 

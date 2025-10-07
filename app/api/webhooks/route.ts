@@ -83,7 +83,8 @@ export async function POST(req: Request) {
           await manageSubscriptionStatusChange(
             subscription.id,
             subscription.customer as string,
-            event.type === 'customer.subscription.created'
+            event.type === 'customer.subscription.created',
+            subscription // 🔧 FIX: Pass full subscription object
           );
           
           // 🏆 TRACKING DE REACTIVACIÓN LEGACY
