@@ -202,22 +202,48 @@ export default async function AdminUsersPage({
     } | null;
   };
   
-  const proMonthlyUsers = (activeSubscriptions as SubscriptionWithPrice[] | null)?.filter(s => 
-    s.prices && s.prices.interval === 'month' && s.prices.interval_count === 1
-  ).length || 0;
+  // ✅ Contar USUARIOS ÚNICOS, no suscripciones
+  const proMonthlyUserIds = new Set(
+    (activeSubscriptions as SubscriptionWithPrice[] | null)
+      ?.filter(s => s.prices && s.prices.interval === 'month' && s.prices.interval_count === 1)
+      .map(s => s.user_id) || []
+  );
   
-  const proAnnualUsers = (activeSubscriptions as SubscriptionWithPrice[] | null)?.filter(s => 
-    s.prices && s.prices.interval === 'year'
-  ).length || 0;
+  const proAnnualUserIds = new Set(
+    (activeSubscriptions as SubscriptionWithPrice[] | null)
+      ?.filter(s => s.prices && s.prices.interval === 'year')
+      .map(s => s.user_id) || []
+  );
   
-  const totalProUsers = proMonthlyUsers + proAnnualUsers;
+  const proMonthlyUsers = proMonthlyUserIds.size;
+  const proAnnualUsers = proAnnualUserIds.size;
   
-  // Contar usuarios Lifetime
+  // Total PRO = usuarios únicos con cualquier tipo de suscripción PRO
+  const allProUserIds = new Set([
+    ...Array.from(proMonthlyUserIds), 
+    ...Array.from(proAnnualUserIds)
+  ]);
+  const totalProUsers = allProUserIds.size;
+  
+  // Contar usuarios Lifetime ÚNICOS
   const lifetimeUsersCount = lifetimeUserIds.size;
   
-  // Calcular usuarios FREE (sin ninguna suscripción ni lifetime)
+  // 🏆 Calcular USUARIOS ÚNICOS por categoría (aplicando jerarquía)
+  // Jerarquía: Lifetime > PRO > FREE > Sin suscripción
+  
+  // Total con planes PAGADOS (PRO + Lifetime)
   const totalPaidUsers = totalProUsers + lifetimeUsersCount;
-  const realFreeUsers = (activeUsersCount || 0) - totalPaidUsers;
+  
+  // Usuarios con plan FREE (excluir usuarios que ya tienen PRO o Lifetime)
+  const freeOnlyUserIds = new Set(
+    Array.from(freeUserIds).filter(userId => 
+      !allProUserIds.has(userId) && !lifetimeUserIds.has(userId)
+    )
+  );
+  const realFreeUsers = freeOnlyUserIds.size;
+  
+  // Usuarios SIN NINGÚN PLAN (ni FREE, ni PRO, ni Lifetime)
+  const usersWithNoAccess = (activeUsersCount || 0) - totalPaidUsers - realFreeUsers;
   
   // Calcular tasa de conversión FREE → PAGO (cualquier modalidad)
   const conversionRate = (activeUsersCount || 0) > 0
@@ -293,15 +319,28 @@ export default async function AdminUsersPage({
       ]
     },
     {
-      name: 'Usuarios FREE',
-      value: realFreeUsers?.toLocaleString() || '0',
+      name: 'Usuarios Sin Suscripción',
+      value: usersWithNoAccess?.toLocaleString() || '0',
       icon: UserX,
       color: 'text-gray-400',
       bgColor: 'from-gray-500/10 to-slate-500/10',
       borderColor: 'border-gray-500/30',
+      subtitle: `${((usersWithNoAccess || 0) / (activeUsersCount || 1) * 100).toFixed(1)}% del total`,
+      details: [
+        { label: 'Pool conversión', value: `${usersWithNoAccess} potenciales` },
+        { label: 'Sin acceso', value: 'Ningún indicador' }
+      ]
+    },
+    {
+      name: 'Usuarios FREE',
+      value: realFreeUsers?.toLocaleString() || '0',
+      icon: Activity,
+      color: 'text-cyan-400',
+      bgColor: 'from-cyan-500/10 to-teal-500/10',
+      borderColor: 'border-cyan-500/30',
       subtitle: `${((realFreeUsers || 0) / (activeUsersCount || 1) * 100).toFixed(1)}% del total`,
       details: [
-        { label: 'Pool conversión', value: `${realFreeUsers} potenciales` },
+        { label: 'Plan activo', value: 'FREE Plan' },
         { label: 'Indicadores', value: '2 gratuitos' }
       ]
     },
