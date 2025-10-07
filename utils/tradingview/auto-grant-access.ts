@@ -24,15 +24,19 @@ const PRODUCT_ACCESS_MAP: Record<string, {
   'apidevs_indicator_-_free_plan': { type: 'free' },
   'free_plan': { type: 'free' },
   'free': { type: 'free' },
+  'prod_t9sigh2ew9muck': { type: 'free' }, // ✅ Producto FREE por ID
   
   // Planes PRO → Solo indicadores PREMIUM (excluye free)
   'plan_mensual': { type: 'premium' },
   'plan_semestral': { type: 'premium' },
   'plan_anual': { type: 'premium' },
   'apidevs_indicator_-_pro': { type: 'premium' },
+  'prod_t9sirlhyuthpt3': { type: 'premium' }, // ✅ Producto PRO por ID
   
   // Plan Lifetime → Solo indicadores PREMIUM
   'plan_lifetime': { type: 'premium' },
+  'apidevs_indicator_-_lifetime': { type: 'premium' },
+  'prod_t9siv9pd5hr5va': { type: 'premium' }, // ✅ Producto Lifetime por ID
   'apidevs_trading_indicators': { type: 'premium' }, // Producto genérico PRO
   
   // Si agregas productos específicos para indicadores individuales
