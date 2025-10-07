@@ -43,6 +43,7 @@ interface AccountDashboardLayoutProps {
   loyaltyTier?: string;
   isLegacy?: boolean;
   hasLifetimeAccess?: boolean;
+  hasActiveIndicators?: boolean;
 }
 
 // Función para mapear nombres técnicos a nombres amigables
@@ -70,7 +71,8 @@ export default function AccountDashboardLayout({
   userProfile,
   loyaltyTier,
   isLegacy,
-  hasLifetimeAccess = false
+  hasLifetimeAccess = false,
+  hasActiveIndicators = false
 }: AccountDashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
@@ -91,9 +93,8 @@ export default function AccountDashboardLayout({
       name: 'Mis Indicadores', 
       href: '/account/indicadores', 
       icon: TrendingUp,
-      premium: true,
-      premiumLevel: 'pro',
-      badge: 'PRO'
+      // ✅ Accesible si tiene indicadores (FREE o PREMIUM)
+      premium: false // Cambiado para permitir acceso FREE
     },
     { 
       name: 'Notificaciones', 
@@ -122,6 +123,10 @@ export default function AccountDashboardLayout({
   };
 
   const canAccessItem = (item: NavigationItem) => {
+    // ✅ Caso especial: "Mis Indicadores" accesible si tiene indicadores (FREE o PREMIUM)
+    if (item.name === 'Mis Indicadores') return hasActiveIndicators;
+    
+    // Para el resto de items premium
     if (!item.premium) return true;
     if (item.premiumLevel === 'lifetime') return isLifetime;
     if (item.premiumLevel === 'pro') return hasPremium;
