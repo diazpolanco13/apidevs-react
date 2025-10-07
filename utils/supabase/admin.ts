@@ -271,11 +271,11 @@ const manageSubscriptionStatusChange = async (
     }
   };
 
-  // 🔧 CRITICAL FIX: Calcular fechas correctamente basándose en el intervalo
-  // @ts-ignore - Stripe API type mismatch
-  const currentPeriodStart = safeToDateTime(subscription.current_period_start as number);
-  // @ts-ignore - Stripe API type mismatch
-  let currentPeriodEnd = safeToDateTime(subscription.current_period_end as number);
+  // 🔧 CRITICAL FIX: Obtener fechas desde items.data[0] donde realmente están
+  // Las fechas están en subscription.items.data[0], no en el nivel raíz
+  const subscriptionItem = subscription.items.data[0];
+  const currentPeriodStart = safeToDateTime(subscriptionItem?.current_period_start as number);
+  let currentPeriodEnd = safeToDateTime(subscriptionItem?.current_period_end as number);
   
   // Si current_period_end es null, calcular basado en el intervalo
   if (!currentPeriodEnd && currentPeriodStart) {
