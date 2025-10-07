@@ -231,18 +231,60 @@ const manageSubscriptionStatusChange = async (
     expand: ['default_payment_method']
   });
 
+  // 🐛 DEBUG: Log subscription data
+  console.log('\n🔍 ========== SUBSCRIPTION DEBUG ==========');
+  console.log('Subscription ID:', subscription.id);
+  // @ts-ignore - Stripe API type mismatch
+  console.log('current_period_start (raw):', subscription.current_period_start);
+  // @ts-ignore - Stripe API type mismatch
+  console.log('current_period_end (raw):', subscription.current_period_end);
+  console.log('Interval:', subscription.items.data[0]?.price?.recurring?.interval);
+  console.log('Interval Count:', subscription.items.data[0]?.price?.recurring?.interval_count);
+  console.log('==========================================\n');
+
   // Helper function to safely convert timestamps
   const safeToDateTime = (timestamp: number | null | undefined): string | null => {
     if (!timestamp || timestamp === null || timestamp === undefined) {
+      console.warn(`⚠️ safeToDateTime received null/undefined timestamp`);
       return null;
     }
     try {
-      return toDateTime(timestamp).toISOString();
+      const converted = toDateTime(timestamp).toISOString();
+      console.log(`✅ Converted timestamp ${timestamp} → ${converted}`);
+      return converted;
     } catch (error) {
       console.error(`❌ Error converting timestamp ${timestamp}:`, error);
       return null;
     }
   };
+
+  // 🔧 CRITICAL FIX: Calcular fechas correctamente basándose en el intervalo
+  // @ts-ignore - Stripe API type mismatch
+  const currentPeriodStart = safeToDateTime(subscription.current_period_start as number);
+  // @ts-ignore - Stripe API type mismatch
+  let currentPeriodEnd = safeToDateTime(subscription.current_period_end as number);
+  
+  // Si current_period_end es null, calcular basado en el intervalo
+  if (!currentPeriodEnd && currentPeriodStart) {
+    const startDate = new Date(currentPeriodStart);
+    const interval = subscription.items.data[0]?.price?.recurring?.interval;
+    const intervalCount = subscription.items.data[0]?.price?.recurring?.interval_count || 1;
+    
+    console.warn(`⚠️ current_period_end is null, calculating from interval: ${interval} x${intervalCount}`);
+    
+    if (interval === 'year') {
+      startDate.setFullYear(startDate.getFullYear() + intervalCount);
+    } else if (interval === 'month') {
+      startDate.setMonth(startDate.getMonth() + intervalCount);
+    } else if (interval === 'week') {
+      startDate.setDate(startDate.getDate() + (7 * intervalCount));
+    } else if (interval === 'day') {
+      startDate.setDate(startDate.getDate() + intervalCount);
+    }
+    
+    currentPeriodEnd = startDate.toISOString();
+    console.log(`✅ Calculated current_period_end: ${currentPeriodEnd}`);
+  }
 
   // Upsert the latest status of the subscription object.
   const subscriptionData: TablesInsert<'subscriptions'> = {
@@ -257,15 +299,22 @@ const manageSubscriptionStatusChange = async (
     cancel_at_period_end: subscription.cancel_at_period_end,
     cancel_at: safeToDateTime(subscription.cancel_at as number),
     canceled_at: safeToDateTime(subscription.canceled_at as number),
-    // @ts-ignore - Stripe API type mismatch
-    current_period_start: safeToDateTime(subscription.current_period_start as number) || new Date().toISOString(),
-    // @ts-ignore - Stripe API type mismatch
-    current_period_end: safeToDateTime(subscription.current_period_end as number) || new Date().toISOString(),
+    // @ts-ignore - Stripe API type mismatch - Use calculated values with fallback
+    current_period_start: currentPeriodStart || new Date().toISOString(),
+    // @ts-ignore - Stripe API type mismatch - Use calculated values with fallback
+    current_period_end: currentPeriodEnd || new Date().toISOString(),
     created: safeToDateTime(subscription.created) || new Date().toISOString(),
     ended_at: safeToDateTime(subscription.ended_at as number),
     trial_start: safeToDateTime(subscription.trial_start as number),
     trial_end: safeToDateTime(subscription.trial_end as number)
   };
+
+  // 🐛 DEBUG: Log final data before upsert
+  console.log('\n📝 ========== FINAL SUBSCRIPTION DATA ==========');
+  console.log('current_period_start (final):', subscriptionData.current_period_start);
+  console.log('current_period_end (final):', subscriptionData.current_period_end);
+  console.log('created (final):', subscriptionData.created);
+  console.log('================================================\n');
 
   const { error: upsertError } = await supabaseAdmin
     .from('subscriptions')

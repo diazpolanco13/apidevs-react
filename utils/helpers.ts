@@ -44,9 +44,9 @@ export const postData = async ({
 };
 
 export const toDateTime = (secs: number) => {
-  var t = new Date(+0); // Unix epoch start.
-  t.setSeconds(secs);
-  return t;
+  // 🔧 FIX: Convert Unix timestamp (seconds) to milliseconds for JavaScript Date
+  // JavaScript Date expects milliseconds since epoch, not seconds
+  return new Date(secs * 1000);
 };
 
 export const calculateTrialEndUnixTimestamp = (
