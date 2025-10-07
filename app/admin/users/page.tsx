@@ -100,28 +100,21 @@ export default async function AdminUsersPage({
         .eq('duration_type', '1L')
     : { data: [] };
 
-  // 🆓 Obtener usuarios con indicadores FREE activos (sin suscripción)
-  const { data: freeAccesses } = activeUserIds.length > 0
-    ? await supabase
-        .from('indicator_access')
-        .select('user_id, indicator_id, indicators(access_tier)')
-        .in('user_id', activeUserIds)
-        .eq('status', 'active')
-        .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
-    : { data: [] };
+  // 🆓 Obtener usuarios con PLAN FREE COMPRADO (payment_method='free', order_total_cents=0)
+  const { data: freePlanPurchases } = await (supabaseAdmin as any)
+    .from('purchases')
+    .select('customer_email')
+    .eq('payment_method', 'free')
+    .eq('order_total_cents', 0)
+    .eq('payment_status', 'paid');
 
-  // Tipo para freeAccesses
-  type FreeAccessWithTier = {
-    user_id: string;
-    indicator_id: string;
-    indicators: { access_tier: string | null } | null;
-  };
-
-  // Identificar usuarios con indicadores FREE activos (y sin suscripción paga)
+  // Mapear emails a user_ids
+  const freePlanEmails = new Set((freePlanPurchases || []).map((p: any) => p.customer_email));
   const freeUserIds = new Set<string>();
-  (freeAccesses as FreeAccessWithTier[] || []).forEach((access) => {
-    if (access.indicators?.access_tier === 'free') {
-      freeUserIds.add(access.user_id);
+  
+  safeActiveUsers.forEach(user => {
+    if (freePlanEmails.has(user.email)) {
+      freeUserIds.add(user.id);
     }
   });
 
