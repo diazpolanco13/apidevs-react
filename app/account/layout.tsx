@@ -49,6 +49,15 @@ export default async function AccountLayout({
   // Diferenciar Lifetime PAGADO de FREE (ambos tienen duration 1L)
   const hasLifetimeAccess = !!(lifetimePurchase && lifetimePurchase.order_total_cents > 0 && lifetimePurchase.payment_method !== 'free');
 
+  // 🆓 Verificar si tiene indicadores activos (FREE o PREMIUM)
+  const { count: activeIndicatorsCount } = await supabase
+    .from('indicator_access')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('status', 'active');
+
+  const hasActiveIndicators = (activeIndicatorsCount ?? 0) > 0;
+
   return (
     <AccountDashboardLayout 
       user={user} 
@@ -57,6 +66,7 @@ export default async function AccountLayout({
       loyaltyTier={loyaltyProfile?.customer_tier}
       isLegacy={loyaltyProfile?.is_legacy_user}
       hasLifetimeAccess={hasLifetimeAccess}
+      hasActiveIndicators={hasActiveIndicators}
     >
       {children}
     </AccountDashboardLayout>
