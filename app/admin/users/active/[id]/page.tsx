@@ -63,7 +63,6 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
     const { data, error: authError } = await supabaseAdmin.auth.admin.getUserById(params.id);
     if (!authError) {
       authUser = data;
-      console.log('✅ Datos de auth obtenidos exitosamente');
     } else {
       console.warn('⚠️  Error al obtener datos de auth:', authError.message);
     }
