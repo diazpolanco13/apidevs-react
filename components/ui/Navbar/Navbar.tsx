@@ -63,14 +63,13 @@ export default async function Navbar() {
         const productName = subscription.prices.products.name || '';
         const metadata = subscription.prices.products.metadata || {};
         
-        // Detectar tipo de plan
-        if (metadata.plan_type === 'lifetime' || productName.toLowerCase().includes('lifetime')) {
+        // Detectar tipo de plan (solo existen: Free, Pro, Lifetime)
+        if (metadata.type === 'lifetime' || productName.toLowerCase().includes('lifetime')) {
           subscriptionType = 'lifetime';
         } else if (productName.toLowerCase().includes('pro')) {
           subscriptionType = 'pro';
-        } else {
-          subscriptionType = 'premium';
         }
+        // Si no es lifetime ni pro, será null y mostrará "Usuario Free"
       }
     }
   }

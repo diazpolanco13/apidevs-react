@@ -53,10 +53,8 @@ export default function Navlinks({ user, avatarUrl, userStatus = 'online', unrea
         return 'Usuario Lifetime';
       case 'pro':
         return 'Usuario Pro';
-      case 'premium':
-        return 'Usuario Premium';
       default:
-        return 'Usuario Premium';
+        return 'Usuario Free';
     }
   };
 
