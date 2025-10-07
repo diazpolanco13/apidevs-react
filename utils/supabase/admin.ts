@@ -233,38 +233,13 @@ const manageSubscriptionStatusChange = async (
     expand: ['default_payment_method']
   });
 
-  // 🐛 DEBUG: Log subscription data
-  console.log('\n🔍 ========== SUBSCRIPTION DEBUG ==========');
-  console.log('Subscription ID:', subscription.id);
-  console.log('Subscription type:', typeof subscription);
-  console.log('Is plain object:', Object.getPrototypeOf(subscription) === Object.prototype);
-  console.log('Constructor:', subscription.constructor.name);
-  
-  // Log ALL properties
-  const allProps: any = {};
-  for (const key in subscription) {
-    allProps[key] = (subscription as any)[key];
-  }
-  console.log('All subscription properties:', JSON.stringify(allProps, null, 2));
-  
-  // @ts-ignore - Stripe API type mismatch
-  console.log('current_period_start (raw):', subscription.current_period_start);
-  // @ts-ignore - Stripe API type mismatch
-  console.log('current_period_end (raw):', subscription.current_period_end);
-  console.log('Interval:', subscription.items.data[0]?.price?.recurring?.interval);
-  console.log('Interval Count:', subscription.items.data[0]?.price?.recurring?.interval_count);
-  console.log('==========================================\n');
-
   // Helper function to safely convert timestamps
   const safeToDateTime = (timestamp: number | null | undefined): string | null => {
     if (!timestamp || timestamp === null || timestamp === undefined) {
-      console.warn(`⚠️ safeToDateTime received null/undefined timestamp`);
       return null;
     }
     try {
-      const converted = toDateTime(timestamp).toISOString();
-      console.log(`✅ Converted timestamp ${timestamp} → ${converted}`);
-      return converted;
+      return toDateTime(timestamp).toISOString();
     } catch (error) {
       console.error(`❌ Error converting timestamp ${timestamp}:`, error);
       return null;
@@ -277,13 +252,11 @@ const manageSubscriptionStatusChange = async (
   const currentPeriodStart = safeToDateTime(subscriptionItem?.current_period_start as number);
   let currentPeriodEnd = safeToDateTime(subscriptionItem?.current_period_end as number);
   
-  // Si current_period_end es null, calcular basado en el intervalo
+  // Si current_period_end es null, calcular basado en el intervalo (fallback)
   if (!currentPeriodEnd && currentPeriodStart) {
     const startDate = new Date(currentPeriodStart);
     const interval = subscription.items.data[0]?.price?.recurring?.interval;
     const intervalCount = subscription.items.data[0]?.price?.recurring?.interval_count || 1;
-    
-    console.warn(`⚠️ current_period_end is null, calculating from interval: ${interval} x${intervalCount}`);
     
     if (interval === 'year') {
       startDate.setFullYear(startDate.getFullYear() + intervalCount);
@@ -296,7 +269,6 @@ const manageSubscriptionStatusChange = async (
     }
     
     currentPeriodEnd = startDate.toISOString();
-    console.log(`✅ Calculated current_period_end: ${currentPeriodEnd}`);
   }
 
   // Upsert the latest status of the subscription object.
@@ -321,13 +293,6 @@ const manageSubscriptionStatusChange = async (
     trial_start: safeToDateTime(subscription.trial_start as number),
     trial_end: safeToDateTime(subscription.trial_end as number)
   };
-
-  // 🐛 DEBUG: Log final data before upsert
-  console.log('\n📝 ========== FINAL SUBSCRIPTION DATA ==========');
-  console.log('current_period_start (final):', subscriptionData.current_period_start);
-  console.log('current_period_end (final):', subscriptionData.current_period_end);
-  console.log('created (final):', subscriptionData.created);
-  console.log('================================================\n');
 
   const { error: upsertError } = await supabaseAdmin
     .from('subscriptions')
