@@ -236,7 +236,17 @@ const manageSubscriptionStatusChange = async (
   // 🐛 DEBUG: Log subscription data
   console.log('\n🔍 ========== SUBSCRIPTION DEBUG ==========');
   console.log('Subscription ID:', subscription.id);
-  console.log('Subscription object keys:', Object.keys(subscription));
+  console.log('Subscription type:', typeof subscription);
+  console.log('Is plain object:', Object.getPrototypeOf(subscription) === Object.prototype);
+  console.log('Constructor:', subscription.constructor.name);
+  
+  // Log ALL properties
+  const allProps: any = {};
+  for (const key in subscription) {
+    allProps[key] = (subscription as any)[key];
+  }
+  console.log('All subscription properties:', JSON.stringify(allProps, null, 2));
+  
   // @ts-ignore - Stripe API type mismatch
   console.log('current_period_start (raw):', subscription.current_period_start);
   // @ts-ignore - Stripe API type mismatch
