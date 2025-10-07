@@ -26,10 +26,10 @@ export default async function Navbar() {
     userStatus = profile?.user_status || 'online';
     unreadNotifications = profile?.unread_notifications || 0;
 
-    // PRIMERO: Verificar si tiene compra Lifetime (one-time payment)
+    // PRIMERO: Verificar si tiene compra Lifetime PAGADA (excluir FREE)
     const { data: lifetimePurchase } = await (supabase as any)
       .from('purchases')
-      .select('id, is_lifetime_purchase, product_name')
+      .select('id, is_lifetime_purchase, product_name, order_total_cents, payment_method')
       .eq('customer_email', user.email)
       .eq('is_lifetime_purchase', true)
       .eq('payment_status', 'paid')
@@ -37,7 +37,8 @@ export default async function Navbar() {
       .limit(1)
       .maybeSingle();
     
-    if (lifetimePurchase) {
+    // Diferenciar Lifetime PAGADO de FREE (ambos tienen is_lifetime_purchase=true)
+    if (lifetimePurchase && lifetimePurchase.order_total_cents > 0 && lifetimePurchase.payment_method !== 'free') {
       subscriptionType = 'lifetime';
     } else {
       // SEGUNDO: Si no tiene Lifetime, buscar suscripción activa (mensual/anual)
