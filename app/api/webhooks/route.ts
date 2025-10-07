@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import { stripe } from '@/utils/stripe/config';
 import {
+  supabaseAdmin,
   upsertProductRecord,
   upsertPriceRecord,
   manageSubscriptionStatusChange,
@@ -174,7 +175,7 @@ export async function POST(req: Request) {
               console.log('   Customer details:', checkoutSession.customer_details);
             }
           } else if (checkoutSession.mode === 'payment' && checkoutSession.payment_intent) {
-            // Manejar compras one-time
+            // Manejar compras one-time CON payment_intent (productos pagados)
             const paymentIntent = await stripe.paymentIntents.retrieve(checkoutSession.payment_intent as string);
             const customer = await stripe.customers.retrieve(checkoutSession.customer as string);
             
@@ -231,6 +232,104 @@ export async function POST(req: Request) {
               console.error('❌ No se pudo obtener customer email para auto-grant');
               console.log('   Customer deleted?:', customer?.deleted);
               console.log('   Customer details:', checkoutSession.customer_details);
+            }
+          } else if (checkoutSession.mode === 'payment' && !checkoutSession.payment_intent && checkoutSession.amount_total === 0) {
+            // 🆓 CASO ESPECIAL: Compras FREE ($0) - NO tienen payment_intent
+            console.log('\n🆓 ========== CHECKOUT FREE ($0) DETECTED ==========');
+            console.log('   Checkout Session ID:', checkoutSession.id);
+            console.log('   Customer ID:', checkoutSession.customer);
+            console.log('   Amount Total:', checkoutSession.amount_total);
+            console.log('   Payment Status:', checkoutSession.payment_status);
+            
+            const customer = await stripe.customers.retrieve(checkoutSession.customer as string);
+            
+            // ✅ Obtener email del customer
+            const customerEmail = customer && !customer.deleted 
+              ? customer.email 
+              : checkoutSession.customer_details?.email;
+            
+            if (!customerEmail) {
+              console.error('❌ No se pudo obtener customer email para FREE plan');
+              break;
+            }
+            
+            console.log('   📧 Customer Email:', customerEmail);
+            
+            // 📝 Crear registro de "compra" FREE para auditoría
+            try {
+              const purchaseData = {
+                order_number: `FREE-${checkoutSession.id}`,
+                customer_email: customerEmail,
+                legacy_user_id: null,
+                order_date: new Date(checkoutSession.created * 1000).toISOString().slice(0, -1),
+                completed_date: new Date().toISOString().slice(0, -1),
+                order_status: 'completed',
+                payment_status: 'paid', // FREE pero marcado como "paid" para consistencia
+                order_total_cents: 0,
+                subtotal_cents: 0,
+                currency: 'USD',
+                product_name: 'APIDevs indicator - FREE Plan',
+                product_category: 'free_tier',
+                quantity: 1,
+                payment_method: 'free',
+                payment_gateway: 'stripe',
+                transaction_id: checkoutSession.id,
+                gateway_transaction_id: checkoutSession.id,
+                billing_country: checkoutSession.customer_details?.address?.country || null,
+                billing_state: checkoutSession.customer_details?.address?.state || null,
+                billing_city: checkoutSession.customer_details?.address?.city || null,
+                billing_address: checkoutSession.customer_details?.address?.line1 || null,
+                billing_postcode: checkoutSession.customer_details?.address?.postal_code || null,
+                is_lifetime_purchase: true, // FREE es lifetime
+                notes: 'FREE Plan - No payment required'
+              };
+              
+              const { error: purchaseError } = await (supabaseAdmin as any)
+                .from('purchases')
+                .upsert(purchaseData, { onConflict: 'order_number' });
+              
+              if (purchaseError) {
+                console.error('⚠️ Error creando registro FREE purchase:', purchaseError);
+              } else {
+                console.log('✅ Registro FREE purchase creado');
+              }
+            } catch (error) {
+              console.error('⚠️ Error en createPurchaseRecord (FREE):', error);
+            }
+            
+            // 🎯 AUTO-GRANT: Conceder acceso automático a indicadores FREE
+            const productIds = extractProductIds(lineItems, checkoutSession.metadata || {});
+            const priceId = lineItems[0]?.price?.id;
+            
+            console.log('   📦 Product IDs:', productIds);
+            console.log('   💰 Price ID:', priceId);
+            console.log('   📋 Line Items Count:', lineItems.length);
+            console.log('=================================================\n');
+            
+            try {
+              const result = await grantIndicatorAccessOnPurchase(
+                customerEmail,
+                productIds,
+                priceId,
+                checkoutSession.id,
+                'checkout'
+              );
+              
+              console.log('\n✅ AUTO-GRANT RESULT (FREE plan):');
+              console.log('   Success:', result.success);
+              console.log('   User ID:', result.userId);
+              console.log('   TradingView Username:', result.tradingviewUsername);
+              console.log('   Indicators Granted:', result.indicatorsGranted);
+              if (result.errors) {
+                console.log('   Errors:', result.errors);
+              }
+              if (result.reason) {
+                console.log('   Reason:', result.reason);
+              }
+              console.log('=================================================\n');
+            } catch (error) {
+              console.error('⚠️ Error en auto-grant (FREE plan):', error);
+              // No fallar el webhook por esto
             }
           }
           break;
