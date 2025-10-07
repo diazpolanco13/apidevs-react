@@ -319,7 +319,7 @@ export default async function AdminUsersPage({
     },
     {
       name: 'Usuarios FREE + Sin Plan',
-      value: `${realFreeUsers} + ${usersWithNoAccess}`,
+      value: (realFreeUsers + usersWithNoAccess).toLocaleString(),
       icon: UserCheck,
       color: 'text-cyan-400',
       bgColor: 'from-cyan-500/10 to-teal-500/10',
