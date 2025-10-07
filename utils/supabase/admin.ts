@@ -395,13 +395,17 @@ const createPurchaseRecord = async (
       notes: `Compra automática desde Stripe - ${new Date().toISOString()}`
     };
 
+    // Usar upsert en lugar de insert para evitar duplicados cuando Stripe envía múltiples eventos
     const { error } = await (supabaseAdmin as any)
       .from('purchases')
-      .insert([purchaseData]);
+      .upsert([purchaseData], { 
+        onConflict: 'order_number',
+        ignoreDuplicates: false // Actualizar si ya existe
+      });
 
     if (error) {
-      console.error('Error creating purchase record:', error);
-      throw new Error(`Purchase record creation failed: ${error.message}`);
+      console.error('Error creating/updating purchase record:', error);
+      throw new Error(`Purchase record creation/update failed: ${error.message}`);
     }
 
     console.log(`✅ Purchase record created: ${orderNumber} for ${customer.email}`);
