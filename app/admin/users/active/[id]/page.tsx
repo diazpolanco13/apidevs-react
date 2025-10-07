@@ -86,8 +86,8 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
     console.log('✅ Customer ID encontrado:', customer.stripe_customer_id);
   }
 
-  // 4. Suscripción actual
-  const { data: subscriptions, error: subscriptionsError } = await supabase
+  // 4. Suscripción actual - usar supabaseAdmin para evitar RLS
+  const { data: subscriptions, error: subscriptionsError } = await (supabaseAdmin as any)
     .from('subscriptions')
     .select(`
       *,
@@ -100,7 +100,9 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
     .order('created', { ascending: false });
 
   if (subscriptionsError) {
-    console.error('Error fetching subscriptions:', subscriptionsError);
+    console.error('❌ Error fetching subscriptions:', subscriptionsError);
+  } else {
+    console.log(`✅ Suscripciones encontradas: ${subscriptions?.length || 0}`);
   }
 
   const activeSubscription = subscriptions?.find(
@@ -141,26 +143,30 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
   const lifetimeAccess = allIndicatorAccess?.filter((a: any) => a.duration_type === '1L') || [];
   const hasLifetimeAccess = lifetimeAccess.length > 0;
 
-  // 6. Payment Intents desde Supabase
-  const { data: paymentIntents, error: paymentIntentsError } = await supabase
+  // 6. Payment Intents desde Supabase - usar supabaseAdmin para evitar RLS
+  const { data: paymentIntents, error: paymentIntentsError } = await (supabaseAdmin as any)
     .from('payment_intents')
     .select('*')
     .eq('user_id', params.id)
     .order('created', { ascending: false });
 
   if (paymentIntentsError) {
-    console.error('Error fetching payment intents:', paymentIntentsError);
+    console.error('❌ Error fetching payment intents:', paymentIntentsError);
+  } else {
+    console.log(`✅ Payment Intents encontrados: ${paymentIntents?.length || 0}`);
   }
 
-  // 7. Invoices desde Supabase
-  const { data: invoices, error: invoicesError } = await supabase
+  // 7. Invoices desde Supabase - usar supabaseAdmin para evitar RLS
+  const { data: invoices, error: invoicesError } = await (supabaseAdmin as any)
     .from('invoices')
     .select('*')
     .eq('user_id', params.id)
     .order('created', { ascending: false});
 
   if (invoicesError) {
-    console.error('Error fetching invoices:', invoicesError);
+    console.error('❌ Error fetching invoices:', invoicesError);
+  } else {
+    console.log(`✅ Invoices encontrados: ${invoices?.length || 0}`);
   }
 
   // ==================== CÁLCULOS Y MÉTRICAS ====================
