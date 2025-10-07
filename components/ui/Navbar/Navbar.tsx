@@ -9,10 +9,11 @@ export default async function Navbar() {
     data: { user }
   } = await supabase.auth.getUser();
 
-  // Obtener avatar_url, user_status y unread_notifications del perfil
+  // Obtener avatar_url, user_status, unread_notifications y suscripción del perfil
   let avatarUrl = null;
   let userStatus = 'online';
   let unreadNotifications = 0;
+  let subscriptionType = null;
   
   if (user?.id) {
     const { data: profile } = await (supabase as any)
@@ -24,6 +25,39 @@ export default async function Navbar() {
     avatarUrl = profile?.avatar_url || null;
     userStatus = profile?.user_status || 'online';
     unreadNotifications = profile?.unread_notifications || 0;
+
+    // Obtener suscripción activa del usuario
+    const { data: subscription } = await (supabase as any)
+      .from('subscriptions')
+      .select(`
+        id,
+        status,
+        prices (
+          products (
+            name,
+            metadata
+          )
+        )
+      `)
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .order('created', { ascending: false })
+      .limit(1)
+      .single();
+    
+    if (subscription?.prices?.products) {
+      const productName = subscription.prices.products.name || '';
+      const metadata = subscription.prices.products.metadata || {};
+      
+      // Detectar tipo de plan
+      if (metadata.plan_type === 'lifetime' || productName.toLowerCase().includes('lifetime')) {
+        subscriptionType = 'lifetime';
+      } else if (productName.toLowerCase().includes('pro')) {
+        subscriptionType = 'pro';
+      } else {
+        subscriptionType = 'premium';
+      }
+    }
   }
 
   return (
@@ -37,6 +71,7 @@ export default async function Navbar() {
           avatarUrl={avatarUrl} 
           userStatus={userStatus}
           unreadNotifications={unreadNotifications}
+          subscriptionType={subscriptionType}
         />
       </div>
     </nav>
