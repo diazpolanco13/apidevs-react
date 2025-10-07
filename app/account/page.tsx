@@ -34,7 +34,7 @@ export default async function AccountDashboard() {
   const loyaltyProfile = await getUserLoyaltyProfile(supabase as any, user.id);
 
   // 🔍 Verificar si tiene compra Lifetime PAGADA (excluir FREE)
-  const { data: lifetimePurchase } = await supabase
+  const { data: lifetimePurchase } = await (supabase as any)
     .from('purchases')
     .select('id, is_lifetime_purchase, order_total_cents, payment_method')
     .eq('customer_email', user.email)
