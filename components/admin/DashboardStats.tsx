@@ -5,63 +5,113 @@ export default async function DashboardStats() {
   const supabase = createClient();
 
   try {
-    // ⚡ OPTIMIZADO: Reducir de 10 queries a 3 queries paralelas para evitar rate limiting
-    
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     
-    // QUERY 1: Datos de usuarios (users + legacy_users) en paralelo
-    const [usersResult, legacyResult, indicatorResult] = await Promise.all([
-      // Usuarios registrados + datos de LTV
+    // ⚡ OPTIMIZADO: Queries paralelas con validación de errores
+    const [
+      usersData,
+      legacyReactivatedData,
+      legacyPendingData,
+      indicatorAccessData,
+      subscriptionsData,
+      purchasesData,
+      mrrData
+    ] = await Promise.all([
+      // 1. Usuarios registrados + datos de LTV
       supabase
         .from('users')
-        .select('customer_since, total_lifetime_spent')
-        .then(res => {
-          const validData = (res.data || []) as any[];
-          return {
-            all: validData,
-            new30d: validData.filter(u => u.customer_since && u.customer_since >= thirtyDaysAgo),
-            withLtv: validData.filter(u => Number(u.total_lifetime_spent || 0) > 0)
-          };
-        }),
+        .select('customer_since, total_lifetime_spent'),
       
-      // Legacy users
+      // 2. Legacy reactivados
       supabase
         .from('legacy_users')
-        .select('reactivation_status', { count: 'exact', head: true })
-        .then(async (res) => ({
-          reactivated: (await supabase.from('legacy_users').select('*', { count: 'exact', head: true }).eq('reactivation_status', 'reactivated')).count || 0,
-          pending: (await supabase.from('legacy_users').select('*', { count: 'exact', head: true }).eq('reactivation_status', 'pending')).count || 0
-        })),
+        .select('*', { count: 'exact', head: true })
+        .eq('reactivation_status', 'reactivated'),
       
-      // Indicadores + Suscripciones
-      Promise.all([
-        supabase.from('indicator_access').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active')
-      ]).then(([indicators, subs]) => ({
-        indicators: indicators.count || 0,
-        subscriptions: subs.count || 0
-      }))
+      // 3. Legacy pendientes
+      supabase
+        .from('legacy_users')
+        .select('*', { count: 'exact', head: true })
+        .eq('reactivation_status', 'pending'),
+      
+      // 4. Indicadores activos
+      supabase
+        .from('indicator_access')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active'),
+      
+      // 5. Suscripciones activas (mensual/anual)
+      supabase
+        .from('subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active'),
+      
+      // 6. Compras totales y Lifetime
+      supabase
+        .from('purchases')
+        .select('is_lifetime_purchase, payment_status'),
+      
+      // 7. MRR: suscripciones activas con precios (mensual y anual)
+      supabase
+        .from('subscriptions')
+        .select(`
+          id,
+          status,
+          prices (
+            unit_amount,
+            interval,
+            interval_count
+          )
+        `)
+        .eq('status', 'active')
     ]);
 
     // Procesar usuarios
-    const totalUsers = usersResult.all.length;
-    const newUsers30d = usersResult.new30d.length;
-    const avgLtv = usersResult.withLtv.length > 0
-      ? usersResult.withLtv.reduce((sum, u) => sum + Number(u.total_lifetime_spent || 0), 0) / usersResult.withLtv.length / 100
+    const allUsers = (usersData.data || []) as any[];
+    const totalUsers = allUsers.length;
+    const newUsers30d = allUsers.filter(u => u.customer_since && u.customer_since >= thirtyDaysAgo).length;
+    const usersWithLtv = allUsers.filter(u => Number(u.total_lifetime_spent || 0) > 0);
+    const avgLtv = usersWithLtv.length > 0
+      ? usersWithLtv.reduce((sum, u) => sum + Number(u.total_lifetime_spent || 0), 0) / usersWithLtv.length / 100
       : 0;
     const avgLtvFormatted = avgLtv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const payingUsers = usersResult.withLtv.length;
+    const payingUsers = usersWithLtv.length;
 
     // Procesar legacy
-    const legacyReactivated = legacyResult.reactivated;
-    const legacyPending = legacyResult.pending;
+    const legacyReactivated = legacyReactivatedData.count || 0;
+    const legacyPending = legacyPendingData.count || 0;
 
-    // Procesar indicadores y suscripciones
-    const activeIndicatorAccess = indicatorResult.indicators;
-    const activeSubscriptions = indicatorResult.subscriptions;
+    // Procesar indicadores
+    const activeIndicatorAccess = indicatorAccessData.count || 0;
 
-    // MRR = 0 por ahora (requiere join con prices, lo dejamos para después)
-    const mrr = '0.00';
+    // Procesar suscripciones (mensual/anual) - CORREGIDO
+    const activeSubscriptions = subscriptionsData.count || 0;
+
+    // Procesar compras (incluye Lifetime)
+    const allPurchases = (purchasesData.data || []) as any[];
+    const totalPurchases = allPurchases.length;
+    const lifetimePurchases = allPurchases.filter(p => p.is_lifetime_purchase === true && p.payment_status === 'paid').length;
+    
+    // Total de "suscripciones" = suscripciones recurrentes + compras Lifetime
+    const totalActiveSubscriptions = activeSubscriptions + lifetimePurchases;
+
+    // Calcular MRR (Monthly Recurring Revenue)
+    let mrrCents = 0;
+    if (mrrData.data) {
+      mrrData.data.forEach((sub: any) => {
+        const price = sub.prices;
+        if (price && price.unit_amount) {
+          if (price.interval === 'month') {
+            // Mensual: sumar directamente
+            mrrCents += price.unit_amount;
+          } else if (price.interval === 'year') {
+            // Anual: dividir entre 12 para obtener MRR
+            mrrCents += Math.round(price.unit_amount / 12);
+          }
+        }
+      });
+    }
+    const mrr = (mrrCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     // QUERY 2: Visitor tracking (solo si es necesario - comentado para ahorrar queries)
     // Por ahora usar datos hardcoded de la última vez
@@ -96,7 +146,7 @@ export default async function DashboardStats() {
       },
       { 
         name: 'Suscripciones', 
-        stat: (activeSubscriptions || 0).toLocaleString(), 
+        stat: (totalActiveSubscriptions || 0).toLocaleString(), 
         icon: Zap,
         color: 'text-yellow-400',
         bgColor: 'from-yellow-500/20 to-yellow-600/10'
