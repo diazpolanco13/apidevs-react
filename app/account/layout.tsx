@@ -35,19 +35,24 @@ export default async function AccountLayout({
   // Get loyalty profile
   const loyaltyProfile = await getUserLoyaltyProfile(supabase, user.id);
 
-  // 🔍 Verificar si tiene compra Lifetime PAGADA (excluir FREE)
-  const { data: lifetimePurchase } = await (supabase as any)
+  // 🏆 JERARQUÍA DE PLANES: Determinar el plan de mayor valor del usuario
+  // Lifetime ($999) > PRO (recurrente) > FREE ($0)
+  
+  // 1. Verificar si tiene compra Lifetime PAGADA (excluir FREE)
+  const { data: allLifetimePurchases } = await (supabase as any)
     .from('purchases')
-    .select('id, is_lifetime_purchase, order_total_cents, payment_method')
+    .select('id, is_lifetime_purchase, order_total_cents, payment_method, order_date')
     .eq('customer_email', user.email)
     .eq('is_lifetime_purchase', true)
     .eq('payment_status', 'paid')
-    .order('order_date', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order('order_total_cents', { ascending: false }); // Ordenar por VALOR, no fecha
 
-  // Diferenciar Lifetime PAGADO de FREE (ambos tienen duration 1L)
-  const hasLifetimeAccess = !!(lifetimePurchase && lifetimePurchase.order_total_cents > 0 && lifetimePurchase.payment_method !== 'free');
+  // Filtrar solo compras PAGADAS (excluir FREE) y tomar la de mayor valor
+  const paidLifetimePurchases = (allLifetimePurchases || []).filter(
+    (p: any) => p.order_total_cents > 0 && p.payment_method !== 'free'
+  );
+  
+  const hasLifetimeAccess = paidLifetimePurchases.length > 0;
 
   // 🆓 Verificar si tiene indicadores activos (FREE o PREMIUM)
   const { count: activeIndicatorsCount } = await supabase
