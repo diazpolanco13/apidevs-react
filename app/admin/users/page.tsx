@@ -319,29 +319,16 @@ export default async function AdminUsersPage({
       ]
     },
     {
-      name: 'Usuarios Sin Suscripción',
-      value: usersWithNoAccess?.toLocaleString() || '0',
-      icon: UserX,
-      color: 'text-gray-400',
-      bgColor: 'from-gray-500/10 to-slate-500/10',
-      borderColor: 'border-gray-500/30',
-      subtitle: `${((usersWithNoAccess || 0) / (activeUsersCount || 1) * 100).toFixed(1)}% del total`,
-      details: [
-        { label: 'Pool conversión', value: `${usersWithNoAccess} potenciales` },
-        { label: 'Sin acceso', value: 'Ningún indicador' }
-      ]
-    },
-    {
-      name: 'Usuarios FREE',
-      value: realFreeUsers?.toLocaleString() || '0',
-      icon: Activity,
+      name: 'Usuarios FREE + Sin Plan',
+      value: `${realFreeUsers} + ${usersWithNoAccess}`,
+      icon: UserCheck,
       color: 'text-cyan-400',
       bgColor: 'from-cyan-500/10 to-teal-500/10',
       borderColor: 'border-cyan-500/30',
-      subtitle: `${((realFreeUsers || 0) / (activeUsersCount || 1) * 100).toFixed(1)}% del total`,
+      subtitle: `${(((realFreeUsers + usersWithNoAccess) || 0) / (activeUsersCount || 1) * 100).toFixed(1)}% del total`,
       details: [
-        { label: 'Plan activo', value: 'FREE Plan' },
-        { label: 'Indicadores', value: '2 gratuitos' }
+        { label: 'Plan FREE', value: `${realFreeUsers} usuarios` },
+        { label: 'Sin suscripción', value: `${usersWithNoAccess} usuarios` }
       ]
     },
     {
