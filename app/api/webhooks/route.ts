@@ -242,16 +242,19 @@ export async function POST(req: Request) {
           const paymentIntent = event.data.object as Stripe.PaymentIntent;
           // Sincronizar payment intent con Supabase
           await upsertPaymentIntentRecord(paymentIntent);
-          // Crear purchase record solo si succeeded
+          // Crear/actualizar purchase record solo si succeeded
+          // ⚠️ NOTA: Stripe envía AMBOS eventos para compras one-time:
+          //    1. checkout.session.completed (crea el registro primero)
+          //    2. payment_intent.succeeded (actualiza el registro - UPSERT evita duplicados)
           if (event.type === 'payment_intent.succeeded' && paymentIntent.customer) {
             const customer = await stripe.customers.retrieve(paymentIntent.customer as string);
             if (customer && !customer.deleted) {
-              await createPurchaseRecord(paymentIntent, customer);
+              await createPurchaseRecord(paymentIntent, customer);  // Usa UPSERT internamente
               
               // ⚠️ NO ejecutar auto-grant aquí - ya se ejecuta en checkout.session.completed
               // Ejecutar auto-grant desde payment_intent causa registros duplicados porque
               // Stripe envía AMBOS eventos (checkout.session.completed + payment_intent.succeeded)
-              console.log('ℹ️ Purchase record created. Auto-grant will be handled by checkout.session.completed event.');
+              console.log('ℹ️ Purchase record upserted. Auto-grant already handled by checkout.session.completed event.');
             }
           }
           break;
