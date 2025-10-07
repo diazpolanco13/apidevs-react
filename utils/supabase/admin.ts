@@ -230,6 +230,20 @@ const manageSubscriptionStatusChange = async (
   const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
     expand: ['default_payment_method']
   });
+
+  // Helper function to safely convert timestamps
+  const safeToDateTime = (timestamp: number | null | undefined): string | null => {
+    if (!timestamp || timestamp === null || timestamp === undefined) {
+      return null;
+    }
+    try {
+      return toDateTime(timestamp).toISOString();
+    } catch (error) {
+      console.error(`❌ Error converting timestamp ${timestamp}:`, error);
+      return null;
+    }
+  };
+
   // Upsert the latest status of the subscription object.
   const subscriptionData: TablesInsert<'subscriptions'> = {
     id: subscription.id,
@@ -241,32 +255,16 @@ const manageSubscriptionStatusChange = async (
     // @ts-ignore
     quantity: subscription.quantity,
     cancel_at_period_end: subscription.cancel_at_period_end,
-    cancel_at: subscription.cancel_at
-      ? toDateTime(subscription.cancel_at).toISOString()
-      : null,
-    canceled_at: subscription.canceled_at
-      ? toDateTime(subscription.canceled_at).toISOString()
-      : null,
+    cancel_at: safeToDateTime(subscription.cancel_at as number),
+    canceled_at: safeToDateTime(subscription.canceled_at as number),
     // @ts-ignore - Stripe API type mismatch
-    current_period_start: toDateTime(
-      // @ts-ignore
-      subscription.current_period_start
-    ).toISOString(),
+    current_period_start: safeToDateTime(subscription.current_period_start as number) || new Date().toISOString(),
     // @ts-ignore - Stripe API type mismatch
-    current_period_end: toDateTime(
-      // @ts-ignore
-      subscription.current_period_end
-    ).toISOString(),
-    created: toDateTime(subscription.created).toISOString(),
-    ended_at: subscription.ended_at
-      ? toDateTime(subscription.ended_at).toISOString()
-      : null,
-    trial_start: subscription.trial_start
-      ? toDateTime(subscription.trial_start).toISOString()
-      : null,
-    trial_end: subscription.trial_end
-      ? toDateTime(subscription.trial_end).toISOString()
-      : null
+    current_period_end: safeToDateTime(subscription.current_period_end as number) || new Date().toISOString(),
+    created: safeToDateTime(subscription.created) || new Date().toISOString(),
+    ended_at: safeToDateTime(subscription.ended_at as number),
+    trial_start: safeToDateTime(subscription.trial_start as number),
+    trial_end: safeToDateTime(subscription.trial_end as number)
   };
 
   const { error: upsertError } = await supabaseAdmin
@@ -275,7 +273,7 @@ const manageSubscriptionStatusChange = async (
   if (upsertError)
     throw new Error(`Subscription insert/update failed: ${upsertError.message}`);
   console.log(
-    `Inserted/updated subscription [${subscription.id}] for user [${uuid}]`
+    `✅ Inserted/updated subscription [${subscription.id}] for user [${uuid}]`
   );
 
   // For a new subscription copy the billing details to the customer object.
