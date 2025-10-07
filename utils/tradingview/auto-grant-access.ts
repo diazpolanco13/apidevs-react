@@ -26,24 +26,24 @@ const PRODUCT_ACCESS_MAP: Record<string, {
   'free': { type: 'free' },
   'prod_t9sigh2ew9muck': { type: 'free' }, // ✅ Producto FREE por ID
   
-  // Planes PRO → Solo indicadores PREMIUM (excluye free)
-  'plan_mensual': { type: 'premium' },
-  'plan_semestral': { type: 'premium' },
-  'plan_anual': { type: 'premium' },
-  'apidevs_indicator_-_pro': { type: 'premium' },
-  'prod_t9sirlhyuthpt3': { type: 'premium' }, // ✅ Producto PRO por ID
+  // Planes PRO → TODOS los indicadores (free + premium) 🎁
+  'plan_mensual': { type: 'all' },
+  'plan_semestral': { type: 'all' },
+  'plan_anual': { type: 'all' },
+  'apidevs_indicator_-_pro': { type: 'all' },
+  'prod_t9sirlhyuthpt3': { type: 'all' }, // ✅ Producto PRO por ID
   
-  // Plan Lifetime → Solo indicadores PREMIUM
-  'plan_lifetime': { type: 'premium' },
-  'apidevs_indicator_-_lifetime': { type: 'premium' },
-  'prod_t9siv9pd5hr5va': { type: 'premium' }, // ✅ Producto Lifetime por ID
-  'apidevs_trading_indicators': { type: 'premium' }, // Producto genérico PRO
+  // Plan Lifetime → TODOS los indicadores (free + premium) 🎁
+  'plan_lifetime': { type: 'all' },
+  'apidevs_indicator_-_lifetime': { type: 'all' },
+  'prod_t9siv9pd5hr5va': { type: 'all' }, // ✅ Producto Lifetime por ID
+  'apidevs_trading_indicators': { type: 'all' }, // Producto genérico PRO
   
   // Si agregas productos específicos para indicadores individuales
   // 'producto_indicador_x': { type: 'specific', pine_ids: ['PUB;xxxxx'] },
   
-  // Por defecto, si no coincide con nada, dar acceso solo a premium
-  'default': { type: 'premium' }
+  // Por defecto, si no coincide con nada, dar acceso a todos
+  'default': { type: 'all' }
 };
 
 /**
