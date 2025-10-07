@@ -26,36 +26,51 @@ export default async function Navbar() {
     userStatus = profile?.user_status || 'online';
     unreadNotifications = profile?.unread_notifications || 0;
 
-    // Obtener suscripción activa del usuario
-    const { data: subscription } = await (supabase as any)
-      .from('subscriptions')
-      .select(`
-        id,
-        status,
-        prices (
-          products (
-            name,
-            metadata
-          )
-        )
-      `)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .order('created', { ascending: false })
+    // PRIMERO: Verificar si tiene compra Lifetime (one-time payment)
+    const { data: lifetimePurchase } = await (supabase as any)
+      .from('purchases')
+      .select('id, is_lifetime_purchase, product_name')
+      .eq('customer_email', user.email)
+      .eq('is_lifetime_purchase', true)
+      .eq('payment_status', 'paid')
+      .order('order_date', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
     
-    if (subscription?.prices?.products) {
-      const productName = subscription.prices.products.name || '';
-      const metadata = subscription.prices.products.metadata || {};
+    if (lifetimePurchase) {
+      subscriptionType = 'lifetime';
+    } else {
+      // SEGUNDO: Si no tiene Lifetime, buscar suscripción activa (mensual/anual)
+      const { data: subscription } = await (supabase as any)
+        .from('subscriptions')
+        .select(`
+          id,
+          status,
+          prices (
+            products (
+              name,
+              metadata
+            )
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .order('created', { ascending: false })
+        .limit(1)
+        .maybeSingle();
       
-      // Detectar tipo de plan
-      if (metadata.plan_type === 'lifetime' || productName.toLowerCase().includes('lifetime')) {
-        subscriptionType = 'lifetime';
-      } else if (productName.toLowerCase().includes('pro')) {
-        subscriptionType = 'pro';
-      } else {
-        subscriptionType = 'premium';
+      if (subscription?.prices?.products) {
+        const productName = subscription.prices.products.name || '';
+        const metadata = subscription.prices.products.metadata || {};
+        
+        // Detectar tipo de plan
+        if (metadata.plan_type === 'lifetime' || productName.toLowerCase().includes('lifetime')) {
+          subscriptionType = 'lifetime';
+        } else if (productName.toLowerCase().includes('pro')) {
+          subscriptionType = 'pro';
+        } else {
+          subscriptionType = 'premium';
+        }
       }
     }
   }
