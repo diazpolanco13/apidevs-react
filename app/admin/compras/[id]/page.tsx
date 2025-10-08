@@ -43,12 +43,24 @@ async function getPurchaseDetail(id: string) {
   try {
     const supabase = createClient();
 
-    // Fetch purchase básico
-    const { data: purchase, error } = await supabase
-      .from('purchases')
-      .select('*')
-      .eq('id', id)
-      .single();
+    // 🚀 TIMEOUT WRAPPER: Evita queries colgadas  
+    const withTimeout = (promise: any, ms = 5000) => {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Query timeout')), ms)
+        )
+      ]);
+    };
+
+    // ✅ PASO 1: Fetch purchase básico (crítico)
+    const { data: purchase, error } = await withTimeout(
+      supabase
+        .from('purchases')
+        .select('*')
+        .eq('id', id)
+        .single()
+    ) as any;
 
     if (error || !purchase) {
       console.error('Error fetching purchase:', error);
@@ -56,79 +68,120 @@ async function getPurchaseDetail(id: string) {
     }
 
     const typedPurchase = purchase as Purchase;
-
-    // Fetch customer info (si hay legacy_user_id)
-    let customerInfo = null;
-    if (typedPurchase.legacy_user_id) {
-      const { data: user } = await supabase
-        .from('users')
-        .select('id, email, total_lifetime_spent, purchase_count, city, country')
-        .eq('id', typedPurchase.legacy_user_id)
-        .single();
-      
-      if (user) {
-        customerInfo = user;
-      }
-    }
-
-    // Fetch related payment intents
-    let paymentIntent = null;
     const stripePaymentId = typedPurchase.transaction_id || typedPurchase.gateway_transaction_id;
-    
-    if (stripePaymentId) {
-      const { data: pi } = await supabase
-        .from('payment_intents')
-        .select('*')
-        .eq('stripe_payment_intent_id', stripePaymentId)
-        .single();
-      
-      if (pi) {
-        paymentIntent = pi;
-      }
+
+    // 🔥 PASO 2: Ejecutar TODAS las queries restantes EN PARALELO
+    // Esto reduce el tiempo total de 6 queries secuenciales (~6s) a 1 query paralela (~1s)
+    const [
+      customerResult,
+      paymentIntentResult,
+      userIdResult,
+      invoicesResult,
+      refundsResult
+    ] = await Promise.allSettled([
+      // Query 1: Customer info
+      typedPurchase.legacy_user_id 
+        ? withTimeout(
+            supabase
+              .from('users')
+              .select('id, email, total_lifetime_spent, purchase_count, city, country')
+              .eq('id', typedPurchase.legacy_user_id)
+              .single()
+          )
+        : Promise.resolve({ data: null, error: null }),
+
+      // Query 2: Payment intent
+      stripePaymentId
+        ? withTimeout(
+            supabase
+              .from('payment_intents')
+              .select('*')
+              .eq('stripe_payment_intent_id', stripePaymentId)
+              .single()
+          )
+        : Promise.resolve({ data: null, error: null }),
+
+      // Query 3: User ID por email (fallback)
+      !typedPurchase.legacy_user_id && typedPurchase.customer_email
+        ? withTimeout(
+            supabase
+              .from('users')
+              .select('id')
+              .eq('email', typedPurchase.customer_email)
+              .single()
+          )
+        : Promise.resolve({ data: null, error: null }),
+
+      // Query 4: Invoices (solo si tenemos userId)
+      typedPurchase.legacy_user_id
+        ? withTimeout(
+            supabase
+              .from('invoices')
+              .select('*')
+              .eq('user_id', typedPurchase.legacy_user_id)
+              .order('created', { ascending: false })
+              .limit(1)
+          )
+        : Promise.resolve({ data: null, error: null }),
+
+      // Query 5: Refunds
+      typedPurchase.refund_amount_cents && typedPurchase.refund_amount_cents > 0 && stripePaymentId
+        ? withTimeout(
+            supabase
+              .from('payment_intents')
+              .select('*')
+              .eq('stripe_payment_intent_id', stripePaymentId)
+              .gt('refund_amount_cents', 0)
+          )
+        : Promise.resolve({ data: null, error: null })
+    ]);
+
+    // Extraer datos de forma segura
+    const customerInfo = customerResult.status === 'fulfilled' && (customerResult.value as any)?.data 
+      ? (customerResult.value as any).data 
+      : null;
+
+    const paymentIntent = paymentIntentResult.status === 'fulfilled' && (paymentIntentResult.value as any)?.data
+      ? (paymentIntentResult.value as any).data
+      : null;
+
+    // Determinar userId final
+    let userId = typedPurchase.legacy_user_id;
+    if (!userId && userIdResult.status === 'fulfilled' && (userIdResult.value as any)?.data) {
+      userId = ((userIdResult.value as any).data as any).id;
     }
 
-    // Fetch invoice del usuario
+    // Invoice (puede venir del query 4, o necesitamos fetch adicional)
     let invoice = null;
-    let userId = typedPurchase.legacy_user_id;
-    
-    if (!userId && typedPurchase.customer_email) {
-      const { data: activeUser } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', typedPurchase.customer_email)
-        .single();
-      
-      if (activeUser && (activeUser as any).id) {
-        userId = (activeUser as any).id;
-      }
-    }
-    
-    if (userId) {
-      const { data: invoices } = await supabase
-        .from('invoices')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created', { ascending: false});
-      
-      if (invoices && invoices.length > 0) {
+    if (invoicesResult.status === 'fulfilled' && (invoicesResult.value as any)?.data) {
+      const invoices = Array.isArray((invoicesResult.value as any).data) 
+        ? (invoicesResult.value as any).data 
+        : [(invoicesResult.value as any).data];
+      if (invoices.length > 0) {
         invoice = invoices[0];
       }
-    }
-
-    // Fetch refunds (si hay refund_amount)
-    const refunds: any[] = [];
-    if (typedPurchase.refund_amount_cents && typedPurchase.refund_amount_cents > 0 && stripePaymentId) {
-      // Buscar en payment_intents con refund_amount > 0
-      const { data: refundData } = await supabase
-        .from('payment_intents')
-        .select('*')
-        .eq('stripe_payment_intent_id', stripePaymentId)
-        .gt('refund_amount_cents', 0);
-      
-      if (refundData) {
-        refunds.push(...refundData);
+    } else if (userId && !typedPurchase.legacy_user_id) {
+      // Fallback: si userId viene del email, fetch invoice aparte
+      try {
+        const { data: invoices } = await withTimeout(
+          supabase
+            .from('invoices')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created', { ascending: false })
+            .limit(1)
+        ) as any;
+        if (invoices && invoices.length > 0) {
+          invoice = invoices[0];
+        }
+      } catch (e) {
+        // Ignorar error silenciosamente
       }
     }
+
+    const refunds = refundsResult.status === 'fulfilled' && (refundsResult.value as any)?.data
+      ? (Array.isArray((refundsResult.value as any).data) ? (refundsResult.value as any).data : [(refundsResult.value as any).data])
+      : [];
 
     return {
       purchase: typedPurchase,
