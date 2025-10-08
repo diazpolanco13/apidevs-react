@@ -221,12 +221,17 @@ const manageSubscriptionStatusChange = async (
     .from('customers')
     .select('id')
     .eq('stripe_customer_id', customerId)
-    .single();
+    .maybeSingle(); // 🔧 FIX: Use maybeSingle() instead of single()
 
-  if (noCustomerError)
-    throw new Error(`Customer lookup failed: ${noCustomerError.message}`);
+  // 🔧 FIX: Si no existe el customer en Supabase, no fallar - solo loguear y salir
+  if (noCustomerError || !customerData) {
+    console.log(`⚠️  Customer ${customerId} not found in Supabase customers table`);
+    console.log(`   This is normal for Test Clock customers or customers not yet registered`);
+    console.log(`   Skipping subscription sync, but webhook will continue for auto-grant`);
+    return; // 🔧 Return early instead of throwing
+  }
 
-  const { id: uuid } = customerData!;
+  const { id: uuid } = customerData;
 
   // 🔧 FIX: Use provided subscription object if available, otherwise retrieve
   const subscription = subscriptionObject || await stripe.subscriptions.retrieve(subscriptionId, {
