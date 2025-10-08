@@ -13,6 +13,8 @@ Esta guía explica cómo configurar y usar Stripe CLI para probar webhooks, comp
 5. [Simulación de Renovaciones con Test Clocks](#simulación-de-renovaciones-con-test-clocks)
 6. [Comandos Útiles](#comandos-útiles)
 7. [Troubleshooting](#troubleshooting)
+8. [Limpieza de Recursos de Prueba](#limpieza-de-recursos-de-prueba)
+9. [Referencias Útiles](#referencias-útiles)
 
 ---
 
@@ -264,23 +266,21 @@ stripe subscriptions create \
 
 ### **Paso 5: Avanzar el Test Clock (Simular Renovación)**
 
+**Método recomendado (automático):**
 ```bash
-# Avanzar 31 días (2678400 segundos)
-stripe test_helpers test_clocks advance clock_xxxxxxxxxxxxxx \
-  --frozen-time $((CURRENT_TIME + 2678400))
+# Script completo que obtiene el tiempo actual y avanza automáticamente
+CLOCK_ID="clock_xxxxxxxxxxxxxx"  # Reemplaza con tu clock_id real
+CURRENT_TIME=$(stripe test_helpers test_clocks retrieve "$CLOCK_ID" --format json 2>/dev/null | grep -o '"frozen_time": [0-9]*' | grep -o '[0-9]*')
+NEW_TIME=$((CURRENT_TIME + 2678400))
+
+echo "🕐 Tiempo actual: $(date -d @$CURRENT_TIME '+%Y-%m-%d %H:%M:%S')"
+echo "🕐 Nuevo tiempo: $(date -d @$NEW_TIME '+%Y-%m-%d %H:%M:%S')"
+echo "⏩ Avanzando 31 días..."
+
+stripe test_helpers test_clocks advance "$CLOCK_ID" --frozen-time $NEW_TIME
 ```
 
-> **Nota:** Reemplaza `CURRENT_TIME` con el `frozen_time` actual del clock.
-
-**Método automático:**
-```bash
-# Obtener el frozen_time actual
-CURRENT_TIME=$(stripe test_helpers test_clocks retrieve clock_xxxxxxxxxxxxxx | grep -o '"frozen_time": [0-9]*' | grep -o '[0-9]*')
-
-# Avanzar 31 días
-stripe test_helpers test_clocks advance clock_xxxxxxxxxxxxxx \
-  --frozen-time $((CURRENT_TIME + 2678400))
-```
+> **Nota:** Este comando avanza 31 días (2,678,400 segundos) automáticamente.
 
 **Esperar a que termine:**
 ```bash
@@ -295,6 +295,33 @@ stripe test_helpers test_clocks retrieve clock_xxxxxxxxxxxxxx
 - ✅ En `npm run dev`: logs de "🔄 RENOVACIÓN DETECTADA"
 - ✅ En tu dashboard: nueva compra con badge "Renovación"
 - ✅ Indicadores concedidos automáticamente
+
+---
+
+### **Paso 6: Verificar Indicadores Auto-Concedidos**
+
+Después de la renovación, verifica que los indicadores se concedieron correctamente:
+
+**En tu Dashboard de Admin:**
+1. Ir a `/admin/compras`
+2. Buscar la compra con badge "Renovación"
+3. Verificar que muestra "Indicadores concedidos automáticamente"
+4. Clic en "Ver Detalles" → verificar sección "Indicadores Concedidos"
+
+**En los logs del servidor:**
+```
+✅ AUTO-GRANTED 6 indicators to user_xxxxx
+📝 Logged to auto_grant_log: invoice_xxxxx
+```
+
+**En la base de datos (opcional):**
+```bash
+# Consultar en Supabase o tu herramienta de BD
+# Verificar tabla: auto_grant_log
+# Buscar por: invoice_id o customer_email
+```
+
+**Si NO ves los indicadores concedidos:** Consulta la sección de [Troubleshooting](#problema-5-indicadores-no-se-auto-concedieron-en-renovación).
 
 ---
 
@@ -413,7 +440,66 @@ stripe prices retrieve price_xxxxxxxxxxxxxx
 
 ---
 
-### **Problema 4: Eventos muy antiguos se siguen procesando**
+### **Problema 4: Indicadores no se auto-concedieron en renovación**
+
+**Síntoma:**
+- La renovación se procesó correctamente (ves el evento en `stripe listen`)
+- La compra aparece en el dashboard con badge "Renovación"
+- PERO no se concedieron indicadores automáticamente
+- No ves logs de "✅ AUTO-GRANTED" en `npm run dev`
+
+**Posibles Causas y Soluciones:**
+
+**1. Falta `user_id` en metadata del customer:**
+```bash
+# Verificar metadata del customer
+stripe customers retrieve cus_xxxxxxxxxxxxxx
+
+# Debe incluir:
+# "metadata": {
+#   "user_id": "uuid-válido-de-supabase",
+#   "tradingview_username": "username"
+# }
+
+# Si falta, agrégalo:
+stripe customers update cus_xxxxxxxxxxxxxx \
+  -d "metadata[user_id]=uuid-del-usuario" \
+  -d "metadata[tradingview_username]=username"
+```
+
+**2. El plan no tiene `indicator_count` configurado:**
+```bash
+# Verificar metadata del price
+stripe prices retrieve price_xxxxxxxxxxxxxx
+
+# Debe incluir:
+# "metadata": {
+#   "indicator_count": "6"  # o el número correspondiente al plan
+# }
+
+# Si falta, actualiza el producto/precio desde el Dashboard de Stripe
+```
+
+**3. Error en la lógica de auto-grant:**
+```bash
+# Revisa los logs completos del servidor
+# Busca mensajes como:
+# - "❌ No user_id in customer metadata"
+# - "⚠️ No indicator_count found for plan"
+# - "❌ Error granting indicators"
+```
+
+**4. Verificar que el webhook se procesó correctamente:**
+```bash
+# En los logs de npm run dev, debe aparecer:
+# 🔄 RENOVACIÓN DETECTADA
+# 🎯 Auto-granting indicators...
+# ✅ AUTO-GRANTED X indicators to user_xxxxx
+```
+
+---
+
+### **Problema 5: Eventos muy antiguos se siguen procesando**
 
 **Síntoma:**
 ```
@@ -430,7 +516,7 @@ stripe prices retrieve price_xxxxxxxxxxxxxx
 
 ---
 
-### **Problema 5: Test Clock se queda "advancing"**
+### **Problema 6: Test Clock se queda "advancing"**
 
 **Síntoma:**
 ```json
@@ -544,6 +630,87 @@ stripe test_helpers test_clocks retrieve "$CLOCK_ID"
 
 ---
 
+## 🧹 **Limpieza de Recursos de Prueba**
+
+Después de completar tus pruebas, es importante limpiar los recursos de prueba para mantener tu entorno organizado:
+
+### **Eliminar Test Clocks**
+
+```bash
+# Listar todos los Test Clocks
+stripe test_helpers test_clocks list
+
+# Eliminar un Test Clock específico
+stripe test_helpers test_clocks delete clock_xxxxxxxxxxxxxx
+
+# Verificar que se eliminó
+stripe test_helpers test_clocks list
+```
+
+**⚠️ IMPORTANTE:** Eliminar un Test Clock automáticamente elimina todos los recursos asociados:
+- ✅ Customers creados con ese test clock
+- ✅ Subscriptions asociadas
+- ✅ Invoices generadas
+- ✅ Payment Intents
+
+### **Limpiar Customers de Prueba Manualmente**
+
+Si necesitas eliminar customers sin Test Clock:
+
+```bash
+# Listar customers de prueba
+stripe customers list --limit 10 | grep "test@"
+
+# Eliminar un customer específico
+stripe customers delete cus_xxxxxxxxxxxxxx
+```
+
+### **Script de Limpieza Completa**
+
+```bash
+#!/bin/bash
+# cleanup-stripe-test.sh
+
+echo "🧹 Limpiando recursos de prueba de Stripe..."
+
+# Eliminar todos los test clocks
+echo "📋 Obteniendo test clocks..."
+CLOCKS=$(stripe test_helpers test_clocks list --format json 2>/dev/null | grep -o 'clock_[a-zA-Z0-9]*')
+
+if [ -z "$CLOCKS" ]; then
+  echo "✅ No hay test clocks para eliminar"
+else
+  for CLOCK in $CLOCKS; do
+    echo "🗑️  Eliminando $CLOCK..."
+    stripe test_helpers test_clocks delete "$CLOCK" 2>/dev/null
+  done
+  echo "✅ Test clocks eliminados"
+fi
+
+echo "✨ Limpieza completada"
+```
+
+**Para usar el script:**
+```bash
+chmod +x cleanup-stripe-test.sh
+./cleanup-stripe-test.sh
+```
+
+### **Verificar Limpieza**
+
+```bash
+# Verificar que no quedan test clocks
+stripe test_helpers test_clocks list
+
+# Verificar customers activos
+stripe customers list --limit 5
+
+# Verificar subscriptions activas
+stripe subscriptions list --limit 5 --status active
+```
+
+---
+
 ## 🔗 **Referencias Útiles**
 
 - [Stripe CLI Docs](https://stripe.com/docs/stripe-cli)
@@ -558,6 +725,12 @@ stripe test_helpers test_clocks retrieve "$CLOCK_ID"
 - **2025-10-08**: Guía inicial creada
 - **2025-10-08**: Agregada sección de deduplicación persistente
 - **2025-10-08**: Agregado flujo completo automatizado
+- **2025-10-08**: Mejoras post-revisión:
+  - ✅ Paso 6: Verificación de indicadores auto-concedidos
+  - ✅ Problema 4: Troubleshooting de indicadores no concedidos
+  - ✅ Paso 5 mejorado: Script automático para avanzar Test Clock con fechas legibles
+  - ✅ Nueva sección: Limpieza de recursos de prueba con script automatizado
+  - ✅ Tabla de contenidos actualizada
 
 ---
 
