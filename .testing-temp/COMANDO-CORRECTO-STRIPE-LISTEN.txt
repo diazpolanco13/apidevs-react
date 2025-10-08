@@ -1,0 +1,15 @@
+🔧 COMANDO CORRECTO PARA STRIPE LISTEN:
+
+El servidor Next.js está corriendo en el puerto 3000 (no 3002).
+
+Ejecuta este comando en la Terminal 1:
+
+stripe listen --forward-to localhost:3000/api/webhooks
+
+Luego copia el nuevo webhook secret y reinicia el servidor en Terminal 2 con:
+
+cd /home/ea22/proyectos/apidevs-react
+STRIPE_WEBHOOK_SECRET=whsec_xxxxx npm run dev
+
+(Reemplaza whsec_xxxxx con el nuevo secret)
+

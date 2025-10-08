@@ -86,8 +86,11 @@ export async function grantIndicatorAccessOnPurchase(
   source: 'checkout' | 'subscription' | 'invoice' | 'renewal' = 'checkout'
 ): Promise<GrantAccessResult> {
   
-  console.log(`\n🎯 AUTO-GRANT: Iniciando para ${customerEmail}`);
+  const executionId = Math.random().toString(36).substring(7);
+  console.log(`\n🎯 AUTO-GRANT: Iniciando para ${customerEmail} (ID: ${executionId})`);
   console.log(`   Productos: ${productIds.join(', ')}`);
+  console.log(`   Price ID: ${priceId || 'N/A'}`);
+  console.log(`   Purchase ID: ${purchaseId || 'N/A'}`);
   console.log(`   Origen: ${source}`);
 
   try {
@@ -301,7 +304,7 @@ export async function grantIndicatorAccessOnPurchase(
       console.log(`   ✅ ${indicator.name}: expires_at = ${expiresAt || 'LIFETIME'} [LOG REGISTRADO]`);
     }
 
-    console.log(`\n   🎉 AUTO-GRANT COMPLETADO: ${successCount}/${pineIds.length} indicadores concedidos`);
+    console.log(`\n   🎉 AUTO-GRANT COMPLETADO: ${successCount}/${pineIds.length} indicadores concedidos (ID: ${executionId})\n`);
 
     return {
       success: successCount > 0,
@@ -312,7 +315,7 @@ export async function grantIndicatorAccessOnPurchase(
     };
 
   } catch (error: any) {
-    console.error(`   ❌ ERROR en auto-grant:`, error);
+    console.error(`   ❌ ERROR en auto-grant (ID: ${executionId}):`, error);
     return {
       success: false,
       reason: `Error interno: ${error.message}`
@@ -407,6 +410,7 @@ async function getIndicatorsForAccess(accessConfig: {
  */
 async function getDurationFromPrice(priceId?: string): Promise<string> {
   if (!priceId) {
+    console.log(`   ⚠️ No priceId provided, using fallback: 1Y`);
     return '1Y'; // Por defecto 1 año
   }
 
@@ -419,6 +423,7 @@ async function getDurationFromPrice(priceId?: string): Promise<string> {
       .maybeSingle();
 
     if (!price) {
+      console.log(`   ⚠️ Price ${priceId} not found in Supabase, using fallback: 1Y`);
       return '1Y'; // Fallback
     }
 
@@ -431,7 +436,7 @@ async function getDurationFromPrice(priceId?: string): Promise<string> {
     return PRICE_DURATION_MAP[price.interval] || '1Y';
 
   } catch (error) {
-    console.error('Error obteniendo duración del precio:', error);
+    console.error(`   ❌ Error fetching price duration:`, error);
     return '1Y'; // Fallback seguro
   }
 }

@@ -28,6 +28,7 @@ type AccessRecord = {
   tradingview_response: any;
   renewal_count: number;
   last_renewed_at: string | null;
+  notes: string | null;
   created_at: string;
   updated_at: string;
   user: {
@@ -43,12 +44,7 @@ type AccessRecord = {
     category: string;
     access_tier: string;
   } | null;
-  granted_by_user: {
-    id: string;
-    email: string;
-    full_name: string | null;
-  } | null;
-  revoked_by_user: {
+  performed_by_user: {
     id: string;
     email: string;
     full_name: string | null;
@@ -279,7 +275,8 @@ export default function HistorialTab() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      second: '2-digit' // 🔍 Añadir segundos para diferenciar ejecuciones
     });
   };
 
@@ -585,6 +582,9 @@ export default function HistorialTab() {
                       Duración
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Ref
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                       Expira
                     </th>
                   </tr>
@@ -621,6 +621,20 @@ export default function HistorialTab() {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-300">
                         {record.duration_type || '-'}
+                      </td>
+                      <td className="px-4 py-3">
+                        {record.notes ? (
+                          <div 
+                            className="text-xs font-mono text-gray-400 cursor-help truncate max-w-[120px]" 
+                            title={record.notes}
+                          >
+                            {record.notes.includes('Purchase ID:') 
+                              ? record.notes.split('Purchase ID:')[1].trim().substring(0, 12)
+                              : record.notes.substring(record.notes.length - 12)}
+                          </div>
+                        ) : (
+                          <span className="text-gray-500">-</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-300">
                         {formatDate(record.expires_at)}
