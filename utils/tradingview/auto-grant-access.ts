@@ -250,7 +250,7 @@ export async function grantIndicatorAccessOnPurchase(
         granted_at: grantedAt,
         expires_at: expiresAt, // ✅ Fecha EXACTA de TradingView
         duration_type: duration,
-        access_source: 'purchase', // ✅ Marca que fue por compra
+        access_source: source === 'renewal' ? 'renewal' : 'purchase', // ✅ Diferencia renovación vs compra inicial
         granted_by: null, // Sistema automático
         tradingview_response: tvIndicator, // ✅ Guardar respuesta completa
         error_message: null
@@ -285,7 +285,7 @@ export async function grantIndicatorAccessOnPurchase(
         indicator_id: indicator.id,
         tradingview_username: user.tradingview_username,
         operation_type: existingAccess ? 'renew' : 'grant',
-        access_source: 'purchase', // ✅ Identifica que viene de compra Stripe
+        access_source: source === 'renewal' ? 'renewal' : 'purchase', // ✅ Diferencia renovación vs compra inicial
         status: 'active',
         granted_at: grantedAt,
         expires_at: expiresAt,

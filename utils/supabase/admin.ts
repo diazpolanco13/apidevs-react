@@ -372,9 +372,10 @@ const createPurchaseRecord = async (
       order_number: orderNumber,
       customer_email: customer.email || 'unknown@stripe.com',
       legacy_user_id: legacyUserId,
-      order_date: new Date(paymentIntent.created * 1000).toISOString().slice(0, -1), // Sin 'Z' para timestamp
-      completed_date: new Date().toISOString().slice(0, -1),
+      order_date: new Date(paymentIntent.created * 1000).toISOString(), // ✅ Mantener 'Z' para indicar UTC
+      completed_date: new Date().toISOString(), // ✅ Mantener 'Z' para indicar UTC
       order_status: 'completed',
+      purchase_type: 'purchase', // Compra inicial (payment_intent desde checkout)
       payment_status: 'paid',
       order_total_cents: paymentIntent.amount,
       subtotal_cents: paymentIntent.amount,
@@ -468,14 +469,22 @@ const handleInvoicePayment = async (invoice: Stripe.Invoice) => {
     // @ts-ignore
     const orderNumber = `INV-${invoice.number || invoice.id.slice(-8)}`;
     
+    // ✅ Determinar si es renovación o compra inicial basándose en billing_reason
+    const isRenewal = invoice.billing_reason && [
+      'subscription_cycle',
+      'subscription_update',
+      'subscription_threshold'
+    ].includes(invoice.billing_reason);
+    
     const purchaseData = {
       order_number: orderNumber,
       customer_email: customer.email || 'unknown@stripe.com',
       order_total_cents: invoice.amount_paid,
-      order_date: new Date(invoice.created * 1000).toISOString(),
+      order_date: new Date(invoice.created * 1000).toISOString(), // ✅ Mantener 'Z' para indicar UTC
       order_status: 'completed',
       product_name: invoice.lines.data[0]?.description || 'Suscripción',
       payment_method: 'stripe',
+      purchase_type: isRenewal ? 'renewal' : 'purchase', // ✅ Diferencia renovación vs compra inicial
       revenue_valid_for_metrics: true,
       // @ts-ignore
       transaction_id: invoice.payment_intent as string || invoice.id,

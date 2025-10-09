@@ -1,17 +1,23 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import AdminDashboardLayout from '@/components/admin/AdminDashboardLayout';
+import { cache } from 'react';
+
+// 🔧 FIX: Cachear la función de autenticación para evitar rate limiting
+// Esto previene múltiples llamadas a getUser() en el mismo request
+const getAuthUser = cache(async () => {
+  const supabase = createClient();
+  return await supabase.auth.getUser();
+});
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createClient();
-
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getAuthUser(); // ← Ahora usa versión cacheada
 
   if (!user) {
     return redirect('/signin?message=Acceso%20restringido%20-%20Inicia%20sesión%20para%20continuar');
