@@ -22,7 +22,8 @@ export default async function AccountLayout({
   ]);
 
   if (!user) {
-    return redirect('/signin?message=Debes%20iniciar%20sesión%20para%20acceder%20a%20tu%20cuenta');
+    const message = encodeURIComponent('Debes iniciar sesión para acceder a tu cuenta');
+    return redirect(`/signin?message=${message}`);
   }
 
   // Check onboarding status and get extended profile

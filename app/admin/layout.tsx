@@ -20,14 +20,16 @@ export default async function AdminLayout({
   } = await getAuthUser(); // ← Ahora usa versión cacheada
 
   if (!user) {
-    return redirect('/signin?message=Acceso%20restringido%20-%20Inicia%20sesión%20para%20continuar');
+    const message = encodeURIComponent('Acceso restringido - Inicia sesión para continuar');
+    return redirect(`/signin?message=${message}`);
   }
 
   // 🔒 CONTROL DE ACCESO EXCLUSIVO PARA USUARIO MASTER
   const MASTER_EMAIL = 'api@apidevs.io';
   
   if (user.email !== MASTER_EMAIL) {
-    return redirect('/?message=Acceso%20denegado%20-%20Solo%20el%20administrador%20puede%20acceder%20al%20panel');
+    const message = encodeURIComponent('Acceso denegado - Solo el administrador puede acceder al panel');
+    return redirect(`/?message=${message}`);
   }
 
   const userName = user.email?.split('@')[0] || 'Admin';
