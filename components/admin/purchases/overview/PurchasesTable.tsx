@@ -74,13 +74,27 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
     }).format(amountInCents / 100);
   };
 
-  // Formatear fecha
+  // Formatear fecha con hora (convierte UTC a zona horaria local)
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
+    // Stripe guarda fechas en UTC. Si la fecha no tiene 'Z', la agregamos para que JavaScript sepa que es UTC
+    const dateWithTimezone = dateStr.endsWith('Z') ? dateStr : dateStr + 'Z';
+    const date = new Date(dateWithTimezone);
+    
+    return (
+      <div>
+        <div className="text-sm text-white">{date.toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        })}</div>
+        <div className="text-xs text-gray-500">{date.toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false // Formato 24 horas
+        })}</div>
+      </div>
+    );
   };
 
   // Status badge
@@ -118,6 +132,25 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
         {typeInfo.label}
       </span>
     );
+  };
+
+  // Purchase Source badge (purchase vs renewal)
+  const getPurchaseSourceBadge = (source?: string) => {
+    if (!source || source === 'purchase') {
+      return (
+        <span className="px-2 py-0.5 rounded text-[10px] font-medium text-emerald-400 bg-emerald-500/10">
+          Compra
+        </span>
+      );
+    }
+    if (source === 'renewal') {
+      return (
+        <span className="px-2 py-0.5 rounded text-[10px] font-medium text-cyan-400 bg-cyan-500/10">
+          Renovación
+        </span>
+      );
+    }
+    return null;
   };
 
   return (
@@ -223,6 +256,7 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
               </th>
               <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Producto</th>
               <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Tipo</th>
+              <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Fuente</th>
               
               {/* Monto - Sortable */}
               <th className="text-left py-3 px-4">
@@ -280,10 +314,15 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
                     <div className="text-xs text-gray-500">#{purchase.order_number}</div>
                   </td>
 
-                  {/* Tipo */}
-                  <td className="py-4 px-4">
-                    {getTypeBadge(purchase.type)}
-                  </td>
+              {/* Tipo */}
+              <td className="py-4 px-4">
+                {getTypeBadge(purchase.type)}
+              </td>
+
+              {/* Fuente */}
+              <td className="py-4 px-4">
+                {getPurchaseSourceBadge(purchase.purchase_type)}
+              </td>
 
                   {/* Monto */}
                   <td className="py-4 px-4">
@@ -317,7 +356,7 @@ export default function PurchasesTable({ purchases }: PurchasesTableProps) {
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="py-12 text-center">
+                <td colSpan={8} className="py-12 text-center">
                   <div className="text-gray-500 mb-2">No se encontraron compras</div>
                   <div className="text-xs text-gray-600">Intenta ajustar los filtros de búsqueda</div>
                 </td>

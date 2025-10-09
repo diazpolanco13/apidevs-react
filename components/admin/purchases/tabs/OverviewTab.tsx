@@ -34,10 +34,13 @@ interface OverviewTabProps {
 }
 
 export default function OverviewTab({ overviewData }: OverviewTabProps) {
+  // Force re-render with unique key based on data
+  const chartKey = `chart-${overviewData.timeline.reduce((sum, d) => sum + d.revenue, 0)}`;
+  
   return (
     <div className="space-y-6">
       {/* Revenue Timeline Chart */}
-      <RevenueChart data={overviewData.timeline} />
+      <RevenueChart key={chartKey} data={overviewData.timeline} />
 
       {/* Type Breakdown */}
       <TypeBreakdown

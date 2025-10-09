@@ -4,6 +4,7 @@
 
 export type PurchaseStatus = 'completed' | 'pending' | 'refunded' | 'failed' | 'processing';
 export type PurchaseType = 'subscription' | 'one-time' | 'lifetime';
+export type PurchaseSource = 'purchase' | 'renewal' | 'refund' | 'chargeback';
 export type PaymentMethod = 'stripe' | 'manual' | 'paypal';
 export type RefundReason = 'requested_by_customer' | 'duplicate' | 'fraudulent';
 
@@ -20,6 +21,7 @@ export interface Purchase {
   currency: string;
   status: PurchaseStatus;
   type: PurchaseType;
+  purchase_type?: PurchaseSource; // Diferenciar entre compra inicial y renovación
   product_id?: string;
   product_name: string;
   payment_method: PaymentMethod;

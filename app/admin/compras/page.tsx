@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   description: 'Gestión completa de compras, suscripciones y analytics'
 };
 
+// ✅ Forzar que esta página SIEMPRE sea dinámica y NO se cachee
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // ==================== TYPES ====================
 interface PurchaseRow {
   id: string;
@@ -49,13 +53,15 @@ async function getPurchaseMetrics(): Promise<PurchaseMetrics | null> {
     const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
     // Query mes actual con timeout y manejo de errores
+    // ✅ FILTRAR: Solo contar registros de invoices (INV-), no payment intents (PI-)
     const { data: currentMonthPurchases, error: currentError } = await Promise.race([
       supabase
         .from('purchases')
         .select('*')
         .gte('created_at', firstDayOfMonth.toISOString())
         .lte('created_at', lastDayOfMonth.toISOString())
-        .eq('order_status', 'completed'),
+        .eq('order_status', 'completed')
+        .like('order_number', 'INV-%'), // ✅ Solo invoices (eventos importantes)
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null, error: any };
 
@@ -65,13 +71,15 @@ async function getPurchaseMetrics(): Promise<PurchaseMetrics | null> {
     }
 
     // Query mes anterior con timeout
+    // ✅ FILTRAR: Solo contar registros de invoices (INV-), no payment intents (PI-)
     const { data: lastMonthPurchases, error: lastError } = await Promise.race([
       supabase
         .from('purchases')
         .select('*')
         .gte('created_at', firstDayOfLastMonth.toISOString())
         .lte('created_at', lastDayOfLastMonth.toISOString())
-        .eq('order_status', 'completed'),
+        .eq('order_status', 'completed')
+        .like('order_number', 'INV-%'), // ✅ Solo invoices (eventos importantes)
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null, error: any };
 
@@ -185,12 +193,14 @@ async function getSubscriptionsData() {
     const supabase = createClient();
 
     // Obtener todas las suscripciones (no lifetime)
+    // ✅ FILTRAR: Solo mostrar registros de invoices (INV-), no payment intents (PI-)
     const { data: subscriptions } = await Promise.race([
       supabase
         .from('purchases')
         .select('*')
         .eq('is_lifetime_purchase', false)
         .eq('order_status', 'completed')
+        .like('order_number', 'INV-%') // ✅ Solo invoices (eventos importantes)
         .order('created_at', { ascending: false }),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null };
@@ -250,6 +260,7 @@ async function getSubscriptionsData() {
       currency: 'USD',
       status: s.order_status as any,
       type: 'subscription' as any,
+      purchase_type: (s as any).purchase_type || 'purchase', // ✅ Incluir purchase_type
       product_name: s.product_name || 'Suscripción',
       created_at: s.created_at,
       payment_method: (s.payment_method || 'stripe') as any
@@ -300,12 +311,14 @@ async function getOneTimeData() {
     const supabase = createClient();
 
     // Obtener todas las compras lifetime
+    // ✅ FILTRAR: Solo mostrar registros de invoices (INV-), no payment intents (PI-)
     const { data: lifetimePurchases } = await Promise.race([
       supabase
         .from('purchases')
         .select('*')
         .eq('is_lifetime_purchase', true)
         .eq('order_status', 'completed')
+        .like('order_number', 'INV-%') // ✅ Solo invoices (eventos importantes)
         .order('created_at', { ascending: false }),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null };
@@ -391,6 +404,7 @@ async function getOneTimeData() {
       currency: 'USD',
       status: p.order_status as any,
       type: 'lifetime' as any,
+      purchase_type: (p as any).purchase_type || 'purchase', // ✅ Incluir purchase_type
       product_name: p.product_name || 'Lifetime Access',
       created_at: p.created_at,
       payment_method: (p.payment_method || 'stripe') as any
@@ -439,12 +453,14 @@ async function getRefundsData() {
     const supabase = createClient();
 
     // Obtener todas las compras con reembolsos
+    // ✅ FILTRAR: Solo mostrar registros de invoices (INV-), no payment intents (PI-)
     const { data: refundedPurchases } = await Promise.race([
       supabase
         .from('purchases')
         .select('*')
         .gt('refund_amount_cents', 0)
         .eq('order_status', 'completed')
+        .like('order_number', 'INV-%') // ✅ Solo invoices (eventos importantes)
         .order('created_at', { ascending: false }),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null };
@@ -474,11 +490,13 @@ async function getRefundsData() {
     ) / 100;
 
     // Obtener todas las compras para calcular refund rate
+    // ✅ FILTRAR: Solo contar registros de invoices (INV-), no payment intents (PI-)
     const { data: allPurchases } = await Promise.race([
       supabase
         .from('purchases')
         .select('*')
-        .eq('order_status', 'completed'),
+        .eq('order_status', 'completed')
+        .like('order_number', 'INV-%'), // ✅ Solo invoices (eventos importantes)
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null };
 
@@ -581,23 +599,55 @@ async function getOverviewData() {
   try {
     const supabase = createClient();
 
-    // Timeline data (últimos 30 días)
+    // Timeline data (últimos 30 días + futuro para Test Clock)
+    // ✅ Incluir hasta 60 días en el futuro para soportar Test Clock de Stripe
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const sixtyDaysAhead = new Date();
+    sixtyDaysAhead.setDate(sixtyDaysAhead.getDate() + 60);
 
+    // ✅ FILTRAR: Solo mostrar registros de invoices (INV-), no payment intents (PI-)
     const { data: recentPurchases } = await Promise.race([
       supabase
         .from('purchases')
         .select('*')
         .gte('created_at', thirtyDaysAgo.toISOString())
-        .eq('order_status', 'completed'),
+        .lte('created_at', sixtyDaysAhead.toISOString()) // ✅ Incluir fechas futuras del Test Clock
+        .eq('order_status', 'completed')
+        .like('order_number', 'INV-%'), // ✅ Solo invoices (eventos importantes)
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null };
 
-    // Agrupar por día para el gráfico
-    const timelineData = Array.from({ length: 30 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (29 - i));
+    // Agrupar por día para el gráfico (incluyendo fechas con compras futuras)
+    // ✅ Obtener todas las fechas únicas de las compras
+    const uniqueDates = new Set(
+      (recentPurchases || []).map(p => p.created_at.split('T')[0])
+    );
+    
+    // ✅ Generar timeline desde hace 30 días hasta la fecha más reciente con compras
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 29);
+    
+    // Encontrar la fecha máxima (puede ser futura por Test Clock)
+    const maxDate = recentPurchases && recentPurchases.length > 0
+      ? new Date(Math.max(...recentPurchases.map(p => new Date(p.created_at).getTime())))
+      : today;
+    
+    const daysToShow = Math.ceil((maxDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    
+    // Debug: Log de compras recientes para verificar
+    console.log('📊 DEBUG: Total compras en rango:', recentPurchases?.length);
+    console.log('📊 DEBUG: Primeras 5 compras:', recentPurchases?.slice(0, 5).map(p => ({
+      order: p.order_number,
+      date: p.created_at,
+      amount: p.order_total_cents / 100
+    })));
+
+    const timelineData = Array.from({ length: Math.min(daysToShow, 90) }, (_, i) => {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + i);
       const dateStr = date.toISOString().split('T')[0];
       
       const dayPurchases = recentPurchases?.filter(p => 
@@ -607,6 +657,11 @@ async function getOverviewData() {
       const revenue = dayPurchases.reduce((sum, p) => 
         sum + (p.order_total_cents - (p.refund_amount_cents || 0)), 0
       ) / 100;
+
+      // Debug: Log solo días con compras
+      if (dayPurchases.length > 0) {
+        console.log('📊 DEBUG día con compras:', dateStr, '→', dayPurchases.length, 'compras, $', revenue);
+      }
 
       return {
         date: dateStr,
@@ -661,6 +716,7 @@ async function getOverviewData() {
       currency: 'USD',
       status: p.order_status as any,
       type: p.is_lifetime_purchase ? 'lifetime' : 'subscription' as any,
+      purchase_type: (p as any).purchase_type || 'purchase', // ✅ Incluir purchase_type
       product_name: p.product_name || 'Producto sin nombre',
       created_at: p.created_at,
       payment_method: (p.payment_method || 'stripe') as any
