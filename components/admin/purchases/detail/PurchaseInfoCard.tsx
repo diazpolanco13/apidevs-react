@@ -1,6 +1,7 @@
 'use client';
 
 import { Package, Calendar, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
+import { formatDateLong } from '@/utils/formatDate';
 
 interface PurchaseInfoCardProps {
   purchase: any;
@@ -60,16 +61,6 @@ export default function PurchaseInfoCard({ purchase }: PurchaseInfoCardProps) {
     );
   };
 
-  // Format date
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleString('es-ES', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   return (
     <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
@@ -123,7 +114,7 @@ export default function PurchaseInfoCard({ purchase }: PurchaseInfoCardProps) {
           </div>
           <div className="flex items-center gap-2 text-sm text-white">
             <Calendar className="w-4 h-4 text-gray-400" />
-            {formatDate(purchase.created_at)}
+            {formatDateLong(purchase.created_at)}
           </div>
         </div>
 
@@ -179,7 +170,7 @@ export default function PurchaseInfoCard({ purchase }: PurchaseInfoCardProps) {
               <div>
                 <div className="text-sm font-medium text-white">Orden Creada</div>
                 <div className="text-xs text-gray-500">
-                  {formatDate(purchase.created_at)}
+                  {formatDateLong(purchase.created_at)}
                 </div>
               </div>
             </div>
@@ -191,7 +182,7 @@ export default function PurchaseInfoCard({ purchase }: PurchaseInfoCardProps) {
                 <div>
                   <div className="text-sm font-medium text-white">Procesando</div>
                   <div className="text-xs text-gray-500">
-                    {formatDate(purchase.created_at)}
+                    {formatDateLong(purchase.created_at)}
                   </div>
                 </div>
               </div>
@@ -204,7 +195,7 @@ export default function PurchaseInfoCard({ purchase }: PurchaseInfoCardProps) {
                 <div>
                   <div className="text-sm font-medium text-white">Completado</div>
                   <div className="text-xs text-gray-500">
-                    {formatDate(purchase.order_date || purchase.created_at)}
+                    {formatDateLong(purchase.order_date || purchase.created_at)}
                   </div>
                 </div>
               </div>
