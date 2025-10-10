@@ -60,8 +60,7 @@ async function getPurchaseMetrics(): Promise<PurchaseMetrics | null> {
         .select('*')
         .gte('created_at', firstDayOfMonth.toISOString())
         .lte('created_at', lastDayOfMonth.toISOString())
-        .eq('order_status', 'completed')
-        .like('order_number', 'INV-%'), // ✅ Solo invoices (eventos importantes)
+        .eq('order_status', 'completed'),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null, error: any };
 
@@ -78,8 +77,7 @@ async function getPurchaseMetrics(): Promise<PurchaseMetrics | null> {
         .select('*')
         .gte('created_at', firstDayOfLastMonth.toISOString())
         .lte('created_at', lastDayOfLastMonth.toISOString())
-        .eq('order_status', 'completed')
-        .like('order_number', 'INV-%'), // ✅ Solo invoices (eventos importantes)
+        .eq('order_status', 'completed'),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null, error: any };
 
@@ -193,14 +191,14 @@ async function getSubscriptionsData() {
     const supabase = createClient();
 
     // Obtener todas las suscripciones (no lifetime)
-    // ✅ FILTRAR: Solo mostrar registros de invoices (INV-), no payment intents (PI-)
+    // ✅ Mostrar TODAS las compras (PI-, INV-, etc.) - El usuario las ve, el admin también debe verlas
     const { data: subscriptions } = await Promise.race([
       supabase
         .from('purchases')
         .select('*')
         .eq('is_lifetime_purchase', false)
         .eq('order_status', 'completed')
-        .like('order_number', 'INV-%') // ✅ Solo invoices (eventos importantes)
+        // ❌ REMOVIDO: .like('order_number', 'INV-%') - Esto ocultaba las compras PI-
         .order('created_at', { ascending: false }),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null };
@@ -318,7 +316,6 @@ async function getOneTimeData() {
         .select('*')
         .eq('is_lifetime_purchase', true)
         .eq('order_status', 'completed')
-        .like('order_number', 'INV-%') // ✅ Solo invoices (eventos importantes)
         .order('created_at', { ascending: false }),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null };
@@ -460,7 +457,6 @@ async function getRefundsData() {
         .select('*')
         .gt('refund_amount_cents', 0)
         .eq('order_status', 'completed')
-        .like('order_number', 'INV-%') // ✅ Solo invoices (eventos importantes)
         .order('created_at', { ascending: false }),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null };
@@ -495,8 +491,7 @@ async function getRefundsData() {
       supabase
         .from('purchases')
         .select('*')
-        .eq('order_status', 'completed')
-        .like('order_number', 'INV-%'), // ✅ Solo invoices (eventos importantes)
+        .eq('order_status', 'completed'),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null };
 
@@ -614,8 +609,7 @@ async function getOverviewData() {
         .select('*')
         .gte('created_at', thirtyDaysAgo.toISOString())
         .lte('created_at', sixtyDaysAhead.toISOString()) // ✅ Incluir fechas futuras del Test Clock
-        .eq('order_status', 'completed')
-        .like('order_number', 'INV-%'), // ✅ Solo invoices (eventos importantes)
+        .eq('order_status', 'completed'),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null };
 
