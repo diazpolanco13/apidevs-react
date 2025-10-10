@@ -1,4 +1,5 @@
 import { CreditCard, FileText, Calendar, DollarSign, CheckCircle, XCircle, Clock, ExternalLink, AlertCircle } from 'lucide-react';
+import { formatDateShort } from '@/utils/formatDate';
 
 interface PaymentIntent {
   id: string;
@@ -233,34 +234,6 @@ export default function ActiveUserBilling({
     }).format(amount);
   };
 
-  const formatDate = (date: string | number | null | undefined) => {
-    if (!date) return 'Fecha no disponible';
-    
-    let dateObj: Date;
-    
-    // Si es un string (ISO 8601 de Supabase)
-    if (typeof date === 'string') {
-      dateObj = new Date(date);
-    } 
-    // Si es un number (UNIX timestamp en segundos)
-    else {
-      dateObj = new Date(date * 1000);
-    }
-    
-    // Validar que la fecha es válida
-    if (isNaN(dateObj.getTime())) {
-      return 'Fecha inválida';
-    }
-    
-    return dateObj.toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'America/Caracas' // UTC-4 (Venezuela) - Ajusta según tu zona horaria
-    });
-  };
 
   return (
     <div className="space-y-6">
@@ -313,7 +286,7 @@ export default function ActiveUserBilling({
         <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl border border-purple-500/30 rounded-xl p-5">
           <Calendar className="w-8 h-8 text-purple-400 mb-3" />
           <div className="text-xl font-bold text-white mb-1">
-            {nextBillingDate ? formatDate(nextBillingDate) : 'Sin programar'}
+            {nextBillingDate ? formatDateShort(nextBillingDate) : 'Sin programar'}
           </div>
           <div className="text-sm text-gray-400">Próximo Cobro</div>
           {nextBillingAmount && (
@@ -398,8 +371,8 @@ export default function ActiveUserBilling({
                         </div>
                       )}
 
-                      <div className="flex items-center gap-4 text-xs text-gray-400">
-                        <span>{formatDate(payment.created)}</span>
+                    <div className="flex items-center gap-4 text-xs text-gray-400">
+                      <span>{formatDateShort(payment.created)}</span>
                         {payment.description && <span>• {payment.description}</span>}
                       </div>
                     </div>
@@ -454,7 +427,7 @@ export default function ActiveUserBilling({
                     {getStatusBadge(invoice.status)}
                   </div>
                   <div className="flex items-center gap-4 text-xs text-gray-400">
-                    <span>{formatDate(invoice.created)}</span>
+                    <span>{formatDateShort(invoice.created)}</span>
                     <span>• {formatPrice(invoice.amount_paid / 100, invoice.currency)}</span>
                   </div>
                 </div>
@@ -518,7 +491,7 @@ export default function ActiveUserBilling({
                       {purchase.payment_status && getStatusBadge(purchase.payment_status)}
                     </div>
                     <div className="flex items-center gap-4 text-xs text-gray-400">
-                      <span>{formatDate(purchase.order_date)}</span>
+                      <span>{formatDateShort(purchase.order_date)}</span>
                       {purchase.product_name && <span>• {purchase.product_name}</span>}
                       <span>• {purchase.order_number}</span>
                     </div>
