@@ -480,15 +480,27 @@ const handleInvoicePayment = async (invoice: Stripe.Invoice) => {
       order_number: orderNumber,
       customer_email: customer.email || 'unknown@stripe.com',
       order_total_cents: invoice.amount_paid,
+      subtotal_cents: invoice.subtotal || invoice.amount_paid, // ✅ Agregar subtotal
+      currency: invoice.currency ? invoice.currency.toUpperCase() : 'USD', // ✅ Agregar currency
       order_date: new Date(invoice.created * 1000).toISOString(), // ✅ Mantener 'Z' para indicar UTC
+      completed_date: new Date().toISOString(), // ✅ Agregar completed_date
       order_status: 'completed',
+      payment_status: 'paid', // ✅ Agregar payment_status
       product_name: invoice.lines.data[0]?.description || 'Suscripción',
       payment_method: 'stripe',
+      payment_gateway: 'stripe', // ✅ Agregar payment_gateway
       purchase_type: isRenewal ? 'renewal' : 'purchase', // ✅ Diferencia renovación vs compra inicial
       revenue_valid_for_metrics: true,
+      is_lifetime_purchase: false, // ✅ CRÍTICO: Las suscripciones NO son lifetime
+      quantity: 1, // ✅ Agregar quantity
       // @ts-ignore
       transaction_id: invoice.payment_intent as string || invoice.id,
+      gateway_transaction_id: invoice.id, // ✅ Agregar gateway_transaction_id (invoice ID)
       billing_country: invoice.customer_address?.country || null,
+      billing_state: invoice.customer_address?.state || null, // ✅ Agregar state
+      billing_city: invoice.customer_address?.city || null, // ✅ Agregar city
+      billing_address: invoice.customer_address?.line1 || null, // ✅ Agregar address
+      billing_postcode: invoice.customer_address?.postal_code || null, // ✅ Agregar postal_code
       product_category: 'subscription'
     };
 
@@ -498,8 +510,9 @@ const handleInvoicePayment = async (invoice: Stripe.Invoice) => {
 
     if (error) {
       console.error('Error creating invoice purchase record:', error);
+      console.error('Purchase data:', purchaseData); // ✅ Log para debugging
     } else {
-      console.log(`✅ Invoice purchase record created: ${orderNumber}`);
+      console.log(`✅ Invoice purchase record created: ${orderNumber} (${isRenewal ? 'renewal' : 'initial purchase'})`);
     }
 
   } catch (error) {
