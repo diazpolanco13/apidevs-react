@@ -48,12 +48,25 @@ interface Subscription {
   };
 }
 
+interface Purchase {
+  id: string;
+  order_number: string;
+  customer_email: string;
+  order_total_cents: number;
+  order_date: string;
+  order_status: string;
+  payment_status?: string;
+  product_name?: string;
+  is_lifetime_purchase?: boolean;
+}
+
 interface ActiveUserBillingProps {
   userId: string;
   stripeCustomerId?: string | null;
   paymentIntents?: PaymentIntent[];
   invoices?: Invoice[];
   subscription?: Subscription | null;
+  purchases?: Purchase[];
 }
 
 export default function ActiveUserBilling({
@@ -61,7 +74,8 @@ export default function ActiveUserBilling({
   stripeCustomerId,
   paymentIntents = [],
   invoices = [],
-  subscription
+  subscription,
+  purchases = []
 }: ActiveUserBillingProps) {
   
   // ==================== CÁLCULO ROBUSTO DEL TOTAL FACTURADO ====================
@@ -464,6 +478,50 @@ export default function ActiveUserBilling({
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Purchases (Compras de la tabla purchases) */}
+      {purchases.length > 0 && (
+        <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <DollarSign className="w-5 h-5 text-green-400" />
+            Compras Registradas ({purchases.length})
+          </h3>
+
+          <div className="space-y-3">
+            {purchases.map((purchase) => (
+              <div 
+                key={purchase.id}
+                className={`p-4 rounded-lg border transition-colors ${
+                  purchase.is_lifetime_purchase 
+                    ? 'bg-purple-500/10 border-purple-500/30' 
+                    : 'bg-white/5 border-white/10 hover:bg-white/10'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <p className="text-white font-medium">
+                        {formatPrice(purchase.order_total_cents / 100, 'USD')}
+                      </p>
+                      {purchase.is_lifetime_purchase && (
+                        <span className="px-2 py-0.5 bg-purple-500/30 text-purple-400 text-xs rounded-full border border-purple-500/50">
+                          👑 Lifetime
+                        </span>
+                      )}
+                      {purchase.payment_status && getStatusBadge(purchase.payment_status)}
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-gray-400">
+                      <span>{formatDate(purchase.order_date)}</span>
+                      {purchase.product_name && <span>• {purchase.product_name}</span>}
+                      <span>• {purchase.order_number}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
