@@ -79,7 +79,7 @@ async function getPurchaseDetail(id: string) {
       invoicesResult,
       refundsResult
     ] = await Promise.allSettled([
-      // Query 1: Customer info
+      // Query 1: Customer info - buscar por legacy_user_id O por email
       typedPurchase.legacy_user_id 
         ? withTimeout(
             supabase
@@ -88,7 +88,15 @@ async function getPurchaseDetail(id: string) {
               .eq('id', typedPurchase.legacy_user_id)
               .single()
           )
-        : Promise.resolve({ data: null, error: null }),
+        : typedPurchase.customer_email
+          ? withTimeout(
+              supabase
+                .from('users')
+                .select('id, email, total_lifetime_spent, purchase_count, city, country')
+                .eq('email', typedPurchase.customer_email)
+                .single()
+            )
+          : Promise.resolve({ data: null, error: null }),
 
       // Query 2: Payment intent
       stripePaymentId
@@ -145,8 +153,8 @@ async function getPurchaseDetail(id: string) {
       ? (paymentIntentResult.value as any).data
       : null;
 
-    // Determinar userId final
-    let userId = typedPurchase.legacy_user_id;
+    // Determinar userId final - priorizar customerInfo.id si existe
+    let userId = customerInfo?.id || typedPurchase.legacy_user_id;
     if (!userId && userIdResult.status === 'fulfilled' && (userIdResult.value as any)?.data) {
       userId = ((userIdResult.value as any).data as any).id;
     }
