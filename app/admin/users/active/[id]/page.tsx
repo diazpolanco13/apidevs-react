@@ -158,6 +158,17 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
     console.error('❌ Error fetching invoices:', invoicesError);
   }
 
+  // 8. Purchases desde Supabase - buscar por customer_email
+  const { data: purchases, error: purchasesError } = await (supabaseAdmin as any)
+    .from('purchases')
+    .select('*')
+    .eq('customer_email', (user as any).email)
+    .order('order_date', { ascending: false});
+
+  if (purchasesError) {
+    console.error('❌ Error fetching purchases:', purchasesError);
+  }
+
   // ==================== CÁLCULOS Y MÉTRICAS ====================
   
   const registeredDays = (user as any).customer_since 
@@ -236,6 +247,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
       paymentIntents={(paymentIntents as any) || []}
       invoices={(invoices as any) || []}
       subscription={activeSubscription as any}
+      purchases={(purchases as any) || []}
     />
   );
 
