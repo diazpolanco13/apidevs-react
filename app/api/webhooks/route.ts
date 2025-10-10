@@ -339,6 +339,7 @@ export async function POST(req: Request) {
         case 'payment_intent.canceled':
         case 'payment_intent.payment_failed':
           const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          console.log(`🎯 [WEBHOOK] ${event.type} - PI: ${paymentIntent.id}, status: ${paymentIntent.status}, amount: ${paymentIntent.amount}`);
           // Sincronizar payment intent con Supabase
           await upsertPaymentIntentRecord(paymentIntent);
           // Crear/actualizar purchase record solo si succeeded
