@@ -20,6 +20,12 @@
    **Archivo afectado:** `utils/supabase/admin.ts`  
    **NO REVERTIR** sin documentar y tener una alternativa funcional
 
+2. **[FIX-RATE-LIMIT-AUTH.md](./FIX-RATE-LIMIT-AUTH.md)**  
+   **Criticidad:** 🔴 ALTA  
+   **Qué hace:** Previene rate limiting (429) en páginas de admin  
+   **Archivo afectado:** `app/admin/layout.tsx`  
+   **NO REVERTIR** sin implementar otra solución de caché
+
 ---
 
 ## 📋 Guías de Testing
