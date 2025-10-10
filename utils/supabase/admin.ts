@@ -485,7 +485,7 @@ const handleInvoicePayment = async (invoice: Stripe.Invoice) => {
       order_date: new Date(invoice.created * 1000).toISOString(), // ✅ Mantener 'Z' para indicar UTC
       completed_date: new Date().toISOString(), // ✅ Agregar completed_date
       order_status: 'completed',
-      payment_status: 'paid', // ✅ Agregar payment_status
+      payment_status: invoice.status === 'paid' ? 'paid' : invoice.status, // ✅ Usar invoice.status
       product_name: invoice.lines.data[0]?.description || 'Suscripción',
       payment_method: 'stripe',
       payment_gateway: 'stripe', // ✅ Agregar payment_gateway
