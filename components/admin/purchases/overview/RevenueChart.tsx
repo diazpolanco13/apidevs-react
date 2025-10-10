@@ -15,12 +15,13 @@ interface RevenueChartProps {
 type TimeRange = '7d' | '30d' | '90d' | 'all';
 
 export default function RevenueChart({ data }: RevenueChartProps) {
-  const [timeRange, setTimeRange] = useState<TimeRange>('30d');
+  const [timeRange, setTimeRange] = useState<TimeRange>('all');
   const [chartKey, setChartKey] = useState(Date.now());
   
   // Debug: Ver qué datos llegan al gráfico
   console.log('📈 RevenueChart recibió:', data.length, 'días de datos');
   console.log('📈 Últimos 5 días:', data.slice(-5).map(d => ({ date: d.date, revenue: d.revenue, purchases: d.purchases })));
+  console.log('📈 Días con revenue > 0:', data.filter(d => d.revenue > 0).map(d => ({ date: d.date, revenue: d.revenue, purchases: d.purchases })));
   
   // Forzar re-render cuando cambian los datos
   const handleTimeRangeChange = (newRange: TimeRange) => {
@@ -49,25 +50,35 @@ export default function RevenueChart({ data }: RevenueChartProps) {
     if (timeRange === 'all') return data;
     
     const today = new Date();
+    today.setHours(23, 59, 59, 999); // Incluir todo el día de hoy
+    
     const daysMap = { '7d': 7, '30d': 30, '90d': 90 };
     const daysToShow = daysMap[timeRange];
     
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToShow);
+    cutoffDate.setHours(0, 0, 0, 0); // Incluir desde el inicio del día
     
     console.log('📊 Filtro activo:', timeRange, '→ cutoffDate:', cutoffDate.toISOString().split('T')[0]);
+    console.log('📊 Hoy:', today.toISOString().split('T')[0]);
     
     const filtered = data.filter(item => {
-      const itemDate = new Date(item.date);
-      const included = itemDate >= cutoffDate;
+      // ⚠️ CRÍTICO: Agregar 'T00:00:00' para que Date interprete como UTC, no hora local
+      const itemDate = new Date(item.date + 'T00:00:00Z');
+      const included = itemDate >= cutoffDate && itemDate <= today;
+      
       if (!included && item.revenue > 0) {
-        console.log('❌ Excluido:', item.date, 'revenue:', item.revenue, 'cutoff:', cutoffDate.toISOString().split('T')[0]);
+        console.log('❌ Excluido:', item.date, 'itemDate:', itemDate.toISOString().split('T')[0], 'cutoff:', cutoffDate.toISOString().split('T')[0]);
+      }
+      if (included && item.revenue > 0) {
+        console.log('✅ Incluido:', item.date, 'revenue:', item.revenue, 'purchases:', item.purchases);
       }
       return included;
     });
     
     console.log('📊 Datos filtrados:', filtered.length, 'de', data.length);
     console.log('📊 Total revenue filtrado:', filtered.reduce((sum, d) => sum + d.revenue, 0));
+    console.log('📊 Total purchases filtrado:', filtered.reduce((sum, d) => sum + d.purchases, 0));
     
     return filtered;
   };
@@ -161,8 +172,12 @@ export default function RevenueChart({ data }: RevenueChartProps) {
       {/* Chart */}
       <div className="h-80">
         {filteredData.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%" key={chartKey}>
-            <AreaChart data={filteredData} margin={{ top: 10, right: 30, left: 20, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart 
+              data={filteredData} 
+              margin={{ top: 10, right: 30, left: 20, bottom: 0 }}
+              key={`chart-${timeRange}-${filteredData.length}-${totalRevenue}`}
+            >
               <defs>
                 <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#00FF94" stopOpacity={0.3}/>
@@ -205,6 +220,7 @@ export default function RevenueChart({ data }: RevenueChartProps) {
                 fill="url(#revenueGradient)"
                 dot={{ fill: '#00FF94', strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6, stroke: '#00FF94', strokeWidth: 2 }}
+                isAnimationActive={false}
               />
             </AreaChart>
           </ResponsiveContainer>

@@ -644,9 +644,15 @@ async function getOverviewData() {
       date.setDate(date.getDate() + i);
       const dateStr = date.toISOString().split('T')[0];
       
-      const dayPurchases = recentPurchases?.filter(p => 
-        p.created_at.split('T')[0] === dateStr
-      ) || [];
+      const dayPurchases = recentPurchases?.filter(p => {
+        // ⚠️ CRÍTICO: Supabase puede devolver fechas sin 'T' (formato: '2025-10-10 22:58:04')
+        // Necesitamos extraer solo la parte de la fecha (YYYY-MM-DD)
+        const purchaseDate = p.created_at.includes('T') 
+          ? p.created_at.split('T')[0]  // Formato ISO: '2025-10-10T22:58:04.000Z'
+          : p.created_at.split(' ')[0];  // Formato Supabase: '2025-10-10 22:58:04'
+        
+        return purchaseDate === dateStr;
+      }) || [];
       
       const revenue = dayPurchases.reduce((sum, p) => 
         sum + (p.order_total_cents - (p.refund_amount_cents || 0)), 0
