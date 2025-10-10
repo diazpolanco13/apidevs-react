@@ -27,10 +27,11 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
   }
 
   // Fetch user purchases
+  // ✅ Buscar por customer_email (para compras Stripe) Y legacy_user_id (para compras WordPress)
   const { data: purchases, error: purchasesError } = await supabase
     .from('purchases')
     .select('*')
-    .eq('legacy_user_id', params.id)
+    .or(`customer_email.eq.${(user as any).email},legacy_user_id.eq.${params.id}`)
     .order('order_date', { ascending: false });
 
   if (purchasesError) {
