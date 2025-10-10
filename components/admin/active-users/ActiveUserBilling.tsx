@@ -257,7 +257,8 @@ export default function ActiveUserBilling({
       month: 'short',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'America/Caracas' // UTC-4 (Venezuela) - Ajusta según tu zona horaria
     });
   };
 

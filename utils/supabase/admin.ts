@@ -523,6 +523,8 @@ const handleInvoicePayment = async (invoice: Stripe.Invoice) => {
 // ==================== SINCRONIZACIÓN DE PAYMENT INTENTS ====================
 const upsertPaymentIntentRecord = async (paymentIntent: Stripe.PaymentIntent) => {
   try {
+    console.log(`🔄 [upsertPaymentIntentRecord] Processing: ${paymentIntent.id}, status: ${paymentIntent.status}`);
+    
     // Obtener user_id desde el customer
     let userId = null;
     if (paymentIntent.customer) {
