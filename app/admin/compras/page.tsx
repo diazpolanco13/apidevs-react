@@ -594,22 +594,19 @@ async function getOverviewData() {
   try {
     const supabase = createClient();
 
-    // Timeline data (últimos 30 días + futuro para Test Clock)
-    // ✅ Incluir hasta 60 días en el futuro para soportar Test Clock de Stripe
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+    // Timeline data - Obtener TODAS las compras para que el filtro del frontend funcione correctamente
+    // ✅ El componente RevenueChart tiene filtros (7D, 30D, 90D, Todo) que necesitan todos los datos
     const sixtyDaysAhead = new Date();
     sixtyDaysAhead.setDate(sixtyDaysAhead.getDate() + 60);
 
-    // ✅ FILTRAR: Solo mostrar registros de invoices (INV-), no payment intents (PI-)
+    // ✅ Obtener TODAS las compras completadas (sin filtro de fecha mínima)
     const { data: recentPurchases } = await Promise.race([
       supabase
         .from('purchases')
         .select('*')
-        .gte('created_at', thirtyDaysAgo.toISOString())
         .lte('created_at', sixtyDaysAhead.toISOString()) // ✅ Incluir fechas futuras del Test Clock
-        .eq('order_status', 'completed'),
+        .eq('order_status', 'completed')
+        .order('created_at', { ascending: true }), // ✅ Ordenar para procesar cronológicamente
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
     ]) as { data: PurchaseRow[] | null };
 
@@ -619,7 +616,7 @@ async function getOverviewData() {
       (recentPurchases || []).map(p => p.created_at.split('T')[0])
     );
     
-    // ✅ Generar timeline desde hace 30 días hasta la fecha más reciente con compras
+    // ✅ Generar timeline desde la PRIMERA COMPRA hasta la fecha más reciente
     // ⚠️ CRÍTICO: Usar UTC consistente para evitar problemas de zona horaria
     const nowUTC = new Date();
     const todayUTC = new Date(Date.UTC(
@@ -629,17 +626,37 @@ async function getOverviewData() {
       23, 59, 59, 999
     ));
     
-    const startDateUTC = new Date(Date.UTC(
-      nowUTC.getUTCFullYear(),
-      nowUTC.getUTCMonth(),
-      nowUTC.getUTCDate() - 29,
-      0, 0, 0, 0
-    ));
+    // Encontrar la fecha mínima y máxima de las compras
+    let startDateUTC = todayUTC;
+    let maxDate = todayUTC;
     
-    // Encontrar la fecha máxima (puede ser futura por Test Clock)
-    const maxDate = recentPurchases && recentPurchases.length > 0
-      ? new Date(Math.max(...recentPurchases.map(p => new Date(p.created_at).getTime())))
-      : todayUTC;
+    if (recentPurchases && recentPurchases.length > 0) {
+      // ⚠️ CRÍTICO: Extraer SOLO la fecha (YYYY-MM-DD) sin considerar la hora
+      // para evitar problemas de timezone offset
+      const purchaseDates = recentPurchases.map(p => {
+        // Extraer fecha independientemente del formato
+        const dateStr = p.created_at.includes('T') 
+          ? p.created_at.split('T')[0]  // ISO: '2025-10-01T23:25:18'
+          : p.created_at.split(' ')[0];  // Supabase: '2025-10-01 23:25:18'
+        return dateStr;
+      });
+      
+      // Encontrar fecha mínima y máxima como strings
+      const minDateStr = purchaseDates.sort()[0]; // Primer fecha alfabéticamente
+      const maxDateStr = purchaseDates.sort().reverse()[0]; // Última fecha
+      
+      // Parsear fechas en UTC puro
+      const [minYear, minMonth, minDay] = minDateStr.split('-').map(Number);
+      startDateUTC = new Date(Date.UTC(minYear, minMonth - 1, minDay, 0, 0, 0, 0));
+      
+      const [maxYear, maxMonth, maxDay] = maxDateStr.split('-').map(Number);
+      maxDate = new Date(Date.UTC(maxYear, maxMonth - 1, maxDay, 23, 59, 59, 999));
+      
+      // Si la fecha máxima es en el pasado, extender hasta hoy
+      if (maxDate < todayUTC) {
+        maxDate = todayUTC;
+      }
+    }
     
     const daysToShow = Math.ceil((maxDate.getTime() - startDateUTC.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     
@@ -647,18 +664,28 @@ async function getOverviewData() {
       nowUTC: nowUTC.toISOString(),
       todayUTC: todayUTC.toISOString(),
       startDateUTC: startDateUTC.toISOString(),
-      daysToShow
+      startDateOnly: startDateUTC.toISOString().split('T')[0], // ✅ Mostrar solo fecha
+      daysToShow,
+      totalPurchases: recentPurchases?.length
     });
     
     // Debug: Log de compras recientes para verificar
-    console.log('📊 DEBUG: Total compras en rango:', recentPurchases?.length);
-    console.log('📊 DEBUG: Primeras 5 compras:', recentPurchases?.slice(0, 5).map(p => ({
-      order: p.order_number,
-      date: p.created_at,
-      amount: p.order_total_cents / 100
-    })));
+    console.log('📊 DEBUG: Total compras obtenidas:', recentPurchases?.length);
+    console.log('📊 DEBUG: Primera compra:', recentPurchases?.[0] ? {
+      order: recentPurchases[0].order_number,
+      date: recentPurchases[0].created_at,
+      dateOnly: recentPurchases[0].created_at.split('T')[0],
+      amount: recentPurchases[0].order_total_cents / 100
+    } : 'No hay compras');
+    console.log('📊 DEBUG: Última compra:', recentPurchases?.[recentPurchases.length - 1] ? {
+      order: recentPurchases[recentPurchases.length - 1].order_number,
+      date: recentPurchases[recentPurchases.length - 1].created_at,
+      dateOnly: recentPurchases[recentPurchases.length - 1].created_at.split('T')[0],
+      amount: recentPurchases[recentPurchases.length - 1].order_total_cents / 100
+    } : 'No hay compras');
 
-    const timelineData = Array.from({ length: Math.min(daysToShow, 90) }, (_, i) => {
+    // ✅ Permitir hasta 365 días de datos (1 año completo)
+    const timelineData = Array.from({ length: Math.min(daysToShow, 365) }, (_, i) => {
       // ⚠️ CRÍTICO: Crear fecha en UTC para evitar problemas de zona horaria
       const date = new Date(startDateUTC.getTime() + (i * 24 * 60 * 60 * 1000));
       const dateStr = date.toISOString().split('T')[0];
@@ -685,9 +712,24 @@ async function getOverviewData() {
       return {
         date: dateStr,
         revenue,
-        purchases: dayPurchases.length
+        purchases: dayPurchases.length,
+        // ⚠️ CRÍTICO: Agregar IDs de las compras para debugging
+        purchaseIds: dayPurchases.map(p => p.order_number),
+        purchaseDetails: dayPurchases.map(p => ({
+          id: p.order_number,
+          email: p.customer_email,
+          amount: (p.order_total_cents - (p.refund_amount_cents || 0)) / 100
+        }))
       };
     });
+
+    // Debug: Verificar primeros días del timeline
+    console.log('📅 TIMELINE: Primeros 5 días generados:', timelineData.slice(0, 5).map(d => ({
+      date: d.date,
+      revenue: d.revenue,
+      purchases: d.purchases
+    })));
+    console.log('📅 TIMELINE: Total días generados:', timelineData.length);
 
     // Top productos
     const productSales: { [key: string]: { sales: number; revenue: number } } = {};
