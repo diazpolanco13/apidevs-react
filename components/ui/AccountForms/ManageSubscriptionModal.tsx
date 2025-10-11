@@ -66,7 +66,7 @@ export default function ManageSubscriptionModal({ isOpen, onClose, subscription 
         },
         credentials: 'include',
         body: JSON.stringify({
-          subscriptionId: subscription.stripe_subscription_id
+          subscriptionId: subscription.id
         })
       });
 

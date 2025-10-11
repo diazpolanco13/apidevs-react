@@ -160,6 +160,55 @@ export async function POST(req: Request) {
             console.log('💰 Status:', subscription.status);
             console.log('ℹ️ Acción: NO revocar accesos - usuario mantiene acceso hasta fecha límite');
             console.log('========================================================\n');
+            
+            // 📝 REGISTRAR CANCELACIÓN EN ACTIVIDAD RECIENTE (sin revocar accesos)
+            try {
+              const customerEmail = await getCustomerEmail(subscription.customer as string);
+              
+              if (customerEmail) {
+                // Buscar usuario en Supabase
+                const { data: user } = await (supabaseAdmin as any)
+                  .from('users')
+                  .select('id')
+                  .eq('email', customerEmail)
+                  .maybeSingle();
+                
+                if (user) {
+                  // Obtener nombre del producto
+                  const productName = subscription.items.data[0]?.price?.metadata?.plan_name || 
+                                    subscription.items.data[0]?.plan?.metadata?.plan_name || 
+                                    'APIDevs indicator - Pro';
+                  
+                  // Calcular fecha de acceso hasta
+                  const accessUntil = subscription.items.data[0]?.current_period_end || 
+                                    subscription.current_period_end;
+                  
+                  // Crear evento de actividad
+                  const activityEvent = {
+                    user_id: user.id,
+                    event_type: 'subscription_cancelled',
+                    event_data: {
+                      subscription_id: subscription.id,
+                      stripe_subscription_id: subscription.id,
+                      product_name: productName,
+                      cancelled_at: new Date().toISOString(),
+                      access_until: new Date(accessUntil * 1000).toISOString(), // Convertir timestamp a ISO
+                      reason: 'user_initiated',
+                      cancellation_type: 'scheduled' // Diferente de 'immediate'
+                    }
+                  };
+                  
+                  await (supabaseAdmin as any)
+                    .from('user_activity_events')
+                    .insert(activityEvent);
+                  
+                  console.log('✅ Evento de cancelación registrado en Actividad Reciente');
+                }
+              }
+            } catch (activityError) {
+              console.error('⚠️ Error registrando cancelación en actividad:', activityError);
+              // No fallar el webhook por esto
+            }
           }
           break;
         case 'checkout.session.completed':
