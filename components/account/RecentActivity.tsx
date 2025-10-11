@@ -170,9 +170,21 @@ export default function RecentActivity({ userEmail, userId }: RecentActivityProp
         });
 
         // Ordenar por fecha (más reciente primero)
-        activityList.sort((a, b) => 
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
+        // 🔧 FIX: Asegurar que las fechas se interpreten correctamente como UTC
+        activityList.sort((a, b) => {
+          // Normalizar timestamps para asegurar interpretación UTC
+          const normalizeTimestamp = (timestamp: string) => {
+            if (!timestamp.includes('Z') && !timestamp.includes('+') && !timestamp.includes('-', 10)) {
+              return timestamp + 'Z';
+            }
+            return timestamp;
+          };
+          
+          const dateA = new Date(normalizeTimestamp(a.timestamp)).getTime();
+          const dateB = new Date(normalizeTimestamp(b.timestamp)).getTime();
+          
+          return dateB - dateA; // Más reciente primero
+        });
 
         // Paginación
         const totalItems = activityList.length;
