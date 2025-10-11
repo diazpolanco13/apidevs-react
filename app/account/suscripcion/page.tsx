@@ -77,6 +77,14 @@ export default async function SuscripcionPage() {
   const isPro = subscription?.status === 'active' && !productName.toLowerCase().includes('lifetime') && !hasLifetimeAccess;
   const isLifetime = hasLifetimeAccess || productName.toLowerCase().includes('lifetime');
   const hasPremium = subscription?.status === 'active' || hasLifetimeAccess;
+  
+  // Detectar estado de cancelación
+  const isCancelled = subscription?.cancel_at_period_end === true;
+  const cancellationDate = subscription?.canceled_at ? new Date(subscription.canceled_at).toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) : null;
 
   return (
     <div className="space-y-6">
@@ -111,9 +119,25 @@ export default async function SuscripcionPage() {
             )}
             <div>
               <h2 className="text-2xl font-bold text-white">{userPlan}</h2>
-              <p className="text-sm text-gray-400">
-                {hasPremium ? 'Activo' : 'Inactivo'}
-              </p>
+              <div className="flex items-center gap-2">
+                {isCancelled ? (
+                  <>
+                    <span className="text-sm text-orange-400 font-medium">Cancelada</span>
+                    <span className="text-xs text-gray-500">•</span>
+                    <span className="text-xs text-gray-400">
+                      Acceso hasta {subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      }) : 'final del período'}
+                    </span>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-400">
+                    {hasPremium ? 'Activo' : 'Inactivo'}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
           {subscription && (

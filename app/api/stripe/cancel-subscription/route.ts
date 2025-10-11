@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     await (supabase as any)
       .from('subscriptions')
       .update(updateData)
-      .eq('id', subscription?.id as string);
+      .eq('id', subscriptionId);
 
     return NextResponse.json({
       success: true,
