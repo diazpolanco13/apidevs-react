@@ -17,6 +17,10 @@ import {
   grantIndicatorAccessOnPurchase, 
   extractProductIds 
 } from '@/utils/tradingview/auto-grant-access';
+import { 
+  revokeIndicatorAccessOnCancellation,
+  getCustomerEmail 
+} from '@/utils/tradingview/auto-revoke-access';
 
 const relevantEvents = new Set([
   'product.created',
@@ -102,6 +106,86 @@ export async function POST(req: Request) {
               }
             } catch (reactivationError) {
               console.log('⚠️ Error en tracking de reactivación:', reactivationError);
+              // No fallar el webhook por esto
+            }
+          }
+          
+          // 🚫 AUTO-REVOKE: Revocar accesos premium cuando se cancela suscripción
+          if (event.type === 'customer.subscription.deleted') {
+            try {
+              console.log('\n🚫 ========== SUSCRIPCIÓN CANCELADA DETECTADA ==========');
+              console.log('🔖 Subscription ID:', subscription.id);
+              console.log('👤 Customer ID:', subscription.customer);
+              console.log('📅 Cancelled At:', subscription.canceled_at);
+              console.log('💰 Status:', subscription.status);
+              console.log('======================================================\n');
+              
+              // Obtener email del customer
+              const customerEmail = await getCustomerEmail(subscription.customer as string);
+              
+              if (customerEmail) {
+                console.log('📧 Customer Email:', customerEmail);
+                
+                const revokeResult = await revokeIndicatorAccessOnCancellation(
+                  customerEmail,
+                  subscription.id,
+                  'subscription_deleted'
+                );
+                
+                console.log('\n✅ AUTO-REVOKE RESULT:');
+                console.log('   Success:', revokeResult.success);
+                console.log('   Reason:', revokeResult.reason);
+                console.log('   Accesses Revoked:', revokeResult.accessesRevoked);
+                if (revokeResult.indicatorsAffected) {
+                  console.log('   Indicators Affected:', revokeResult.indicatorsAffected);
+                }
+                console.log('======================================================\n');
+              } else {
+                console.error('❌ No se pudo obtener email del customer para auto-revoke');
+              }
+            } catch (revokeError) {
+              console.error('⚠️ Error en auto-revoke (subscription deleted):', revokeError);
+              // No fallar el webhook por esto
+            }
+          }
+          
+          // 🚫 AUTO-REVOKE: También revocar cuando se programa cancelación (cancel_at_period_end)
+          if (event.type === 'customer.subscription.updated' && subscription.cancel_at_period_end) {
+            try {
+              console.log('\n⚠️ ========== CANCELACIÓN PROGRAMADA DETECTADA ==========');
+              console.log('🔖 Subscription ID:', subscription.id);
+              console.log('👤 Customer ID:', subscription.customer);
+              console.log('📅 Cancel At:', subscription.cancel_at);
+              console.log('📅 Current Period End:', subscription.items.data[0]?.current_period_end);
+              console.log('💰 Status:', subscription.status);
+              console.log('========================================================\n');
+              
+              // Obtener email del customer
+              const customerEmail = await getCustomerEmail(subscription.customer as string);
+              
+              if (customerEmail) {
+                console.log('📧 Customer Email:', customerEmail);
+                
+                // Para cancelaciones programadas, usamos un tipo diferente
+                const revokeResult = await revokeIndicatorAccessOnCancellation(
+                  customerEmail,
+                  subscription.id,
+                  'subscription_cancelled' // Diferente de 'subscription_deleted'
+                );
+                
+                console.log('\n✅ AUTO-REVOKE RESULT (programmed):');
+                console.log('   Success:', revokeResult.success);
+                console.log('   Reason:', revokeResult.reason);
+                console.log('   Accesses Revoked:', revokeResult.accessesRevoked);
+                if (revokeResult.indicatorsAffected) {
+                  console.log('   Indicators Affected:', revokeResult.indicatorsAffected);
+                }
+                console.log('========================================================\n');
+              } else {
+                console.error('❌ No se pudo obtener email del customer para auto-revoke programado');
+              }
+            } catch (revokeError) {
+              console.error('⚠️ Error en auto-revoke (subscription updated):', revokeError);
               // No fallar el webhook por esto
             }
           }
