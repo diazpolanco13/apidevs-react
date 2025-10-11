@@ -4,6 +4,14 @@ import { useState } from 'react';
 import { X, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
+interface FeedbackData {
+  subscription_id: string;
+  reason: string;
+  feedback: string;
+  action: string;
+  created_at: string;
+}
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -38,13 +46,15 @@ export default function ManageSubscriptionModal({ isOpen, onClose, subscription 
       
       // Guardar feedback de cancelación
       if (selectedReason || feedback) {
-        await supabase.from('subscription_feedback').insert({
+        const feedbackData: FeedbackData = {
           subscription_id: subscription.id,
           reason: selectedReason,
           feedback: feedback,
           action: 'cancel',
           created_at: new Date().toISOString()
-        });
+        };
+        
+        await (supabase as any).from('subscription_feedback').insert(feedbackData);
       }
 
       // Llamar a Stripe para cancelar
