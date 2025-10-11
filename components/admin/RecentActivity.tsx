@@ -1,11 +1,13 @@
 import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
+import { formatDateLong } from '@/utils/formatDate';
 
 // Definir tipo para purchase
 interface Purchase {
   order_number: string;
   customer_email: string;
   order_date: string;
+  created_at: string;
   order_total_cents: number;
   order_status: string;
 }
@@ -13,10 +15,11 @@ interface Purchase {
 export default async function RecentActivity() {
   const supabase = createClient();
 
+  // ⚠️ CRÍTICO: Ordenar por created_at en lugar de order_date para obtener las compras más recientes
   const { data: recentPurchases, error } = await supabase
     .from('purchases')
-    .select('order_number, customer_email, order_total_cents, order_date, order_status')
-    .order('order_date', { ascending: false })
+    .select('order_number, customer_email, order_total_cents, order_date, created_at, order_status')
+    .order('created_at', { ascending: false })
     .limit(5);
 
   if (error) {
@@ -35,13 +38,7 @@ export default async function RecentActivity() {
                 Orden #{purchase.order_number} de {purchase.customer_email}
               </p>
               <p className="text-xs text-gray-400">
-                {new Date(purchase.order_date).toLocaleDateString('es-ES', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
+                {formatDateLong(purchase.created_at)}
               </p>
             </div>
             <div className="text-right">
