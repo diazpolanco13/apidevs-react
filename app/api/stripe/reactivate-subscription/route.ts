@@ -12,17 +12,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    // Obtener suscripción del usuario
+    // Obtener suscripción CANCELADA PROGRAMADAMENTE del usuario
     const { data: subscription } = await (supabase as any)
       .from('subscriptions')
-      .select('id, stripe_subscription_id')
+      .select('id, stripe_subscription_id, cancel_at_period_end')
       .eq('user_id', user.id)
-      .eq('status', 'active')
+      .eq('cancel_at_period_end', true) // ✅ Buscar suscripciones programadas para cancelar
       .single();
 
     if (!subscription || !subscription.stripe_subscription_id) {
       return NextResponse.json(
-        { error: 'No se encontró suscripción activa' },
+        { error: 'No se encontró suscripción cancelada programadamente para reactivar' },
         { status: 404 }
       );
     }
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     if (!stripeSubscription.cancel_at_period_end) {
       return NextResponse.json(
-        { error: 'La suscripción no está programada para cancelación' },
+        { error: 'La suscripción no está programada para cancelación o ya fue reactivada' },
         { status: 400 }
       );
     }
