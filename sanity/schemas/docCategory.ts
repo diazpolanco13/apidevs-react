@@ -4,7 +4,6 @@ export default defineType({
   name: 'docCategory',
   title: 'Categorías de Documentación',
   type: 'document',
-  icon: () => '📂',
   fields: [
     defineField({
       name: 'title',
