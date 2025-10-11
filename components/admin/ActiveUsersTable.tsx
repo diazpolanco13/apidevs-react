@@ -41,7 +41,7 @@ export default function ActiveUsersTable({
 
   const handleItemsPerPageChange = (itemsPerPage: number) => {
     // Para mantener compatibilidad con el componente Pagination
-    console.log('Items per page:', itemsPerPage);
+    // Items per page actualizados
   };
   
   const getStatusBadge = (user: User) => {

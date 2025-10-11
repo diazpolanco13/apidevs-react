@@ -41,7 +41,7 @@ export default function UsersTable({
   const handleItemsPerPageChange = (itemsPerPage: number) => {
     // Para usuarios legacy mantenemos 10 elementos fijos
     // Esta función existe para compatibilidad con el componente Pagination
-    console.log('Items per page:', itemsPerPage);
+    // Items per page actualizados
   };
 
   const handleSelectUser = (userId: string) => {

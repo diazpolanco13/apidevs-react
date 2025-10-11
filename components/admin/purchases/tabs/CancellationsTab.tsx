@@ -35,6 +35,7 @@ export default function CancellationsTab({}: CancellationsTabProps) {
   });
   const [showFilters, setShowFilters] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -64,10 +65,10 @@ export default function CancellationsTab({}: CancellationsTabProps) {
         setCancellations(data.cancellations);
         setTotalCount(data.totalCount);
       } else {
-        console.error('Error loading cancellations:', data.error);
+        // Error cargando cancelaciones
       }
     } catch (error) {
-      console.error('Error loading cancellations:', error);
+      // Error en la carga de cancelaciones
     } finally {
       setLoading(false);
     }
@@ -82,10 +83,10 @@ export default function CancellationsTab({}: CancellationsTabProps) {
       if (response.ok) {
         setAnalytics(data);
       } else {
-        console.error('Error loading analytics:', data.error);
+        // Error cargando analytics
       }
     } catch (error) {
-      console.error('Error loading analytics:', error);
+      // Error en la carga de analytics
     } finally {
       setAnalyticsLoading(false);
     }
@@ -127,6 +128,73 @@ export default function CancellationsTab({}: CancellationsTabProps) {
       style: 'currency',
       currency: currency
     }).format(amount);
+  };
+
+  const handleReactivateSubscription = async (subscriptionId: string, userEmail: string) => {
+    if (!confirm(`¿Estás seguro de reactivar la suscripción del usuario ${userEmail}?`)) {
+      return;
+    }
+
+    setActionLoading(subscriptionId);
+    try {
+      const response = await fetch('/api/admin/reactivate-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          subscriptionId,
+          adminReason: 'Reactivación desde dashboard admin'
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`✅ ${data.message}`);
+        loadCancellations(); // Recargar lista
+      } else {
+        alert(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      // Error reactivando suscripción
+      alert('❌ Error al reactivar suscripción');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleContactUser = async (subscriptionId: string, userEmail: string, productName: string) => {
+    const subject = prompt(`Asunto del mensaje para ${userEmail}:`, `Actualización sobre tu suscripción ${productName}`);
+    if (!subject) return;
+
+    const message = prompt(`Mensaje para ${userEmail}:`, `Hola,\n\nHemos notado que cancelaste tu suscripción ${productName}. Nos gustaría saber si hay algo en lo que podamos ayudarte.\n\n¿Te interesaría una oferta especial para continuar?\n\nSaludos,\nEquipo APIDevs`);
+    if (!message) return;
+
+    setActionLoading(`contact-${subscriptionId}`);
+    try {
+      const response = await fetch('/api/admin/contact-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          subscriptionId,
+          subject,
+          message,
+          contactType: 'email'
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`✅ ${data.message}`);
+      } else {
+        alert(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      // Error contactando usuario
+      alert('❌ Error al contactar usuario');
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   return (
@@ -367,16 +435,28 @@ export default function CancellationsTab({}: CancellationsTabProps) {
 
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button
-                      className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition-colors"
+                      onClick={() => handleContactUser(cancellation.subscription_id, cancellation.user_email, cancellation.product_name)}
+                      disabled={actionLoading === `contact-${cancellation.subscription_id}`}
+                      className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Contactar usuario"
                     >
-                      <Mail className="w-4 h-4" />
+                      {actionLoading === `contact-${cancellation.subscription_id}` ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Mail className="w-4 h-4" />
+                      )}
                     </button>
                     <button
-                      className="p-1.5 text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded transition-colors"
+                      onClick={() => handleReactivateSubscription(cancellation.subscription_id, cancellation.user_email)}
+                      disabled={actionLoading === cancellation.subscription_id || cancellation.subscription_status !== 'active'}
+                      className="p-1.5 text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Reactivar suscripción"
                     >
-                      <RotateCcw className="w-4 h-4" />
+                      {actionLoading === cancellation.subscription_id ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <RotateCcw className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
