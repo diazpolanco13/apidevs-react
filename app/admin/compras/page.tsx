@@ -9,6 +9,7 @@ import OneTimeTab from '@/components/admin/purchases/tabs/OneTimeTab';
 import RefundsTab from '@/components/admin/purchases/tabs/RefundsTab';
 import AnalyticsTab from '@/components/admin/purchases/tabs/AnalyticsTab';
 import AllPurchasesTab from '@/components/admin/purchases/tabs/AllPurchasesTab';
+import CancellationsTab from '@/components/admin/purchases/tabs/CancellationsTab';
 import { PurchaseMetrics } from '@/types/purchases';
 
 export const metadata: Metadata = {
@@ -894,6 +895,7 @@ export default async function PurchasesPage() {
         oneTimeView={<OneTimeTab oneTimeData={oneTimeData} />}
         refundsView={<RefundsTab refundsData={refundsData} />}
         analyticsView={<AnalyticsTab />}
+        cancellationsView={<CancellationsTab />}
       />
     </div>
   );
