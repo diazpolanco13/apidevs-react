@@ -124,11 +124,14 @@ export default function RecentActivity({ userEmail, userId }: RecentActivityProp
         (activityEvents as ActivityEvent[] | null)?.forEach((event) => {
           if (event.event_type === 'subscription_cancelled') {
             const eventData = event.event_data;
+            const subscriptionId = eventData.stripe_subscription_id || eventData.subscription_id;
+            const shortId = subscriptionId ? subscriptionId.split('_')[1].substring(0, 8) : 'N/A';
+            
             activityList.push({
               id: event.id,
               type: 'subscription_cancelled',
               title: 'Suscripción cancelada',
-              description: `${eventData.product_name} cancelada - Acceso hasta ${new Date(eventData.access_until).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`,
+              description: `${eventData.product_name} (${shortId}) - Acceso hasta ${new Date(eventData.access_until).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`,
               timestamp: event.created_at,
               icon: AlertTriangle,
               color: 'text-orange-400'

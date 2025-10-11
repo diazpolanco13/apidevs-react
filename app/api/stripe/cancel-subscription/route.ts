@@ -69,6 +69,7 @@ export async function POST(req: Request) {
       event_type: 'subscription_cancelled',
       event_data: {
         subscription_id: subscriptionId,
+        stripe_subscription_id: subscriptionId,
         product_name: subscription?.prices?.products?.name || 'Suscripción',
         cancelled_at: new Date().toISOString(),
         access_until: subscription?.current_period_end,
