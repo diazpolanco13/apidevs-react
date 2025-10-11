@@ -149,46 +149,17 @@ export async function POST(req: Request) {
             }
           }
           
-          // 🚫 AUTO-REVOKE: También revocar cuando se programa cancelación (cancel_at_period_end O cancel_at definido)
+          // ℹ️ CANCELACIÓN PROGRAMADA DETECTADA (NO revocar hasta que termine el período)
           if (event.type === 'customer.subscription.updated' && (subscription.cancel_at_period_end || subscription.cancel_at)) {
-            try {
-              console.log('\n⚠️ ========== CANCELACIÓN PROGRAMADA DETECTADA ==========');
-              console.log('🔖 Subscription ID:', subscription.id);
-              console.log('👤 Customer ID:', subscription.customer);
-              console.log('📅 Cancel At:', subscription.cancel_at);
-              console.log('📅 Cancel At Period End:', subscription.cancel_at_period_end);
-              console.log('📅 Current Period End:', subscription.items.data[0]?.current_period_end);
-              console.log('💰 Status:', subscription.status);
-              console.log('========================================================\n');
-              
-              // Obtener email del customer
-              const customerEmail = await getCustomerEmail(subscription.customer as string);
-              
-              if (customerEmail) {
-                console.log('📧 Customer Email:', customerEmail);
-                
-                // Para cancelaciones programadas, usamos un tipo diferente
-                const revokeResult = await revokeIndicatorAccessOnCancellation(
-                  customerEmail,
-                  subscription.id,
-                  'subscription_cancelled' // Diferente de 'subscription_deleted'
-                );
-                
-                console.log('\n✅ AUTO-REVOKE RESULT (programmed):');
-                console.log('   Success:', revokeResult.success);
-                console.log('   Reason:', revokeResult.reason);
-                console.log('   Accesses Revoked:', revokeResult.accessesRevoked);
-                if (revokeResult.indicatorsAffected) {
-                  console.log('   Indicators Affected:', revokeResult.indicatorsAffected);
-                }
-                console.log('========================================================\n');
-              } else {
-                console.error('❌ No se pudo obtener email del customer para auto-revoke programado');
-              }
-            } catch (revokeError) {
-              console.error('⚠️ Error en auto-revoke (subscription updated):', revokeError);
-              // No fallar el webhook por esto
-            }
+            console.log('\n⚠️ ========== CANCELACIÓN PROGRAMADA DETECTADA ==========');
+            console.log('🔖 Subscription ID:', subscription.id);
+            console.log('👤 Customer ID:', subscription.customer);
+            console.log('📅 Cancel At:', subscription.cancel_at);
+            console.log('📅 Cancel At Period End:', subscription.cancel_at_period_end);
+            console.log('📅 Current Period End:', subscription.items.data[0]?.current_period_end);
+            console.log('💰 Status:', subscription.status);
+            console.log('ℹ️ Acción: NO revocar accesos - usuario mantiene acceso hasta fecha límite');
+            console.log('========================================================\n');
           }
           break;
         case 'checkout.session.completed':
