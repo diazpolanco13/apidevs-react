@@ -39,9 +39,11 @@ export default function ReactivateSubscriptionForm({
         });
         
         // Recargar la página después de un breve delay para mostrar el mensaje
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
+        if (typeof window !== 'undefined') {
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }
         
         if (onSuccess) {
           onSuccess();
