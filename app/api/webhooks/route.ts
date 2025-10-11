@@ -149,13 +149,14 @@ export async function POST(req: Request) {
             }
           }
           
-          // 🚫 AUTO-REVOKE: También revocar cuando se programa cancelación (cancel_at_period_end)
-          if (event.type === 'customer.subscription.updated' && subscription.cancel_at_period_end) {
+          // 🚫 AUTO-REVOKE: También revocar cuando se programa cancelación (cancel_at_period_end O cancel_at definido)
+          if (event.type === 'customer.subscription.updated' && (subscription.cancel_at_period_end || subscription.cancel_at)) {
             try {
               console.log('\n⚠️ ========== CANCELACIÓN PROGRAMADA DETECTADA ==========');
               console.log('🔖 Subscription ID:', subscription.id);
               console.log('👤 Customer ID:', subscription.customer);
               console.log('📅 Cancel At:', subscription.cancel_at);
+              console.log('📅 Cancel At Period End:', subscription.cancel_at_period_end);
               console.log('📅 Current Period End:', subscription.items.data[0]?.current_period_end);
               console.log('💰 Status:', subscription.status);
               console.log('========================================================\n');
