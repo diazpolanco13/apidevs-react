@@ -1,4 +1,7 @@
 import { Metadata } from 'next';
+import { client } from '@/sanity/lib/client';
+import { INDICATORS_QUERY } from '@/sanity/lib/queries';
+import type { IndicatorListItem } from '@/sanity/lib/queries';
 import IndicatorsHub from '@/components/ui/IndicatorsHub/IndicatorsHub';
 import BackgroundEffects from '@/components/ui/BackgroundEffects';
 
@@ -8,7 +11,22 @@ export const metadata: Metadata = {
   keywords: 'indicadores trading, TradingView, análisis técnico, señales trading, APIDevs',
 };
 
-export default function IndicadoresPage() {
+// Revalidar cada hora
+export const revalidate = 3600;
+
+export default async function IndicadoresPage() {
+  // Fetch indicators from Sanity
+  const indicators = await client.fetch<IndicatorListItem[]>(
+    INDICATORS_QUERY,
+    {},
+    {
+      next: {
+        revalidate: 3600, // Cache for 1 hour
+        tags: ['indicators'],
+      },
+    }
+  );
+
   return (
     <div className="relative min-h-screen bg-black">
       {/* Background Effects */}
@@ -16,7 +34,7 @@ export default function IndicadoresPage() {
       
       {/* Main Content */}
       <div className="relative z-10">
-        <IndicatorsHub />
+        <IndicatorsHub initialIndicators={indicators} />
       </div>
     </div>
   );

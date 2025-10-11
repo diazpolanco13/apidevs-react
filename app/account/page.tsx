@@ -198,9 +198,27 @@ export default async function AccountDashboard() {
 
       {/* PRO Welcome Banner - Solo para usuarios PRO */}
       {hasPremium && (
-        <div className="bg-gradient-to-r from-apidevs-primary/20 via-green-400/20 to-apidevs-primary/20 border-2 border-apidevs-primary/50 rounded-2xl p-8 relative overflow-hidden">
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-apidevs-primary/10 to-transparent blur-xl"></div>
+        <div className={`rounded-2xl p-8 relative overflow-hidden border-2 ${
+          isLifetime 
+            ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-purple-500/20 border-purple-500/50' 
+            : 'bg-gradient-to-r from-apidevs-primary/20 via-green-400/20 to-apidevs-primary/20 border-apidevs-primary/50'
+        }`}>
+          {/* Glow effect - dinámico según plan */}
+          <div className={`absolute inset-0 blur-xl ${
+            isLifetime 
+              ? 'bg-gradient-to-r from-purple-500/10 to-transparent' 
+              : 'bg-gradient-to-r from-apidevs-primary/10 to-transparent'
+          }`}></div>
+          
+          {/* Shimmer effect brillante - Solo para PRO */}
+          {!isLifetime && (
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-apidevs-primary/20 to-transparent animate-shimmer"></div>
+          )}
+          
+          {/* Shimmer effect violeta - Solo para Lifetime */}
+          {isLifetime && (
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/20 to-transparent animate-shimmer"></div>
+          )}
           
           <div className="relative z-10">
             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -214,7 +232,7 @@ export default async function AccountDashboard() {
                   <div>
                     <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                       {isLifetime ? 'Plan Lifetime Access' : 'Plan PRO Activo'}
-                      <Sparkles className="w-5 h-5 text-apidevs-primary animate-pulse" />
+                      <Sparkles className={`w-5 h-5 animate-pulse ${isLifetime ? 'text-purple-400' : 'text-apidevs-primary'}`} />
                     </h2>
                     <p className="text-sm text-gray-400">Miembro desde {new Date(subscription?.created || '').toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</p>
                   </div>
@@ -225,14 +243,18 @@ export default async function AccountDashboard() {
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href="/account/perfil"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl border border-white/20 hover:border-apidevs-primary/50 transition-all"
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl border border-white/20 transition-all ${
+                      isLifetime ? 'hover:border-purple-500/50' : 'hover:border-apidevs-primary/50'
+                    }`}
                   >
                     <Target className="w-4 h-4" />
                     Ver Mi Perfil
                   </Link>
                   <Link
                     href="/account/suscripcion"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl border border-white/20 hover:border-apidevs-primary/50 transition-all"
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl border border-white/20 transition-all ${
+                      isLifetime ? 'hover:border-purple-500/50' : 'hover:border-apidevs-primary/50'
+                    }`}
                   >
                     <Shield className="w-4 h-4" />
                     Gestionar Suscripción
@@ -241,23 +263,25 @@ export default async function AccountDashboard() {
               </div>
 
               {/* Quick benefits */}
-              <div className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-apidevs-primary/30">
+              <div className={`bg-black/30 backdrop-blur-sm rounded-xl p-4 border ${
+                isLifetime ? 'border-purple-500/30' : 'border-apidevs-primary/30'
+              }`}>
                 <p className="text-xs text-gray-400 mb-2">Beneficios Activos</p>
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2 text-sm text-white">
-                    <CheckCircle className="w-4 h-4 text-apidevs-primary flex-shrink-0" />
+                    <CheckCircle className={`w-4 h-4 flex-shrink-0 ${isLifetime ? 'text-purple-400' : 'text-apidevs-primary'}`} />
                     <span>Todos los indicadores premium</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white">
-                    <CheckCircle className="w-4 h-4 text-apidevs-primary flex-shrink-0" />
+                    <CheckCircle className={`w-4 h-4 flex-shrink-0 ${isLifetime ? 'text-purple-400' : 'text-apidevs-primary'}`} />
                     <span>Alertas en tiempo real</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-white">
-                    <CheckCircle className="w-4 h-4 text-apidevs-primary flex-shrink-0" />
+                    <CheckCircle className={`w-4 h-4 flex-shrink-0 ${isLifetime ? 'text-purple-400' : 'text-apidevs-primary'}`} />
                     <span>Soporte prioritario</span>
                   </div>
                   {loyaltyProfile?.customer_tier && (
-                    <div className="flex items-center gap-2 text-sm text-apidevs-primary font-semibold">
+                    <div className={`flex items-center gap-2 text-sm font-semibold ${isLifetime ? 'text-purple-400' : 'text-apidevs-primary'}`}>
                       <Crown className="w-4 h-4 flex-shrink-0" />
                       <span>{loyaltyProfile.loyalty_discount_percentage}% descuento permanente</span>
                     </div>

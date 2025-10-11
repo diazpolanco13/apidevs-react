@@ -10,6 +10,7 @@ type Indicator = {
   pine_id: string;
   tradingview_url: string | null;
   public_script_url: string | null;
+  embed_url: string | null;
   name: string;
   description: string | null;
   category: string;
@@ -82,7 +83,7 @@ export default function IndicatorInfo({ indicator }: Props) {
           </div>
 
           {/* Enlaces de TradingView */}
-          {(indicator.tradingview_url || indicator.public_script_url) && (
+          {(indicator.tradingview_url || indicator.public_script_url || indicator.embed_url) && (
             <div className="md:col-span-2">
               <label className="mb-2 block text-sm font-medium text-gray-400">
                 Acceso Rápido en TradingView
@@ -170,6 +171,51 @@ export default function IndicatorInfo({ indicator }: Props) {
                     </div>
                     <svg
                       className="h-5 w-5 text-purple-400 transition-transform group-hover:translate-x-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
+                    </svg>
+                  </a>
+                )}
+
+                {/* URL del Embed Interactivo */}
+                {indicator.embed_url && (
+                  <a
+                    href={indicator.embed_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative flex items-center gap-3 overflow-hidden rounded-lg border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 to-emerald-600/5 px-5 py-3 transition-all hover:border-emerald-500/50 hover:from-emerald-500/20 hover:to-emerald-600/10 hover:shadow-lg hover:shadow-emerald-500/20"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/20 transition-transform group-hover:scale-110">
+                      <svg
+                        className="h-5 w-5 text-emerald-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-emerald-400">
+                        Embed Interactivo
+                      </p>
+                      <p className="text-xs text-gray-400">Vista del Widget</p>
+                    </div>
+                    <svg
+                      className="h-5 w-5 text-emerald-400 transition-transform group-hover:translate-x-1"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"

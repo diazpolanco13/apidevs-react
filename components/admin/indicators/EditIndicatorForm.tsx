@@ -9,6 +9,7 @@ type Indicator = {
   pine_id: string;
   tradingview_url: string | null;
   public_script_url: string | null;
+  embed_url: string | null;
   name: string;
   description: string | null;
   category: 'indicador' | 'escaner' | 'tools';
@@ -32,6 +33,7 @@ export default function EditIndicatorForm({ indicator }: Props) {
   const [formData, setFormData] = useState({
     tradingview_url: indicator.tradingview_url || '',
     public_script_url: indicator.public_script_url || '',
+    embed_url: indicator.embed_url || '',
     pine_id: indicator.pine_id,
     name: indicator.name,
     description: indicator.description || '',
@@ -58,6 +60,22 @@ export default function EditIndicatorForm({ indicator }: Props) {
     }
   };
 
+  // Función para extraer código del script y generar URL del embed
+  const extractEmbedUrlFromScriptUrl = (url: string): string | null => {
+    try {
+      // Patrón: https://www.tradingview.com/script/[CÓDIGO]-[NOMBRE]/
+      // Extraer [CÓDIGO] que está entre "/script/" y el primer "-"
+      const scriptMatch = url.match(/\/script\/([^-/]+)/);
+      if (scriptMatch && scriptMatch[1]) {
+        const code = scriptMatch[1];
+        return `https://s.tradingview.com/embed/${code}/`;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   // Manejar cambio de URL de TradingView
   const handleTradingViewUrlChange = (url: string) => {
     setFormData({ ...formData, tradingview_url: url });
@@ -68,6 +86,21 @@ export default function EditIndicatorForm({ indicator }: Props) {
         ...prev,
         tradingview_url: url,
         pine_id: extractedPineId
+      }));
+    }
+  };
+
+  // Manejar cambio de URL pública del script
+  const handlePublicScriptUrlChange = (url: string) => {
+    setFormData(prev => ({ ...prev, public_script_url: url }));
+    
+    // Generar automáticamente la URL del embed
+    const embedUrl = extractEmbedUrlFromScriptUrl(url);
+    if (embedUrl) {
+      setFormData(prev => ({
+        ...prev,
+        public_script_url: url,
+        embed_url: embedUrl
       }));
     }
   };
@@ -188,9 +221,7 @@ export default function EditIndicatorForm({ indicator }: Props) {
               id="public_script_url"
               placeholder="https://www.tradingview.com/script/WRcehVHw-RSI-SCANNER/"
               value={formData.public_script_url}
-              onChange={(e) =>
-                setFormData({ ...formData, public_script_url: e.target.value })
-              }
+              onChange={(e) => handlePublicScriptUrlChange(e.target.value)}
               className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-sm text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
             />
             <div className="mt-2 flex items-start gap-2 rounded-lg bg-purple-500/10 border border-purple-500/20 p-3">
@@ -217,6 +248,43 @@ export default function EditIndicatorForm({ indicator }: Props) {
                 <strong>Para usuarios:</strong> Vista pública del indicador, dar likes, marketing.
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* URL del Embed Interactivo (Auto-generada) */}
+        <div>
+          <label
+            htmlFor="embed_url"
+            className="block text-sm font-medium text-gray-300"
+          >
+            URL del Embed Interactivo
+            <span className="ml-2 text-xs text-emerald-400">🤖 Auto-generada</span>
+          </label>
+          <input
+            type="url"
+            id="embed_url"
+            readOnly
+            placeholder="Se generará automáticamente desde la URL pública..."
+            value={formData.embed_url}
+            className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm font-mono text-emerald-400 placeholder-gray-600 cursor-not-allowed"
+          />
+          <div className="mt-2 flex items-start gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
+            <svg
+              className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+            <p className="text-xs text-emerald-300">
+              <strong>Generación automática:</strong> Se extrae el código desde la URL pública del script y se genera la URL del embed de TradingView (https://s.tradingview.com/embed/[CÓDIGO]/)
+            </p>
           </div>
         </div>
 
