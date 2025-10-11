@@ -620,16 +620,35 @@ async function getOverviewData() {
     );
     
     // ✅ Generar timeline desde hace 30 días hasta la fecha más reciente con compras
-    const today = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 29);
+    // ⚠️ CRÍTICO: Usar UTC consistente para evitar problemas de zona horaria
+    const nowUTC = new Date();
+    const todayUTC = new Date(Date.UTC(
+      nowUTC.getUTCFullYear(),
+      nowUTC.getUTCMonth(),
+      nowUTC.getUTCDate(),
+      23, 59, 59, 999
+    ));
+    
+    const startDateUTC = new Date(Date.UTC(
+      nowUTC.getUTCFullYear(),
+      nowUTC.getUTCMonth(),
+      nowUTC.getUTCDate() - 29,
+      0, 0, 0, 0
+    ));
     
     // Encontrar la fecha máxima (puede ser futura por Test Clock)
     const maxDate = recentPurchases && recentPurchases.length > 0
       ? new Date(Math.max(...recentPurchases.map(p => new Date(p.created_at).getTime())))
-      : today;
+      : todayUTC;
     
-    const daysToShow = Math.ceil((maxDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const daysToShow = Math.ceil((maxDate.getTime() - startDateUTC.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    
+    console.log('🕐 DEBUG UTC:', {
+      nowUTC: nowUTC.toISOString(),
+      todayUTC: todayUTC.toISOString(),
+      startDateUTC: startDateUTC.toISOString(),
+      daysToShow
+    });
     
     // Debug: Log de compras recientes para verificar
     console.log('📊 DEBUG: Total compras en rango:', recentPurchases?.length);
@@ -640,8 +659,8 @@ async function getOverviewData() {
     })));
 
     const timelineData = Array.from({ length: Math.min(daysToShow, 90) }, (_, i) => {
-      const date = new Date(startDate);
-      date.setDate(date.getDate() + i);
+      // ⚠️ CRÍTICO: Crear fecha en UTC para evitar problemas de zona horaria
+      const date = new Date(startDateUTC.getTime() + (i * 24 * 60 * 60 * 1000));
       const dateStr = date.toISOString().split('T')[0];
       
       const dayPurchases = recentPurchases?.filter(p => {
