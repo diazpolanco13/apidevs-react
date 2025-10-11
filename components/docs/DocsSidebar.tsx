@@ -13,7 +13,7 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
   const pathname = usePathname();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(
-      sidebarData.categories
+      (sidebarData?.categories || [])
         .filter((cat) => cat.defaultExpanded)
         .map((cat) => cat._id)
     )
@@ -49,7 +49,7 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
 
       {/* Navigation */}
       <nav className="p-4 space-y-6">
-        {sidebarData.categories.map((category) => {
+        {(sidebarData?.categories || []).map((category) => {
           const isExpanded = expandedCategories.has(category._id);
           const hasPages = category.pages && category.pages.length > 0;
 
