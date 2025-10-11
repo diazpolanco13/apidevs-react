@@ -1,0 +1,267 @@
+import { groq } from 'next-sanity'
+
+// ==========================================
+// CATEGORÍAS DE DOCUMENTACIÓN
+// ==========================================
+
+export const DOC_CATEGORIES_QUERY = groq`
+  *[_type == "docCategory"] | order(order asc) {
+    _id,
+    title,
+    slug,
+    icon,
+    order,
+    description,
+    isCollapsible,
+    defaultExpanded
+  }
+`
+
+// ==========================================
+// TODAS LAS PÁGINAS DE DOCUMENTACIÓN
+// ==========================================
+
+export const ALL_DOCS_QUERY = groq`
+  *[_type == "documentation"] | order(category->order asc, order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    "categorySlug": category->slug.current,
+    "categoryTitle": category->title,
+    "categoryIcon": category->icon,
+    order,
+    icon,
+    description,
+    publishedAt,
+    updatedAt
+  }
+`
+
+// ==========================================
+// SIDEBAR: CATEGORÍAS CON SUS PÁGINAS
+// ==========================================
+
+export const SIDEBAR_DOCS_QUERY = groq`
+  {
+    "categories": *[_type == "docCategory"] | order(order asc) {
+      _id,
+      title,
+      slug,
+      icon,
+      order,
+      isCollapsible,
+      defaultExpanded,
+      "pages": *[_type == "documentation" && category._ref == ^._id] | order(order asc) {
+        _id,
+        title,
+        "slug": slug.current,
+        icon,
+        order,
+        description
+      }
+    }
+  }
+`
+
+// ==========================================
+// PÁGINA INDIVIDUAL POR SLUG
+// ==========================================
+
+export const DOC_BY_SLUG_QUERY = groq`
+  *[_type == "documentation" && slug.current == $slug][0] {
+    _id,
+    title,
+    "slug": slug.current,
+    description,
+    icon,
+    content,
+    category->{
+      _id,
+      title,
+      "slug": slug.current,
+      icon,
+      order
+    },
+    order,
+    nextPage->{
+      title,
+      "slug": slug.current
+    },
+    previousPage->{
+      title,
+      "slug": slug.current
+    },
+    relatedPages[]->{
+      title,
+      "slug": slug.current,
+      description
+    },
+    seo,
+    publishedAt,
+    updatedAt
+  }
+`
+
+// ==========================================
+// SLUGS PARA STATIC GENERATION
+// ==========================================
+
+export const DOC_SLUGS_QUERY = groq`
+  *[_type == "documentation" && defined(slug.current)]{
+    "slug": slug.current
+  }.slug
+`
+
+// ==========================================
+// BÚSQUEDA EN DOCUMENTACIÓN
+// ==========================================
+
+export const SEARCH_DOCS_QUERY = groq`
+  *[
+    _type == "documentation" && 
+    (
+      title match $searchTerm + "*" ||
+      description match $searchTerm + "*" ||
+      pt::text(content) match $searchTerm + "*"
+    )
+  ] | order(_score desc) [0...10] {
+    _id,
+    title,
+    "slug": slug.current,
+    description,
+    "categoryTitle": category->title,
+    "categorySlug": category->slug.current,
+    "excerpt": pt::text(content)[0...150]
+  }
+`
+
+// ==========================================
+// TABLA DE CONTENIDOS (TOC)
+// ==========================================
+
+export const DOC_TOC_QUERY = groq`
+  *[_type == "documentation" && slug.current == $slug][0] {
+    "headings": content[style in ["h1", "h2", "h3", "h4"]] {
+      "text": pt::text(@),
+      "style": style
+    }
+  }
+`
+
+// ==========================================
+// PÁGINAS POR CATEGORÍA
+// ==========================================
+
+export const DOCS_BY_CATEGORY_QUERY = groq`
+  *[_type == "documentation" && category->slug.current == $categorySlug] | order(order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    description,
+    icon,
+    order,
+    publishedAt
+  }
+`
+
+// ==========================================
+// TIPOS TYPESCRIPT
+// ==========================================
+
+export interface DocCategory {
+  _id: string
+  title: string
+  slug: { current: string }
+  icon?: string
+  order: number
+  description?: string
+  isCollapsible: boolean
+  defaultExpanded: boolean
+}
+
+export interface DocListItem {
+  _id: string
+  title: string
+  slug: string
+  categorySlug?: string
+  categoryTitle?: string
+  categoryIcon?: string
+  order: number
+  icon?: string
+  description?: string
+  publishedAt?: string
+  updatedAt?: string
+}
+
+export interface DocPage {
+  _id: string
+  title: string
+  slug: string
+  description?: string
+  icon?: string
+  content: any[] // Portable Text
+  category: {
+    _id: string
+    title: string
+    slug: string
+    icon?: string
+    order: number
+  }
+  order: number
+  nextPage?: {
+    title: string
+    slug: string
+  }
+  previousPage?: {
+    title: string
+    slug: string
+  }
+  relatedPages?: Array<{
+    title: string
+    slug: string
+    description?: string
+  }>
+  seo?: {
+    metaTitle?: string
+    metaDescription?: string
+    keywords?: string[]
+  }
+  publishedAt?: string
+  updatedAt?: string
+}
+
+export interface SidebarData {
+  categories: Array<{
+    _id: string
+    title: string
+    slug: { current: string }
+    icon?: string
+    order: number
+    isCollapsible: boolean
+    defaultExpanded: boolean
+    pages: Array<{
+      _id: string
+      title: string
+      slug: string
+      icon?: string
+      order: number
+      description?: string
+    }>
+  }>
+}
+
+export interface SearchResult {
+  _id: string
+  title: string
+  slug: string
+  description?: string
+  categoryTitle?: string
+  categorySlug?: string
+  excerpt?: string
+}
+
+export interface TocHeading {
+  text: string
+  style: 'h1' | 'h2' | 'h3' | 'h4'
+}
+
