@@ -659,30 +659,6 @@ async function getOverviewData() {
     }
     
     const daysToShow = Math.ceil((maxDate.getTime() - startDateUTC.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    
-    console.log('🕐 DEBUG UTC:', {
-      nowUTC: nowUTC.toISOString(),
-      todayUTC: todayUTC.toISOString(),
-      startDateUTC: startDateUTC.toISOString(),
-      startDateOnly: startDateUTC.toISOString().split('T')[0], // ✅ Mostrar solo fecha
-      daysToShow,
-      totalPurchases: recentPurchases?.length
-    });
-    
-    // Debug: Log de compras recientes para verificar
-    console.log('📊 DEBUG: Total compras obtenidas:', recentPurchases?.length);
-    console.log('📊 DEBUG: Primera compra:', recentPurchases?.[0] ? {
-      order: recentPurchases[0].order_number,
-      date: recentPurchases[0].created_at,
-      dateOnly: recentPurchases[0].created_at.split('T')[0],
-      amount: recentPurchases[0].order_total_cents / 100
-    } : 'No hay compras');
-    console.log('📊 DEBUG: Última compra:', recentPurchases?.[recentPurchases.length - 1] ? {
-      order: recentPurchases[recentPurchases.length - 1].order_number,
-      date: recentPurchases[recentPurchases.length - 1].created_at,
-      dateOnly: recentPurchases[recentPurchases.length - 1].created_at.split('T')[0],
-      amount: recentPurchases[recentPurchases.length - 1].order_total_cents / 100
-    } : 'No hay compras');
 
     // ✅ Permitir hasta 365 días de datos (1 año completo)
     const timelineData = Array.from({ length: Math.min(daysToShow, 365) }, (_, i) => {
@@ -704,11 +680,6 @@ async function getOverviewData() {
         sum + (p.order_total_cents - (p.refund_amount_cents || 0)), 0
       ) / 100;
 
-      // Debug: Log solo días con compras
-      if (dayPurchases.length > 0) {
-        console.log('📊 DEBUG día con compras:', dateStr, '→', dayPurchases.length, 'compras, $', revenue);
-      }
-
       return {
         date: dateStr,
         revenue,
@@ -722,14 +693,6 @@ async function getOverviewData() {
         }))
       };
     });
-
-    // Debug: Verificar primeros días del timeline
-    console.log('📅 TIMELINE: Primeros 5 días generados:', timelineData.slice(0, 5).map(d => ({
-      date: d.date,
-      revenue: d.revenue,
-      purchases: d.purchases
-    })));
-    console.log('📅 TIMELINE: Total días generados:', timelineData.length);
 
     // Top productos
     const productSales: { [key: string]: { sales: number; revenue: number } } = {};

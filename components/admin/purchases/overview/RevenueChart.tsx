@@ -48,16 +48,11 @@ interface RevenueChartProps {
 type TimeRange = '7d' | '30d' | '90d' | 'all';
 
 export default function RevenueChart({ data }: RevenueChartProps) {
-  const [timeRange, setTimeRange] = useState<TimeRange>('all');
+  const [timeRange, setTimeRange] = useState<TimeRange>('30d');
   const chartRef = useRef<ChartJS<'line'>>(null);
   
   // ⚠️ CRÍTICO: Forzar re-render cuando cambian los datos
   const [chartKey, setChartKey] = useState(0);
-  
-  // Debug: Ver qué datos llegan al gráfico
-  console.log('📈 RevenueChart recibió:', data.length, 'días de datos');
-  console.log('📈 Últimos 5 días:', data.slice(-5).map(d => ({ date: d.date, revenue: d.revenue, purchases: d.purchases })));
-  console.log('📈 Días con revenue > 0:', data.filter(d => d.revenue > 0).map(d => ({ date: d.date, revenue: d.revenue, purchases: d.purchases })));
 
   // Formatear moneda
   const formatCurrency = (value: number) => {
@@ -107,26 +102,11 @@ export default function RevenueChart({ data }: RevenueChartProps) {
       0, 0, 0, 0
     ));
     
-    console.log('📊 Filtro activo:', timeRange, '→ cutoffDate UTC:', cutoffDateUTC.toISOString().split('T')[0]);
-    console.log('📊 Hoy UTC:', todayUTC.toISOString().split('T')[0]);
-    
     const filtered = data.filter(item => {
       // ⚠️ CRÍTICO: Parsear fecha en UTC
       const itemDate = new Date(item.date + 'T00:00:00Z');
-      const included = itemDate >= cutoffDateUTC && itemDate <= todayUTC;
-      
-      if (!included && item.revenue > 0) {
-        console.log('❌ Excluido:', item.date, '→ cutoff:', cutoffDateUTC.toISOString().split('T')[0]);
-      }
-      if (included && item.revenue > 0) {
-        console.log('✅ Incluido:', item.date, '→ $', item.revenue, '→', item.purchases, 'compras');
-      }
-      return included;
+      return itemDate >= cutoffDateUTC && itemDate <= todayUTC;
     });
-    
-    console.log('📊 Resultado filtro:', filtered.length, 'días de', data.length, 'totales');
-    console.log('📊 Revenue filtrado:', filtered.reduce((sum, d) => sum + d.revenue, 0), 'US$');
-    console.log('📊 Purchases filtradas:', filtered.reduce((sum, d) => sum + d.purchases, 0));
     
     return filtered;
   };
@@ -137,19 +117,6 @@ export default function RevenueChart({ data }: RevenueChartProps) {
   const totalRevenue = filteredData.reduce((sum, item) => sum + item.revenue, 0);
   const totalPurchases = filteredData.reduce((sum, item) => sum + item.purchases, 0);
   const avgRevenue = filteredData.length > 0 ? totalRevenue / filteredData.length : 0;
-
-  // ⚠️ DEBUG CRÍTICO: Ver qué datos recibe Chart.js
-  console.log('🎨 CHART.JS VA A RECIBIR:', {
-    totalDays: filteredData.length,
-    labels: filteredData.map(item => item.date),
-    revenues: filteredData.map(item => item.revenue),
-    purchases: filteredData.map(item => item.purchases),
-    daysWithRevenue: filteredData.filter(d => d.revenue > 0).map(d => ({
-      date: d.date,
-      revenue: d.revenue,
-      purchases: d.purchases
-    }))
-  });
 
   // Preparar datos para Chart.js
   const chartData: ChartData<'line'> = {
@@ -206,15 +173,6 @@ export default function RevenueChart({ data }: RevenueChartProps) {
           title: (context) => {
             const index = context[0].dataIndex;
             const dayData = filteredData[index];
-            console.log('🖱️ TOOLTIP HOVER:', {
-              index,
-              date: dayData?.date,
-              revenue: dayData?.revenue,
-              purchases: dayData?.purchases,
-              purchaseIds: dayData?.purchaseIds,
-              purchaseDetails: dayData?.purchaseDetails,
-              totalItemsInFiltered: filteredData.length
-            });
             return formatDate(dayData.date);
           },
           label: (context) => {
