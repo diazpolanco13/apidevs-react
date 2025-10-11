@@ -24,6 +24,8 @@ export async function GET(req: Request) {
       return NextResponse.redirect(getURL('/signin'));
     }
 
+    console.log('Authenticated user:', user.id, user.email);
+
     // Obtener customer de Supabase
     const { data: customer, error: customerError } = await supabase
       .from('customers')
