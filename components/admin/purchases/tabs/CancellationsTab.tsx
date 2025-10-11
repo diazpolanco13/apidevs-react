@@ -30,7 +30,7 @@ export default function CancellationsTab({}: CancellationsTabProps) {
   const [filters, setFilters] = useState<CancellationFilters>({
     sortBy: 'created_at',
     sortOrder: 'desc',
-    limit: 50,
+    limit: 10,
     offset: 0
   });
   const [showFilters, setShowFilters] = useState(false);
@@ -320,60 +320,60 @@ export default function CancellationsTab({}: CancellationsTabProps) {
             </div>
           ) : (
             cancellations.map((cancellation) => (
-              <div key={cancellation.id} className="p-6 hover:bg-gray-800/30 transition-colors">
-                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+              <div key={cancellation.id} className="p-4 hover:bg-gray-800/30 transition-colors">
+                <div className="flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="px-2 py-1 text-xs font-medium bg-red-500/20 text-red-400 rounded-lg">
                         {getReasonLabel(cancellation.reason)}
                       </span>
-                      <span className="text-sm text-gray-400">
+                      <span className="text-xs text-gray-400">
                         {formatDate(cancellation.created_at)}
                       </span>
                     </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                       <div>
-                        <p className="text-sm text-gray-400">Usuario</p>
-                        <p className="text-white font-medium">{cancellation.user_email}</p>
+                        <p className="text-xs text-gray-400">Usuario</p>
+                        <p className="text-white font-medium truncate">{cancellation.user_email}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-400">Plan</p>
-                        <p className="text-white font-medium">{cancellation.product_name}</p>
+                        <p className="text-xs text-gray-400">Plan</p>
+                        <p className="text-white font-medium truncate">{cancellation.product_name}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-400">Tiempo Activo</p>
+                        <p className="text-xs text-gray-400">Tiempo Activo</p>
                         <p className="text-white font-medium">{cancellation.days_active} días</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-400">Revenue Perdido</p>
+                        <p className="text-xs text-gray-400">Revenue</p>
                         <p className="text-red-400 font-medium">{formatCurrency(cancellation.revenue_lost, cancellation.currency)}</p>
                       </div>
                     </div>
 
                     {cancellation.feedback && (
-                      <div className="mt-3 p-3 bg-gray-800/50 rounded-lg">
-                        <p className="text-sm text-gray-400 mb-1">Comentario del usuario:</p>
-                        <p className="text-gray-300 text-sm">{cancellation.feedback}</p>
+                      <div className="mt-2 p-2 bg-gray-800/50 rounded text-xs">
+                        <p className="text-gray-400 mb-1">Comentario:</p>
+                        <p className="text-gray-300 line-clamp-2">{cancellation.feedback}</p>
                       </div>
                     )}
 
-                    <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
-                      <span>ID: {cancellation.subscription_id}</span>
+                    <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                      <span className="truncate">ID: {cancellation.subscription_id}</span>
                       <span>•</span>
                       <span>Estado: {cancellation.subscription_status}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-center lg:justify-start gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <button
-                      className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-colors"
+                      className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition-colors"
                       title="Contactar usuario"
                     >
                       <Mail className="w-4 h-4" />
                     </button>
                     <button
-                      className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded-lg transition-colors"
+                      className="p-1.5 text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded transition-colors"
                       title="Reactivar suscripción"
                     >
                       <RotateCcw className="w-4 h-4" />
@@ -384,6 +384,51 @@ export default function CancellationsTab({}: CancellationsTabProps) {
             ))
           )}
         </div>
+
+        {/* Paginación */}
+        {totalCount > filters.limit! && (
+          <div className="px-6 py-4 border-t border-gray-800">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                Mostrando {filters.offset! + 1} - {Math.min(filters.offset! + filters.limit!, totalCount)} de {totalCount} cancelaciones
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleFilterChange('offset', Math.max(0, filters.offset! - filters.limit!))}
+                  disabled={filters.offset === 0}
+                  className="px-3 py-1 text-sm bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Anterior
+                </button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.ceil(totalCount / filters.limit!) }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleFilterChange('offset', i * filters.limit!)}
+                      className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                        Math.floor(filters.offset! / filters.limit!) === i
+                          ? 'bg-apidevs-primary text-black'
+                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+                
+                <button
+                  onClick={() => handleFilterChange('offset', filters.offset! + filters.limit!)}
+                  disabled={filters.offset! + filters.limit! >= totalCount}
+                  className="px-3 py-1 text-sm bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
