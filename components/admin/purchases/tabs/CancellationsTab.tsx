@@ -39,8 +39,12 @@ export default function CancellationsTab({}: CancellationsTabProps) {
   // Cargar datos iniciales
   useEffect(() => {
     loadCancellations();
-    loadAnalytics();
   }, [filters]);
+
+  // Cargar analytics solo una vez al montar el componente
+  useEffect(() => {
+    loadAnalytics();
+  }, []);
 
   const loadCancellations = async () => {
     try {

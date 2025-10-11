@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
     console.log('🔍 Fetching cancellations with filters:', filters);
 
-    // Construir query base
+    // Construir query base - Simplificada para evitar problemas de joins
     let query = supabase
       .from('subscription_feedback')
       .select(`
@@ -40,19 +40,19 @@ export async function GET(req: NextRequest) {
         feedback,
         action,
         created_at,
-        subscriptions!inner(
+        subscriptions(
           id,
           status,
           created,
           user_id,
-          prices!inner(
+          prices(
             unit_amount,
             currency,
-            products!inner(
+            products(
               name
             )
           ),
-          users!inner(
+          users(
             email
           )
         )
@@ -84,6 +84,12 @@ export async function GET(req: NextRequest) {
     query = query.range(filters.offset!, filters.offset! + filters.limit! - 1);
 
     const { data: cancellations, error } = await query;
+
+    console.log('📋 Raw cancellations data:', {
+      count: cancellations?.length || 0,
+      error: error?.message,
+      firstItem: cancellations?.[0]
+    });
 
     if (error) {
       console.error('❌ Error fetching cancellations:', error);

@@ -35,7 +35,7 @@ export async function GET() {
 
     let avgDaysActive = 0;
     if (daysActiveData && daysActiveData.length > 0) {
-      const totalDays = daysActiveData.reduce((sum, item) => {
+      const totalDays = daysActiveData.reduce((sum, item: any) => {
         const subscriptionCreated = new Date(item.subscriptions.created);
         const cancelledAt = new Date(item.created_at);
         const daysActive = (cancelledAt.getTime() - subscriptionCreated.getTime()) / (1000 * 60 * 60 * 24);
@@ -59,7 +59,7 @@ export async function GET() {
 
     let revenueLost = 0;
     if (revenueData) {
-      revenueLost = revenueData.reduce((sum, item) => {
+      revenueLost = revenueData.reduce((sum, item: any) => {
         const unitAmount = item.subscriptions?.prices?.unit_amount || 0;
         return sum + (unitAmount / 100); // Convertir de centavos
       }, 0);
@@ -73,7 +73,7 @@ export async function GET() {
 
     const reasonCounts: { [key: string]: number } = {};
     if (reasonsData) {
-      reasonsData.forEach(item => {
+      reasonsData.forEach((item: any) => {
         reasonCounts[item.reason] = (reasonCounts[item.reason] || 0) + 1;
       });
     }
@@ -98,7 +98,7 @@ export async function GET() {
 
     const monthlyTrend: { [key: string]: number } = {};
     if (monthlyData) {
-      monthlyData.forEach(item => {
+      monthlyData.forEach((item: any) => {
         const date = new Date(item.created_at);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         monthlyTrend[monthKey] = (monthlyTrend[monthKey] || 0) + 1;
