@@ -128,15 +128,15 @@ export default function CancellationsTab({}: CancellationsTabProps) {
   return (
     <div className="space-y-6">
       {/* Header con Analytics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-red-500/10 to-red-600/5 border border-red-500/20 rounded-xl p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
               <AlertTriangle className="w-5 h-5 text-red-400" />
             </div>
-            <div>
-              <p className="text-sm text-gray-400">Cancelaciones Totales</p>
-              <p className="text-2xl font-bold text-white">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-gray-400 truncate">Cancelaciones Totales</p>
+              <p className="text-xl sm:text-2xl font-bold text-white truncate">
                 {analyticsLoading ? '...' : analytics?.totalCancellations || 0}
               </p>
             </div>
@@ -145,12 +145,12 @@ export default function CancellationsTab({}: CancellationsTabProps) {
 
         <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/20 rounded-xl p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
               <Clock className="w-5 h-5 text-orange-400" />
             </div>
-            <div>
-              <p className="text-sm text-gray-400">Tiempo Promedio</p>
-              <p className="text-2xl font-bold text-white">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-gray-400 truncate">Tiempo Promedio</p>
+              <p className="text-xl sm:text-2xl font-bold text-white truncate">
                 {analyticsLoading ? '...' : `${analytics?.avgDaysActive || 0} días`}
               </p>
             </div>
@@ -159,12 +159,12 @@ export default function CancellationsTab({}: CancellationsTabProps) {
 
         <div className="bg-gradient-to-br from-red-500/10 to-red-600/5 border border-red-500/20 rounded-xl p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
               <DollarSign className="w-5 h-5 text-red-400" />
             </div>
-            <div>
-              <p className="text-sm text-gray-400">Revenue Perdido</p>
-              <p className="text-2xl font-bold text-white">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-gray-400 truncate">Revenue Perdido</p>
+              <p className="text-xl sm:text-2xl font-bold text-white truncate">
                 {analyticsLoading ? '...' : formatCurrency(analytics?.revenueLost || 0)}
               </p>
             </div>
@@ -173,12 +173,12 @@ export default function CancellationsTab({}: CancellationsTabProps) {
 
         <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-xl p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
               <User className="w-5 h-5 text-purple-400" />
             </div>
-            <div>
-              <p className="text-sm text-gray-400">Razón Principal</p>
-              <p className="text-sm font-semibold text-white">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-gray-400 truncate">Razón Principal</p>
+              <p className="text-sm font-semibold text-white truncate">
                 {analyticsLoading ? '...' : getReasonLabel(analytics?.topReasons[0]?.reason || '')}
               </p>
             </div>
@@ -200,7 +200,7 @@ export default function CancellationsTab({}: CancellationsTabProps) {
           </button>
         </div>
 
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -213,7 +213,7 @@ export default function CancellationsTab({}: CancellationsTabProps) {
           </div>
           <button
             onClick={loadCancellations}
-            className="px-4 py-2 bg-apidevs-primary hover:bg-green-400 text-black font-semibold rounded-lg transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-apidevs-primary hover:bg-green-400 text-black font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 flex-shrink-0"
           >
             <RefreshCw className="w-4 h-4" />
             Buscar
@@ -268,10 +268,10 @@ export default function CancellationsTab({}: CancellationsTabProps) {
             <h3 className="text-lg font-semibold text-white">
               Cancelaciones ({totalCount})
             </h3>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => handleSort('created_at')}
-                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                className={`px-3 py-1 text-sm rounded-lg transition-colors whitespace-nowrap ${
                   filters.sortBy === 'created_at' 
                     ? 'bg-apidevs-primary text-black' 
                     : 'bg-gray-800 text-gray-400 hover:text-white'
@@ -281,7 +281,7 @@ export default function CancellationsTab({}: CancellationsTabProps) {
               </button>
               <button
                 onClick={() => handleSort('days_active')}
-                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                className={`px-3 py-1 text-sm rounded-lg transition-colors whitespace-nowrap ${
                   filters.sortBy === 'days_active' 
                     ? 'bg-apidevs-primary text-black' 
                     : 'bg-gray-800 text-gray-400 hover:text-white'
@@ -291,7 +291,7 @@ export default function CancellationsTab({}: CancellationsTabProps) {
               </button>
               <button
                 onClick={() => handleSort('revenue_lost')}
-                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                className={`px-3 py-1 text-sm rounded-lg transition-colors whitespace-nowrap ${
                   filters.sortBy === 'revenue_lost' 
                     ? 'bg-apidevs-primary text-black' 
                     : 'bg-gray-800 text-gray-400 hover:text-white'
@@ -317,8 +317,8 @@ export default function CancellationsTab({}: CancellationsTabProps) {
           ) : (
             cancellations.map((cancellation) => (
               <div key={cancellation.id} className="p-6 hover:bg-gray-800/30 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="px-2 py-1 text-xs font-medium bg-red-500/20 text-red-400 rounded-lg">
                         {getReasonLabel(cancellation.reason)}
@@ -328,7 +328,7 @@ export default function CancellationsTab({}: CancellationsTabProps) {
                       </span>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
                       <div>
                         <p className="text-sm text-gray-400">Usuario</p>
                         <p className="text-white font-medium">{cancellation.user_email}</p>
@@ -361,7 +361,7 @@ export default function CancellationsTab({}: CancellationsTabProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 ml-4">
+                  <div className="flex items-center justify-center lg:justify-start gap-2 flex-shrink-0">
                     <button
                       className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-colors"
                       title="Contactar usuario"
