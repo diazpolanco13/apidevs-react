@@ -11,7 +11,8 @@ import {
   Clock,
   AlertTriangle,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  CheckCircle
 } from 'lucide-react';
 
 interface Purchase {
@@ -33,7 +34,7 @@ interface ActivityEvent {
 
 interface ActivityItem {
   id: string;
-  type: 'purchase' | 'payment' | 'refund' | 'login' | 'subscription_cancelled' | 'subscription_final_cancelled';
+  type: 'purchase' | 'payment' | 'refund' | 'login' | 'subscription_cancelled' | 'subscription_final_cancelled' | 'subscription_reactivated';
   title: string;
   description: string;
   amount?: number;
@@ -165,6 +166,20 @@ export default function RecentActivity({ userEmail, userId }: RecentActivityProp
               timestamp: event.created_at,
               icon: AlertTriangle,
               color: 'text-red-400'
+            });
+          } else if (event.event_type === 'subscription_reactivated') {
+            const eventData = event.event_data;
+            const subscriptionId = eventData.stripe_subscription_id || eventData.subscription_id;
+            const shortId = subscriptionId ? subscriptionId.split('_')[1].substring(0, 8) : 'N/A';
+            
+            activityList.push({
+              id: event.id,
+              type: 'subscription_reactivated',
+              title: 'Suscripción reactivada',
+              description: `${eventData.product_name} (${shortId}) - Renovación automática restaurada`,
+              timestamp: event.created_at,
+              icon: CheckCircle,
+              color: 'text-green-400'
             });
           }
         });
