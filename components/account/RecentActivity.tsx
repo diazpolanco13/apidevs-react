@@ -8,7 +8,8 @@ import {
   XCircle, 
   LogIn, 
   TrendingUp,
-  Clock
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
 
 interface Purchase {
@@ -21,9 +22,16 @@ interface Purchase {
   order_status: string | null;
 }
 
+interface ActivityEvent {
+  id: string;
+  event_type: string;
+  event_data: any;
+  created_at: string;
+}
+
 interface ActivityItem {
   id: string;
-  type: 'purchase' | 'payment' | 'refund' | 'login';
+  type: 'purchase' | 'payment' | 'refund' | 'login' | 'subscription_cancelled';
   title: string;
   description: string;
   amount?: number;
@@ -53,6 +61,14 @@ export default function RecentActivity({ userEmail, userId }: RecentActivityProp
           .eq('customer_email', userEmail)
           .is('legacy_user_id', null)
           .order('order_date', { ascending: false })
+          .limit(10);
+
+        // Obtener eventos de actividad del usuario
+        const { data: activityEvents } = await supabase
+          .from('user_activity_events')
+          .select('id, event_type, event_data, created_at')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
           .limit(10);
 
         const activityList: ActivityItem[] = [];
@@ -94,6 +110,22 @@ export default function RecentActivity({ userEmail, userId }: RecentActivityProp
               timestamp: purchase.order_date,
               icon: CreditCard,
               color: 'text-green-400'
+            });
+          }
+        });
+
+        // Mapear eventos de actividad
+        (activityEvents as ActivityEvent[] | null)?.forEach((event) => {
+          if (event.event_type === 'subscription_cancelled') {
+            const eventData = event.event_data;
+            activityList.push({
+              id: event.id,
+              type: 'subscription_cancelled',
+              title: 'Suscripción cancelada',
+              description: `${eventData.product_name} cancelada - Acceso hasta ${new Date(eventData.access_until).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`,
+              timestamp: event.created_at,
+              icon: AlertTriangle,
+              color: 'text-orange-400'
             });
           }
         });
