@@ -126,6 +126,7 @@ export async function POST(req: Request) {
               if (customerEmail) {
                 console.log('📧 Customer Email:', customerEmail);
                 
+                // 🚫 AUTO-REVOKE: Revocar accesos premium
                 const revokeResult = await revokeIndicatorAccessOnCancellation(
                   customerEmail,
                   subscription.id,
@@ -140,6 +141,60 @@ export async function POST(req: Request) {
                   console.log('   Indicators Affected:', revokeResult.indicatorsAffected);
                 }
                 console.log('======================================================\n');
+                
+                // 📝 REGISTRAR CANCELACIÓN DEFINITIVA EN ACTIVIDAD RECIENTE
+                try {
+                  // Buscar usuario en Supabase
+                  const { data: user } = await (supabaseAdmin as any)
+                    .from('users')
+                    .select('id')
+                    .eq('email', customerEmail)
+                    .maybeSingle();
+                  
+                  if (user) {
+                    // 🔧 PREVENIR DUPLICADOS: Verificar si ya existe un evento de cancelación definitiva
+                    const { data: existingEvent } = await (supabaseAdmin as any)
+                      .from('user_activity_events')
+                      .select('id')
+                      .eq('user_id', user.id)
+                      .eq('event_type', 'subscription_final_cancelled')
+                      .contains('event_data', { stripe_subscription_id: subscription.id })
+                      .maybeSingle();
+                    
+                    if (existingEvent) {
+                      console.log('⚠️ Evento de cancelación definitiva ya existe, omitiendo duplicado');
+                    } else {
+                      // Obtener nombre del producto
+                      const productName = subscription.items.data[0]?.price?.metadata?.plan_name || 
+                                        subscription.items.data[0]?.plan?.metadata?.plan_name || 
+                                        'APIDevs indicator - Pro';
+                      
+                      // Crear evento de actividad - CANCELACIÓN DEFINITIVA
+                      const activityEvent = {
+                        user_id: user.id,
+                        event_type: 'subscription_final_cancelled',
+                        event_data: {
+                          subscription_id: subscription.id,
+                          stripe_subscription_id: subscription.id,
+                          product_name: productName,
+                          cancelled_at: new Date().toISOString(),
+                          final_cancellation: true,
+                          reason: 'subscription_deleted',
+                          cancellation_type: 'final' // Cancelación definitiva
+                        }
+                      };
+                      
+                      await (supabaseAdmin as any)
+                        .from('user_activity_events')
+                        .insert(activityEvent);
+                      
+                      console.log('✅ Evento de cancelación DEFINITIVA registrado en Actividad Reciente');
+                    }
+                  }
+                } catch (activityError) {
+                  console.error('⚠️ Error registrando cancelación definitiva en actividad:', activityError);
+                  // No fallar el webhook por esto
+                }
               } else {
                 console.error('❌ No se pudo obtener email del customer para auto-revoke');
               }
@@ -149,67 +204,81 @@ export async function POST(req: Request) {
             }
           }
           
-          // ℹ️ CANCELACIÓN PROGRAMADA DETECTADA (NO revocar hasta que termine el período)
-          if (event.type === 'customer.subscription.updated' && (subscription.cancel_at_period_end || subscription.cancel_at)) {
-            console.log('\n⚠️ ========== CANCELACIÓN PROGRAMADA DETECTADA ==========');
-            console.log('🔖 Subscription ID:', subscription.id);
-            console.log('👤 Customer ID:', subscription.customer);
-            console.log('📅 Cancel At:', subscription.cancel_at);
-            console.log('📅 Cancel At Period End:', subscription.cancel_at_period_end);
-            console.log('📅 Current Period End:', subscription.items.data[0]?.current_period_end);
-            console.log('💰 Status:', subscription.status);
-            console.log('ℹ️ Acción: NO revocar accesos - usuario mantiene acceso hasta fecha límite');
-            console.log('========================================================\n');
+        // 🎯 EVENTO IMPORTANTE: Solo registrar cuando se PROGRAMA la cancelación futura
+        if (event.type === 'customer.subscription.updated' && subscription.cancel_at_period_end === true) {
+          console.log('\n⚠️ ========== CANCELACIÓN PROGRAMADA DETECTADA ==========');
+          console.log('🔖 Subscription ID:', subscription.id);
+          console.log('👤 Customer ID:', subscription.customer);
+          console.log('📅 Cancel At:', subscription.cancel_at);
+          console.log('📅 Cancel At Period End:', subscription.cancel_at_period_end);
+          console.log('📅 Current Period End:', subscription.items.data[0]?.current_period_end);
+          console.log('💰 Status:', subscription.status);
+          console.log('ℹ️ Acción: REGISTRAR en Actividad Reciente - usuario mantiene acceso hasta fecha límite');
+          console.log('========================================================\n');
+          
+          // 📝 REGISTRAR CANCELACIÓN PROGRAMADA EN ACTIVIDAD RECIENTE
+          try {
+            const customerEmail = await getCustomerEmail(subscription.customer as string);
             
-            // 📝 REGISTRAR CANCELACIÓN EN ACTIVIDAD RECIENTE (sin revocar accesos)
-            try {
-              const customerEmail = await getCustomerEmail(subscription.customer as string);
+            if (customerEmail) {
+              // Buscar usuario en Supabase
+              const { data: user } = await (supabaseAdmin as any)
+                .from('users')
+                .select('id')
+                .eq('email', customerEmail)
+                .maybeSingle();
               
-              if (customerEmail) {
-                // Buscar usuario en Supabase
-                const { data: user } = await (supabaseAdmin as any)
-                  .from('users')
+              if (user) {
+                // 🔧 PREVENIR DUPLICADOS: Verificar si ya existe un evento para esta suscripción
+                const { data: existingEvent } = await (supabaseAdmin as any)
+                  .from('user_activity_events')
                   .select('id')
-                  .eq('email', customerEmail)
+                  .eq('user_id', user.id)
+                  .eq('event_type', 'subscription_cancelled')
+                  .contains('event_data', { stripe_subscription_id: subscription.id })
                   .maybeSingle();
                 
-                if (user) {
-                  // Obtener nombre del producto
-                  const productName = subscription.items.data[0]?.price?.metadata?.plan_name || 
-                                    subscription.items.data[0]?.plan?.metadata?.plan_name || 
-                                    'APIDevs indicator - Pro';
-                  
-                  // Calcular fecha de acceso hasta
-                  const accessUntil = subscription.items.data[0]?.current_period_end || 
-                                    subscription.current_period_end;
-                  
-                  // Crear evento de actividad
-                  const activityEvent = {
-                    user_id: user.id,
-                    event_type: 'subscription_cancelled',
-                    event_data: {
-                      subscription_id: subscription.id,
-                      stripe_subscription_id: subscription.id,
-                      product_name: productName,
-                      cancelled_at: new Date().toISOString(),
-                      access_until: new Date(accessUntil * 1000).toISOString(), // Convertir timestamp a ISO
-                      reason: 'user_initiated',
-                      cancellation_type: 'scheduled' // Diferente de 'immediate'
-                    }
-                  };
-                  
-                  await (supabaseAdmin as any)
-                    .from('user_activity_events')
-                    .insert(activityEvent);
-                  
-                  console.log('✅ Evento de cancelación registrado en Actividad Reciente');
+                if (existingEvent) {
+                  console.log('⚠️ Evento de cancelación ya existe para esta suscripción, omitiendo duplicado');
+                  return;
                 }
+                
+                // Obtener nombre del producto
+                const productName = subscription.items.data[0]?.price?.metadata?.plan_name || 
+                                  subscription.items.data[0]?.plan?.metadata?.plan_name || 
+                                  'APIDevs indicator - Pro';
+                
+                // Calcular fecha de acceso hasta
+                const accessUntil = subscription.items.data[0]?.current_period_end || 
+                                  (subscription as any).current_period_end;
+                
+                // Crear evento de actividad - CANCELACIÓN PROGRAMADA
+                const activityEvent = {
+                  user_id: user.id,
+                  event_type: 'subscription_cancelled',
+                  event_data: {
+                    subscription_id: subscription.id,
+                    stripe_subscription_id: subscription.id,
+                    product_name: productName,
+                    cancelled_at: new Date().toISOString(),
+                    access_until: new Date(accessUntil * 1000).toISOString(), // Convertir timestamp a ISO
+                    reason: 'user_initiated',
+                    cancellation_type: 'scheduled' // Cancelación programada
+                  }
+                };
+                
+                await (supabaseAdmin as any)
+                  .from('user_activity_events')
+                  .insert(activityEvent);
+                
+                console.log('✅ Evento de cancelación PROGRAMADA registrado en Actividad Reciente');
               }
-            } catch (activityError) {
-              console.error('⚠️ Error registrando cancelación en actividad:', activityError);
-              // No fallar el webhook por esto
             }
+          } catch (activityError) {
+            console.error('⚠️ Error registrando cancelación programada en actividad:', activityError);
+            // No fallar el webhook por esto
           }
+        }
           break;
         case 'checkout.session.completed':
           const checkoutSession = event.data.object as Stripe.Checkout.Session;

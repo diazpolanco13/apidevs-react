@@ -33,7 +33,7 @@ interface ActivityEvent {
 
 interface ActivityItem {
   id: string;
-  type: 'purchase' | 'payment' | 'refund' | 'login' | 'subscription_cancelled';
+  type: 'purchase' | 'payment' | 'refund' | 'login' | 'subscription_cancelled' | 'subscription_final_cancelled';
   title: string;
   description: string;
   amount?: number;
@@ -127,14 +127,44 @@ export default function RecentActivity({ userEmail, userId }: RecentActivityProp
             const subscriptionId = eventData.stripe_subscription_id || eventData.subscription_id;
             const shortId = subscriptionId ? subscriptionId.split('_')[1].substring(0, 8) : 'N/A';
             
+            // Determinar si es cancelación programada o definitiva
+            const isFinalCancellation = eventData.final_cancellation === true;
+            const title = isFinalCancellation ? 'Suscripción cancelada definitivamente' : 'Suscripción cancelada';
+            
+            let description;
+            if (isFinalCancellation) {
+              description = `${eventData.product_name} (${shortId}) - Acceso revocado`;
+            } else {
+              const accessUntil = eventData.access_until;
+              if (accessUntil && accessUntil !== 'Invalid Date') {
+                description = `${eventData.product_name} (${shortId}) - Acceso hasta ${new Date(accessUntil).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+              } else {
+                description = `${eventData.product_name} (${shortId}) - Acceso hasta fecha límite`;
+              }
+            }
+            
             activityList.push({
               id: event.id,
-              type: 'subscription_cancelled',
-              title: 'Suscripción cancelada',
-              description: `${eventData.product_name} (${shortId}) - Acceso hasta ${new Date(eventData.access_until).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`,
+              type: isFinalCancellation ? 'subscription_final_cancelled' : 'subscription_cancelled',
+              title,
+              description,
               timestamp: event.created_at,
               icon: AlertTriangle,
-              color: 'text-orange-400'
+              color: isFinalCancellation ? 'text-red-400' : 'text-orange-400'
+            });
+          } else if (event.event_type === 'subscription_final_cancelled') {
+            const eventData = event.event_data;
+            const subscriptionId = eventData.stripe_subscription_id || eventData.subscription_id;
+            const shortId = subscriptionId ? subscriptionId.split('_')[1].substring(0, 8) : 'N/A';
+            
+            activityList.push({
+              id: event.id,
+              type: 'subscription_final_cancelled',
+              title: 'Suscripción cancelada definitivamente',
+              description: `${eventData.product_name} (${shortId}) - Acceso revocado`,
+              timestamp: event.created_at,
+              icon: AlertTriangle,
+              color: 'text-red-400'
             });
           }
         });
@@ -165,39 +195,32 @@ export default function RecentActivity({ userEmail, userId }: RecentActivityProp
   }, [userEmail, userId, currentPage]);
 
   const getFormattedTime = (timestamp: string) => {
-    const now = new Date();
-    const date = new Date(timestamp);
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    // Para eventos muy recientes (menos de 1 hora), mostrar tiempo relativo
-    if (diffInSeconds < 3600) {
-      if (diffInSeconds < 60) return 'Hace unos segundos';
-      return `Hace ${Math.floor(diffInSeconds / 60)} min`;
-    }
-
-    // Para eventos más antiguos, mostrar fecha y hora exacta
-    const isToday = date.toDateString() === now.toDateString();
-    const isYesterday = new Date(now.getTime() - 86400000).toDateString() === date.toDateString();
-
-    if (isToday) {
-      return `Hoy ${date.toLocaleTimeString('es-ES', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      })}`;
-    } else if (isYesterday) {
-      return `Ayer ${date.toLocaleTimeString('es-ES', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      })}`;
+    // SOLUCIÓN UNIVERSAL: Detectar automáticamente la zona horaria del usuario
+    let date: Date;
+    
+    // Si la fecha ya tiene timezone (ISO completo), usar directamente
+    if (timestamp.includes('Z') || timestamp.includes('+') || timestamp.includes('-', 10)) {
+      date = new Date(timestamp);
     } else {
-      return date.toLocaleDateString('es-ES', { 
-        day: 'numeric', 
-        month: 'short',
-        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      // Si no tiene timezone, asumir que viene en UTC y agregar 'Z'
+      // Esto es correcto porque Supabase almacena en UTC
+      date = new Date(timestamp + 'Z');
     }
+
+    // Usar toLocaleString con opciones para formato universal
+    // JavaScript automáticamente detecta la zona horaria del usuario
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false, // Formato 24 horas
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone // Zona horaria automática del usuario
+    };
+
+    return date.toLocaleString('es-ES', options).replace(/,/g, '');
   };
 
   if (loading) {
