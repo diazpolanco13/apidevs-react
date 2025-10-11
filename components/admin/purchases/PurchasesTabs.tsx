@@ -7,7 +7,8 @@ import {
   ShoppingBag, 
   RotateCcw, 
   BarChart3,
-  List
+  List,
+  AlertTriangle
 } from 'lucide-react';
 import PurchasesHeader from './PurchasesHeader';
 import { PurchaseMetrics } from '@/types/purchases';
@@ -20,6 +21,7 @@ interface PurchasesTabsProps {
   oneTimeView: React.ReactNode;
   refundsView: React.ReactNode;
   analyticsView: React.ReactNode;
+  cancellationsView: React.ReactNode;
 }
 
 export default function PurchasesTabs({
@@ -29,7 +31,8 @@ export default function PurchasesTabs({
   subscriptionsView,
   oneTimeView,
   refundsView,
-  analyticsView
+  analyticsView,
+  cancellationsView
 }: PurchasesTabsProps) {
   const [activeTab, setActiveTab] = useState('overview');
   
@@ -72,6 +75,12 @@ export default function PurchasesTabs({
       name: 'Analytics',
       icon: BarChart3,
       description: 'Análisis financiero'
+    },
+    {
+      id: 'cancellations',
+      name: 'Cancelaciones',
+      icon: AlertTriangle,
+      description: 'Gestión de cancelaciones'
     }
   ];
 
@@ -89,6 +98,8 @@ export default function PurchasesTabs({
         return refundsView;
       case 'analytics':
         return analyticsView;
+      case 'cancellations':
+        return cancellationsView;
       default:
         return overviewView;
     }
