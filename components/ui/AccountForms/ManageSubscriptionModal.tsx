@@ -60,7 +60,11 @@ export default function ManageSubscriptionModal({ isOpen, onClose, subscription 
       // Llamar a Stripe para cancelar
       const response = await fetch('/api/stripe/cancel-subscription', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
         body: JSON.stringify({
           subscriptionId: subscription.stripe_subscription_id
         })
@@ -82,9 +86,12 @@ export default function ManageSubscriptionModal({ isOpen, onClose, subscription 
   const handleOpenPortal = async () => {
     try {
       const response = await fetch('/api/stripe/customer-portal?return_url=' + encodeURIComponent('/account/suscripcion'), {
+        method: 'GET',
         headers: {
-          'Accept': 'application/json'
-        }
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
       });
       
       if (response.ok) {
@@ -107,9 +114,12 @@ export default function ManageSubscriptionModal({ isOpen, onClose, subscription 
   const handleDownloadInvoices = async () => {
     try {
       const response = await fetch('/api/stripe/customer-portal?return_url=' + encodeURIComponent('/account/suscripcion'), {
+        method: 'GET',
         headers: {
-          'Accept': 'application/json'
-        }
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
       });
       
       if (response.ok) {
