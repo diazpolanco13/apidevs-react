@@ -14,7 +14,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('📊 Fetching cancellation analytics...');
+    // Obteniendo analytics de cancelaciones
 
     // 1. Total de cancelaciones
     const { count: totalCancellations } = await supabase
@@ -122,12 +122,7 @@ export async function GET() {
       monthlyTrend: monthlyTrendArray
     };
 
-    console.log('✅ Analytics calculated:', {
-      totalCancellations: analytics.totalCancellations,
-      avgDaysActive: analytics.avgDaysActive,
-      revenueLost: analytics.revenueLost,
-      topReasonsCount: analytics.topReasons.length
-    });
+    // Analytics calculados exitosamente
 
     return NextResponse.json(analytics);
 

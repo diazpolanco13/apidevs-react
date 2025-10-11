@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       offset: parseInt(searchParams.get('offset') || '0')
     };
 
-    console.log('🔍 Fetching cancellations with filters:', filters);
+    // Obteniendo cancelaciones con filtros
 
     // Construir query base - Corregida para usar relaciones correctas
     let query = supabase
@@ -82,11 +82,7 @@ export async function GET(req: NextRequest) {
 
     const { data: cancellations, error } = await query;
 
-    console.log('📋 Raw cancellations data:', {
-      count: cancellations?.length || 0,
-      error: error?.message,
-      firstItem: cancellations?.[0]
-    });
+    // Datos de cancelaciones obtenidos
 
     if (error) {
       console.error('❌ Error fetching cancellations:', error);
@@ -142,7 +138,7 @@ export async function GET(req: NextRequest) {
       .select('*', { count: 'exact', head: true })
       .eq('action', 'cancel');
 
-    console.log(`✅ Found ${transformedCancellations.length} cancellations (total: ${totalCount})`);
+    // Cancelaciones procesadas exitosamente
 
     return NextResponse.json({
       cancellations: transformedCancellations,

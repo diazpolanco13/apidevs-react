@@ -41,12 +41,7 @@ export async function POST(req: NextRequest) {
       subscription.id
     );
 
-    console.log('🔍 Stripe subscription status:', {
-      id: stripeSubscription.id,
-      status: stripeSubscription.status,
-      cancel_at_period_end: stripeSubscription.cancel_at_period_end,
-      current_period_end: (stripeSubscription as any).current_period_end
-    });
+    // Verificación de estado de suscripción en Stripe
 
     if (!stripeSubscription.cancel_at_period_end) {
       return NextResponse.json(
@@ -97,7 +92,7 @@ export async function POST(req: NextRequest) {
       // No fallar aquí, la reactivación principal ya fue exitosa
     }
 
-    console.log('✅ Suscripción reactivada exitosamente:', subscription.id);
+    // Suscripción reactivada exitosamente
 
     return NextResponse.json({
       success: true,
