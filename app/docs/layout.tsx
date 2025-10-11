@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { client } from '@/sanity/lib/client';
 import { SIDEBAR_DOCS_QUERY, type SidebarData } from '@/sanity/lib/doc-queries';
 import DocsSidebar from '@/components/docs/DocsSidebar';
@@ -70,9 +69,7 @@ export default async function DocsLayout({
 
           {/* Search + CTA */}
           <div className="flex items-center gap-4">
-            <Suspense fallback={<div className="w-64 h-10 bg-gray-900 rounded-lg animate-pulse" />}>
-              <DocsSearch />
-            </Suspense>
+            <DocsSearch />
             <a
               href="/signin"
               className="hidden sm:block px-4 py-2 bg-apidevs-primary hover:bg-apidevs-primary-dark text-black font-semibold rounded-lg transition-colors text-sm"
