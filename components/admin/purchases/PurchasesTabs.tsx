@@ -109,7 +109,7 @@ export default function PurchasesTabs({
     <div className="space-y-6">
       {/* Tabs Header - SIEMPRE PRIMERO */}
       <div className="border-b border-gray-800">
-        <nav className="flex space-x-1 -mb-px overflow-x-auto">
+        <nav className="flex gap-1 -mb-px overflow-x-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -119,19 +119,20 @@ export default function PurchasesTabs({
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  group relative flex items-center gap-3 px-6 py-4 border-b-2 font-medium text-sm transition-all whitespace-nowrap
+                  group relative flex items-center gap-2 px-3 py-3 border-b-2 font-medium text-sm transition-all whitespace-nowrap flex-shrink-0
                   ${isActive
                     ? 'border-apidevs-primary text-apidevs-primary'
                     : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-700'
                   }
                 `}
               >
-                <Icon className={`w-5 h-5 ${isActive ? 'text-apidevs-primary' : 'text-gray-400 group-hover:text-gray-300'}`} />
+                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? 'text-apidevs-primary' : 'text-gray-400 group-hover:text-gray-300'}`} />
                 
-                <div className="flex flex-col items-start">
-                  <span>{tab.name}</span>
+                <div className="flex flex-col items-start hidden sm:flex">
+                  <span className="text-sm">{tab.name}</span>
                   <span className="text-xs text-gray-500 mt-0.5">{tab.description}</span>
                 </div>
+                <span className="text-sm sm:hidden">{tab.name}</span>
 
                 {/* Active indicator */}
                 {isActive && (
