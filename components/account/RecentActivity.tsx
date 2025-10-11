@@ -9,7 +9,9 @@ import {
   LogIn, 
   TrendingUp,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 interface Purchase {
@@ -48,28 +50,32 @@ interface RecentActivityProps {
 export default function RecentActivity({ userEmail, userId }: RecentActivityProps) {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     const fetchActivities = async () => {
       try {
         const supabase = createClient();
         
-        // Obtener compras/pagos recientes (excluir legacy)
+        // Obtener compras/pagos recientes (excluir legacy) - más registros para paginación
         const { data: purchases } = await supabase
           .from('purchases')
           .select('id, order_number, order_date, order_total_cents, product_name, revenue_impact, order_status')
           .eq('customer_email', userEmail)
           .is('legacy_user_id', null)
           .order('order_date', { ascending: false })
-          .limit(10);
+          .limit(50); // Más registros para paginación
 
-        // Obtener eventos de actividad del usuario
+        // Obtener eventos de actividad del usuario - más registros para paginación
         const { data: activityEvents } = await supabase
           .from('user_activity_events')
           .select('id, event_type, event_data, created_at')
           .eq('user_id', userId)
           .order('created_at', { ascending: false })
-          .limit(10);
+          .limit(50); // Más registros para paginación
 
         const activityList: ActivityItem[] = [];
 
@@ -130,12 +136,19 @@ export default function RecentActivity({ userEmail, userId }: RecentActivityProp
           }
         });
 
-        // Ordenar por fecha
+        // Ordenar por fecha (más reciente primero)
         activityList.sort((a, b) => 
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
 
-        setActivities(activityList.slice(0, 8));
+        // Paginación
+        const totalItems = activityList.length;
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        const paginatedActivities = activityList.slice(startIndex, endIndex);
+        
+        setHasMore(endIndex < totalItems);
+        setActivities(paginatedActivities);
       } catch (error) {
         console.error('Error fetching activity:', error);
       } finally {
@@ -146,24 +159,42 @@ export default function RecentActivity({ userEmail, userId }: RecentActivityProp
     if (userEmail) {
       fetchActivities();
     }
-  }, [userEmail, userId]);
+  }, [userEmail, userId, currentPage]);
 
-  const getRelativeTime = (timestamp: string) => {
+  const getFormattedTime = (timestamp: string) => {
     const now = new Date();
     const date = new Date(timestamp);
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (diffInSeconds < 60) return 'Hace unos segundos';
-    if (diffInSeconds < 3600) return `Hace ${Math.floor(diffInSeconds / 60)} min`;
-    if (diffInSeconds < 86400) return `Hace ${Math.floor(diffInSeconds / 3600)} horas`;
-    if (diffInSeconds < 604800) return `Hace ${Math.floor(diffInSeconds / 86400)} días`;
-    if (diffInSeconds < 2592000) return `Hace ${Math.floor(diffInSeconds / 604800)} semanas`;
-    
-    return date.toLocaleDateString('es-ES', { 
-      day: 'numeric', 
-      month: 'short',
-      year: 'numeric'
-    });
+    // Para eventos muy recientes (menos de 1 hora), mostrar tiempo relativo
+    if (diffInSeconds < 3600) {
+      if (diffInSeconds < 60) return 'Hace unos segundos';
+      return `Hace ${Math.floor(diffInSeconds / 60)} min`;
+    }
+
+    // Para eventos más antiguos, mostrar fecha y hora exacta
+    const isToday = date.toDateString() === now.toDateString();
+    const isYesterday = new Date(now.getTime() - 86400000).toDateString() === date.toDateString();
+
+    if (isToday) {
+      return `Hoy ${date.toLocaleTimeString('es-ES', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })}`;
+    } else if (isYesterday) {
+      return `Ayer ${date.toLocaleTimeString('es-ES', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })}`;
+    } else {
+      return date.toLocaleDateString('es-ES', { 
+        day: 'numeric', 
+        month: 'short',
+        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
   };
 
   if (loading) {
@@ -197,40 +228,68 @@ export default function RecentActivity({ userEmail, userId }: RecentActivityProp
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {activities.map((activity) => {
         const Icon = activity.icon;
         return (
           <div 
             key={activity.id}
-            className="flex items-start gap-3 p-3 bg-gray-800/30 hover:bg-gray-800/50 rounded-xl transition-all group border border-transparent hover:border-gray-700/50"
+            className="flex items-center gap-3 p-2 bg-gray-800/20 hover:bg-gray-800/40 rounded-lg transition-all group border border-transparent hover:border-gray-700/30"
           >
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-gray-800 border border-gray-700 group-hover:border-gray-600 transition-colors flex-shrink-0`}>
-              <Icon className={`w-5 h-5 ${activity.color}`} />
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-gray-800/50 border border-gray-700/50 group-hover:border-gray-600/50 transition-colors flex-shrink-0`}>
+              <Icon className={`w-4 h-4 ${activity.color}`} />
             </div>
             
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <h4 className="text-white font-medium text-sm">{activity.title}</h4>
-                {activity.amount && (
-                  <span className={`text-sm font-semibold ${activity.type === 'refund' ? 'text-orange-400' : 'text-green-400'} flex-shrink-0`}>
-                    {activity.type === 'refund' ? '-' : ''}${activity.amount.toFixed(2)}
-                  </span>
-                )}
-              </div>
-              
-              <p className="text-gray-400 text-xs mb-1 line-clamp-1">
-                {activity.description}
-              </p>
-              
-              <div className="flex items-center gap-1 text-gray-500 text-xs">
-                <Clock className="w-3 h-3" />
-                <span>{getRelativeTime(activity.timestamp)}</span>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-white font-medium text-sm truncate">{activity.title}</h4>
+                  <p className="text-gray-400 text-xs truncate">
+                    {activity.description}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {activity.amount && (
+                    <span className={`text-sm font-semibold ${activity.type === 'refund' ? 'text-orange-400' : activity.type === 'subscription_cancelled' ? 'text-orange-400' : 'text-green-400'}`}>
+                      {activity.type === 'refund' ? '-' : ''}${activity.amount.toFixed(2)}
+                    </span>
+                  )}
+                  <div className="flex items-center gap-1 text-gray-500 text-xs">
+                    <Clock className="w-3 h-3" />
+                    <span>{getFormattedTime(activity.timestamp)}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         );
       })}
+      
+      {/* Paginación */}
+      {hasMore && (
+        <div className="flex justify-center pt-2">
+          <button
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-800/70 text-gray-300 hover:text-white rounded-lg transition-all text-sm font-medium border border-gray-700/50 hover:border-gray-600/50"
+          >
+            <ChevronDown className="w-4 h-4" />
+            Ver más eventos
+          </button>
+        </div>
+      )}
+      
+      {currentPage > 1 && (
+        <div className="flex justify-center pt-2">
+          <button
+            onClick={() => setCurrentPage(prev => prev - 1)}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-800/70 text-gray-300 hover:text-white rounded-lg transition-all text-sm font-medium border border-gray-700/50 hover:border-gray-600/50"
+          >
+            <ChevronUp className="w-4 h-4" />
+            Ver menos
+          </button>
+        </div>
+      )}
     </div>
   );
 }
