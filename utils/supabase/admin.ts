@@ -196,6 +196,13 @@ const copyBillingDetailsToCustomer = async (
 ) => {
   //Todo: check this assertion
   const customer = payment_method.customer as string;
+  
+  // 🔧 FIX: Validar que billing_details existe antes de hacer destructuring
+  if (!payment_method.billing_details) {
+    console.log('⚠️ Payment method has no billing_details, skipping copy');
+    return;
+  }
+  
   const { name, phone, address } = payment_method.billing_details;
   if (!name || !phone || !address) return;
   //@ts-ignore
