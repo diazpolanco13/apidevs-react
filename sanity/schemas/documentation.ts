@@ -121,33 +121,64 @@ export default defineType({
           ]
         },
         {
-          type: 'code',
+          type: 'object',
           name: 'codeBlock',
           title: 'Bloque de Código',
-          options: {
-            language: 'typescript',
-            languageAlternatives: [
-              { title: 'JavaScript', value: 'javascript' },
-              { title: 'TypeScript', value: 'typescript' },
-              { title: 'JSX', value: 'jsx' },
-              { title: 'TSX', value: 'tsx' },
-              { title: 'Python', value: 'python' },
-              { title: 'Bash', value: 'bash' },
-              { title: 'Shell', value: 'sh' },
-              { title: 'JSON', value: 'json' },
-              { title: 'CSS', value: 'css' },
-              { title: 'HTML', value: 'html' },
-              { title: 'SQL', value: 'sql' },
-              { title: 'GraphQL', value: 'graphql' }
-            ],
-            withFilename: true
+          fields: [
+            {
+              name: 'language',
+              title: 'Lenguaje',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'JavaScript', value: 'javascript' },
+                  { title: 'TypeScript', value: 'typescript' },
+                  { title: 'JSX', value: 'jsx' },
+                  { title: 'TSX', value: 'tsx' },
+                  { title: 'Python', value: 'python' },
+                  { title: 'Bash', value: 'bash' },
+                  { title: 'Shell', value: 'sh' },
+                  { title: 'JSON', value: 'json' },
+                  { title: 'CSS', value: 'css' },
+                  { title: 'HTML', value: 'html' },
+                  { title: 'SQL', value: 'sql' },
+                  { title: 'GraphQL', value: 'graphql' }
+                ]
+              },
+              initialValue: 'typescript'
+            },
+            {
+              name: 'filename',
+              title: 'Nombre del archivo',
+              type: 'string',
+              description: 'Opcional: ejemplo.ts, config.json'
+            },
+            {
+              name: 'code',
+              title: 'Código',
+              type: 'text',
+              rows: 10,
+              validation: (Rule) => Rule.required()
+            }
+          ],
+          preview: {
+            select: {
+              code: 'code',
+              language: 'language',
+              filename: 'filename'
+            },
+            prepare({ code, language, filename }) {
+              return {
+                title: filename || `${language} code`,
+                subtitle: code?.substring(0, 60) + '...'
+              }
+            }
           }
         },
         {
           type: 'object',
           name: 'callout',
           title: 'Callout',
-          icon: () => '💡',
           fields: [
             {
               name: 'type',

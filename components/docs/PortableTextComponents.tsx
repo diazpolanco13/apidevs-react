@@ -35,7 +35,7 @@ export const portableTextComponents = {
         </figure>
       ) : null;
     },
-    code: ({ value }: any) => {
+    codeBlock: ({ value }: any) => {
       return (
         <div className="my-6 group relative">
           {value.filename && (
