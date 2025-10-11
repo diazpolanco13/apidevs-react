@@ -3,6 +3,7 @@ import { getUser, getSubscription } from '@/utils/supabase/queries';
 import { redirect } from 'next/navigation';
 import CustomerPortalForm from '@/components/ui/AccountForms/CustomerPortalForm';
 import PaymentHistory from '@/components/ui/AccountForms/PaymentHistory';
+import ReactivateSubscriptionForm from '@/components/ui/AccountForms/ReactivateSubscriptionForm';
 import { Shield, Crown, Zap, CheckCircle, XCircle, Calendar, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 
@@ -265,12 +266,7 @@ export default async function SuscripcionPage() {
                 <CustomerPortalForm subscription={subscription} />
               </div>
               {subscription.cancel_at_period_end && (
-                <Link
-                  href="/pricing"
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-2xl transition-all transform hover:scale-105 text-center"
-                >
-                  Reactivar Suscripción
-                </Link>
+                <ReactivateSubscriptionForm subscriptionId={subscription.id} />
               )}
             </>
           ) : null}
