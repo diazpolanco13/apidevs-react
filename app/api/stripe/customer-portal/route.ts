@@ -3,6 +3,10 @@ import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { getURL } from '@/utils/helpers';
 
+interface Customer {
+  stripe_customer_id: string | null;
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -21,7 +25,7 @@ export async function GET(req: Request) {
       .from('customers')
       .select('stripe_customer_id')
       .eq('id', user.id)
-      .single();
+      .single() as { data: Customer | null; error: any };
 
     if (customerError || !customer?.stripe_customer_id) {
       return NextResponse.json(

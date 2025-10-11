@@ -34,8 +34,8 @@ export default function TypeBreakdown({ subscription, oneTime, lifetime }: TypeB
   const total = subscription.revenue + totalOneTimeRevenue;
   const totalCount = subscription.count + totalOneTimePurchases;
 
-  const calculatePercentage = (amount: number) => {
-    if (total === 0) return 0;
+  const calculatePercentage = (amount: number): string => {
+    if (total === 0) return '0.0';
     return ((amount / total) * 100).toFixed(1);
   };
 

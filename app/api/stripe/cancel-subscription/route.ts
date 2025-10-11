@@ -2,6 +2,11 @@ import { stripe } from '@/utils/stripe/config';
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 
+interface SubscriptionUpdate {
+  cancel_at_period_end: boolean;
+  canceled_at: string;
+}
+
 export async function POST(req: Request) {
   try {
     const { subscriptionId } = await req.json();
@@ -25,10 +30,10 @@ export async function POST(req: Request) {
     }
 
     // Verificar que la suscripción pertenece al usuario
-    const { data: subscription, error: subError } = await supabase
+    const { data: subscription, error: subError } = await (supabase as any)
       .from('subscriptions')
       .select('*')
-      .eq('stripe_subscription_id', subscriptionId)
+      .eq('id', subscriptionId)
       .eq('user_id', user.id)
       .single();
 
@@ -48,13 +53,15 @@ export async function POST(req: Request) {
     );
 
     // Actualizar en Supabase
-    await supabase
+    const updateData: SubscriptionUpdate = {
+      cancel_at_period_end: true,
+      canceled_at: new Date().toISOString()
+    };
+    
+    await (supabase as any)
       .from('subscriptions')
-      .update({
-        cancel_at_period_end: true,
-        canceled_at: new Date().toISOString()
-      })
-      .eq('id', subscription.id);
+      .update(updateData)
+      .eq('id', subscription?.id as string);
 
     return NextResponse.json({
       success: true,
