@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Obtener suscripción del usuario
-    const { data: subscription } = await supabase
+    const { data: subscription } = await (supabase as any)
       .from('subscriptions')
       .select('id, stripe_subscription_id')
       .eq('user_id', user.id)
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     );
 
     // 📝 ACTUALIZAR EN BASE DE DATOS
-    await supabase
+    await (supabase as any)
       .from('subscriptions')
       .update({
         cancel_at_period_end: false,
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       .eq('id', subscription.id);
 
     // 📝 REGISTRAR REACTIVACIÓN EN ACTIVIDAD RECIENTE
-    await supabase.from('user_activity_events').insert({
+    await (supabase as any).from('user_activity_events').insert({
       user_id: user.id,
       event_type: 'subscription_reactivated',
       event_data: {
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
       subscription: {
         id: updatedSubscription.id,
         cancel_at_period_end: updatedSubscription.cancel_at_period_end,
-        current_period_end: updatedSubscription.current_period_end,
+        current_period_end: (updatedSubscription as any).current_period_end,
       },
     });
 
