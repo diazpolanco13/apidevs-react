@@ -63,6 +63,23 @@ export async function POST(req: Request) {
       .update(updateData)
       .eq('id', subscriptionId);
 
+    // Registrar evento de cancelación en la actividad del usuario
+    const activityEvent = {
+      user_id: user.id,
+      event_type: 'subscription_cancelled',
+      event_data: {
+        subscription_id: subscriptionId,
+        product_name: subscription?.prices?.products?.name || 'Suscripción',
+        cancelled_at: new Date().toISOString(),
+        access_until: subscription?.current_period_end,
+        reason: 'user_initiated'
+      }
+    };
+
+    await (supabase as any)
+      .from('user_activity_events')
+      .insert(activityEvent);
+
     return NextResponse.json({
       success: true,
       subscription: canceledSubscription
