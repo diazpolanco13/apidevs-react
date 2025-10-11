@@ -11,12 +11,16 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const returnUrl = searchParams.get('return_url') || '/account/suscripcion';
+    const isAjax = req.headers.get('accept')?.includes('application/json');
 
     // Verificar autenticación
     const supabase = createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      if (isAjax) {
+        return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+      }
       return NextResponse.redirect(getURL('/signin'));
     }
 
@@ -28,10 +32,12 @@ export async function GET(req: Request) {
       .single() as { data: Customer | null; error: any };
 
     if (customerError || !customer?.stripe_customer_id) {
-      return NextResponse.json(
-        { error: 'No se encontró información del cliente en Stripe' },
-        { status: 404 }
-      );
+      console.error('Customer error:', customerError);
+      console.error('Customer data:', customer);
+      if (isAjax) {
+        return NextResponse.json({ error: 'No se encontró información del cliente en Stripe' }, { status: 404 });
+      }
+      return NextResponse.redirect(getURL('/account/suscripcion?error=customer_not_found'));
     }
 
     // Crear sesión del portal de Stripe
@@ -40,6 +46,10 @@ export async function GET(req: Request) {
       return_url: getURL(returnUrl)
     });
 
+    if (isAjax) {
+      return NextResponse.json({ url });
+    }
+    
     return NextResponse.redirect(url);
   } catch (error: any) {
     console.error('Error creating portal session:', error);

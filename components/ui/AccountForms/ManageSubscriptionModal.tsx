@@ -79,6 +79,56 @@ export default function ManageSubscriptionModal({ isOpen, onClose, subscription 
     }
   };
 
+  const handleOpenPortal = async () => {
+    try {
+      const response = await fetch('/api/stripe/customer-portal?return_url=' + encodeURIComponent('/account/suscripcion'), {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error('No se recibió URL del portal');
+        }
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al abrir el portal');
+      }
+    } catch (error: any) {
+      console.error('Error opening portal:', error);
+      setError(error.message || 'Error al abrir el portal');
+    }
+  };
+
+  const handleDownloadInvoices = async () => {
+    try {
+      const response = await fetch('/api/stripe/customer-portal?return_url=' + encodeURIComponent('/account/suscripcion'), {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error('No se recibió URL del portal');
+        }
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al acceder a las facturas');
+      }
+    } catch (error: any) {
+      console.error('Error accessing invoices:', error);
+      setError(error.message || 'Error al acceder a las facturas');
+    }
+  };
+
   const handleClose = () => {
     setStep('options');
     setSelectedReason('');
@@ -108,6 +158,16 @@ export default function ManageSubscriptionModal({ isOpen, onClose, subscription 
 
         {/* Content */}
         <div className="p-6">
+          {/* Error Display */}
+          {error && (
+            <div className="mb-4 p-4 bg-red-900/20 border border-red-700/30 rounded-xl">
+              <div className="flex gap-3">
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            </div>
+          )}
+
           {/* Step 1: Options */}
           {step === 'options' && (
             <div className="space-y-4">
@@ -134,9 +194,9 @@ export default function ManageSubscriptionModal({ isOpen, onClose, subscription 
               </button>
 
               {/* Opción: Actualizar método de pago */}
-              <a
-                href={`/api/stripe/customer-portal?return_url=${encodeURIComponent('/account/suscripcion')}`}
-                className="block w-full p-4 bg-blue-900/20 hover:bg-blue-900/30 border border-blue-700/30 rounded-xl text-left transition-colors group"
+              <button
+                onClick={() => handleOpenPortal()}
+                className="w-full p-4 bg-blue-900/20 hover:bg-blue-900/30 border border-blue-700/30 rounded-xl text-left transition-colors group"
               >
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/30 transition-colors">
@@ -151,12 +211,12 @@ export default function ManageSubscriptionModal({ isOpen, onClose, subscription 
                     </p>
                   </div>
                 </div>
-              </a>
+              </button>
 
               {/* Opción: Ver Facturas */}
-              <a
-                href={`/api/stripe/customer-portal?return_url=${encodeURIComponent('/account/suscripcion')}`}
-                className="block w-full p-4 bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/30 rounded-xl text-left transition-colors group"
+              <button
+                onClick={() => handleDownloadInvoices()}
+                className="w-full p-4 bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/30 rounded-xl text-left transition-colors group"
               >
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-gray-700/50 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-gray-700/70 transition-colors">
@@ -171,7 +231,7 @@ export default function ManageSubscriptionModal({ isOpen, onClose, subscription 
                     </p>
                   </div>
                 </div>
-              </a>
+              </button>
             </div>
           )}
 
