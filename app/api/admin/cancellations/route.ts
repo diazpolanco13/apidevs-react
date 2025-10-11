@@ -44,16 +44,14 @@ export async function GET(req: NextRequest) {
           id,
           status,
           created,
+          user_id,
           prices!inner(
             unit_amount,
             currency,
             products!inner(
               name
             )
-          )
-        ),
-        subscriptions!inner(
-          user_id,
+          ),
           users!inner(
             email
           )
