@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
     console.log('🔍 Fetching cancellations with filters:', filters);
 
-    // Construir query base - Simplificada para evitar problemas de joins
+    // Construir query base - Corregida para usar relaciones correctas
     let query = supabase
       .from('subscription_feedback')
       .select(`
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
         feedback,
         action,
         created_at,
-        subscriptions(
+        subscriptions!inner(
           id,
           status,
           created,
@@ -51,9 +51,6 @@ export async function GET(req: NextRequest) {
             products(
               name
             )
-          ),
-          users(
-            email
           )
         )
       `)
@@ -73,7 +70,7 @@ export async function GET(req: NextRequest) {
     }
     
     if (filters.search) {
-      query = query.or(`subscriptions.users.email.ilike.%${filters.search}%,subscription_id.ilike.%${filters.search}%`);
+      query = query.or(`subscription_id.ilike.%${filters.search}%`);
     }
 
     // Aplicar ordenamiento
@@ -96,6 +93,22 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Error fetching cancellations' }, { status: 500 });
     }
 
+    // Obtener emails de usuarios por separado
+    const userIds = Array.from(new Set((cancellations || []).map((item: any) => item.subscriptions?.user_id).filter(Boolean)));
+    
+    let userEmails: { [key: string]: string } = {};
+    if (userIds.length > 0) {
+      const { data: users } = await supabase
+        .from('users')
+        .select('id, email')
+        .in('id', userIds);
+      
+      userEmails = (users || []).reduce((acc: any, user: any) => {
+        acc[user.id] = user.email;
+        return acc;
+      }, {});
+    }
+
     // Transformar datos
     const transformedCancellations: CancellationDetail[] = (cancellations || []).map((item: any) => {
       const subscription = item.subscriptions;
@@ -112,7 +125,7 @@ export async function GET(req: NextRequest) {
         feedback: item.feedback || '',
         action: item.action,
         created_at: item.created_at,
-        user_email: subscription.users?.email || 'N/A',
+        user_email: userEmails[subscription.user_id] || 'N/A',
         subscription_created: subscription.created,
         subscription_status: subscription.status,
         product_name: subscription.prices?.products?.name || 'N/A',
