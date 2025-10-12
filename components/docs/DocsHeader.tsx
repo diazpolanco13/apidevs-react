@@ -12,9 +12,9 @@ interface DocsHeaderProps {
 export default function DocsHeader({ onMenuToggle }: DocsHeaderProps = {}) {
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-apidevs-dark/95 border-b border-gray-800/50 z-50 backdrop-blur-xl">
-      <div className="h-full px-4 flex items-center justify-between max-w-screen-2xl mx-auto">
+      <div className="h-full px-4 flex items-center max-w-screen-2xl mx-auto gap-4">
         {/* Left Side - Logo + Mobile Menu */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-shrink-0">
           {/* Mobile Menu Button - Solo visible en móvil */}
           <button
             onClick={onMenuToggle}
@@ -39,9 +39,13 @@ export default function DocsHeader({ onMenuToggle }: DocsHeaderProps = {}) {
           </Link>
         </div>
 
-        {/* Right Side - Search + CTA */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Center - Search (toma todo el espacio disponible) */}
+        <div className="flex-1 flex justify-center max-w-2xl mx-auto">
           <DocsSearch />
+        </div>
+
+        {/* Right Side - CTA */}
+        <div className="flex items-center flex-shrink-0">
           <Link
             href="/signin"
             className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 bg-apidevs-primary hover:bg-apidevs-primary/90 text-black font-semibold rounded-lg transition-all text-xs sm:text-sm shadow-lg shadow-apidevs-primary/20 whitespace-nowrap"

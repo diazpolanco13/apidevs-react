@@ -111,7 +111,7 @@ export default function DocsSearch() {
       {/* Search Button - Desktop */}
       <button
         onClick={() => setIsOpen(true)}
-        className="hidden sm:flex items-center gap-2 px-3 py-2 bg-gray-900/50 hover:bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-400 hover:text-white transition-all group w-48 lg:w-64"
+        className="hidden sm:flex items-center gap-2 px-3 py-2 bg-gray-900/50 hover:bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-400 hover:text-white transition-all group w-full max-w-xl"
         aria-label="Search documentation"
       >
         <svg
