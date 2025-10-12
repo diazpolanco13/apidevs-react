@@ -78,10 +78,6 @@ export default async function DocPage({
       notFound();
     }
 
-    // DEBUG: Ver qué tipos de content tenemos
-    console.log('📦 Content types:', doc.content?.map((item: any) => item._type).join(', '));
-    console.log('📦 First callout:', doc.content?.find((item: any) => item._type === 'callout'));
-
     const headings = extractHeadings(doc.content);
     const lastUpdated = doc.updatedAt
       ? new Date(doc.updatedAt).toLocaleDateString('es-ES', {
@@ -94,7 +90,7 @@ export default async function DocPage({
     return (
       <>
         {/* Main Content */}
-        <article className="max-w-4xl mx-auto px-8 py-16 xl:mr-64">
+        <article className="max-w-4xl mx-auto px-8 py-16 xl:px-12 xl:mr-80 2xl:mr-96">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6">
             <Link href="/docs" className="hover:text-white transition-colors">
