@@ -211,6 +211,24 @@ body:has(.docs-layout) iframe[src*="sanity"] {
   display: none !important;
 }
 
+/* Custom scrollbar para sidebar de docs */
+.docs-sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.docs-sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.docs-sidebar-nav::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
+}
+
+.docs-sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: #4B5563;
+}
+
 body {
   position: relative;
   min-height: 100%;

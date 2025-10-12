@@ -56,25 +56,8 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
   // Componente de contenido del sidebar (reutilizable)
   const SidebarContent = () => (
     <>
-      {/* Custom scrollbar styles */}
-      <style jsx>{`
-        aside::-webkit-scrollbar {
-          width: 6px;
-        }
-        aside::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        aside::-webkit-scrollbar-thumb {
-          background: #374151;
-          border-radius: 3px;
-        }
-        aside::-webkit-scrollbar-thumb:hover {
-          background: #4B5563;
-        }
-      `}</style>
-
       {/* Navigation */}
-      <nav className="p-4 space-y-6 flex-1 overflow-y-auto">
+      <nav className="p-4 space-y-6 flex-1 overflow-y-auto docs-sidebar-nav">
         {(sidebarData?.categories || []).map((category) => {
           const isExpanded = expandedCategories.has(category._id);
           const hasPages = category.pages && category.pages.length > 0;
@@ -167,7 +150,7 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
               d="M10 19l-7-7m0 0l7-7m-7 7h18"
             />
           </svg>
-          <span>Back to Home</span>
+          <span>Volver a APIDEVs</span>
         </Link>
       </div>
     </>
