@@ -1,6 +1,3 @@
-'use client';
-
-import Image from 'next/image';
 import { urlForImage } from '@/sanity/lib/image';
 
 // Generar ID único para headings
@@ -41,13 +38,10 @@ export const portableTextComponents = {
         <figure className="my-10 group">
           <div className="relative rounded-xl overflow-hidden border border-gray-800/50 shadow-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-1">
             <div className="relative rounded-lg overflow-hidden bg-gray-950">
-              <Image
+              <img
                 src={imageUrl}
                 alt={value.alt || 'Documentation image'}
-                width={1600}
-                height={900}
                 className="w-full h-auto transition-transform duration-500 group-hover:scale-[1.02]"
-                quality={95}
               />
               {/* Overlay sutil en hover */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -94,19 +88,13 @@ export const portableTextComponents = {
               </code>
             </pre>
             
-            {/* Copy button */}
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(value.code);
-              }}
-              className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200 px-3.5 py-2 bg-gradient-to-br from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-gray-300 hover:text-white text-xs font-medium rounded-lg flex items-center gap-2 border border-gray-700/50 shadow-lg hover:shadow-apidevs-primary/20 hover:border-apidevs-primary/30"
-              title="Copy code"
-            >
+            {/* Copy button placeholder - will be interactive on client */}
+            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200 px-3.5 py-2 bg-gradient-to-br from-gray-800 to-gray-900 text-gray-300 text-xs font-medium rounded-lg flex items-center gap-2 border border-gray-700/50 shadow-lg">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
               Copy
-            </button>
+            </div>
           </div>
         </div>
       );
@@ -114,7 +102,6 @@ export const portableTextComponents = {
     callout: ({ value }: any) => {
       // Si no hay contenido, no renderizar nada
       if (!value?.content) {
-        console.warn('Callout sin contenido:', value);
         return null;
       }
 
