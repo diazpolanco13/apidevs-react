@@ -1,8 +1,12 @@
-# 🚀 Guía Rápida: Catálogo de Indicadores con Sanity CMS
+# 🚀 Guía Rápida: Sanity CMS en APIDevs
 
 ## 📋 Resumen Ejecutivo
 
-APIDevs usa **Sanity CMS** como headless CMS para gestionar el contenido del catálogo de indicadores. El sistema combina datos técnicos de Supabase con contenido editorial de Sanity.
+APIDevs usa **Sanity CMS** como headless CMS para gestionar:
+1. **Catálogo de Indicadores** - Productos VIP de trading
+2. **Sistema de Documentación** - Docs tipo Mintlify/LuxAlgo (NUEVO ✨)
+
+El sistema combina datos técnicos de Supabase con contenido editorial de Sanity.
 
 ### 🤖 MCP Tools Disponibles
 
@@ -92,26 +96,290 @@ apidevs-react/
 │   ├── indicadores/
 │   │   ├── page.tsx                    # Catálogo (ISR)
 │   │   └── [slug]/page.tsx             # Detalle (SSG + ISR)
+│   ├── docs/                           # ✨ NUEVO: Sistema Documentación
+│   │   ├── layout.tsx                  # Layout con sidebar + header
+│   │   ├── page.tsx                    # Landing docs (Mintlify style)
+│   │   └── [slug]/page.tsx             # Página doc individual
 │   └── studio/[[...tool]]/page.tsx     # Sanity Studio
 │
-├── components/ui/
-│   ├── IndicatorsHub/
-│   │   ├── IndicatorsHub.tsx           # Grid + filtros + búsqueda
-│   │   └── IndicatorCard.tsx           # Card individual
-│   ├── IndicatorDetail/
-│   │   └── IndicatorDetailView.tsx     # Vista detalle (2 columnas)
-│   ├── ImageGallery.tsx                # Galería con zoom
-│   └── TradingViewEmbed.tsx            # Widget TradingView
+├── components/
+│   ├── ui/
+│   │   ├── IndicatorsHub/
+│   │   │   ├── IndicatorsHub.tsx       # Grid + filtros + búsqueda
+│   │   │   └── IndicatorCard.tsx       # Card individual
+│   │   ├── IndicatorDetail/
+│   │   │   └── IndicatorDetailView.tsx # Vista detalle (2 columnas)
+│   │   ├── ImageGallery.tsx            # Galería con zoom
+│   │   └── TradingViewEmbed.tsx        # Widget TradingView
+│   └── docs/                           # ✨ NUEVO: Componentes docs
+│       ├── DocsHeader.tsx              # Header con logo + nav
+│       ├── DocsSidebar.tsx             # Sidebar categorías colapsables
+│       ├── DocsSearch.tsx              # Modal búsqueda
+│       ├── TableOfContents.tsx         # TOC sticky
+│       └── PortableTextComponents.tsx  # Renderizado contenido rico
 │
 ├── sanity/
-│   ├── schemas/indicator.ts            # Schema CMS (18 campos)
+│   ├── schemas/
+│   │   ├── indicator.ts                # Schema indicadores (18 campos)
+│   │   ├── documentation.ts            # ✨ NUEVO: Schema docs
+│   │   └── docCategory.ts              # ✨ NUEVO: Categorías docs
 │   └── lib/
 │       ├── client.ts                   # Cliente Sanity
-│       ├── queries.ts                  # 6 queries GROQ
+│       ├── queries.ts                  # Queries indicadores (6)
+│       ├── doc-queries.ts              # ✨ NUEVO: Queries docs (7)
 │       └── image.ts                    # Optimización imágenes
 │
-└── sanity.config.ts                    # Config Studio
+├── sanity.config.ts                    # Config Studio + theme APIDevs
+└── middleware.ts                       # Skip Supabase auth en /docs
 ```
+
+---
+
+## 📚 Sistema de Documentación (NUEVO)
+
+### 🎨 Diseño Mintlify/LuxAlgo Clone
+
+El sistema de documentación replica el diseño profesional de Mintlify y LuxAlgo, adaptado con los colores de APIDevs.
+
+**URL:** `http://localhost:3000/docs`
+
+### 🏗️ Arquitectura Docs
+
+**2 Schemas Principales:**
+
+1. **`docCategory`** - Organización del sidebar
+   - `title` (string) - Nombre categoría
+   - `slug` (slug) - URL categoría
+   - `icon` (string) - Emoji (🚀, 📚, ⚙️)
+   - `order` (number) - Orden sidebar
+   - `description` (text) - Descripción corta
+   - `isCollapsible` (boolean) - Puede colapsar
+   - `defaultExpanded` (boolean) - Expandida default
+
+2. **`documentation`** - Páginas de docs
+   - `title` (string) - Título página
+   - `slug` (slug) - URL amigable
+   - `category` (reference) - Ref a docCategory
+   - `icon` (string) - Emoji título
+   - `description` (text) - Meta descripción
+   - `content` (array) - **Portable Text Rico:**
+     - Blocks (h1-h4, párrafos, listas)
+     - Imágenes con caption
+     - **`codeBlock`** - Sintaxis highlight + copy button
+     - **`callout`** - Cajas info/warning/error/success/note
+     - **`cardGroup`** - Cards en grid
+     - **`tabs`** - Pestañas contenido
+     - **`accordion`** - Secciones colapsables
+     - **`videoEmbed`** - YouTube/Vimeo
+   - `nextPage` / `previousPage` (reference) - Navegación
+   - `relatedPages` (array[reference]) - Artículos relacionados
+   - `seo` - Meta tags
+
+### 🎯 Componentes Clave Docs
+
+#### 1. **DocsLayout** (`app/docs/layout.tsx`)
+- **Server Component** que fetch sidebar data
+- Renderiza estructura base: header + sidebar + main
+- Background con partículas espaciales reutilizadas
+- CSS personalizado oculta Navbar principal
+
+```typescript
+// Estructura:
+<div className="docs-layout">
+  <BackgroundEffects variant="minimal" />
+  <DocsHeader />
+  <DocsSidebar sidebarData={categories} />
+  <main className="ml-64 pt-16">{children}</main>
+</div>
+```
+
+#### 2. **DocsHeader** (`components/docs/DocsHeader.tsx`)
+- Logo APIDevs horizontal blanco
+- Navegación: Documentation, Guides, API Reference, Changelog
+- Búsqueda con shortcut Ctrl+K
+- Botón "Get started" (verde APIDevs)
+- Fixed top con backdrop blur
+
+#### 3. **DocsSidebar** (`components/docs/DocsSidebar.tsx`)
+- **Client Component** con `usePathname` para highlighting
+- Categorías colapsables con iconos emoji
+- Input de búsqueda (Ctrl+K)
+- Link activo con color `#C9D92E`
+- Scrollbar personalizado
+- Footer "Back to Home"
+- Fixed left con backdrop blur
+
+#### 4. **PortableTextComponents** (`components/docs/PortableTextComponents.tsx`)
+**Renderizado personalizado de cada tipo:**
+
+```typescript
+// Headings con anchor links
+h2: <h2 id={id}>
+  <a href={`#${id}`}>#</a>
+  <span className="w-1 h-8 bg-apidevs-primary" />
+  {children}
+</h2>
+
+// Code blocks con copy button
+codeBlock: <div className="group relative">
+  {filename && <div>{filename}</div>}
+  <pre><code>{code}</code></pre>
+  <button onClick={copy}>Copy</button>
+</div>
+
+// Callouts coloreados
+callout: <div className={`${typeStyles[type].bg} ${typeStyles[type].border}`}>
+  <div className={typeStyles[type].iconBg}>{icon}</div>
+  {title && <div>{title}</div>}
+  <div>{content}</div>
+</div>
+
+// Imágenes optimizadas
+image: <figure>
+  <Image src={urlForImage(value)} alt={alt} />
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+```
+
+**Callout Types:**
+- 💡 **Info** - Azul (`bg-blue-500/10`, `border-blue-500/30`)
+- ⚠️ **Warning** - Amarillo (`bg-yellow-500/10`)
+- 🚨 **Error** - Rojo (`bg-red-500/10`)
+- ✅ **Success** - Verde (`bg-green-500/10`)
+- 📝 **Note** - Morado (`bg-purple-500/10`)
+
+#### 5. **TableOfContents** (`components/docs/TableOfContents.tsx`)
+- Fixed derecha en páginas individuales
+- Auto-highlight del heading visible
+- Smooth scroll al click
+- Extrae headings h1-h4
+- Indent según nivel
+
+#### 6. **DocsSearch** (`components/docs/DocsSearch.tsx`)
+- Modal full-screen
+- Implementar search con GROQ query
+- Keyboard navigation (↑↓)
+- Preview snippet
+- Categoría badge
+
+### 📊 Queries GROQ Docs
+
+**Archivo:** `sanity/lib/doc-queries.ts`
+
+```typescript
+// 1. Sidebar completo
+SIDEBAR_DOCS_QUERY
+// Retorna: { categories: Array<{pages: Doc[]}> }
+
+// 2. Página por slug
+DOC_BY_SLUG_QUERY
+// Params: { slug: string }
+// Retorna: DocPage con content completo
+
+// 3. Búsqueda
+SEARCH_DOCS_QUERY
+// Params: { searchTerm: string }
+// Retorna: Array<SearchResult>
+
+// 4. Static params
+DOC_SLUGS_QUERY
+// Retorna: string[]
+
+// 5. Por categoría
+DOCS_BY_CATEGORY_QUERY
+// Params: { categorySlug: string }
+```
+
+### 🎨 Diseño Visual Docs
+
+**Colores:**
+- Background: `#0a0a0a` (apidevs-dark)
+- Primary: `#C9D92E` (links, borders, highlights)
+- Cards: `bg-gray-900/30` con hover `bg-gray-900/50`
+- Borders: `border-gray-800/50`
+- Text: `text-white` / `text-gray-400`
+
+**Layout:**
+- Header: 64px fixed top
+- Sidebar: 256px fixed left
+- Content: max-w-4xl centered
+- TOC: 256px fixed right (desktop)
+
+**Efectos:**
+- Backdrop blur en header/sidebar
+- Hover states en links
+- Smooth transitions
+- Partículas espaciales background
+
+### ⚠️ Issues Conocidos Docs
+
+1. **Renderizado Primera Entrada** ❌
+   - El documento existe en Sanity
+   - Página carga (200 OK)
+   - Sidebar muestra entrada
+   - Contenido NO se visualiza en `[slug]/page.tsx`
+   - **POSIBLE CAUSA:** Error en query o rendering de Portable Text
+
+2. **Middleware Optimización** ✅
+   - Skip `updateSession` de Supabase en `/docs`
+   - Evita rate limit errors
+   - Mejora performance
+
+3. **CSS Navbar Hide** ✅
+   - Usa selector `.docs-layout` + `:has()`
+   - Oculta solo Navbar principal
+   - Mantiene visible contenido docs
+
+### 🔧 Middleware Docs
+
+```typescript
+// middleware.ts
+export async function middleware(request: NextRequest) {
+  // NO ejecutar updateSession para /docs (evita rate limit)
+  if (request.nextUrl.pathname.startsWith('/docs')) {
+    return;
+  }
+  return await updateSession(request);
+}
+```
+
+### 🎯 CSS Custom Docs
+
+```css
+/* styles/main.css */
+
+/* Ocultar SOLO el Navbar cuando estamos en /docs */
+body:has(.docs-layout) > nav.Navbar-module__uj6e0q__root {
+  display: none !important;
+}
+```
+
+### 📝 Contenido Ejemplo Creado
+
+**Categoría:** "Comenzar" (🚀)
+- Order: 0
+- Slug: `comenzar`
+- DefaultExpanded: true
+
+**Documento:** "¿Qué es TradingView?" (📊)
+- Slug: `que-es-tradingview`
+- URL: `/docs/que-es-tradingview`
+- Contenido:
+  - Introducción con bold keywords
+  - Callouts (Info, Note)
+  - Secciones con emojis (📊, 🛠️, 📚)
+  - Listas numeradas con bold
+  - SEO optimizado
+
+### 🚀 Próximos Pasos Docs
+
+- [ ] **FIX:** Resolver issue renderizado primera entrada
+- [ ] Implementar búsqueda funcional (modal + query)
+- [ ] Crear más categorías: "Guides", "API Reference", "Tutorials"
+- [ ] Agregar más documentos con contenido rico
+- [ ] Implementar navegación previous/next
+- [ ] Dark mode toggle (opcional)
+- [ ] Versioning docs (releases en Sanity)
 
 ---
 
@@ -634,10 +902,15 @@ mcp_supabase_execute_sql({
 
 ---
 
-**Última actualización:** 11 octubre 2025  
-**Commit:** `dc962fc`
+**Última actualización:** 12 octubre 2025  
+**Commit:** `b50359b` - Sistema de documentación implementado  
+**Branch:** `feature/docs-mintlify-clone`
 
 ---
 
-**🎯 Objetivo:** Esta guía te permite entender y mejorar el catálogo de indicadores usando los MCPs de Sanity y Supabase disponibles.
+**🎯 Objetivo:** Esta guía te permite entender y trabajar con:
+1. El catálogo de indicadores VIP
+2. El sistema de documentación tipo Mintlify (NUEVO)
+
+Usando los MCPs de Sanity y Supabase disponibles para crear, editar y optimizar contenido.
 
