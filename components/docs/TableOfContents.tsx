@@ -27,9 +27,15 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
       { rootMargin: '-80px 0px -80% 0px' }
     );
 
+    // Crear un Set para evitar duplicados de IDs
+    const uniqueIds = new Set<string>();
+
     headings.forEach(({ id }) => {
-      const element = document.getElementById(id);
-      if (element) observer.observe(element);
+      if (!uniqueIds.has(id)) {
+        uniqueIds.add(id);
+        const element = document.getElementById(id);
+        if (element) observer.observe(element);
+      }
     });
 
     return () => observer.disconnect();
@@ -38,7 +44,7 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
   if (headings.length === 0) return null;
 
   return (
-    <nav className="fixed top-16 right-0 bottom-0 w-64 p-6 overflow-y-auto border-l border-gray-800 hidden xl:block">
+    <nav className="absolute top-0 right-0 bottom-0 w-64 p-6 overflow-y-auto border-l border-gray-800 hidden xl:block">
       <div className="space-y-4">
         <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
           On this page

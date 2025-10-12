@@ -47,12 +47,12 @@ export default async function DocsLayout({
       <DocsHeader />
 
       {/* Contenedor centrado que engloba todo */}
-      <div className="max-w-[1800px] mx-auto relative">
+      <div className="max-w-[1800px] mx-auto relative min-h-screen pt-16">
         {/* Sidebar */}
         <DocsSidebar sidebarData={sidebarData} />
 
         {/* Main Content */}
-        <main className="ml-64 pt-16 relative z-10">
+        <main className="ml-64 relative z-10">
           {children}
         </main>
       </div>
