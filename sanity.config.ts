@@ -69,7 +69,7 @@ export default defineConfig({
       // defaultLanguages: ['es'], // Removido temporalmente por error de tipo
       
       // Tipos de documentos a internacionalizar
-      schemaTypes: ['documentation', 'docCategory'],
+      schemaTypes: ['documentation', 'docCategory', 'docsWelcomePage'],
       
       // Campo para almacenar el idioma
       languageField: 'language',

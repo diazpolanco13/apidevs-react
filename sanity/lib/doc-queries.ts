@@ -19,6 +19,41 @@ export const DOC_CATEGORIES_QUERY = groq`
 `
 
 // ==========================================
+// PÁGINA DE BIENVENIDA
+// ==========================================
+
+export const WELCOME_PAGE_QUERY = groq`
+  *[_type == "docsWelcomePage" && language == $language][0] {
+    _id,
+    title,
+    subtitle,
+    description,
+    heroImage {
+      asset->{
+        _id,
+        url
+      },
+      alt
+    },
+    quickLinks[] {
+      title,
+      description,
+      icon,
+      href,
+      featured
+    },
+    quickStartTitle,
+    quickStartIcon,
+    language,
+    seo {
+      metaTitle,
+      metaDescription,
+      keywords
+    }
+  }
+`
+
+// ==========================================
 // TODAS LAS PÁGINAS DE DOCUMENTACIÓN
 // ==========================================
 
@@ -270,6 +305,37 @@ export interface SearchResult {
   categorySlug?: string
   excerpt?: string
   language: string
+}
+
+export interface QuickLink {
+  title: string
+  description?: string
+  icon?: string
+  href: string
+  featured?: boolean
+}
+
+export interface WelcomePage {
+  _id: string
+  title: string
+  subtitle?: string
+  description: string
+  heroImage?: {
+    asset: {
+      _id: string
+      url: string
+    }
+    alt: string
+  }
+  quickLinks?: QuickLink[]
+  quickStartTitle?: string
+  quickStartIcon?: string
+  language: string
+  seo?: {
+    metaTitle?: string
+    metaDescription?: string
+    keywords?: string[]
+  }
 }
 
 export interface TocHeading {
