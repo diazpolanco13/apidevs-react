@@ -33,7 +33,25 @@ export const portableTextComponents = {
     ),
     image: ({ value }: any) => {
       if (!value?.asset) return null;
-      const imageUrl = urlForImage(value)?.width(1600).url();
+      
+      const imageBuilder = urlForImage(value);
+      if (!imageBuilder) return null;
+      
+      // Handle both builder types (direct URL or Sanity image builder)
+      let imageUrl: string | undefined;
+      try {
+        const widthBuilder = imageBuilder.width(1600);
+        if (typeof widthBuilder === 'object' && 'url' in widthBuilder) {
+          imageUrl = (widthBuilder as any).url();
+        } else if (typeof widthBuilder === 'object' && 'height' in widthBuilder) {
+          const heightBuilder = (widthBuilder as any).height(900);
+          imageUrl = heightBuilder?.url?.();
+        }
+      } catch (e) {
+        console.error('Error building image URL:', e);
+        return null;
+      }
+      
       return imageUrl ? (
         <figure className="my-10 group">
           <div className="relative rounded-xl overflow-hidden border border-gray-800/50 shadow-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-1">
