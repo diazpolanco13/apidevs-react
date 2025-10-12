@@ -42,18 +42,32 @@ function extractHeadings(content: any[]): Array<{ id: string; text: string; leve
   if (!content || !Array.isArray(content)) return [];
 
   try {
+    const existingIds = new Set<string>();
+
     return content
       .filter((block) => block?._type === 'block' && ['h1', 'h2', 'h3', 'h4'].includes(block?.style))
       .map((block) => {
         const text = block?.children
           ?.map((child: any) => child?.text || '')
           .join('') || '';
-        const id = text
+
+        // Generar ID único evitando duplicados
+        let id = text
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '');
+
+        // Si el ID ya existe, agregar un sufijo numérico
+        let counter = 1;
+        let uniqueId = id;
+        while (existingIds.has(uniqueId)) {
+          uniqueId = `${id}-${counter}`;
+          counter++;
+        }
+        existingIds.add(uniqueId);
+
         return {
-          id,
+          id: uniqueId,
           text,
           level: parseInt(block?.style?.replace('h', '') || '1')
         };
@@ -90,7 +104,7 @@ export default async function DocPage({
     return (
       <>
         {/* Main Content */}
-        <article className="max-w-6xl mx-auto px-8 py-16 xl:px-16 xl:mr-80">
+        <article className="mx-auto px-8 py-16 xl:px-16 xl:mr-80">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6">
             <Link href="/docs" className="hover:text-white transition-colors">

@@ -20,34 +20,6 @@ export default function DocsHeader() {
               priority
             />
           </Link>
-          
-          {/* Nav Links */}
-          <nav className="hidden lg:flex items-center gap-6">
-            <Link
-              href="/docs"
-              className="text-sm font-medium text-white hover:text-apidevs-primary transition-colors"
-            >
-              Documentation
-            </Link>
-            <Link
-              href="/docs"
-              className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
-            >
-              Guides
-            </Link>
-            <Link
-              href="/indicadores"
-              className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
-            >
-              API Reference
-            </Link>
-            <Link
-              href="/pricing"
-              className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
-            >
-              Changelog
-            </Link>
-          </nav>
         </div>
 
         {/* Search + CTA */}
