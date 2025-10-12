@@ -41,3 +41,4 @@ yarn-error.log*
 certificates
 .env*.local
 stripe-cli.tar.gz
+.env.local.backup
