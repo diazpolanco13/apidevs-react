@@ -6,8 +6,11 @@ import Footer from './Footer';
 export default function ConditionalFooter() {
   const pathname = usePathname();
   
-  // Ocultar footer en rutas del dashboard de usuario y admin
-  const hideFooter = pathname?.startsWith('/account') || pathname?.startsWith('/admin');
+  // Ocultar footer en rutas del dashboard de usuario, admin y documentación
+  const hideFooter = 
+    pathname?.startsWith('/account') || 
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/docs');
   
   if (hideFooter) {
     return null;

@@ -2,6 +2,11 @@ import { type NextRequest } from 'next/server';
 import { updateSession } from '@/utils/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
+  // NO ejecutar updateSession para /docs para evitar rate limit
+  if (request.nextUrl.pathname.startsWith('/docs')) {
+    return;
+  }
+  
   return await updateSession(request);
 }
 

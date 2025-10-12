@@ -187,6 +187,11 @@ body {
   @apply text-white bg-apidevs-dark antialiased;
 }
 
+/* Ocultar SOLO el Navbar cuando estamos en la ruta /docs */
+body:has(.docs-layout) > nav.Navbar-module__uj6e0q__root {
+  display: none !important;
+}
+
 body {
   position: relative;
   min-height: 100%;
