@@ -10,7 +10,7 @@ import {
 import { portableTextComponents } from '@/components/docs/PortableTextComponents';
 import TableOfContents from '@/components/docs/TableOfContents';
 
-export const revalidate = 3600;
+export const revalidate = 0; // Development: siempre fresh data
 export const dynamicParams = true; // Permitir rutas dinámicas en dev
 
 export async function generateStaticParams() {
@@ -25,7 +25,7 @@ async function getDocBySlug(slug: string): Promise<DocPage | null> {
       { slug },
       {
         next: {
-          revalidate: 3600,
+          revalidate: 0, // Development: siempre fresh data
           tags: [`doc:${slug}`]
         }
       }
