@@ -104,7 +104,7 @@ export default async function DocPage({
     return (
       <>
         {/* Main Content */}
-        <article className="mx-auto px-8 py-16 xl:px-16 xl:mr-80">
+        <article className="max-w-5xl px-8 py-16 xl:px-16 xl:pr-80">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6">
             <Link href="/docs" className="hover:text-white transition-colors">
