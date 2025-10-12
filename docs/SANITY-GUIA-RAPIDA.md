@@ -398,35 +398,115 @@ body:has(.docs-layout) > footer {
 }
 ```
 
-### 📝 Contenido Ejemplo Creado
+### 📝 Documentos Publicados
 
 **Categoría:** "Comenzar" (🚀)
 - Order: 0
 - Slug: `comenzar`
 - DefaultExpanded: true
 
-**Documento:** "¿Qué es TradingView?" (📊)
-- Slug: `que-es-tradingview`
-- URL: `/docs/que-es-tradingview`
-- Contenido:
-  - Introducción con bold keywords
-  - Callouts (Info, Note)
-  - Secciones con emojis (📊, 🛠️, 📚)
-  - Listas numeradas con bold
-  - SEO optimizado
+**Documentos actuales:**
 
-### 🚀 Próximos Pasos Docs
+1. **"¿Qué es APIDevs?"** (🏢)
+   - Slug: `que-es-apidevs`
+   - URL: `/docs/que-es-apidevs`
+   - Contenido:
+     - Introducción a la empresa (negrita)
+     - ¿Qué Ofrecemos? (lista numerada: Indicadores, Scanners, Tools)
+     - ¿Por qué elegir APIDevs? (lista bullets: 3 diferenciadores)
+     - ¿Realmente funcionan? (expectativas realistas)
+     - Cómo operar correctamente (4 tips)
+     - 3 Callouts (Info, Warning, Success)
+     - SEO completo
 
-- [x] ~~**FIX:** Resolver issue renderizado primera entrada~~ ✅ COMPLETADO
-- [x] ~~Layout estilo LuxAlgo con contenedor centrado~~ ✅ COMPLETADO
-- [x] ~~Sidebar y TOC sticky/fixed~~ ✅ COMPLETADO
-- [x] ~~Componentes Portable Text con gradientes~~ ✅ COMPLETADO
-- [ ] Implementar búsqueda funcional (modal + query)
-- [ ] Crear más categorías: "Guides", "API Reference", "Tutorials"
-- [ ] Agregar más documentos con contenido rico
-- [ ] Implementar navegación previous/next
-- [ ] Dark mode toggle (opcional)
-- [ ] Versioning docs (releases en Sanity)
+2. **"Guía de Inicio en TradingView"** (📊)
+   - Slug: `guia-inicio-tradingview`
+   - URL: `/docs/guia-inicio-tradingview`
+   - Contenido:
+     - Introducción con bold keywords
+     - Callouts (Info, Note)
+     - Secciones con emojis (📊, 🛠️, 📚)
+     - Listas numeradas con bold
+     - SEO optimizado
+
+### 🎯 Features Mintlify Implementadas vs Pendientes
+
+#### ✅ **Implementadas:**
+- Layout con sidebar colapsable
+- Table of Contents (TOC) sticky
+- Búsqueda con Ctrl+K
+- Responsive design móvil
+- Code blocks con syntax highlighting
+- Callouts con 6 tipos
+- Portable Text rico (headings, listas, imágenes)
+- Navegación breadcrumbs
+- SEO optimizado
+- ISR con revalidación
+
+#### 🚧 **Pendientes (Mintlify tiene):**
+
+**1. Multi-idioma (i18n)** 🌍
+- **Mintlify:** Selector de idioma en footer sidebar (🇺🇸 English, 🇫🇷 Français, 🇪🇸 Español, 🇨🇳 简体中文)
+- **Implementación sugerida:**
+  - Agregar campo `language: string` en schema `documentation`
+  - Rutas: `/docs/[lang]/[slug]` (ej: `/docs/es/que-es-apidevs`)
+  - Selector en `DocsSidebar` footer
+  - Usar `mcp_sanity_translate_document` para traducir contenido automáticamente
+  - Context provider para idioma actual
+  - Detectar idioma del browser con `navigator.language`
+
+**2. Dark/Light Mode** 🌙☀️
+- **Mintlify:** Toggle en sidebar footer (🌙/☀️) con transición suave
+- **Implementación sugerida:**
+  - Context provider `ThemeProvider` con `useState('dark')`
+  - Toggle button en `DocsHeader` o `DocsSidebar`
+  - CSS variables para colores adaptables:
+    ```css
+    :root[data-theme="light"] {
+      --bg-dark: #ffffff;
+      --text-primary: #000000;
+      --apidevs-primary: #C9D92E; /* mantener */
+    }
+    ```
+  - localStorage: `localStorage.setItem('theme', 'light')`
+  - Persistir preferencia entre sesiones
+  - Clases Tailwind: `dark:bg-white dark:text-black`
+
+**3. Versioning** 📚
+- **Mintlify:** Dropdown en header para cambiar versión (v1.0, v2.0)
+- **Implementación sugerida:**
+  - Usar releases de Sanity para versiones
+  - Campo `version: string` en documentos
+  - Dropdown en header con versiones disponibles
+  - Query GROQ filtrando por versión
+
+### 🚀 Próximos Pasos Prioritarios
+
+- [ ] **Multi-idioma** (PRIORIDAD ALTA)
+  - Agregar selector de idioma en footer sidebar
+  - Schema con campo `language` en documentación
+  - Rutas tipo `/docs/es/[slug]` y `/docs/en/[slug]`
+  - Traducir documentos existentes (ES, EN)
+  - Context provider para idioma
+  
+- [ ] **Dark/Light Mode** (PRIORIDAD ALTA)
+  - ThemeProvider con Context API
+  - Toggle en sidebar footer (🌙/☀️)
+  - CSS variables y clases dark:
+  - localStorage para persistir
+  
+- [ ] **Contenido y Categorías** (PRIORIDAD MEDIA)
+  - Crear categoría "Guías" (tutoriales paso a paso)
+  - Crear categoría "API Reference" (documentación técnica)
+  - Crear categoría "Indicadores" (docs por indicador)
+  - Agregar 10+ documentos con contenido rico
+  
+- [ ] **UX Improvements** (PRIORIDAD BAJA)
+  - Navegación previous/next entre páginas
+  - Related pages en sidebar
+  - Feedback widget ("¿Te ayudó esto?")
+  - Copy link to section
+  - Versioning con releases
 
 ---
 
@@ -950,15 +1030,27 @@ mcp_supabase_execute_sql({
 ---
 
 **Última actualización:** 12 octubre 2025  
-**Commit:** `a237e84` - TOC posicionado correctamente con layout LuxAlgo  
+**Commit:** `ad68b76` - Sistema de Documentación Completo  
 **Branch:** `feature/docs-mintlify-clone`
 
-**Cambios Recientes:**
-- ✅ Resuelto renderizado de callouts (Server Component)
-- ✅ Layout estilo LuxAlgo implementado (contenedor centrado)
-- ✅ Sidebar sticky con scroll independiente
-- ✅ TOC fixed con cálculo dinámico de posición
-- ✅ Componentes Portable Text con gradientes y efectos
+**Cambios Recientes (Sesión Completa):**
+- ✅ Responsive design completo (mobile sidebar, header adaptativo)
+- ✅ Búsqueda funcional con API + GROQ + keyboard navigation
+- ✅ Búsqueda centrada en navbar con layout de 3 columnas
+- ✅ Fix styled-jsx removido (movido a CSS global)
+- ✅ Fix TypeScript en PortableTextComponents (image URL builder)
+- ✅ Documento "¿Qué es APIDevs?" creado y publicado
+- ✅ Build exitoso (50 páginas estáticas generadas)
+
+**Estado Actual del Sistema Docs:**
+- 📄 **2 documentos publicados:**
+  - `/docs/que-es-apidevs` (Introducción a la empresa)
+  - `/docs/guia-inicio-tradingview` (Guía TradingView)
+- 📁 **1 categoría:** Comenzar
+- 🎨 **Diseño:** Mintlify/LuxAlgo clone completo
+- 🔍 **Búsqueda:** Funcional con debounce y resultados en tiempo real
+- 📱 **Responsive:** Mobile sidebar con FAB y overlay
+- ⚡ **Performance:** ISR con revalidación cada 60 segundos
 
 ---
 
