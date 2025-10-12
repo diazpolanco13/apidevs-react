@@ -197,6 +197,20 @@ body:has(.docs-layout) > footer {
   display: none !important;
 }
 
+/* Ocultar barra superior de Sanity en toda la app de docs */
+.docs-layout [data-ui="AppBar"],
+.docs-layout [data-ui="Navbar"],
+body:has(.docs-layout) [data-ui="AppBar"],
+body:has(.docs-layout) [data-ui="Navbar"] {
+  display: none !important;
+}
+
+/* Ocultar cualquier elemento de Sanity Studio en docs */
+.docs-layout iframe[src*="sanity"],
+body:has(.docs-layout) iframe[src*="sanity"] {
+  display: none !important;
+}
+
 body {
   position: relative;
   min-height: 100%;
