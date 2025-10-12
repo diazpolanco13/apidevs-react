@@ -34,6 +34,7 @@
     "@radix-ui/react-toast": "^1.1.5",
     "@sanity/client": "^7.11.1",
     "@sanity/code-input": "^6.0.1",
+    "@sanity/document-internationalization": "^4.0.0",
     "@sanity/image-url": "^1.2.0",
     "@sanity/vision": "^4.10.2",
     "@stripe/stripe-js": "2.4.0",

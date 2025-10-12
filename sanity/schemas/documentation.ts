@@ -37,6 +37,15 @@ export default defineType({
   ],
   
   fields: [
+    // ========== LANGUAGE (Internacionalization) ==========
+    defineField({
+      name: 'language',
+      title: 'Idioma',
+      type: 'string',
+      readOnly: true,
+      hidden: true,
+    }),
+    
     // ========== CONTENT GROUP ==========
     defineField({
       name: 'title',

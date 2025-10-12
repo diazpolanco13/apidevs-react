@@ -4,12 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import DocsSearch from './DocsSearch';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface DocsHeaderProps {
   onMenuToggle?: () => void;
+  currentLanguage?: string;
 }
 
-export default function DocsHeader({ onMenuToggle }: DocsHeaderProps = {}) {
+export default function DocsHeader({ onMenuToggle, currentLanguage = 'es' }: DocsHeaderProps = {}) {
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-apidevs-dark/95 border-b border-gray-800/50 z-50 backdrop-blur-xl">
       <div className="h-full px-4 flex items-center max-w-screen-2xl mx-auto gap-4">
@@ -44,8 +46,15 @@ export default function DocsHeader({ onMenuToggle }: DocsHeaderProps = {}) {
           <DocsSearch />
         </div>
 
-        {/* Right Side - CTA */}
-        <div className="flex items-center flex-shrink-0">
+        {/* Right Side - Language Switcher + CTA */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {/* Language Switcher */}
+          <LanguageSwitcher 
+            currentLanguage={currentLanguage}
+            className="hidden sm:block"
+          />
+          
+          {/* CTA Button */}
           <Link
             href="/signin"
             className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 bg-apidevs-primary hover:bg-apidevs-primary/90 text-black font-semibold rounded-lg transition-all text-xs sm:text-sm shadow-lg shadow-apidevs-primary/20 whitespace-nowrap"

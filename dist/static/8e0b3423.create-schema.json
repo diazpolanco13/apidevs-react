@@ -1,0 +1,2139 @@
+[
+  {
+    "fields": [
+      {
+        "name": "language",
+        "type": "string"
+      },
+      {
+        "name": "filename",
+        "type": "string"
+      },
+      {
+        "name": "code",
+        "type": "text"
+      },
+      {
+        "of": [
+          {
+            "type": "number",
+            "title": "Highlighted line"
+          }
+        ],
+        "name": "highlightedLines",
+        "type": "array",
+        "title": "Highlighted lines"
+      }
+    ],
+    "name": "code",
+    "type": "object"
+  },
+  {
+    "options": {
+      "apiVersion": "2022-11-27",
+      "languages": [
+        {
+          "id": "es",
+          "title": "Español 🇪🇸"
+        },
+        {
+          "id": "en",
+          "title": "English 🇺🇸"
+        }
+      ]
+    },
+    "validation": [
+      {
+        "rules": [
+          {
+            "flag": "custom"
+          }
+        ],
+        "level": "error"
+      }
+    ],
+    "of": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "type": "internationalizedArrayReferenceValue",
+        "title": "Internationalized array [object Object]"
+      }
+    ],
+    "name": "internationalizedArrayReference",
+    "type": "array",
+    "title": "Internationalized array"
+  },
+  {
+    "fields": [
+      {
+        "weak": false,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "to": [
+          {
+            "type": "documentation"
+          },
+          {
+            "type": "docCategory"
+          }
+        ],
+        "name": "value",
+        "type": "reference"
+      }
+    ],
+    "name": "internationalizedArrayReferenceValue",
+    "type": "object",
+    "title": "Internationalized array [object Object]"
+  },
+  {
+    "liveEdit": true,
+    "fields": [
+      {
+        "options": {
+          "apiVersion": "2022-11-27",
+          "languages": [
+            {
+              "id": "es",
+              "title": "Español 🇪🇸"
+            },
+            {
+              "id": "en",
+              "title": "English 🇺🇸"
+            }
+          ]
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "translations",
+        "type": "internationalizedArrayReference"
+      },
+      {
+        "options": {
+          "list": [
+            "documentation",
+            "docCategory"
+          ]
+        },
+        "description": "Optional: Used to filter the reference fields above so all translations share the same types.",
+        "of": [
+          {
+            "type": "string"
+          }
+        ],
+        "readOnly": "conditional",
+        "name": "schemaTypes",
+        "type": "array"
+      }
+    ],
+    "name": "translation.metadata",
+    "type": "document",
+    "title": "Translation metadata"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "ID del indicador en TradingView (formato: PUB;xxxxx). Solo para uso interno.",
+        "hidden": false,
+        "name": "pineId",
+        "type": "string",
+        "title": "Pine ID"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              },
+              {
+                "flag": "uri",
+                "constraint": {
+                  "options": {
+                    "scheme": [
+                      "/^https$/"
+                    ],
+                    "allowRelative": false,
+                    "relativeOnly": false,
+                    "allowCredentials": false
+                  }
+                }
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "🟢 URL pública del script para usuarios (ejemplo: https://www.tradingview.com/script/YIHAWxvw/)",
+        "name": "tradingviewUrl",
+        "type": "url",
+        "title": "URL Pública del Script"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "uri",
+                "constraint": {
+                  "options": {
+                    "scheme": [
+                      "/^https$/"
+                    ],
+                    "allowRelative": false,
+                    "relativeOnly": false,
+                    "allowCredentials": false
+                  }
+                }
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "URL del widget interactivo de TradingView (ejemplo: https://s.tradingview.com/embed/YIHAWxvw/) - Se usa como imagen principal del indicador",
+        "name": "embedUrl",
+        "type": "url",
+        "title": "📊 URL Embed Interactivo (Widget)"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "URL amigable para el indicador",
+        "name": "slug",
+        "type": "slug",
+        "title": "Slug URL"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "title",
+        "type": "string",
+        "title": "Título"
+      },
+      {
+        "rows": 3,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "max",
+                "constraint": 200
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Descripción breve para el catálogo (máx 200 caracteres)",
+        "name": "shortDescription",
+        "type": "text",
+        "title": "Descripción Corta"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "fields": [
+          {
+            "name": "alt",
+            "type": "string",
+            "title": "Texto Alternativo"
+          }
+        ],
+        "name": "mainImage",
+        "type": "image",
+        "title": "Imagen Principal"
+      },
+      {
+        "of": [
+          {
+            "options": {
+              "hotspot": true
+            },
+            "fields": [
+              {
+                "name": "alt",
+                "type": "string",
+                "title": "Texto Alternativo"
+              },
+              {
+                "name": "caption",
+                "type": "string",
+                "title": "Leyenda"
+              }
+            ],
+            "type": "image"
+          }
+        ],
+        "name": "gallery",
+        "type": "array",
+        "title": "Galería de Imágenes"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "uri",
+                "constraint": {
+                  "options": {
+                    "scheme": [
+                      "/^http$/",
+                      "/^https$/"
+                    ],
+                    "allowRelative": false,
+                    "relativeOnly": false,
+                    "allowCredentials": false
+                  }
+                }
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "URL de YouTube, Vimeo u otro servicio",
+        "name": "videoUrl",
+        "type": "url",
+        "title": "Video de Demostración"
+      },
+      {
+        "of": [
+          {
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ],
+                          "level": "error"
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Emphasis"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                }
+              ]
+            },
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h2",
+                "title": "H2"
+              },
+              {
+                "value": "h3",
+                "title": "H3"
+              },
+              {
+                "value": "h4",
+                "title": "H4"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "of": [],
+            "type": "block"
+          },
+          {
+            "options": {
+              "hotspot": true
+            },
+            "fields": [
+              {
+                "name": "alt",
+                "type": "string",
+                "title": "Texto Alternativo"
+              },
+              {
+                "name": "caption",
+                "type": "string",
+                "title": "Leyenda"
+              }
+            ],
+            "type": "image"
+          },
+          {
+            "fields": [
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "uri",
+                        "constraint": {
+                          "options": {
+                            "scheme": [
+                              "/^http$/",
+                              "/^https$/"
+                            ],
+                            "allowRelative": false,
+                            "relativeOnly": false,
+                            "allowCredentials": false
+                          }
+                        }
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "url",
+                "type": "url",
+                "title": "Video URL"
+              }
+            ],
+            "type": "object",
+            "name": "videoEmbed",
+            "title": "Video Embebido"
+          }
+        ],
+        "name": "content",
+        "type": "array",
+        "title": "Contenido Detallado"
+      },
+      {
+        "description": "Lista de características principales del indicador",
+        "of": [
+          {
+            "type": "string"
+          }
+        ],
+        "name": "features",
+        "type": "array",
+        "title": "Características"
+      },
+      {
+        "of": [
+          {
+            "fields": [
+              {
+                "name": "title",
+                "type": "string",
+                "title": "Título del Beneficio"
+              },
+              {
+                "rows": 3,
+                "name": "description",
+                "type": "text",
+                "title": "Descripción"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "name": "benefits",
+        "type": "array",
+        "title": "Beneficios"
+      },
+      {
+        "rows": 5,
+        "description": "Instrucciones de uso del indicador",
+        "name": "howToUse",
+        "type": "text",
+        "title": "Cómo Usar"
+      },
+      {
+        "of": [
+          {
+            "fields": [
+              {
+                "name": "question",
+                "type": "string",
+                "title": "Pregunta"
+              },
+              {
+                "rows": 3,
+                "name": "answer",
+                "type": "text",
+                "title": "Respuesta"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "name": "faq",
+        "type": "array",
+        "title": "Preguntas Frecuentes"
+      },
+      {
+        "fields": [
+          {
+            "validation": [
+              {
+                "rules": [
+                  {
+                    "flag": "max",
+                    "constraint": 60
+                  }
+                ],
+                "level": "error"
+              }
+            ],
+            "name": "metaTitle",
+            "type": "string",
+            "title": "Meta Título"
+          },
+          {
+            "rows": 2,
+            "validation": [
+              {
+                "rules": [
+                  {
+                    "flag": "max",
+                    "constraint": 160
+                  }
+                ],
+                "level": "error"
+              }
+            ],
+            "name": "metaDescription",
+            "type": "text",
+            "title": "Meta Descripción"
+          },
+          {
+            "of": [
+              {
+                "type": "string"
+              }
+            ],
+            "name": "keywords",
+            "type": "array",
+            "title": "Palabras Clave"
+          }
+        ],
+        "name": "seo",
+        "type": "object",
+        "title": "SEO"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "Indicador",
+              "value": "indicador"
+            },
+            {
+              "title": "Scanner",
+              "value": "scanner"
+            },
+            {
+              "title": "Tool",
+              "value": "tool"
+            }
+          ]
+        },
+        "initialValue": "indicador",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "valid",
+                "constraint": [
+                  "indicador",
+                  "scanner",
+                  "tool"
+                ]
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Tipo de herramienta",
+        "name": "category",
+        "type": "string",
+        "title": "Categoría"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "🎁 Free",
+              "value": "free"
+            },
+            {
+              "title": "💎 Premium",
+              "value": "premium"
+            }
+          ]
+        },
+        "initialValue": "free",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "valid",
+                "constraint": [
+                  "free",
+                  "premium"
+                ]
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Nivel de acceso requerido",
+        "name": "access_tier",
+        "type": "string",
+        "title": "Tier de Acceso"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "Activo",
+              "value": "activo"
+            },
+            {
+              "title": "Inactivo",
+              "value": "inactivo"
+            },
+            {
+              "title": "En desarrollo",
+              "value": "desarrollo"
+            }
+          ]
+        },
+        "initialValue": "activo",
+        "description": "Estado del indicador",
+        "name": "status",
+        "type": "string",
+        "title": "Estado"
+      },
+      {
+        "name": "publishedAt",
+        "type": "datetime",
+        "title": "Fecha de Publicación"
+      }
+    ],
+    "name": "indicator",
+    "type": "document",
+    "title": "Indicador"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              },
+              {
+                "flag": "max",
+                "constraint": 100
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Título principal de la página",
+        "name": "title",
+        "type": "string",
+        "title": "Título"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              },
+              {
+                "flag": "custom"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug",
+        "title": "Slug URL"
+      },
+      {
+        "rows": 2,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "max",
+                "constraint": 200
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "💡 Aparece en el sidebar y en cards de navegación (máx 200 caracteres)",
+        "name": "description",
+        "type": "text",
+        "title": "Descripción Corta"
+      },
+      {
+        "placeholder": "🚀",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "max",
+                "constraint": 4
+              },
+              {
+                "flag": "custom"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "🎨 Emoji que aparece junto al título (ej: 🚀, ⚡, 📊)",
+        "name": "icon",
+        "type": "string",
+        "title": "Icono"
+      },
+      {
+        "of": [
+          {
+            "marks": {
+              "annotations": [
+                {
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^mailto$/",
+                                    "/^tel$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ],
+                          "level": "error"
+                        }
+                      ],
+                      "name": "href",
+                      "type": "url",
+                      "title": "URL"
+                    },
+                    {
+                      "initialValue": false,
+                      "name": "blank",
+                      "type": "boolean",
+                      "title": "Abrir en nueva pestaña"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                },
+                {
+                  "fields": [
+                    {
+                      "to": [
+                        {
+                          "type": "documentation"
+                        }
+                      ],
+                      "name": "reference",
+                      "type": "reference",
+                      "title": "Página"
+                    }
+                  ],
+                  "name": "internalLink",
+                  "type": "object",
+                  "title": "Link Interno"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Emphasis"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                },
+                {
+                  "value": "highlight",
+                  "title": "Highlight"
+                }
+              ]
+            },
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bullet"
+              },
+              {
+                "value": "number",
+                "title": "Number"
+              },
+              {
+                "value": "checkbox",
+                "title": "Checkbox"
+              }
+            ],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "H1"
+              },
+              {
+                "value": "h2",
+                "title": "H2"
+              },
+              {
+                "value": "h3",
+                "title": "H3"
+              },
+              {
+                "value": "h4",
+                "title": "H4"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "of": [],
+            "type": "block"
+          },
+          {
+            "options": {
+              "hotspot": true
+            },
+            "fields": [
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "description": "♿ Importante para SEO y accesibilidad",
+                "name": "alt",
+                "type": "string",
+                "title": "Texto Alternativo"
+              },
+              {
+                "description": "Texto que aparece debajo de la imagen",
+                "name": "caption",
+                "type": "string"
+              }
+            ],
+            "type": "image"
+          },
+          {
+            "fields": [
+              {
+                "placeholder": "app/page.tsx",
+                "description": "📄 Ej: app/page.tsx, config.json",
+                "name": "filename",
+                "type": "string",
+                "title": "Nombre del Archivo"
+              },
+              {
+                "options": {
+                  "list": [
+                    {
+                      "title": "TypeScript",
+                      "value": "typescript"
+                    },
+                    {
+                      "title": "JavaScript",
+                      "value": "javascript"
+                    },
+                    {
+                      "title": "JSX",
+                      "value": "jsx"
+                    },
+                    {
+                      "title": "TSX",
+                      "value": "tsx"
+                    },
+                    {
+                      "title": "Python",
+                      "value": "python"
+                    },
+                    {
+                      "title": "Bash",
+                      "value": "bash"
+                    },
+                    {
+                      "title": "Shell",
+                      "value": "sh"
+                    },
+                    {
+                      "title": "JSON",
+                      "value": "json"
+                    },
+                    {
+                      "title": "YAML",
+                      "value": "yaml"
+                    },
+                    {
+                      "title": "CSS",
+                      "value": "css"
+                    },
+                    {
+                      "title": "SCSS",
+                      "value": "scss"
+                    },
+                    {
+                      "title": "HTML",
+                      "value": "html"
+                    },
+                    {
+                      "title": "SQL",
+                      "value": "sql"
+                    },
+                    {
+                      "title": "GraphQL",
+                      "value": "graphql"
+                    },
+                    {
+                      "title": "Markdown",
+                      "value": "markdown"
+                    },
+                    {
+                      "title": "Go",
+                      "value": "go"
+                    },
+                    {
+                      "title": "Rust",
+                      "value": "rust"
+                    },
+                    {
+                      "title": "PHP",
+                      "value": "php"
+                    },
+                    {
+                      "title": "Ruby",
+                      "value": "ruby"
+                    },
+                    {
+                      "title": "Java",
+                      "value": "java"
+                    },
+                    {
+                      "title": "C++",
+                      "value": "cpp"
+                    },
+                    {
+                      "title": "C#",
+                      "value": "csharp"
+                    },
+                    {
+                      "title": "Swift",
+                      "value": "swift"
+                    },
+                    {
+                      "title": "Kotlin",
+                      "value": "kotlin"
+                    }
+                  ],
+                  "layout": "dropdown"
+                },
+                "initialValue": "typescript",
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "valid",
+                        "constraint": [
+                          "typescript",
+                          "javascript",
+                          "jsx",
+                          "tsx",
+                          "python",
+                          "bash",
+                          "sh",
+                          "json",
+                          "yaml",
+                          "css",
+                          "scss",
+                          "html",
+                          "sql",
+                          "graphql",
+                          "markdown",
+                          "go",
+                          "rust",
+                          "php",
+                          "ruby",
+                          "java",
+                          "cpp",
+                          "csharp",
+                          "swift",
+                          "kotlin"
+                        ]
+                      },
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "language",
+                "type": "string",
+                "title": "Lenguaje"
+              },
+              {
+                "rows": 15,
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "code",
+                "type": "text",
+                "title": "Código"
+              },
+              {
+                "placeholder": "1-3,5,7-10",
+                "description": "✨ Ej: 1-3,5,7-10 (resalta esas líneas)",
+                "name": "highlightLines",
+                "type": "string",
+                "title": "Líneas Resaltadas"
+              },
+              {
+                "initialValue": true,
+                "name": "showLineNumbers",
+                "type": "boolean",
+                "title": "Mostrar Números de Línea"
+              }
+            ],
+            "type": "object",
+            "name": "codeBlock",
+            "title": "💻 Code Block"
+          },
+          {
+            "fields": [
+              {
+                "options": {
+                  "list": [
+                    {
+                      "title": "💡 Info",
+                      "value": "info"
+                    },
+                    {
+                      "title": "✅ Success",
+                      "value": "success"
+                    },
+                    {
+                      "title": "⚠️ Warning",
+                      "value": "warning"
+                    },
+                    {
+                      "title": "🚨 Error",
+                      "value": "error"
+                    },
+                    {
+                      "title": "📝 Note",
+                      "value": "note"
+                    },
+                    {
+                      "title": "💡 Tip",
+                      "value": "tip"
+                    },
+                    {
+                      "title": "🎓 Learn",
+                      "value": "learn"
+                    }
+                  ],
+                  "layout": "radio",
+                  "direction": "horizontal"
+                },
+                "initialValue": "info",
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "valid",
+                        "constraint": [
+                          "info",
+                          "success",
+                          "warning",
+                          "error",
+                          "note",
+                          "tip",
+                          "learn"
+                        ]
+                      },
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "type",
+                "type": "string",
+                "title": "Tipo"
+              },
+              {
+                "description": "Título del callout (opcional)",
+                "name": "title",
+                "type": "string",
+                "title": "Título"
+              },
+              {
+                "rows": 4,
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "content",
+                "type": "text",
+                "title": "Contenido"
+              },
+              {
+                "initialValue": false,
+                "description": "Permite colapsar/expandir el contenido",
+                "name": "collapsible",
+                "type": "boolean",
+                "title": "¿Es Colapsable?"
+              }
+            ],
+            "type": "object",
+            "name": "callout",
+            "title": "💡 Callout"
+          },
+          {
+            "fields": [
+              {
+                "name": "title",
+                "type": "string",
+                "title": "Título del Grupo"
+              },
+              {
+                "options": {
+                  "list": [
+                    {
+                      "title": "1 columna",
+                      "value": 1
+                    },
+                    {
+                      "title": "2 columnas",
+                      "value": 2
+                    },
+                    {
+                      "title": "3 columnas",
+                      "value": 3
+                    },
+                    {
+                      "title": "4 columnas",
+                      "value": 4
+                    }
+                  ]
+                },
+                "initialValue": 2,
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "valid",
+                        "constraint": [
+                          1,
+                          2,
+                          3,
+                          4
+                        ]
+                      },
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      },
+                      {
+                        "flag": "min",
+                        "constraint": 1
+                      },
+                      {
+                        "flag": "max",
+                        "constraint": 4
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "cols",
+                "type": "number",
+                "title": "Columnas"
+              },
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "min",
+                        "constraint": 1
+                      },
+                      {
+                        "flag": "max",
+                        "constraint": 12
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "of": [
+                  {
+                    "fields": [
+                      {
+                        "validation": [
+                          {
+                            "rules": [
+                              {
+                                "flag": "presence",
+                                "constraint": "required"
+                              }
+                            ],
+                            "level": "error"
+                          }
+                        ],
+                        "name": "title",
+                        "type": "string",
+                        "title": "Título"
+                      },
+                      {
+                        "description": "Emoji del card",
+                        "name": "icon",
+                        "type": "string",
+                        "title": "Icono"
+                      },
+                      {
+                        "rows": 2,
+                        "name": "description",
+                        "type": "text",
+                        "title": "Descripción"
+                      },
+                      {
+                        "description": "URL o slug (/docs/getting-started)",
+                        "name": "href",
+                        "type": "string",
+                        "title": "Link"
+                      }
+                    ],
+                    "type": "object"
+                  }
+                ],
+                "name": "cards",
+                "type": "array"
+              }
+            ],
+            "type": "object",
+            "name": "cardGroup",
+            "title": "🃏 Card Group"
+          },
+          {
+            "fields": [
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "min",
+                        "constraint": 2
+                      },
+                      {
+                        "flag": "max",
+                        "constraint": 8
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "of": [
+                  {
+                    "fields": [
+                      {
+                        "validation": [
+                          {
+                            "rules": [
+                              {
+                                "flag": "presence",
+                                "constraint": "required"
+                              }
+                            ],
+                            "level": "error"
+                          }
+                        ],
+                        "name": "label",
+                        "type": "string"
+                      },
+                      {
+                        "rows": 6,
+                        "validation": [
+                          {
+                            "rules": [
+                              {
+                                "flag": "presence",
+                                "constraint": "required"
+                              }
+                            ],
+                            "level": "error"
+                          }
+                        ],
+                        "name": "content",
+                        "type": "text",
+                        "title": "Contenido"
+                      }
+                    ],
+                    "type": "object"
+                  }
+                ],
+                "name": "items",
+                "type": "array",
+                "title": "Tabs"
+              }
+            ],
+            "type": "object",
+            "name": "tabs",
+            "title": "📑 Tabs"
+          },
+          {
+            "fields": [
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "title",
+                "type": "string",
+                "title": "Título"
+              },
+              {
+                "rows": 4,
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "content",
+                "type": "text",
+                "title": "Contenido"
+              },
+              {
+                "initialValue": false,
+                "name": "defaultOpen",
+                "type": "boolean",
+                "title": "Abierto por Defecto"
+              }
+            ],
+            "type": "object",
+            "name": "accordion",
+            "title": "📋 Accordion"
+          },
+          {
+            "fields": [
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "uri",
+                        "constraint": {
+                          "options": {
+                            "scheme": [
+                              "/^http$/",
+                              "/^https$/"
+                            ],
+                            "allowRelative": false,
+                            "relativeOnly": false,
+                            "allowCredentials": false
+                          }
+                        }
+                      },
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "description": "YouTube, Vimeo, Loom, etc.",
+                "name": "url",
+                "type": "url",
+                "title": "URL del Video"
+              },
+              {
+                "name": "title",
+                "type": "string",
+                "title": "Título"
+              },
+              {
+                "options": {
+                  "list": [
+                    {
+                      "title": "16:9 (Landscape)",
+                      "value": "16:9"
+                    },
+                    {
+                      "title": "4:3",
+                      "value": "4:3"
+                    },
+                    {
+                      "title": "1:1 (Square)",
+                      "value": "1:1"
+                    },
+                    {
+                      "title": "9:16 (Portrait)",
+                      "value": "9:16"
+                    }
+                  ]
+                },
+                "initialValue": "16:9",
+                "name": "aspectRatio",
+                "type": "string"
+              }
+            ],
+            "type": "object",
+            "name": "videoEmbed",
+            "title": "🎥 Video"
+          }
+        ],
+        "name": "content",
+        "type": "array",
+        "title": "Contenido Principal"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "📂 Categoría en el sidebar",
+        "to": [
+          {
+            "type": "docCategory"
+          }
+        ],
+        "name": "category",
+        "type": "reference",
+        "title": "Categoría"
+      },
+      {
+        "initialValue": 0,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              },
+              {
+                "flag": "min",
+                "constraint": 0
+              },
+              {
+                "flag": "max",
+                "constraint": 999
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "🔢 Orden dentro de su categoría (menor = arriba)",
+        "name": "order",
+        "type": "number",
+        "title": "Orden"
+      },
+      {
+        "description": "← Navegación secuencial",
+        "to": [
+          {
+            "type": "documentation"
+          }
+        ],
+        "name": "previousPage",
+        "type": "reference",
+        "title": "Página Anterior"
+      },
+      {
+        "description": "→ Navegación secuencial",
+        "to": [
+          {
+            "type": "documentation"
+          }
+        ],
+        "name": "nextPage",
+        "type": "reference",
+        "title": "Página Siguiente"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "max",
+                "constraint": 6
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "🔗 Sugerencias al final de la página",
+        "of": [
+          {
+            "to": [
+              {
+                "type": "documentation"
+              }
+            ],
+            "type": "reference",
+            "title": "Reference to 📚 documentación"
+          }
+        ],
+        "name": "relatedPages",
+        "type": "array",
+        "title": "Páginas Relacionadas"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "✅ Publicado",
+              "value": "published"
+            },
+            {
+              "title": "🚧 En Progreso",
+              "value": "draft"
+            },
+            {
+              "title": "👀 En Revisión",
+              "value": "review"
+            },
+            {
+              "title": "🗄️ Archivado",
+              "value": "archived"
+            }
+          ],
+          "layout": "radio"
+        },
+        "initialValue": "draft",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "valid",
+                "constraint": [
+                  "published",
+                  "draft",
+                  "review",
+                  "archived"
+                ]
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "status",
+        "type": "string",
+        "title": "Estado"
+      },
+      {
+        "initialValue": false,
+        "description": "Aparece en la página principal de docs",
+        "name": "featured",
+        "type": "boolean",
+        "title": "⭐ Destacado"
+      },
+      {
+        "name": "publishedAt",
+        "type": "datetime",
+        "title": "Fecha de Publicación"
+      },
+      {
+        "name": "updatedAt",
+        "type": "datetime",
+        "title": "Última Actualización"
+      },
+      {
+        "options": {
+          "collapsible": true,
+          "collapsed": false
+        },
+        "fields": [
+          {
+            "validation": [
+              {
+                "rules": [
+                  {
+                    "flag": "max",
+                    "constraint": 60
+                  },
+                  {
+                    "flag": "custom"
+                  }
+                ],
+                "level": "error"
+              }
+            ],
+            "description": "🎯 Máximo 60 caracteres. Si está vacío, usa el título principal",
+            "name": "metaTitle",
+            "type": "string",
+            "title": "Meta Título"
+          },
+          {
+            "rows": 3,
+            "validation": [
+              {
+                "rules": [
+                  {
+                    "flag": "max",
+                    "constraint": 160
+                  }
+                ],
+                "level": "error"
+              }
+            ],
+            "description": "📝 Máximo 160 caracteres",
+            "name": "metaDescription",
+            "type": "text",
+            "title": "Meta Descripción"
+          },
+          {
+            "options": {
+              "layout": "tags"
+            },
+            "validation": [
+              {
+                "rules": [
+                  {
+                    "flag": "max",
+                    "constraint": 10
+                  }
+                ],
+                "level": "error"
+              }
+            ],
+            "description": "🏷️ Máximo 10 keywords",
+            "of": [
+              {
+                "type": "string"
+              }
+            ],
+            "name": "keywords",
+            "type": "array"
+          },
+          {
+            "options": {
+              "hotspot": true
+            },
+            "description": "🖼️ Imagen para redes sociales (1200×630px recomendado)",
+            "name": "ogImage",
+            "type": "image",
+            "title": "Open Graph Image"
+          },
+          {
+            "initialValue": false,
+            "description": "🚫 Excluir de motores de búsqueda",
+            "name": "noindex",
+            "type": "boolean",
+            "title": "No Indexar"
+          }
+        ],
+        "name": "seo",
+        "type": "object",
+        "title": "SEO"
+      }
+    ],
+    "name": "documentation",
+    "type": "document",
+    "title": "📚 Documentación"
+  },
+  {
+    "fields": [
+      {
+        "placeholder": "Getting Started",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              },
+              {
+                "flag": "max",
+                "constraint": 50
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "📌 Nombre de la categoría (ej: Getting Started, API Reference, Guides)",
+        "name": "title",
+        "type": "string",
+        "title": "Título"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "🔗 URL amigable",
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "placeholder": "📚",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "max",
+                "constraint": 4
+              },
+              {
+                "flag": "custom"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "🎨 Emoji que aparece en el sidebar (ej: 🚀, 📚, ⚙️)",
+        "name": "icon",
+        "type": "string",
+        "title": "Icono"
+      },
+      {
+        "initialValue": 0,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              },
+              {
+                "flag": "min",
+                "constraint": 0
+              },
+              {
+                "flag": "max",
+                "constraint": 999
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "🔢 Orden en el sidebar (menor = arriba)",
+        "name": "order",
+        "type": "number",
+        "title": "Orden"
+      },
+      {
+        "rows": 2,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "max",
+                "constraint": 200
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "💬 Descripción breve de la categoría",
+        "name": "description",
+        "type": "text",
+        "title": "Descripción"
+      },
+      {
+        "initialValue": true,
+        "description": "🔽 Permite colapsar/expandir la categoría en el sidebar",
+        "name": "isCollapsible",
+        "type": "boolean",
+        "title": "¿Es Colapsable?"
+      },
+      {
+        "initialValue": true,
+        "description": "👀 La categoría inicia expandida cuando es colapsable",
+        "name": "defaultExpanded",
+        "type": "boolean",
+        "title": "Expandida por Defecto"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "🟢 APIDevs Primary (#C9D92E)",
+              "value": "#C9D92E"
+            },
+            {
+              "title": "🟣 Purple (#9333EA)",
+              "value": "#9333EA"
+            },
+            {
+              "title": "🔵 Blue (#3B82F6)",
+              "value": "#3B82F6"
+            },
+            {
+              "title": "🟢 Green (#10B981)",
+              "value": "#10B981"
+            },
+            {
+              "title": "🟡 Yellow (#F59E0B)",
+              "value": "#F59E0B"
+            },
+            {
+              "title": "🔴 Red (#EF4444)",
+              "value": "#EF4444"
+            },
+            {
+              "title": "⚪ Gray (#6B7280)",
+              "value": "#6B7280"
+            }
+          ]
+        },
+        "initialValue": "#C9D92E",
+        "description": "🎨 Color hex para identificación visual (opcional)",
+        "name": "color",
+        "type": "string",
+        "title": "Color de Acento"
+      },
+      {
+        "initialValue": false,
+        "description": "Aparece en la página principal de documentación",
+        "name": "featured",
+        "type": "boolean",
+        "title": "⭐ Destacado"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "👁️ Público",
+              "value": "public"
+            },
+            {
+              "title": "🔒 Solo Autenticados",
+              "value": "authenticated"
+            },
+            {
+              "title": "💎 Solo Premium",
+              "value": "premium"
+            },
+            {
+              "title": "🚧 Oculto",
+              "value": "hidden"
+            }
+          ],
+          "layout": "radio"
+        },
+        "initialValue": "public",
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "valid",
+                "constraint": [
+                  "public",
+                  "authenticated",
+                  "premium",
+                  "hidden"
+                ]
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "Control de acceso para esta categoría",
+        "name": "visibility",
+        "type": "string",
+        "title": "Visibilidad"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "max",
+                "constraint": 6
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "description": "⚡ Links rápidos que aparecen en la categoría",
+        "of": [
+          {
+            "fields": [
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "title",
+                "type": "string",
+                "title": "Título"
+              },
+              {
+                "description": "Emoji",
+                "name": "icon",
+                "type": "string",
+                "title": "Icono"
+              },
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "description": "URL o slug (/docs/getting-started)",
+                "name": "href",
+                "type": "string",
+                "title": "Link"
+              },
+              {
+                "rows": 2,
+                "name": "description",
+                "type": "text",
+                "title": "Descripción"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "name": "quickLinks",
+        "type": "array"
+      }
+    ],
+    "name": "docCategory",
+    "type": "document",
+    "title": "📂 Categorías de Documentación"
+  }
+]

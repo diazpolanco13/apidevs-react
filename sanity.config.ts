@@ -7,6 +7,7 @@ import {visionTool} from '@sanity/vision'
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {codeInput} from '@sanity/code-input'
+import {documentInternationalization} from '@sanity/document-internationalization'
 
 // Config
 import {apiVersion, dataset, projectId} from './sanity/env'
@@ -55,5 +56,23 @@ export default defineConfig({
       title: 'GROQ Query',
     }),
     codeInput(),
+    
+    // 🌍 Plugin de Internacionalización
+    documentInternationalization({
+      // Idiomas soportados
+      supportedLanguages: [
+        { id: 'es', title: 'Español 🇪🇸' },
+        { id: 'en', title: 'English 🇺🇸' },
+      ],
+      
+      // Idioma por defecto (español)
+      // defaultLanguages: ['es'], // Removido temporalmente por error de tipo
+      
+      // Tipos de documentos a internacionalizar
+      schemaTypes: ['documentation', 'docCategory'],
+      
+      // Campo para almacenar el idioma
+      languageField: 'language',
+    }),
   ],
 })

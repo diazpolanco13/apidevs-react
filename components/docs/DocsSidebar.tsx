@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { SidebarData } from '@/sanity/lib/doc-queries';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface DocsSidebarProps {
   sidebarData: SidebarData;
+  currentLanguage?: string;
 }
 
-export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
+export default function DocsSidebar({ sidebarData, currentLanguage = 'es' }: DocsSidebarProps) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
@@ -50,7 +52,7 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
   };
 
   const isPageActive = (slug: string) => {
-    return pathname === `/docs/${slug}` || pathname.endsWith(`/${slug}`);
+    return pathname === `/docs/${currentLanguage}/${slug}` || pathname.endsWith(`/${slug}`);
   };
 
   // Componente de contenido del sidebar (reutilizable)
@@ -113,7 +115,7 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
                     return (
                       <Link
                         key={page._id}
-                        href={`/docs/${page.slug}`}
+                        href={`/docs/${currentLanguage}/${page.slug}`}
                         className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-all group relative ${
                           active
                             ? 'bg-apidevs-primary/10 text-apidevs-primary font-medium before:absolute before:left-0 before:top-1 before:bottom-1 before:w-0.5 before:bg-apidevs-primary before:rounded-r'
@@ -137,7 +139,16 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-800/50">
+      <div className="p-4 border-t border-gray-800/50 space-y-3">
+        {/* Language Switcher - Solo visible en móvil */}
+        <div className="lg:hidden">
+          <LanguageSwitcher 
+            currentLanguage={currentLanguage}
+            className="w-full"
+          />
+        </div>
+        
+        {/* Back to Home */}
         <Link
           href="/"
           className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-400 hover:text-apidevs-primary transition-colors rounded-md hover:bg-gray-900/50"

@@ -13,6 +13,15 @@ export default defineType({
   icon: FolderIcon,
   
   fields: [
+    // ========== LANGUAGE (Internacionalization) ==========
+    defineField({
+      name: 'language',
+      title: 'Idioma',
+      type: 'string',
+      readOnly: true,
+      hidden: true,
+    }),
+    
     defineField({
       name: 'title',
       title: 'Título',

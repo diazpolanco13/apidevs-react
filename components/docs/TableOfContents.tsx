@@ -46,7 +46,7 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
 
   return (
     <nav 
-      className="fixed top-16 right-0 h-[calc(100vh-4rem)] w-64 p-6 overflow-y-auto border-l border-gray-800 hidden xl:block" 
+      className="fixed top-24 right-0 h-[calc(100vh-4rem)] w-64 p-6 overflow-y-auto border-l border-gray-800 hidden xl:block" 
       style={{ right: 'max(0px, calc((100vw - 1800px) / 2))' }}
       aria-label="Table of contents"
     >

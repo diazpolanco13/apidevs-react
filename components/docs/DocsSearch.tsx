@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface SearchResult {
   _id: string;
@@ -16,11 +16,15 @@ interface SearchResult {
 
 export default function DocsSearch() {
   const router = useRouter();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // Obtener el idioma actual del pathname
+  const currentLanguage = pathname.startsWith('/docs/') ? pathname.split('/')[2] || 'es' : 'es';
 
   // Detectar Ctrl+K o Cmd+K
   useEffect(() => {
@@ -91,16 +95,16 @@ export default function DocsSearch() {
       e.preventDefault();
       const selected = results[selectedIndex];
       if (selected) {
-        router.push(`/docs/${selected.slug}`);
+        router.push(`/docs/${currentLanguage}/${selected.slug}`);
         setIsOpen(false);
         setQuery('');
         setResults([]);
       }
     }
-  }, [results, selectedIndex, router]);
+  }, [results, selectedIndex, router, currentLanguage]);
 
   const handleResultClick = (slug: string) => {
-    router.push(`/docs/${slug}`);
+    router.push(`/docs/${currentLanguage}/${slug}`);
     setIsOpen(false);
     setQuery('');
     setResults([]);

@@ -5,7 +5,7 @@ import { groq } from 'next-sanity'
 // ==========================================
 
 export const DOC_CATEGORIES_QUERY = groq`
-  *[_type == "docCategory"] | order(order asc) {
+  *[_type == "docCategory" && language == $language] | order(order asc) {
     _id,
     title,
     slug,
@@ -13,7 +13,8 @@ export const DOC_CATEGORIES_QUERY = groq`
     order,
     description,
     isCollapsible,
-    defaultExpanded
+    defaultExpanded,
+    language
   }
 `
 
@@ -22,7 +23,7 @@ export const DOC_CATEGORIES_QUERY = groq`
 // ==========================================
 
 export const ALL_DOCS_QUERY = groq`
-  *[_type == "documentation"] | order(category->order asc, order asc) {
+  *[_type == "documentation" && language == $language] | order(category->order asc, order asc) {
     _id,
     title,
     "slug": slug.current,
@@ -33,7 +34,8 @@ export const ALL_DOCS_QUERY = groq`
     icon,
     description,
     publishedAt,
-    updatedAt
+    updatedAt,
+    language
   }
 `
 
@@ -43,7 +45,7 @@ export const ALL_DOCS_QUERY = groq`
 
 export const SIDEBAR_DOCS_QUERY = groq`
   {
-    "categories": *[_type == "docCategory"] | order(order asc) {
+    "categories": *[_type == "docCategory" && language == $language] | order(order asc) {
       _id,
       title,
       slug,
@@ -51,7 +53,7 @@ export const SIDEBAR_DOCS_QUERY = groq`
       order,
       isCollapsible,
       defaultExpanded,
-      "pages": *[_type == "documentation" && category._ref == ^._id] | order(order asc) {
+      "pages": *[_type == "documentation" && category._ref == ^._id && language == $language] | order(order asc) {
         _id,
         title,
         "slug": slug.current,
@@ -68,19 +70,21 @@ export const SIDEBAR_DOCS_QUERY = groq`
 // ==========================================
 
 export const DOC_BY_SLUG_QUERY = groq`
-  *[_type == "documentation" && slug.current == $slug][0] {
+  *[_type == "documentation" && slug.current == $slug && language == $language][0] {
     _id,
     title,
     "slug": slug.current,
     description,
     icon,
     content,
+    language,
     category->{
       _id,
       title,
       "slug": slug.current,
       icon,
-      order
+      order,
+      language
     },
     order,
     nextPage->{
@@ -107,7 +111,7 @@ export const DOC_BY_SLUG_QUERY = groq`
 // ==========================================
 
 export const DOC_SLUGS_QUERY = groq`
-  *[_type == "documentation" && defined(slug.current)]{
+  *[_type == "documentation" && defined(slug.current) && language == $language]{
     "slug": slug.current
   }.slug
 `
@@ -119,6 +123,7 @@ export const DOC_SLUGS_QUERY = groq`
 export const SEARCH_DOCS_QUERY = groq`
   *[
     _type == "documentation" && 
+    language == $language &&
     (
       title match $searchTerm + "*" ||
       description match $searchTerm + "*" ||
@@ -131,7 +136,8 @@ export const SEARCH_DOCS_QUERY = groq`
     description,
     "categoryTitle": category->title,
     "categorySlug": category->slug.current,
-    "excerpt": pt::text(content)[0...150]
+    "excerpt": pt::text(content)[0...150],
+    language
   }
 `
 
@@ -140,7 +146,7 @@ export const SEARCH_DOCS_QUERY = groq`
 // ==========================================
 
 export const DOC_TOC_QUERY = groq`
-  *[_type == "documentation" && slug.current == $slug][0] {
+  *[_type == "documentation" && slug.current == $slug && language == $language][0] {
     "headings": content[style in ["h1", "h2", "h3", "h4"]] {
       "text": pt::text(@),
       "style": style
@@ -153,14 +159,15 @@ export const DOC_TOC_QUERY = groq`
 // ==========================================
 
 export const DOCS_BY_CATEGORY_QUERY = groq`
-  *[_type == "documentation" && category->slug.current == $categorySlug] | order(order asc) {
+  *[_type == "documentation" && category->slug.current == $categorySlug && language == $language] | order(order asc) {
     _id,
     title,
     "slug": slug.current,
     description,
     icon,
     order,
-    publishedAt
+    publishedAt,
+    language
   }
 `
 
@@ -177,6 +184,7 @@ export interface DocCategory {
   description?: string
   isCollapsible: boolean
   defaultExpanded: boolean
+  language: string
 }
 
 export interface DocListItem {
@@ -191,6 +199,7 @@ export interface DocListItem {
   description?: string
   publishedAt?: string
   updatedAt?: string
+  language: string
 }
 
 export interface DocPage {
@@ -200,12 +209,14 @@ export interface DocPage {
   description?: string
   icon?: string
   content: any[] // Portable Text
+  language: string
   category: {
     _id: string
     title: string
     slug: string
     icon?: string
     order: number
+    language: string
   }
   order: number
   nextPage?: {
@@ -258,6 +269,7 @@ export interface SearchResult {
   categoryTitle?: string
   categorySlug?: string
   excerpt?: string
+  language: string
 }
 
 export interface TocHeading {
