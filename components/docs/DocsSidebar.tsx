@@ -37,7 +37,7 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
   };
 
   return (
-    <aside className="absolute top-0 left-0 bottom-0 w-64 bg-apidevs-dark/95 backdrop-blur-sm border-r border-gray-800/50 overflow-y-auto z-40">
+    <aside className="sticky top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-apidevs-dark/95 backdrop-blur-sm border-r border-gray-800/50 overflow-y-auto z-40">
       {/* Custom scrollbar styles */}
       <style jsx>{`
         aside::-webkit-scrollbar {

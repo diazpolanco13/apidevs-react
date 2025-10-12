@@ -44,7 +44,7 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
   if (headings.length === 0) return null;
 
   return (
-    <nav className="absolute top-0 right-0 bottom-0 w-64 p-6 overflow-y-auto border-l border-gray-800 hidden xl:block">
+    <nav className="sticky top-16 right-0 h-[calc(100vh-4rem)] w-64 p-6 overflow-y-auto border-l border-gray-800 hidden xl:block">
       <div className="space-y-4">
         <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
           On this page

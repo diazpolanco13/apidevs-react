@@ -47,14 +47,16 @@ export default async function DocsLayout({
       <DocsHeader />
 
       {/* Contenedor centrado que engloba todo */}
-      <div className="max-w-[1800px] mx-auto relative min-h-screen pt-16">
-        {/* Sidebar */}
-        <DocsSidebar sidebarData={sidebarData} />
+      <div className="max-w-[1800px] mx-auto pt-16">
+        <div className="flex gap-0">
+          {/* Sidebar */}
+          <DocsSidebar sidebarData={sidebarData} />
 
-        {/* Main Content */}
-        <main className="ml-64 relative z-10">
-          {children}
-        </main>
+          {/* Main Content */}
+          <main className="flex-1 relative z-10 min-w-0">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );
