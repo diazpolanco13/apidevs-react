@@ -182,20 +182,29 @@ El sistema de documentación replica el diseño profesional de Mintlify y LuxAlg
 - Renderiza estructura base: header + sidebar + main
 - Background con partículas espaciales reutilizadas
 - CSS personalizado oculta Navbar principal
+- **Layout estilo LuxAlgo:** Todo contenido en contenedor centrado
 
 ```typescript
 // Estructura:
-<div className="docs-layout">
+<div className="docs-layout min-h-screen relative">
   <BackgroundEffects variant="minimal" />
   <DocsHeader />
-  <DocsSidebar sidebarData={categories} />
-  <main className="ml-64 pt-16">{children}</main>
+  
+  {/* Contenedor centrado 1800px que engloba todo */}
+  <div className="max-w-[1800px] mx-auto pt-16 relative">
+    <div className="flex">
+      <DocsSidebar sidebarData={categories} /> {/* sticky */}
+      <main className="flex-1 relative z-10 min-w-0">
+        {children} {/* TableOfContents fixed dentro */}
+      </main>
+    </div>
+  </div>
 </div>
 ```
 
 #### 2. **DocsHeader** (`components/docs/DocsHeader.tsx`)
 - Logo APIDevs horizontal blanco
-- Navegación: Documentation, Guides, API Reference, Changelog
+- ~~Navegación~~ (REMOVIDA para simplificar)
 - Búsqueda con shortcut Ctrl+K
 - Botón "Get started" (verde APIDevs)
 - Fixed top con backdrop blur
@@ -207,52 +216,79 @@ El sistema de documentación replica el diseño profesional de Mintlify y LuxAlg
 - Link activo con color `#C9D92E`
 - Scrollbar personalizado
 - Footer "Back to Home"
-- Fixed left con backdrop blur
+- **Sticky positioning:** `sticky top-16 h-[calc(100vh-4rem)]`
+- Scroll independiente del contenido principal
 
 #### 4. **PortableTextComponents** (`components/docs/PortableTextComponents.tsx`)
-**Renderizado personalizado de cada tipo:**
+**⚠️ IMPORTANTE: Server Component (NO 'use client')**
+
+**Renderizado estilo LuxAlgo con gradientes y efectos:**
 
 ```typescript
-// Headings con anchor links
-h2: <h2 id={id}>
-  <a href={`#${id}`}>#</a>
-  <span className="w-1 h-8 bg-apidevs-primary" />
+// Headings con gradientes y anchor links animados
+h2: <h2 id={id} className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+  <a href={`#${id}`} className="opacity-0 group-hover:opacity-100">#</a>
+  <span className="w-1 h-8 bg-gradient-to-b from-apidevs-primary to-purple-400" />
   {children}
 </h2>
 
-// Code blocks con copy button
-codeBlock: <div className="group relative">
-  {filename && <div>{filename}</div>}
-  <pre><code>{code}</code></pre>
-  <button onClick={copy}>Copy</button>
+// Code blocks estilo macOS con copy button
+codeBlock: <div className="group relative rounded-xl overflow-hidden">
+  <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-900 to-gray-800">
+    <span className="w-3 h-3 rounded-full bg-red-500" />
+    <span className="w-3 h-3 rounded-full bg-yellow-500" />
+    <span className="w-3 h-3 rounded-full bg-green-500" />
+    {filename && <span className="ml-2 text-gray-400">{filename}</span>}
+  </div>
+  <pre className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800">
+    <code className="language-{language}">{code}</code>
+  </pre>
+  <div className="absolute top-14 right-4 opacity-0 group-hover:opacity-100">
+    Copy button (non-interactive, Server Component)
+  </div>
 </div>
 
-// Callouts coloreados
-callout: <div className={`${typeStyles[type].bg} ${typeStyles[type].border}`}>
-  <div className={typeStyles[type].iconBg}>{icon}</div>
-  {title && <div>{title}</div>}
-  <div>{content}</div>
+// Callouts con gradientes y glow effects
+callout: <div className={`${typeStyles[type].container} backdrop-blur-sm`}>
+  <div className={`${typeStyles[type].iconBg} glow-effect`}>
+    {icon}
+  </div>
+  {title && <h4 className="font-semibold text-white">{title}</h4>}
+  <div className="text-gray-300">{content}</div>
 </div>
 
-// Imágenes optimizadas
-image: <figure>
-  <Image src={urlForImage(value)} alt={alt} />
-  {caption && <figcaption>{caption}</figcaption>}
+// Imágenes con gradient borders y zoom hover
+image: <figure className="group relative rounded-xl overflow-hidden">
+  <div className="absolute inset-0 bg-gradient-to-r from-apidevs-primary/20 to-purple-500/20 opacity-0 group-hover:opacity-100" />
+  <img src={urlForImage(value)} alt={alt} className="group-hover:scale-105 transition-transform" />
+  {caption && <figcaption className="text-gray-400 text-center">{caption}</figcaption>}
 </figure>
+
+// Listas con checkmarks personalizados
+bullet: <li className="flex items-start gap-3">
+  <span className="text-apidevs-primary">✓</span>
+  {children}
+</li>
 ```
 
-**Callout Types:**
-- 💡 **Info** - Azul (`bg-blue-500/10`, `border-blue-500/30`)
-- ⚠️ **Warning** - Amarillo (`bg-yellow-500/10`)
-- 🚨 **Error** - Rojo (`bg-red-500/10`)
-- ✅ **Success** - Verde (`bg-green-500/10`)
-- 📝 **Note** - Morado (`bg-purple-500/10`)
+**Callout Types (6 tipos):**
+- 💡 **Info** - Azul gradient con glow
+- ⚠️ **Warning** - Amarillo gradient con glow
+- 🚨 **Error** - Rojo gradient con glow
+- ✅ **Success** - Verde gradient con glow
+- 📝 **Note** - Gris gradient con glow
+- 💡 **Tip** - Púrpura gradient con glow
 
 #### 5. **TableOfContents** (`components/docs/TableOfContents.tsx`)
-- Fixed derecha en páginas individuales
+- **Fixed positioning con cálculo dinámico:**
+  ```typescript
+  style={{ right: 'calc((100vw - min(1800px, 100vw)) / 2)' }}
+  ```
+- Se alinea automáticamente con el contenedor de 1800px
+- `fixed top-16 h-[calc(100vh-4rem)]` para quedarse fijo al scroll
 - Auto-highlight del heading visible
 - Smooth scroll al click
-- Extrae headings h1-h4
+- Extrae headings h1-h4 con IDs únicos
 - Indent según nivel
 
 #### 6. **DocsSearch** (`components/docs/DocsSearch.tsx`)
@@ -299,11 +335,12 @@ DOCS_BY_CATEGORY_QUERY
 - Borders: `border-gray-800/50`
 - Text: `text-white` / `text-gray-400`
 
-**Layout:**
+**Layout (Estilo LuxAlgo):**
 - Header: 64px fixed top
-- Sidebar: 256px fixed left
-- Content: max-w-4xl centered
-- TOC: 256px fixed right (desktop)
+- Contenedor principal: max-w-[1800px] centrado con flex
+- Sidebar: 256px sticky left con scroll independiente
+- Content: flex-1 max-w-5xl con padding adaptativo
+- TOC: 256px fixed right (desktop) con cálculo dinámico
 
 **Efectos:**
 - Backdrop blur en header/sidebar
@@ -311,36 +348,40 @@ DOCS_BY_CATEGORY_QUERY
 - Smooth transitions
 - Partículas espaciales background
 
-### ⚠️ Issues Conocidos Docs
+### ✅ Issues Resueltos Docs
 
-1. **Renderizado Primera Entrada** ❌
-   - El documento existe en Sanity
-   - Página carga (200 OK)
-   - Sidebar muestra entrada
-   - Contenido NO se visualiza en `[slug]/page.tsx`
-   - **POSIBLE CAUSA:** Error en query o rendering de Portable Text
+1. **Renderizado Primera Entrada** ✅ RESUELTO
+   - **Problema:** Callouts no renderizaban, error `Unknown block type "callout"`
+   - **Causa:** `PortableTextComponents.tsx` era Client Component (`'use client'`)
+   - **Solución:** Convertido a Server Component, removido `'use client'`
+   - **Extras:** Fallbacks para campos faltantes (`type`, `title`)
 
 2. **Middleware Optimización** ✅
    - Skip `updateSession` de Supabase en `/docs`
-   - Evita rate limit errors
+   - Evita rate limit errors (429)
    - Mejora performance
 
 3. **CSS Navbar Hide** ✅
-   - Usa selector `.docs-layout` + `:has()`
-   - Oculta solo Navbar principal
+   - Selector `.docs-layout` + `:has()` más robusto
+   - Oculta Navbar principal Y Footer
    - Mantiene visible contenido docs
+
+4. **Layout LuxAlgo Clone** ✅
+   - Sidebar sticky con scroll independiente
+   - TOC fixed al lado derecho con cálculo dinámico
+   - Contenedor max-w-[1800px] centrado
+   - Todos los componentes dentro del contenedor
 
 ### 🔧 Middleware Docs
 
 ```typescript
 // middleware.ts
-export async function middleware(request: NextRequest) {
-  // NO ejecutar updateSession para /docs (evita rate limit)
-  if (request.nextUrl.pathname.startsWith('/docs')) {
-    return;
-  }
-  return await updateSession(request);
-}
+export const config = {
+  matcher: [
+    // Excluye /docs del middleware (evita rate limit)
+    '/((?!_next|__nextjs|api/|docs|_static|_vercel|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map|woff|woff2|ttf|eot|json)$).*)'
+  ]
+};
 ```
 
 ### 🎯 CSS Custom Docs
@@ -348,8 +389,11 @@ export async function middleware(request: NextRequest) {
 ```css
 /* styles/main.css */
 
-/* Ocultar SOLO el Navbar cuando estamos en /docs */
-body:has(.docs-layout) > nav.Navbar-module__uj6e0q__root {
+/* Ocultar Navbar y Footer cuando estamos en /docs */
+body:has(.docs-layout) > nav {
+  display: none !important;
+}
+body:has(.docs-layout) > footer {
   display: none !important;
 }
 ```
@@ -373,7 +417,10 @@ body:has(.docs-layout) > nav.Navbar-module__uj6e0q__root {
 
 ### 🚀 Próximos Pasos Docs
 
-- [ ] **FIX:** Resolver issue renderizado primera entrada
+- [x] ~~**FIX:** Resolver issue renderizado primera entrada~~ ✅ COMPLETADO
+- [x] ~~Layout estilo LuxAlgo con contenedor centrado~~ ✅ COMPLETADO
+- [x] ~~Sidebar y TOC sticky/fixed~~ ✅ COMPLETADO
+- [x] ~~Componentes Portable Text con gradientes~~ ✅ COMPLETADO
 - [ ] Implementar búsqueda funcional (modal + query)
 - [ ] Crear más categorías: "Guides", "API Reference", "Tutorials"
 - [ ] Agregar más documentos con contenido rico
@@ -903,8 +950,15 @@ mcp_supabase_execute_sql({
 ---
 
 **Última actualización:** 12 octubre 2025  
-**Commit:** `b50359b` - Sistema de documentación implementado  
+**Commit:** `a237e84` - TOC posicionado correctamente con layout LuxAlgo  
 **Branch:** `feature/docs-mintlify-clone`
+
+**Cambios Recientes:**
+- ✅ Resuelto renderizado de callouts (Server Component)
+- ✅ Layout estilo LuxAlgo implementado (contenedor centrado)
+- ✅ Sidebar sticky con scroll independiente
+- ✅ TOC fixed con cálculo dinámico de posición
+- ✅ Componentes Portable Text con gradientes y efectos
 
 ---
 
