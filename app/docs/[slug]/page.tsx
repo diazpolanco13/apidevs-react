@@ -78,6 +78,10 @@ export default async function DocPage({
       notFound();
     }
 
+    // DEBUG: Ver qué tipos de content tenemos
+    console.log('📦 Content types:', doc.content?.map((item: any) => item._type).join(', '));
+    console.log('📦 First callout:', doc.content?.find((item: any) => item._type === 'callout'));
+
     const headings = extractHeadings(doc.content);
     const lastUpdated = doc.updatedAt
       ? new Date(doc.updatedAt).toLocaleDateString('es-ES', {

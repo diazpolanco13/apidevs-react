@@ -112,6 +112,12 @@ export const portableTextComponents = {
       );
     },
     callout: ({ value }: any) => {
+      // Si no hay contenido, no renderizar nada
+      if (!value?.content) {
+        console.warn('Callout sin contenido:', value);
+        return null;
+      }
+
       const typeStyles = {
         info: {
           bg: 'bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent',
@@ -169,7 +175,9 @@ export const portableTextComponents = {
         }
       };
 
-      const style = typeStyles[value.type as keyof typeof typeStyles] || typeStyles.info;
+      // Obtener el estilo según el tipo (default: info si no existe)
+      const calloutType = value.type || 'info';
+      const style = typeStyles[calloutType as keyof typeof typeStyles] || typeStyles.info;
 
       return (
         <div className={`my-8 p-5 rounded-xl border-l-4 ${style.bg} ${style.border} ${style.borderLeft} ${style.glow} shadow-lg backdrop-blur-sm`}>
