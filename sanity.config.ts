@@ -65,9 +65,6 @@ export default defineConfig({
         { id: 'en', title: 'English 🇺🇸' },
       ],
       
-      // Idioma por defecto (español)
-      // defaultLanguages: ['es'], // Removido temporalmente por error de tipo
-      
       // Tipos de documentos a internacionalizar
       schemaTypes: ['documentation', 'docCategory', 'docsWelcomePage'],
       
