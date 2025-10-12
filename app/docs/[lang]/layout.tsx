@@ -78,9 +78,7 @@ export default async function DocsLanguageLayout({
   // Fetch sidebar data para el idioma específico con manejo de errores
   let sidebarData;
   try {
-    console.log('Fetching sidebar data for language:', lang);
     sidebarData = await docsClient.fetch(SIDEBAR_DOCS_QUERY, { language: lang });
-    console.log('Sidebar data fetched successfully:', sidebarData);
   } catch (error) {
     console.error('Error fetching sidebar data:', error);
     // Fallback: datos vacíos si falla la query
