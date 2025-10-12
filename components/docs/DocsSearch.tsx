@@ -152,7 +152,7 @@ export default function DocsSearch() {
       {/* Search Modal */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-start justify-center pt-16 sm:pt-20 px-4"
+          className="fixed inset-0 bg-black/0 backdrop-blur-md z-[60] flex items-start justify-center pt-16 sm:pt-20 px-4"
           onClick={() => {
             setIsOpen(false);
             setQuery('');
