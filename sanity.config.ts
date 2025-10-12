@@ -64,10 +64,10 @@ export default defineConfig({
         { id: 'es', title: 'Español 🇪🇸' },
         { id: 'en', title: 'English 🇺🇸' },
       ],
-      
+
       // Tipos de documentos a internacionalizar
       schemaTypes: ['documentation', 'docCategory', 'docsWelcomePage'],
-      
+
       // Campo para almacenar el idioma
       languageField: 'language',
     }),
