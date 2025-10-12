@@ -20,15 +20,17 @@ export default async function SignIn({
   params,
   searchParams
 }: {
-  params: { id: string };
-  searchParams: { disable_button?: boolean; plan?: string; error?: string; error_description?: string };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ disable_button?: boolean; plan?: string; error?: string; error_description?: string }>;
 }) {
+  const { id } = await params;
+  const resolvedSearchParams = await searchParams;
   const { allowOauth, allowEmail, allowPassword } = getAuthTypes();
   const viewTypes = getViewTypes();
   const redirectMethod = getRedirectMethod();
   
   // Get selected plan from URL params
-  const selectedPlan = searchParams.plan;
+  const selectedPlan = resolvedSearchParams.plan;
   
   // Plan information
   const getPlanInfo = (plan: string | undefined) => {
@@ -65,8 +67,8 @@ export default async function SignIn({
   let viewProp: string;
 
   // Assign url id to 'viewProp' if it's a valid string and ViewTypes includes it
-  if (typeof params.id === 'string' && viewTypes.includes(params.id)) {
-    viewProp = params.id;
+  if (typeof id === 'string' && viewTypes.includes(id)) {
+    viewProp = id;
   } else {
     const preferredSignInView =
       cookies().get('preferredSignInView')?.value || null;
@@ -156,21 +158,21 @@ export default async function SignIn({
               <PasswordSignIn
                 allowEmail={allowEmail}
                 redirectMethod={redirectMethod}
-                error={searchParams.error_description || searchParams.error}
+                error={resolvedSearchParams.error_description || resolvedSearchParams.error}
               />
             )}
             {viewProp === 'email_signin' && (
               <EmailSignIn
                 allowPassword={allowPassword}
                 redirectMethod={redirectMethod}
-                disableButton={searchParams.disable_button}
+                disableButton={resolvedSearchParams.disable_button}
               />
             )}
             {viewProp === 'forgot_password' && (
               <ForgotPassword
                 allowEmail={allowEmail}
                 redirectMethod={redirectMethod}
-                disableButton={searchParams.disable_button}
+                disableButton={resolvedSearchParams.disable_button}
               />
             )}
             {viewProp === 'update_password' && (

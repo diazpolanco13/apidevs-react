@@ -21,10 +21,11 @@ export async function generateStaticParams() {
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
   const indicator = await client.fetch<IndicatorDetail>(
     INDICATOR_BY_SLUG_QUERY,
-    { slug: params.slug }
+    { slug }
   );
 
   if (!indicator) {
@@ -59,17 +60,18 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 // Revalidate every hour
 export const revalidate = 3600;
 
-export default async function IndicatorPage({ params }: { params: { slug: string } }) {
+export default async function IndicatorPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const supabase = createClient();
   
   const [indicator, user, subscription] = await Promise.all([
     client.fetch<IndicatorDetail>(
       INDICATOR_BY_SLUG_QUERY,
-      { slug: params.slug },
+      { slug },
       {
         next: {
           revalidate: 3600,
-          tags: ['indicators', `indicator-${params.slug}`],
+          tags: ['indicators', `indicator-${slug}`],
         },
       }
     ),

@@ -37,7 +37,7 @@ export default async function DocsPage() {
   }, {} as Record<string, DocListItem[]>);
 
   return (
-    <div className="min-h-screen bg-apidevs-dark">
+    <>
       {/* Hero Section - Mintlify Style */}
       <div className="border-b border-gray-800/50 bg-gradient-to-b from-gray-900/20 to-transparent">
         <div className="max-w-4xl mx-auto px-8 py-16 md:py-24">
@@ -169,6 +169,6 @@ export default async function DocsPage() {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }

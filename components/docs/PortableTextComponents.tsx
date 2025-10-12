@@ -13,6 +13,27 @@ const generateId = (text: string): string => {
 
 export const portableTextComponents = {
   types: {
+    // Fallback para tipos no implementados
+    cardGroup: ({ value }: any) => (
+      <div className="my-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+        <p className="text-gray-400">Card Group: {value?.title || 'Sin título'}</p>
+      </div>
+    ),
+    tabs: ({ value }: any) => (
+      <div className="my-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+        <p className="text-gray-400">Tabs: {value?.items?.length || 0} pestañas</p>
+      </div>
+    ),
+    accordion: ({ value }: any) => (
+      <div className="my-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+        <p className="text-gray-400">Accordion: {value?.title || 'Sin título'}</p>
+      </div>
+    ),
+    videoEmbed: ({ value }: any) => (
+      <div className="my-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+        <p className="text-gray-400">Video: {value?.url || 'Sin URL'}</p>
+      </div>
+    ),
     image: ({ value }: any) => {
       if (!value?.asset) return null;
       const imageUrl = urlForImage(value)?.width(1200).height(800).url();

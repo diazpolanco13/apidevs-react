@@ -42,7 +42,7 @@ export default async function DocsLayout({
     <div className="docs-layout min-h-screen bg-apidevs-dark text-white relative">
       {/* Background Effects - Partículas espaciales */}
       <BackgroundEffects variant="minimal" showGrid={false} showParticles={true} />
-      
+
       {/* Top Navigation Bar */}
       <DocsHeader />
 

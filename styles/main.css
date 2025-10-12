@@ -188,7 +188,12 @@ body {
 }
 
 /* Ocultar SOLO el Navbar cuando estamos en la ruta /docs */
-body:has(.docs-layout) > nav.Navbar-module__uj6e0q__root {
+body:has(.docs-layout) > nav {
+  display: none !important;
+}
+
+/* Ocultar también el footer en /docs */
+body:has(.docs-layout) > footer {
   display: none !important;
 }
 

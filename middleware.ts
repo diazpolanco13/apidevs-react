@@ -2,11 +2,6 @@ import { type NextRequest } from 'next/server';
 import { updateSession } from '@/utils/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
-  // NO ejecutar updateSession para /docs para evitar rate limit
-  if (request.nextUrl.pathname.startsWith('/docs')) {
-    return;
-  }
-  
   return await updateSession(request);
 }
 
@@ -19,8 +14,9 @@ export const config = {
      * - static files
      * - favicon
      * - api routes (handled separately)
+     * - docs/* (to avoid rate limit)
      * Only run on actual page routes
      */
-    '/((?!_next|__nextjs|api/|_static|_vercel|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map|woff|woff2|ttf|eot|json)$).*)'
+    '/((?!_next|__nextjs|api/|docs|_static|_vercel|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map|woff|woff2|ttf|eot|json)$).*)'
   ]
 };

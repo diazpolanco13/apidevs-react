@@ -4,9 +4,10 @@ import { NextResponse } from 'next/server';
 // PUT - Actualizar indicador
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = createClient();
 
     // Verificar autenticación
@@ -17,8 +18,6 @@ export async function PUT(
     if (!user || user.email !== 'api@apidevs.io') {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
-
-    const { id } = params;
     const body = await req.json();
     const {
       pine_id,
