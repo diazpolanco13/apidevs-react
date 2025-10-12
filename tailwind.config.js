@@ -90,6 +90,14 @@ module.exports = {
         'slide-up': {
           'from': { transform: 'translateY(100%)', opacity: 0 },
           'to': { transform: 'translateY(0)', opacity: 1 }
+        },
+        'slide-in-left': {
+          'from': { transform: 'translateX(-100%)', opacity: 0 },
+          'to': { transform: 'translateX(0)', opacity: 1 }
+        },
+        'shimmer': {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' }
         }
       },
       animation: {
@@ -101,7 +109,9 @@ module.exports = {
         'spin-slow': 'spin-slow 20s linear infinite',
         'gradient': 'gradient 8s ease infinite',
         'fade-in': 'fade-in 0.3s ease-out',
-        'slide-up': 'slide-up 0.5s ease-out'
+        'slide-up': 'slide-up 0.5s ease-out',
+        'slide-in-left': 'slide-in-left 0.3s ease-out',
+        'shimmer': 'shimmer 2s linear infinite'
       }
     }
   },

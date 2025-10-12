@@ -48,12 +48,12 @@ export default async function DocsLayout({
 
       {/* Contenedor centrado que engloba todo */}
       <div className="max-w-[1800px] mx-auto pt-16 relative">
-        <div className="flex">
-          {/* Sidebar */}
+        <div className="flex flex-col lg:flex-row">
+          {/* Sidebar - Hidden en móvil, visible en desktop */}
           <DocsSidebar sidebarData={sidebarData} />
 
           {/* Main Content - flex-1 para tomar espacio restante */}
-          <main className="flex-1 relative z-10 min-w-0">
+          <main className="flex-1 relative z-10 min-w-0 w-full">
             {children}
           </main>
         </div>

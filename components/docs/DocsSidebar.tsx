@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import type { SidebarData } from '@/sanity/lib/doc-queries';
 
@@ -12,6 +11,7 @@ interface DocsSidebarProps {
 
 export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
   const pathname = usePathname();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(
       (sidebarData?.categories || [])
@@ -19,6 +19,23 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
         .map((cat) => cat._id)
     )
   );
+
+  // Cerrar sidebar móvil al cambiar de ruta
+  useEffect(() => {
+    setIsMobileOpen(false);
+  }, [pathname]);
+
+  // Prevenir scroll del body cuando el sidebar móvil está abierto
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileOpen]);
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories((prev) => {
@@ -36,8 +53,9 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
     return pathname === `/docs/${slug}` || pathname.endsWith(`/${slug}`);
   };
 
-  return (
-    <aside className="sticky top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-apidevs-dark/95 backdrop-blur-sm border-r border-gray-800/50 overflow-y-auto z-40">
+  // Componente de contenido del sidebar (reutilizable)
+  const SidebarContent = () => (
+    <>
       {/* Custom scrollbar styles */}
       <style jsx>{`
         aside::-webkit-scrollbar {
@@ -55,39 +73,15 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
         }
       `}</style>
 
-      {/* Search Area */}
-      <div className="p-4 border-b border-gray-800/50">
-        {/* Search Input Styled like Mintlify */}
-        <button className="w-full flex items-center gap-3 px-3 py-2 bg-gray-900/50 hover:bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-400 transition-all group">
-          <svg
-            className="w-4 h-4 text-gray-500 group-hover:text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-          <span>Search...</span>
-          <kbd className="ml-auto px-2 py-0.5 bg-gray-800/50 border border-gray-700/50 rounded text-xs text-gray-500 font-mono">
-            Ctrl K
-          </kbd>
-        </button>
-      </div>
-
       {/* Navigation */}
-      <nav className="p-4 space-y-8">
+      <nav className="p-4 space-y-6 flex-1 overflow-y-auto">
         {(sidebarData?.categories || []).map((category) => {
           const isExpanded = expandedCategories.has(category._id);
           const hasPages = category.pages && category.pages.length > 0;
 
           return (
             <div key={category._id} className="space-y-1">
-              {/* Category Header - Mintlify Style */}
+              {/* Category Header */}
               {category.isCollapsible ? (
                 <button
                   onClick={() => toggleCategory(category._id)}
@@ -128,7 +122,7 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
                 </div>
               )}
 
-              {/* Pages List - Mintlify Style */}
+              {/* Pages List */}
               {(!category.isCollapsible || isExpanded) && hasPages && (
                 <div className="space-y-0.5">
                   {category.pages.map((page) => {
@@ -176,6 +170,48 @@ export default function DocsSidebar({ sidebarData }: DocsSidebarProps) {
           <span>Back to Home</span>
         </Link>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar - Hidden en móvil, visible desde lg */}
+      <aside className="hidden lg:flex lg:flex-col sticky top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-apidevs-dark/95 backdrop-blur-sm border-r border-gray-800/50 overflow-hidden z-40">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Sidebar - Visible en móvil, hidden desde lg */}
+      {isMobileOpen && (
+        <>
+          {/* Overlay */}
+          <div
+            className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            onClick={() => setIsMobileOpen(false)}
+          />
+
+          {/* Sidebar Drawer */}
+          <aside className="lg:hidden fixed top-16 left-0 bottom-0 w-72 bg-apidevs-dark border-r border-gray-800/50 z-50 flex flex-col animate-slide-in-left">
+            <SidebarContent />
+          </aside>
+        </>
+      )}
+
+      {/* Mobile Toggle Button - Flotante en la esquina */}
+      <button
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+        className="lg:hidden fixed bottom-6 left-6 z-30 p-4 bg-apidevs-primary hover:bg-apidevs-primary/90 text-black rounded-full shadow-2xl shadow-apidevs-primary/30 transition-all"
+        aria-label="Toggle sidebar"
+      >
+        {isMobileOpen ? (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        )}
+      </button>
+    </>
   );
 }

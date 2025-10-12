@@ -104,9 +104,9 @@ export default async function DocPage({
     return (
       <>
         {/* Main Content */}
-        <article className="max-w-5xl px-8 py-16 xl:px-16 xl:pr-80">
+        <article className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16 xl:pr-80">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-gray-400 mb-6 flex-wrap">
             <Link href="/docs" className="hover:text-white transition-colors">
               Docs
             </Link>
@@ -115,29 +115,29 @@ export default async function DocPage({
               <>
                 <Link
                   href={`/docs?category=${doc.category.slug}`}
-                  className="hover:text-white transition-colors"
+                  className="hover:text-white transition-colors truncate"
                 >
                   {doc.category.title}
                 </Link>
                 <span>/</span>
               </>
             )}
-            <span className="text-white">{doc.title}</span>
+            <span className="text-white truncate">{doc.title}</span>
           </nav>
 
           {/* Header */}
-          <header className="mb-12">
-            <h1 className="text-5xl font-bold text-white mb-4">
+          <header className="mb-8 lg:mb-12">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
               {doc.title}
             </h1>
             {doc.description && (
-              <p className="text-xl text-gray-400 leading-relaxed">
+              <p className="text-base sm:text-lg lg:text-xl text-gray-400 leading-relaxed">
                 {doc.description}
               </p>
             )}
             {lastUpdated && (
-              <div className="flex items-center gap-2 text-sm text-gray-500 mt-4">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 mt-4">
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>Last updated: {lastUpdated}</span>
@@ -146,38 +146,38 @@ export default async function DocPage({
           </header>
 
           {/* Content */}
-          <div className="prose prose-invert prose-lg max-w-none">
+          <div className="prose prose-invert prose-sm sm:prose-base lg:prose-lg max-w-none">
             <PortableText value={doc.content} components={portableTextComponents} />
           </div>
 
           {/* Navigation */}
           {(doc.previousPage || doc.nextPage) && (
-            <div className="grid grid-cols-2 gap-4 mt-16 pt-8 border-t border-gray-800">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-12 lg:mt-16 pt-6 lg:pt-8 border-t border-gray-800">
               {doc.previousPage ? (
                 <Link
                   href={`/docs/${doc.previousPage.slug}`}
-                  className="group p-4 bg-gray-900/50 border border-gray-800 rounded-lg hover:border-gray-700 hover:bg-gray-900 transition-all"
+                  className="group p-3 sm:p-4 bg-gray-900/50 border border-gray-800 rounded-lg hover:border-gray-700 hover:bg-gray-900 transition-all"
                 >
                   <div className="text-xs text-gray-500 mb-1">Previous</div>
                   <div className="flex items-center gap-2 text-white group-hover:text-apidevs-primary transition-colors">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
-                    <span className="font-medium">{doc.previousPage.title}</span>
+                    <span className="font-medium text-sm truncate">{doc.previousPage.title}</span>
                   </div>
                 </Link>
               ) : (
-                <div></div>
+                <div className="hidden sm:block"></div>
               )}
               {doc.nextPage && (
                 <Link
                   href={`/docs/${doc.nextPage.slug}`}
-                  className="group p-4 bg-gray-900/50 border border-gray-800 rounded-lg hover:border-gray-700 hover:bg-gray-900 transition-all text-right"
+                  className="group p-3 sm:p-4 bg-gray-900/50 border border-gray-800 rounded-lg hover:border-gray-700 hover:bg-gray-900 transition-all text-right"
                 >
                   <div className="text-xs text-gray-500 mb-1">Next</div>
                   <div className="flex items-center justify-end gap-2 text-white group-hover:text-apidevs-primary transition-colors">
-                    <span className="font-medium">{doc.nextPage.title}</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span className="font-medium text-sm truncate">{doc.nextPage.title}</span>
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
@@ -188,20 +188,20 @@ export default async function DocPage({
 
           {/* Related Pages */}
           {doc.relatedPages && doc.relatedPages.length > 0 && (
-            <div className="mt-16 pt-8 border-t border-gray-800">
-              <h3 className="text-xl font-bold text-white mb-4">Related Articles</h3>
-              <div className="grid md:grid-cols-2 gap-4">
+            <div className="mt-12 lg:mt-16 pt-6 lg:pt-8 border-t border-gray-800">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Related Articles</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 {doc.relatedPages.map((page) => (
                   <Link
                     key={page.slug}
                     href={`/docs/${page.slug}`}
-                    className="group p-4 bg-gray-900/50 border border-gray-800 rounded-lg hover:border-gray-700 hover:bg-gray-900 transition-all"
+                    className="group p-3 sm:p-4 bg-gray-900/50 border border-gray-800 rounded-lg hover:border-gray-700 hover:bg-gray-900 transition-all"
                   >
-                    <h4 className="font-semibold text-white mb-1 group-hover:text-apidevs-primary transition-colors">
+                    <h4 className="font-semibold text-white mb-1 group-hover:text-apidevs-primary transition-colors text-sm sm:text-base">
                       {page.title}
                     </h4>
                     {page.description && (
-                      <p className="text-sm text-gray-400 line-clamp-2">
+                      <p className="text-xs sm:text-sm text-gray-400 line-clamp-2">
                         {page.description}
                       </p>
                     )}

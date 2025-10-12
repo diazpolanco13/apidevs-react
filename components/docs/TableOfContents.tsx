@@ -41,10 +41,15 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
     return () => observer.disconnect();
   }, [headings]);
 
+  // No renderizar en móvil si no hay headings
   if (headings.length === 0) return null;
 
   return (
-    <nav className="fixed top-16 right-0 h-[calc(100vh-4rem)] w-64 p-6 overflow-y-auto border-l border-gray-800 hidden xl:block" style={{ right: 'calc((100vw - min(1800px, 100vw)) / 2)' }}>
+    <nav 
+      className="fixed top-16 right-0 h-[calc(100vh-4rem)] w-64 p-6 overflow-y-auto border-l border-gray-800 hidden xl:block" 
+      style={{ right: 'max(0px, calc((100vw - 1800px) / 2))' }}
+      aria-label="Table of contents"
+    >
       <div className="space-y-4">
         <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
           On this page
@@ -52,25 +57,31 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
         <ul className="space-y-2">
           {headings.map((heading) => {
             const isActive = activeId === heading.id;
+            // Limitar indentación para evitar overflow
+            const indent = Math.min((heading.level - 1) * 12, 36);
             return (
               <li
                 key={heading.id}
-                style={{ paddingLeft: `${(heading.level - 2) * 12}px` }}
+                style={{ paddingLeft: `${indent}px` }}
               >
                 <a
                   href={`#${heading.id}`}
-                  className={`block text-sm transition-colors py-1 border-l-2 pl-3 ${
+                  className={`block text-xs sm:text-sm transition-colors py-1 border-l-2 pl-3 truncate ${
                     isActive
                       ? 'border-apidevs-primary text-apidevs-primary font-medium'
                       : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-600'
                   }`}
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById(heading.id)?.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start'
-                    });
+                    const element = document.getElementById(heading.id);
+                    if (element) {
+                      element.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                      });
+                    }
                   }}
+                  title={heading.text}
                 >
                   {heading.text}
                 </a>
