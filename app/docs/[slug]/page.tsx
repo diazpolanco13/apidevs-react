@@ -88,9 +88,9 @@ export default async function DocPage({
       : null;
 
     return (
-      <div className="flex justify-center xl:justify-start xl:pl-16 2xl:pl-32">
+      <div className="flex justify-center">
         {/* Main Content */}
-        <article className="max-w-4xl w-full px-8 py-16 xl:px-12">
+        <article className="max-w-4xl w-full px-8 py-16 xl:pr-64">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6">
             <Link href="/docs" className="hover:text-white transition-colors">
