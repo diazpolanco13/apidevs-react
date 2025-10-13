@@ -2331,7 +2331,7 @@ mcp_sanity_translate_document({
 - ✅ 3 categorías + 1 autor
 - ✅ Hero + Grid + Sidebar completos
 - ✅ ISR 1 hora + SSG
-- 🚧 Pendiente: más contenido y páginas por categoría
+- 🚧 Pendiente: mejorar la seccion de blog donde se ven todas las entradas,  más contenido y páginas por categoría
 
 ---
 
