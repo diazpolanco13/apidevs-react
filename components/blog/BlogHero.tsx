@@ -16,136 +16,102 @@ export default function BlogHero({ post }: BlogHeroProps) {
     : null;
 
   return (
-    <div className="relative w-full bg-gradient-to-b from-gray-900/50 to-transparent pt-8 pb-16 md:pt-12 md:pb-24">
-      <div className="container mx-auto px-4">
-        <div className="max-w-7xl mx-auto">
-          <Link
-            href={`/blog/${post.slug}`}
-            className="group block"
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-center">
-              {/* Imagen */}
-              <div className="relative aspect-[16/10] rounded-2xl overflow-hidden lg:col-span-2 order-2 lg:order-1">
-                {imageUrl ? (
-                  <Image
-                    src={imageUrl}
-                    alt={post.mainImage?.alt || post.title}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-apidevs-primary/20 to-purple-500/20 flex items-center justify-center">
-                    <span className="text-6xl">📝</span>
-                  </div>
-                )}
+    <Link href={`/blog/${post.slug}`} className="block group">
+      <div className="relative overflow-hidden rounded-2xl">
+        {/* Glow effect premium */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-apidevs-primary/30 via-purple-500/20 to-apidevs-primary/30 rounded-2xl opacity-0 group-hover:opacity-100 blur-2xl transition-all duration-700"></div>
+        
+        <div className="relative border border-gray-800/50 group-hover:border-gray-700 rounded-2xl overflow-hidden transition-all duration-500">
+          {/* IMAGEN CON TEXTO SUPERPUESTO */}
+          <div className="relative aspect-[16/9] overflow-hidden">
+            {imageUrl ? (
+              <>
+                <Image
+                  src={imageUrl}
+                  alt={post.mainImage?.alt || post.title}
+                  fill
+                  className="object-cover transition-all duration-700 group-hover:scale-105"
+                  priority
+                />
+                {/* Gradiente fuerte para legibilidad del texto */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
                 
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent" />
-                
-                {/* Featured Badge */}
-                {post.featured && (
-                  <div className="absolute top-4 left-4">
-                    <span className="px-3 py-1 bg-apidevs-primary text-gray-900 text-sm font-semibold rounded-full">
-                      ⭐ Destacado
+                {/* Badge categoría */}
+                {post.categories && post.categories.length > 0 && (
+                  <div className="absolute top-6 left-6 z-10">
+                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-apidevs-primary backdrop-blur-sm text-black text-xs font-bold rounded-md uppercase tracking-wider shadow-lg">
+                      {post.categories[0].icon && <span>{post.categories[0].icon}</span>}
+                      {post.categories[0].title}
                     </span>
                   </div>
                 )}
-              </div>
-
-              {/* Contenido */}
-              <div className="space-y-4 lg:col-span-3 order-1 lg:order-2">
-                {/* Categorías */}
-                {post.categories && post.categories.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {post.categories.slice(0, 2).map((category, index) => (
-                      <CategoryBadge key={category._id || `category-${index}`} category={category} />
-                    ))}
+                
+                {/* Featured Badge */}
+                {post.featured && (
+                  <div className="absolute top-6 right-6 z-10">
+                    <span className="inline-block px-3 py-1.5 bg-apidevs-primary/10 backdrop-blur-md text-apidevs-primary text-xs font-bold rounded-full uppercase tracking-wider border border-apidevs-primary/20">
+                      Featured
+                    </span>
                   </div>
                 )}
 
-                {/* Título */}
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight group-hover:text-apidevs-primary transition-colors">
-                  {post.title}
-                </h1>
+                {/* CONTENIDO SUPERPUESTO EN LA PARTE INFERIOR */}
+                <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-10 z-10">
+                  {/* Título grande y bold */}
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-[1.15] tracking-tight mb-4">
+                    {post.title}
+                  </h1>
 
-                {/* Excerpt */}
-                <p className="text-base md:text-lg text-gray-300 line-clamp-2 md:line-clamp-3">
-                  {post.excerpt}
-                </p>
+                  {/* Excerpt */}
+                  <p className="text-base text-gray-200 leading-relaxed line-clamp-2 mb-6">
+                    {post.excerpt || 'Descubre las últimas estrategias y análisis técnico para mejorar tu trading profesional.'}
+                  </p>
 
-                {/* Meta info */}
-                <div className="flex items-center gap-4 pt-4">
-                  {/* Autor */}
-                  {post.author && (
-                    <div className="flex items-center gap-3">
-                      {post.author.avatar && (
-                        <img
-                          src={post.author.avatar.asset.url}
-                          alt={post.author.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
+                  {/* Meta info + CTA */}
+                  <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                    {/* Meta info minimalista */}
+                    <div className="flex items-center gap-4">
+                      {post.author && (
+                        <>
+                          <span className="text-sm text-white font-semibold">
+                            By {post.author.name}
+                          </span>
+                          <span className="text-gray-500">•</span>
+                        </>
                       )}
-                      <div>
-                        <p className="text-sm text-white font-medium">
-                          {post.author.name}
-                        </p>
-                        {post.author.role && (
-                          <p className="text-xs text-gray-400">
-                            {post.author.role}
-                          </p>
-                        )}
-                      </div>
+                      <time className="text-sm text-gray-300">
+                        {new Date(post.publishedAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </time>
                     </div>
-                  )}
 
-                  <span className="text-gray-600">•</span>
-
-                  {/* Fecha */}
-                  <time className="text-sm text-gray-400">
-                    {new Date(post.publishedAt).toLocaleDateString('es-ES', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </time>
-
-                  {/* Reading time */}
-                  {post.readingTime && (
-                    <>
-                      <span className="text-gray-600">•</span>
-                      <span className="text-sm text-gray-400">
-                        {post.readingTime} min de lectura
-                      </span>
-                    </>
-                  )}
+                    {/* Arrow hover effect */}
+                    <div className="inline-flex items-center gap-2 text-apidevs-primary group-hover:text-apidevs-primary-light transition-colors">
+                      <span className="text-sm font-semibold">Read more</span>
+                      <svg 
+                        className="w-4 h-4 group-hover:translate-x-1 transition-transform" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
-
-                {/* CTA */}
-                <div className="pt-4">
-                  <span className="inline-flex items-center gap-2 text-apidevs-primary font-semibold group-hover:gap-4 transition-all">
-                    Leer artículo completo
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
-                  </span>
-                </div>
+              </>
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-apidevs-primary/20 to-purple-500/20 flex items-center justify-center">
+                <span className="text-9xl">📊</span>
               </div>
-            </div>
-          </Link>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

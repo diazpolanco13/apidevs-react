@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { client } from '@/sanity/lib/client';
 import {
   BLOG_POSTS_QUERY,
@@ -9,6 +10,7 @@ import {
 } from '@/sanity/lib/blog-queries';
 import { BackgroundEffects } from '@/components/ui/BackgroundEffects';
 import BlogHero from '@/components/blog/BlogHero';
+import BlogCard from '@/components/blog/BlogCard';
 import BlogGrid from '@/components/blog/BlogGrid';
 
 // ISR: Revalidar cada hora
@@ -57,118 +59,146 @@ export default async function BlogPage() {
   const { featuredPosts, recentPosts, categories } = await getBlogData();
 
   return (
-    <div className="min-h-screen relative">
-      <BackgroundEffects variant="minimal" />
+    <div className="relative min-h-screen bg-black">
+      <BackgroundEffects />
       
-      {/* Hero Section con Post Destacado */}
-      {featuredPosts.length > 0 && (
-        <Suspense fallback={<div className="h-96 bg-gray-900/20 animate-pulse" />}>
-          <BlogHero post={featuredPosts[0]} />
-        </Suspense>
-      )}
+      <div className="relative z-10 min-h-screen pt-20 pb-20">
+        {/* FILTROS PEGADOS AL NAVBAR */}
+        <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-12 mb-10">
+          <div className="flex flex-wrap items-center gap-3 border-b border-gray-800/50 pb-4">
+            <button className="relative px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 after:absolute after:bottom-[-16px] after:left-0 after:right-0 after:h-0.5 after:bg-apidevs-primary">
+              Recent
+            </button>
+            
+            {categories.map((category) => (
+              <button
+                key={category._id}
+                className="px-5 py-2.5 text-sm font-semibold text-gray-400 hover:text-white transition-all duration-200 hover:bg-gray-800/30 rounded-lg"
+              >
+                {category.title}
+              </button>
+            ))}
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 pb-20 relative z-10">
-        {/* Section Title */}
-        <div className="mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-            Últimos Artículos
-          </h2>
-          <p className="text-gray-400 text-lg">
-            Descubre las últimas estrategias, análisis y tutoriales de trading
-          </p>
+            {/* SEARCH BAR INTEGRADA */}
+            <div className="ml-auto relative group hidden lg:block">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Buscar artículos..."
+                className="w-64 pl-10 pr-4 py-2 bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-apidevs-primary/50 focus:border-apidevs-primary/50 transition-all"
+                readOnly
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Posts Grid */}
-          <main className="flex-1">
-            {recentPosts.length > 0 ? (
-              <Suspense fallback={
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="h-96 bg-gray-900/20 rounded-xl animate-pulse" />
-                  ))}
-                </div>
-              }>
-                <BlogGrid 
-                  posts={recentPosts} 
-                  categories={categories}
-                />
-              </Suspense>
-            ) : (
-              <div className="text-center py-20">
-                <div className="text-6xl mb-4">📝</div>
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Próximamente
-                </h2>
-                <p className="text-gray-400 mb-8">
-                  Estamos preparando contenido increíble para ti.
-                </p>
-                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-6 max-w-2xl mx-auto text-left">
-                  <p className="text-yellow-200 mb-2">
-                    <strong>💡 Nota:</strong> El contenido está en borradores.
-                  </p>
-                  <p className="text-gray-300 text-sm">
-                    Para ver los posts, ve a <code className="bg-gray-900 px-2 py-1 rounded">/studio</code> y publica los artículos desde la sección <strong>📝 Blog</strong>.
-                  </p>
-                </div>
+        <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-12 space-y-16">
+          {/* HERO + 3 POSTS RECIENTES - LAYOUT LUXALGO */}
+          {featuredPosts.length > 0 && recentPosts.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* HERO GRANDE - 2 COLUMNAS */}
+              <div className="lg:col-span-2">
+                <Suspense fallback={<div className="h-[600px] bg-gray-900/20 animate-pulse rounded-3xl" />}>
+                  <BlogHero post={featuredPosts[0]} />
+                </Suspense>
               </div>
-            )}
-          </main>
 
-          {/* Sidebar (Desktop) */}
-          <aside className="hidden lg:block w-80 space-y-6">
-            {/* Categorías */}
-            {categories.length > 0 && (
-              <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl p-6 border border-gray-800/50">
-                <h3 className="text-lg font-bold text-white mb-4">
-                  Categorías
-                </h3>
-                <div className="space-y-2">
-                  {categories.map((category) => (
-                    <a
-                      key={category._id}
-                      href={`/blog/category/${category.slug}`}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-800/50 transition-colors group"
+              {/* 3 POSTS RECIENTES - 1 COLUMNA */}
+              <div className="space-y-6">
+                {recentPosts.slice(0, 3).map((post, index) => (
+                  <Suspense key={post._id} fallback={<div className="h-48 bg-gray-900/20 rounded-xl animate-pulse" />}>
+                    <div
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                      className="animate-fade-in-up"
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{category.icon || '📂'}</span>
-                        <span className="text-gray-300 group-hover:text-white transition-colors">
-                          {category.title}
-                        </span>
-                      </div>
-                      <span className="text-sm text-gray-500">
-                        {category.postCount}
-                      </span>
-                    </a>
+                      <BlogCard post={post} variant="compact" />
+                    </div>
+                  </Suspense>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* SECCIONES POR CATEGORÍA */}
+          {categories.map((category, categoryIndex) => {
+            // Filtrar posts por categoría
+            const categoryPosts = recentPosts.filter(post => 
+              post.categories?.some(cat => cat._id === category._id)
+            );
+
+            // Solo mostrar categorías con posts
+            if (categoryPosts.length === 0) return null;
+
+            return (
+              <div key={category._id}>
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    {category.icon && <span className="text-3xl">{category.icon}</span>}
+                    <h2 className="text-2xl md:text-3xl font-bold text-white">
+                      {category.title}
+                    </h2>
+                  </div>
+                  <Link 
+                    href={`/blog/category/${category.slug}`}
+                    className="flex items-center gap-2 text-sm font-semibold text-apidevs-primary hover:text-apidevs-primary-light transition-colors group"
+                  >
+                    <span>View All</span>
+                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {categoryPosts.slice(0, 3).map((post, index) => (
+                    <div
+                      key={post._id}
+                      style={{ animationDelay: `${(categoryIndex * 3 + index) * 0.05}s` }}
+                      className="animate-fade-in-up"
+                    >
+                      <BlogCard post={post} />
+                    </div>
                   ))}
                 </div>
               </div>
-            )}
+            );
+          })}
 
-            {/* Newsletter */}
-            <div className="bg-gradient-to-br from-apidevs-primary/10 to-purple-500/10 backdrop-blur-sm rounded-xl p-6 border border-apidevs-primary/20">
-              <h3 className="text-lg font-bold text-white mb-2">
-                📬 Newsletter
-              </h3>
-              <p className="text-gray-300 text-sm mb-4">
-                Recibe los mejores artículos de trading directamente en tu email.
-              </p>
-              <form className="space-y-3">
-                <input
-                  type="email"
-                  placeholder="tu@email.com"
-                  className="w-full px-4 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder:text-gray-500 focus:outline-none focus:border-apidevs-primary transition-colors"
-                />
-                <button
-                  type="submit"
-                  className="w-full px-4 py-2 bg-apidevs-primary hover:bg-apidevs-primary-dark text-gray-900 font-semibold rounded-lg transition-colors"
+          {/* TODOS LOS POSTS (si no hay categorías o quedan posts sin categorizar) */}
+          {recentPosts.length > 3 && categories.length === 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-white">
+                  All Posts
+                </h2>
+                <Link 
+                  href="/blog/all" 
+                  className="flex items-center gap-2 text-sm font-semibold text-apidevs-primary hover:text-apidevs-primary-light transition-colors group"
                 >
-                  Suscribirme
-                </button>
-              </form>
+                  <span>View All</span>
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recentPosts.slice(3, 12).map((post, index) => (
+                  <div
+                    key={post._id}
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                    className="animate-fade-in-up"
+                  >
+                    <BlogCard post={post} />
+                  </div>
+                ))}
+              </div>
             </div>
-          </aside>
+          )}
         </div>
       </div>
     </div>
