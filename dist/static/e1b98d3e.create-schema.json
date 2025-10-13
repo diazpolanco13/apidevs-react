@@ -737,6 +737,13 @@
   {
     "fields": [
       {
+        "readOnly": true,
+        "hidden": true,
+        "name": "language",
+        "type": "string",
+        "title": "Idioma"
+      },
+      {
         "validation": [
           {
             "rules": [
@@ -1845,6 +1852,13 @@
   },
   {
     "fields": [
+      {
+        "readOnly": true,
+        "hidden": true,
+        "name": "language",
+        "type": "string",
+        "title": "Idioma"
+      },
       {
         "placeholder": "Getting Started",
         "validation": [

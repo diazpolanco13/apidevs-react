@@ -196,7 +196,7 @@ export const portableTextComponents = {
                   {value.title}
                 </div>
               )}
-              <div className="text-gray-200 text-[15px] leading-relaxed">
+              <div className="text-gray-800 dark:text-gray-200 text-[15px] leading-relaxed">
                 {value.content}
               </div>
             </div>
@@ -210,14 +210,14 @@ export const portableTextComponents = {
       const text = children?.[0] || '';
       const id = generateId(typeof text === 'string' ? text : '');
       return (
-        <h1 id={id} className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-100 to-gray-300 mt-16 mb-8 scroll-mt-20 group relative">
-          <a href={`#${id}`} className="absolute -left-8 opacity-0 group-hover:opacity-100 transition-all duration-200 text-apidevs-primary hover:scale-110 text-3xl">
+        <h1 id={id} className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-gray-700 to-gray-500 dark:from-white dark:via-gray-100 dark:to-gray-300 mt-16 mb-8 scroll-mt-20 group relative">
+          <a href={`#${id}`} className="absolute -left-8 opacity-0 group-hover:opacity-100 transition-all duration-200 text-apidevs-purple dark:text-apidevs-primary hover:scale-110 text-3xl">
             #
           </a>
           <div className="flex items-center gap-4">
             {children}
           </div>
-          <div className="h-1 w-20 bg-gradient-to-r from-apidevs-primary to-transparent rounded-full mt-4"></div>
+          <div className="h-1 w-20 bg-gradient-to-r from-apidevs-purple dark:from-apidevs-primary to-transparent rounded-full mt-4"></div>
         </h1>
       );
     },
@@ -225,11 +225,11 @@ export const portableTextComponents = {
       const text = children?.[0] || '';
       const id = generateId(typeof text === 'string' ? text : '');
       return (
-        <h2 id={id} className="text-3xl font-bold text-white mt-16 mb-6 scroll-mt-20 group relative flex items-center gap-4">
-          <a href={`#${id}`} className="absolute -left-8 opacity-0 group-hover:opacity-100 transition-all duration-200 text-apidevs-primary hover:scale-110">
+        <h2 id={id} className="text-3xl font-bold text-gray-900 dark:text-white mt-16 mb-6 scroll-mt-20 group relative flex items-center gap-4">
+          <a href={`#${id}`} className="absolute -left-8 opacity-0 group-hover:opacity-100 transition-all duration-200 text-apidevs-purple dark:text-apidevs-primary hover:scale-110">
             #
           </a>
-          <span className="w-1.5 h-10 bg-gradient-to-b from-apidevs-primary to-apidevs-primary-dark rounded-full shadow-lg shadow-apidevs-primary/50"></span>
+          <span className="w-1.5 h-10 bg-gradient-to-b from-apidevs-purple dark:from-apidevs-primary to-apidevs-purple-dark dark:to-apidevs-primary-dark rounded-full shadow-lg shadow-apidevs-purple/50 dark:shadow-apidevs-primary/50"></span>
           <span className="flex-1">{children}</span>
         </h2>
       );
@@ -238,11 +238,11 @@ export const portableTextComponents = {
       const text = children?.[0] || '';
       const id = generateId(typeof text === 'string' ? text : '');
       return (
-        <h3 id={id} className="text-2xl font-bold text-white mt-12 mb-5 scroll-mt-20 group relative flex items-center gap-3">
-          <a href={`#${id}`} className="absolute -left-7 opacity-0 group-hover:opacity-100 transition-all duration-200 text-apidevs-primary/80 hover:scale-110 text-lg">
+        <h3 id={id} className="text-2xl font-bold text-gray-900 dark:text-white mt-12 mb-5 scroll-mt-20 group relative flex items-center gap-3">
+          <a href={`#${id}`} className="absolute -left-7 opacity-0 group-hover:opacity-100 transition-all duration-200 text-apidevs-purple/80 dark:text-apidevs-primary/80 hover:scale-110 text-lg">
             #
           </a>
-          <span className="w-1 h-7 bg-gradient-to-b from-apidevs-primary/80 to-apidevs-primary/40 rounded-full"></span>
+          <span className="w-1 h-7 bg-gradient-to-b from-apidevs-purple/80 dark:from-apidevs-primary/80 to-apidevs-purple/40 dark:to-apidevs-primary/40 rounded-full"></span>
           <span className="flex-1">{children}</span>
         </h3>
       );
@@ -251,17 +251,17 @@ export const portableTextComponents = {
       const text = children?.[0] || '';
       const id = generateId(typeof text === 'string' ? text : '');
       return (
-        <h4 id={id} className="text-xl font-semibold text-white mt-8 mb-4 scroll-mt-20 group relative flex items-center gap-3">
-          <a href={`#${id}`} className="absolute -left-6 opacity-0 group-hover:opacity-100 transition-all duration-200 text-apidevs-primary/60 hover:scale-110 text-base">
+        <h4 id={id} className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4 scroll-mt-20 group relative flex items-center gap-3">
+          <a href={`#${id}`} className="absolute -left-6 opacity-0 group-hover:opacity-100 transition-all duration-200 text-apidevs-purple/60 dark:text-apidevs-primary/60 hover:scale-110 text-base">
             #
           </a>
-          <span className="w-0.5 h-6 bg-apidevs-primary/60 rounded-full"></span>
+          <span className="w-0.5 h-6 bg-apidevs-purple/60 dark:bg-apidevs-primary/60 rounded-full"></span>
           <span className="flex-1">{children}</span>
         </h4>
       );
     },
     normal: ({ children }: any) => (
-      <p className="text-gray-300 text-[15.5px] leading-[1.8] mb-6 tracking-wide">
+      <p className="text-gray-700 dark:text-gray-300 text-[15.5px] leading-[1.8] mb-6 tracking-wide">
         {children}
       </p>
     ),
@@ -286,9 +286,9 @@ export const portableTextComponents = {
   },
   listItem: {
     bullet: ({ children }: any) => (
-      <li className="flex items-start gap-3.5 text-gray-300 group">
-        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-apidevs-primary/20 flex items-center justify-center mt-0.5 group-hover:bg-apidevs-primary/30 transition-colors">
-          <svg className="w-3.5 h-3.5 text-apidevs-primary" fill="currentColor" viewBox="0 0 20 20">
+      <li className="flex items-start gap-3.5 text-gray-700 dark:text-gray-300 group">
+        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-apidevs-purple/20 dark:bg-apidevs-primary/20 flex items-center justify-center mt-0.5 group-hover:bg-apidevs-purple/30 dark:group-hover:bg-apidevs-primary/30 transition-colors">
+          <svg className="w-3.5 h-3.5 text-apidevs-purple dark:text-apidevs-primary" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
           </svg>
         </div>
@@ -296,8 +296,8 @@ export const portableTextComponents = {
       </li>
     ),
     number: ({ children }: any) => (
-      <li className="flex items-start gap-3.5 text-gray-300 counter-increment-item group">
-        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-apidevs-primary/20 flex items-center justify-center text-xs font-bold text-apidevs-primary mt-0.5 group-hover:bg-apidevs-primary/30 transition-colors before:content-[counter(list-item)]">
+      <li className="flex items-start gap-3.5 text-gray-700 dark:text-gray-300 counter-increment-item group">
+        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-apidevs-purple/20 dark:bg-apidevs-primary/20 flex items-center justify-center text-xs font-bold text-apidevs-purple dark:text-apidevs-primary mt-0.5 group-hover:bg-apidevs-purple/30 dark:group-hover:bg-apidevs-primary/30 transition-colors before:content-[counter(list-item)]">
         </div>
         <span className="flex-1 pt-0.5 text-[15px] leading-relaxed">{children}</span>
       </li>
@@ -305,18 +305,18 @@ export const portableTextComponents = {
   },
   marks: {
     strong: ({ children }: any) => (
-      <strong className="font-bold text-white bg-gradient-to-r from-white to-gray-200 bg-clip-text">{children}</strong>
+      <strong className="font-bold text-gray-900 dark:text-white bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 bg-clip-text">{children}</strong>
     ),
     em: ({ children }: any) => (
-      <em className="italic text-gray-200 font-medium">{children}</em>
+      <em className="italic text-gray-800 dark:text-gray-200 font-medium">{children}</em>
     ),
     code: ({ children }: any) => (
-      <code className="relative inline-flex items-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-apidevs-primary px-2.5 py-1 rounded-md text-[13.5px] font-mono border border-gray-700/50 shadow-inner before:absolute before:inset-0 before:bg-apidevs-primary/5 before:rounded-md">
+      <code className="relative inline-flex items-center bg-gradient-to-br from-gray-200 dark:from-gray-900 via-gray-100 dark:via-gray-800 to-gray-200 dark:to-gray-900 text-apidevs-purple dark:text-apidevs-primary px-2.5 py-1 rounded-md text-[13.5px] font-mono border border-gray-300 dark:border-gray-700/50 shadow-inner before:absolute before:inset-0 before:bg-apidevs-purple/5 dark:before:bg-apidevs-primary/5 before:rounded-md">
         {children}
       </code>
     ),
     underline: ({ children }: any) => (
-      <u className="underline decoration-apidevs-primary/60 decoration-2 underline-offset-4 hover:decoration-apidevs-primary transition-colors">{children}</u>
+      <u className="underline decoration-apidevs-purple/60 dark:decoration-apidevs-primary/60 decoration-2 underline-offset-4 hover:decoration-apidevs-purple dark:hover:decoration-apidevs-primary transition-colors">{children}</u>
     ),
     'strike-through': ({ children }: any) => (
       <s className="line-through decoration-2 text-gray-500">{children}</s>
@@ -328,7 +328,7 @@ export const portableTextComponents = {
           href={value.href}
           target={value.blank || isExternal ? '_blank' : undefined}
           rel={isExternal ? 'noopener noreferrer' : undefined}
-          className="inline-flex items-center gap-1 text-apidevs-primary hover:text-apidevs-primary-dark font-medium underline decoration-apidevs-primary/40 decoration-1 underline-offset-4 hover:decoration-apidevs-primary transition-all duration-200 hover:gap-1.5"
+          className="inline-flex items-center gap-1 text-apidevs-purple dark:text-apidevs-primary hover:text-apidevs-purple-dark dark:hover:text-apidevs-primary-dark font-medium underline decoration-apidevs-purple/40 dark:decoration-apidevs-primary/40 decoration-1 underline-offset-4 hover:decoration-apidevs-purple dark:hover:decoration-apidevs-primary transition-all duration-200 hover:gap-1.5"
         >
           {children}
           {isExternal && (

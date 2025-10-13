@@ -117,20 +117,20 @@ export default function SidebarLanguageSelector({
           w-full flex items-center justify-between gap-2.5 px-3.5 py-2.5 rounded-lg
           transition-all duration-200
           ${isOpen 
-            ? 'bg-gray-800/90 text-white shadow-lg' 
-            : 'bg-gray-900/40 text-gray-300 hover:bg-gray-800/70'
+            ? 'bg-gray-200 dark:bg-gray-800/90 text-gray-900 dark:text-white shadow-lg' 
+            : 'bg-gray-100 dark:bg-gray-900/40 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800/70'
           }
           ${isTransitioning ? 'opacity-50 cursor-not-allowed' : ''}
-          border border-gray-700/50 hover:border-gray-600/50
+          border border-gray-300 dark:border-gray-700/50 hover:border-gray-400 dark:hover:border-gray-600/50
         `}
         aria-label="Select language"
       >
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <span className="text-xs font-bold text-gray-500 uppercase flex-shrink-0">{currentLang.code}</span>
+          <span className="text-xs font-bold text-gray-500 dark:text-gray-500 uppercase flex-shrink-0">{currentLang.code}</span>
           <span className="text-sm font-medium truncate">{currentLang.name}</span>
         </div>
         <svg
-          className={`w-4 h-4 flex-shrink-0 text-gray-400 transition-transform duration-200 ${
+          className={`w-4 h-4 flex-shrink-0 text-gray-600 dark:text-gray-400 transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
           }`}
           fill="none"
@@ -143,7 +143,7 @@ export default function SidebarLanguageSelector({
 
       {/* Dropdown Menu - Estilo Mintlify Premium */}
       {isOpen && (
-        <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#1a1f2e] border border-gray-700/70 rounded-xl shadow-2xl shadow-black/40 overflow-hidden backdrop-blur-sm">
+        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-[#1a1f2e] border border-gray-300 dark:border-gray-700/70 rounded-xl shadow-2xl shadow-black/40 overflow-hidden backdrop-blur-sm">
           {/* Available Languages */}
           <div className="py-1">
             {availableLanguages.map((language) => {
@@ -158,8 +158,8 @@ export default function SidebarLanguageSelector({
                     w-full flex items-center gap-2.5 px-3.5 py-2 text-left transition-all duration-150
                     ${
                       isSelected
-                        ? 'bg-gray-800/60 text-white'
-                        : 'text-gray-300 hover:bg-gray-800/40'
+                        ? 'bg-gray-200 dark:bg-gray-800/60 text-gray-900 dark:text-white'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/40'
                     }
                     ${isTransitioning ? 'cursor-not-allowed opacity-50' : ''}
                   `}
@@ -183,16 +183,16 @@ export default function SidebarLanguageSelector({
           {/* Coming Soon Languages */}
           {comingSoonLanguages.length > 0 && (
             <>
-              <div className="border-t border-gray-700/50 my-1" />
+              <div className="border-t border-gray-300 dark:border-gray-700/50 my-1" />
               <div className="py-1">
                 {comingSoonLanguages.map((language) => (
                   <div
                     key={language.id}
-                    className="flex items-center gap-2.5 px-3.5 py-2 text-gray-500 cursor-not-allowed"
+                    className="flex items-center gap-2.5 px-3.5 py-2 text-gray-400 dark:text-gray-500 cursor-not-allowed"
                   >
                     <span className="text-lg flex-shrink-0 opacity-50">{language.flag}</span>
                     <span className="text-sm font-medium flex-1">{language.name}</span>
-                    <svg className="w-3 h-3 text-gray-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-3 h-3 text-gray-500 dark:text-gray-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                     </svg>
                   </div>

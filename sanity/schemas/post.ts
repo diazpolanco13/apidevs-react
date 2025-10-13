@@ -1,14 +1,14 @@
 /**
- * DOCUMENTATION SCHEMA - Mintlify Style
- * Sistema de documentación profesional tipo Mintlify
+ * POST SCHEMA - Blog Posts
+ * Artículos del blog APIDevs (inspirado en LuxAlgo)
  */
 
 import { defineField, defineType } from 'sanity'
-import { DocumentTextIcon, LinkIcon, CogIcon, TagIcon } from '@sanity/icons'
+import { DocumentTextIcon, LinkIcon, CogIcon, TagIcon, ImageIcon } from '@sanity/icons'
 
 export default defineType({
-  name: 'documentation',
-  title: '📚 Documentación',
+  name: 'post',
+  title: '📝 Blog Posts',
   type: 'document',
   icon: DocumentTextIcon,
   
@@ -20,13 +20,13 @@ export default defineType({
       default: true,
     },
     {
-      name: 'navigation',
-      title: 'Navegación',
-      icon: LinkIcon,
+      name: 'media',
+      title: 'Medios',
+      icon: ImageIcon,
     },
     {
-      name: 'settings',
-      title: 'Configuración',
+      name: 'metadata',
+      title: 'Metadata',
       icon: CogIcon,
     },
     {
@@ -42,8 +42,15 @@ export default defineType({
       name: 'language',
       title: 'Idioma',
       type: 'string',
-      readOnly: true,
-      hidden: true,
+      options: {
+        list: [
+          { title: '🇪🇸 Español', value: 'es' },
+          { title: '🇺🇸 English', value: 'en' }
+        ]
+      },
+      initialValue: 'es',
+      validation: (Rule) => Rule.required(),
+      group: 'metadata',
     }),
     
     // ========== CONTENT GROUP ==========
@@ -51,8 +58,8 @@ export default defineType({
       name: 'title',
       title: 'Título',
       type: 'string',
-      validation: (Rule) => Rule.required().max(100),
-      description: 'Título principal de la página',
+      validation: (Rule) => Rule.required().max(150),
+      description: 'Título del artículo (máx 150 caracteres)',
       group: 'content',
     }),
     
@@ -85,30 +92,12 @@ export default defineType({
     }),
     
     defineField({
-      name: 'description',
-      title: 'Descripción Corta',
+      name: 'excerpt',
+      title: 'Excerpt / Resumen',
       type: 'text',
-      rows: 2,
-      validation: (Rule) => Rule.max(200),
-      description: '💡 Aparece en el sidebar y en cards de navegación (máx 200 caracteres)',
-      group: 'content',
-    }),
-    
-    defineField({
-      name: 'icon',
-      title: 'Icono',
-      type: 'string',
-      description: '🎨 Emoji que aparece junto al título (ej: 🚀, ⚡, 📊)',
-      placeholder: '🚀',
-      validation: (Rule) =>
-        Rule.max(4).custom((value) => {
-          if (!value) return true
-          // Validar que sea un emoji válido (simplified regex sin flag u)
-          if (value.length > 4) {
-            return 'Debe ser un emoji válido'
-          }
-          return true
-        }),
+      rows: 3,
+      validation: (Rule) => Rule.required().min(50).max(250),
+      description: '📝 Resumen corto para cards (50-250 caracteres). Muy importante para SEO y preview.',
       group: 'content',
     }),
     
@@ -122,7 +111,6 @@ export default defineType({
           type: 'block',
           styles: [
             { title: 'Normal', value: 'normal' },
-            { title: 'H1', value: 'h1' },
             { title: 'H2', value: 'h2' },
             { title: 'H3', value: 'h3' },
             { title: 'H4', value: 'h4' },
@@ -163,20 +151,7 @@ export default defineType({
                     name: 'blank',
                     type: 'boolean',
                     title: 'Abrir en nueva pestaña',
-                    initialValue: false,
-                  },
-                ],
-              },
-              {
-                name: 'internalLink',
-                type: 'object',
-                title: 'Link Interno',
-                fields: [
-                  {
-                    name: 'reference',
-                    type: 'reference',
-                    to: [{ type: 'documentation' }],
-                    title: 'Página',
+                    initialValue: true,
                   },
                 ],
               },
@@ -207,7 +182,7 @@ export default defineType({
           ],
         },
         
-        // CODE BLOCK (Mintlify style)
+        // CODE BLOCK (reutilizando de docs)
         {
           type: 'object',
           name: 'codeBlock',
@@ -229,28 +204,11 @@ export default defineType({
                 list: [
                   { title: 'TypeScript', value: 'typescript' },
                   { title: 'JavaScript', value: 'javascript' },
-                  { title: 'JSX', value: 'jsx' },
-                  { title: 'TSX', value: 'tsx' },
                   { title: 'Python', value: 'python' },
                   { title: 'Bash', value: 'bash' },
-                  { title: 'Shell', value: 'sh' },
                   { title: 'JSON', value: 'json' },
-                  { title: 'YAML', value: 'yaml' },
                   { title: 'CSS', value: 'css' },
-                  { title: 'SCSS', value: 'scss' },
                   { title: 'HTML', value: 'html' },
-                  { title: 'SQL', value: 'sql' },
-                  { title: 'GraphQL', value: 'graphql' },
-                  { title: 'Markdown', value: 'markdown' },
-                  { title: 'Go', value: 'go' },
-                  { title: 'Rust', value: 'rust' },
-                  { title: 'PHP', value: 'php' },
-                  { title: 'Ruby', value: 'ruby' },
-                  { title: 'Java', value: 'java' },
-                  { title: 'C++', value: 'cpp' },
-                  { title: 'C#', value: 'csharp' },
-                  { title: 'Swift', value: 'swift' },
-                  { title: 'Kotlin', value: 'kotlin' },
                 ],
                 layout: 'dropdown',
               },
@@ -263,13 +221,6 @@ export default defineType({
               type: 'text',
               rows: 15,
               validation: (Rule) => Rule.required(),
-            },
-            {
-              name: 'highlightLines',
-              title: 'Líneas Resaltadas',
-              type: 'string',
-              description: '✨ Ej: 1-3,5,7-10 (resalta esas líneas)',
-              placeholder: '1-3,5,7-10',
             },
             {
               name: 'showLineNumbers',
@@ -294,7 +245,7 @@ export default defineType({
           },
         },
         
-        // CALLOUT (Mintlify style)
+        // CALLOUT (reutilizando de docs)
         {
           type: 'object',
           name: 'callout',
@@ -312,7 +263,6 @@ export default defineType({
                   { title: '🚨 Error', value: 'error' },
                   { title: '📝 Note', value: 'note' },
                   { title: '💡 Tip', value: 'tip' },
-                  { title: '🎓 Learn', value: 'learn' },
                 ],
                 layout: 'radio',
                 direction: 'horizontal',
@@ -333,13 +283,6 @@ export default defineType({
               rows: 4,
               validation: (Rule) => Rule.required(),
             },
-            {
-              name: 'collapsible',
-              title: '¿Es Colapsable?',
-              type: 'boolean',
-              initialValue: false,
-              description: 'Permite colapsar/expandir el contenido',
-            },
           ],
           preview: {
             select: {
@@ -355,7 +298,6 @@ export default defineType({
                 error: '🚨',
                 note: '📝',
                 tip: '💡',
-                learn: '🎓',
               }
               return {
                 title: title || type.toUpperCase(),
@@ -366,7 +308,55 @@ export default defineType({
           },
         },
         
-        // CARD GROUP (Mintlify style)
+        // VIDEO EMBED
+        {
+          type: 'object',
+          name: 'videoEmbed',
+          title: '🎥 Video',
+          fields: [
+            {
+              name: 'url',
+              type: 'url',
+              title: 'URL del Video',
+              description: 'YouTube, Vimeo, Loom, etc.',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'title',
+              type: 'string',
+              title: 'Título',
+            },
+            {
+              name: 'aspectRatio',
+              type: 'string',
+              title: 'Aspect Ratio',
+              options: {
+                list: [
+                  { title: '16:9 (Landscape)', value: '16:9' },
+                  { title: '4:3', value: '4:3' },
+                  { title: '1:1 (Square)', value: '1:1' },
+                  { title: '9:16 (Portrait)', value: '9:16' },
+                ],
+              },
+              initialValue: '16:9',
+            },
+          ],
+          preview: {
+            select: {
+              url: 'url',
+              title: 'title',
+            },
+            prepare({ url, title }) {
+              return {
+                title: title || 'Video',
+                subtitle: url,
+                media: () => '🎥',
+              }
+            },
+          },
+        },
+        
+        // CARD GROUP (de docs)
         {
           type: 'object',
           name: 'cardGroup',
@@ -422,7 +412,7 @@ export default defineType({
                       name: 'href',
                       type: 'string',
                       title: 'Link',
-                      description: 'URL o slug (/docs/getting-started)',
+                      description: 'URL o slug (/blog/otro-articulo)',
                     },
                   ],
                   preview: {
@@ -459,7 +449,7 @@ export default defineType({
           },
         },
         
-        // TABS (Mintlify style)
+        // TABS (de docs)
         {
           type: 'object',
           name: 'tabs',
@@ -518,7 +508,7 @@ export default defineType({
           },
         },
         
-        // ACCORDION (Mintlify style)
+        // ACCORDION (de docs)
         {
           type: 'object',
           name: 'accordion',
@@ -558,108 +548,135 @@ export default defineType({
             },
           },
         },
-        
-        // VIDEO EMBED
-        {
-          type: 'object',
-          name: 'videoEmbed',
-          title: '🎥 Video',
-          fields: [
-            {
-              name: 'url',
-              type: 'url',
-              title: 'URL del Video',
-              description: 'YouTube, Vimeo, Loom, etc.',
-              validation: (Rule) => Rule.required(),
-            },
-            {
-              name: 'title',
-              type: 'string',
-              title: 'Título',
-            },
-            {
-              name: 'aspectRatio',
-              type: 'string',
-              title: 'Aspect Ratio',
-              options: {
-                list: [
-                  { title: '16:9 (Landscape)', value: '16:9' },
-                  { title: '4:3', value: '4:3' },
-                  { title: '1:1 (Square)', value: '1:1' },
-                  { title: '9:16 (Portrait)', value: '9:16' },
-                ],
-              },
-              initialValue: '16:9',
-            },
-          ],
-          preview: {
-            select: {
-              url: 'url',
-              title: 'title',
-            },
-            prepare({ url, title }) {
-              return {
-                title: title || 'Video',
-                subtitle: url,
-                media: () => '🎥',
-              }
-            },
-          },
-        },
       ],
       group: 'content',
     }),
     
-    // ========== NAVIGATION GROUP ==========
+    // ========== MEDIA GROUP ==========
     defineField({
-      name: 'category',
-      title: 'Categoría',
-      type: 'reference',
-      to: [{ type: 'docCategory' }],
+      name: 'mainImage',
+      title: 'Imagen Principal (Featured)',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+      fields: [
+        {
+          name: 'alt',
+          type: 'string',
+          title: 'Texto Alternativo',
+          validation: (Rule) => Rule.required(),
+        },
+        {
+          name: 'caption',
+          type: 'string',
+          title: 'Caption',
+        },
+      ],
       validation: (Rule) => Rule.required(),
-      description: '📂 Categoría en el sidebar',
-      group: 'navigation',
+      description: '🖼️ Imagen destacada del artículo. Recomendado: 1200x630px para redes sociales.',
+      group: 'media',
     }),
     
     defineField({
-      name: 'order',
-      title: 'Orden',
-      type: 'number',
-      description: '🔢 Orden dentro de su categoría (menor = arriba)',
-      validation: (Rule) => Rule.required().min(0).max(999),
-      initialValue: 0,
-      group: 'navigation',
-    }),
-    
-    defineField({
-      name: 'previousPage',
-      title: 'Página Anterior',
-      type: 'reference',
-      to: [{ type: 'documentation' }],
-      description: '← Navegación secuencial',
-      group: 'navigation',
-    }),
-    
-    defineField({
-      name: 'nextPage',
-      title: 'Página Siguiente',
-      type: 'reference',
-      to: [{ type: 'documentation' }],
-      description: '→ Navegación secuencial',
-      group: 'navigation',
-    }),
-    
-    defineField({
-      name: 'relatedPages',
-      title: 'Páginas Relacionadas',
+      name: 'gallery',
+      title: 'Galería Adicional',
       type: 'array',
-      of: [{ type: 'reference', to: [{ type: 'documentation' }] }],
-      description: '🔗 Sugerencias al final de la página',
-      validation: (Rule) => Rule.max(6),
-      group: 'navigation',
+      of: [
+        {
+          type: 'image',
+          options: {
+            hotspot: true,
+          },
+          fields: [
+            {
+              name: 'alt',
+              type: 'string',
+              title: 'Texto Alternativo',
+            },
+            {
+              name: 'caption',
+              type: 'string',
+              title: 'Caption',
+            },
+          ],
+        },
+      ],
+      description: '📸 Imágenes adicionales para el artículo',
+      validation: (Rule) => Rule.max(10),
+      group: 'media',
     }),
     
-    // ========== SETTINGS GROUP ==========
+    // ========== METADATA GROUP ==========
+    defineField({
+      name: 'author',
+      title: 'Autor',
+      type: 'reference',
+      to: [{ type: 'author' }],
+      validation: (Rule) => Rule.required(),
+      description: '👤 Autor del artículo',
+      group: 'metadata',
+    }),
+    
+    defineField({
+      name: 'categories',
+      title: 'Categorías',
+      type: 'array',
+      of: [{ type: 'reference', to: [{ type: 'blogCategory' }] }],
+      validation: (Rule) => Rule.required().min(1).max(3),
+      description: '🏷️ Mínimo 1, máximo 3 categorías',
+      group: 'metadata',
+    }),
+    
+    defineField({
+      name: 'tags',
+      title: 'Tags',
+      type: 'array',
+      of: [{ type: 'string' }],
+      options: {
+        layout: 'tags',
+      },
+      validation: (Rule) => Rule.max(10),
+      description: '🏷️ Tags para búsqueda y filtrado (máx 10)',
+      group: 'metadata',
+    }),
+    
+    defineField({
+      name: 'publishedAt',
+      title: 'Fecha de Publicación',
+      type: 'datetime',
+      validation: (Rule) => Rule.required(),
+      initialValue: () => new Date().toISOString(),
+      description: '📅 Fecha visible en el artículo',
+      group: 'metadata',
+    }),
+    
+    defineField({
+      name: 'updatedAt',
+      title: 'Última Actualización',
+      type: 'datetime',
+      description: '🔄 Se actualiza automáticamente',
+      group: 'metadata',
+    }),
+    
+    defineField({
+      name: 'readingTime',
+      title: 'Tiempo de Lectura',
+      type: 'number',
+      description: '⏱️ Minutos estimados de lectura (se puede calcular automáticamente)',
+      validation: (Rule) => Rule.min(1).max(60),
+      group: 'metadata',
+    }),
+    
+    defineField({
+      name: 'featured',
+      title: '⭐ Post Destacado',
+      type: 'boolean',
+      initialValue: false,
+      description: 'Aparece en el hero de la homepage del blog',
+      group: 'metadata',
+    }),
+    
     defineField({
       name: 'status',
       title: 'Estado',
@@ -667,40 +684,34 @@ export default defineType({
       options: {
         list: [
           { title: '✅ Publicado', value: 'published' },
-          { title: '🚧 En Progreso', value: 'draft' },
+          { title: '🚧 Borrador', value: 'draft' },
           { title: '👀 En Revisión', value: 'review' },
+          { title: '📅 Programado', value: 'scheduled' },
           { title: '🗄️ Archivado', value: 'archived' },
         ],
         layout: 'radio',
       },
       initialValue: 'draft',
       validation: (Rule) => Rule.required(),
-      group: 'settings',
+      group: 'metadata',
     }),
     
     defineField({
-      name: 'featured',
-      title: '⭐ Destacado',
-      type: 'boolean',
-      initialValue: false,
-      description: 'Aparece en la página principal de docs',
-      group: 'settings',
-    }),
-    
-    defineField({
-      name: 'publishedAt',
-      title: 'Fecha de Publicación',
-      type: 'datetime',
-      initialValue: () => new Date().toISOString(),
-      group: 'settings',
-    }),
-    
-    defineField({
-      name: 'updatedAt',
-      title: 'Última Actualización',
-      type: 'datetime',
-      initialValue: () => new Date().toISOString(),
-      group: 'settings',
+      name: 'visibility',
+      title: 'Visibilidad',
+      type: 'string',
+      options: {
+        list: [
+          { title: '👁️ Público', value: 'public' },
+          { title: '🔒 Solo Autenticados', value: 'authenticated' },
+          { title: '💎 Solo Premium', value: 'premium' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'public',
+      validation: (Rule) => Rule.required(),
+      description: 'Control de acceso al artículo',
+      group: 'metadata',
     }),
     
     // ========== SEO GROUP ==========
@@ -717,14 +728,7 @@ export default defineType({
           name: 'metaTitle',
           title: 'Meta Título',
           type: 'string',
-          validation: (Rule) =>
-            Rule.max(60).custom((value, context) => {
-              const title = (context.parent as any)?.title || (context.document as any)?.title
-              if (!value && !title) {
-                return 'Se requiere un título o meta título'
-              }
-              return true
-            }),
+          validation: (Rule) => Rule.max(60),
           description: '🎯 Máximo 60 caracteres. Si está vacío, usa el título principal',
         },
         {
@@ -733,7 +737,7 @@ export default defineType({
           type: 'text',
           rows: 3,
           validation: (Rule) => Rule.max(160),
-          description: '📝 Máximo 160 caracteres',
+          description: '📝 Máximo 160 caracteres. Si está vacío, usa el excerpt',
         },
         {
           name: 'keywords',
@@ -750,7 +754,7 @@ export default defineType({
           name: 'ogImage',
           title: 'Open Graph Image',
           type: 'image',
-          description: '🖼️ Imagen para redes sociales (1200×630px recomendado)',
+          description: '🖼️ Imagen para redes sociales (si está vacío, usa mainImage)',
           options: {
             hotspot: true,
           },
@@ -765,48 +769,79 @@ export default defineType({
       ],
       group: 'seo',
     }),
+    
+    // ========== RELATED CONTENT ==========
+    defineField({
+      name: 'relatedPosts',
+      title: 'Posts Relacionados',
+      type: 'array',
+      of: [{ type: 'reference', to: [{ type: 'post' }] }],
+      validation: (Rule) => Rule.max(4),
+      description: '🔗 Posts relacionados que aparecen al final del artículo (máx 4)',
+      group: 'metadata',
+    }),
   ],
   
   preview: {
     select: {
       title: 'title',
-      category: 'category.title',
-      order: 'order',
-      icon: 'icon',
+      author: 'author.name',
+      mainImage: 'mainImage',
       status: 'status',
+      featured: 'featured',
+      publishedAt: 'publishedAt',
+      language: 'language',
     },
-    prepare({ title, category, order, icon, status }) {
+    prepare({ title, author, mainImage, status, featured, publishedAt, language }) {
       const statusIcons: Record<string, string> = {
         published: '✅',
         draft: '🚧',
         review: '👀',
+        scheduled: '📅',
         archived: '🗄️',
       }
+      
+      const featuredBadge = featured ? '⭐ ' : ''
+      const langFlag = language === 'es' ? '🇪🇸 ' : '🇺🇸 '
+      const date = publishedAt ? new Date(publishedAt).toLocaleDateString('es-ES') : ''
+      
       return {
-        title: `${icon || '📄'} ${title}`,
-        subtitle: `${statusIcons[status] || ''} ${category || 'Sin categoría'} · Orden: ${order || 0}`,
+        title: `${featuredBadge}${langFlag}${title}`,
+        subtitle: `${statusIcons[status] || ''} ${author || 'Sin autor'} · ${date}`,
+        media: mainImage,
       }
     },
   },
   
   orderings: [
     {
-      title: 'Orden (Ascendente)',
-      name: 'orderAsc',
-      by: [
-        { field: 'category._ref', direction: 'asc' },
-        { field: 'order', direction: 'asc' },
-      ],
-    },
-    {
-      title: 'Fecha de Publicación',
+      title: 'Fecha de Publicación (Recientes)',
       name: 'publishedAtDesc',
       by: [{ field: 'publishedAt', direction: 'desc' }],
+    },
+    {
+      title: 'Fecha de Publicación (Antiguos)',
+      name: 'publishedAtAsc',
+      by: [{ field: 'publishedAt', direction: 'asc' }],
     },
     {
       title: 'Última Actualización',
       name: 'updatedAtDesc',
       by: [{ field: 'updatedAt', direction: 'desc' }],
     },
+    {
+      title: 'Destacados Primero',
+      name: 'featuredFirst',
+      by: [
+        { field: 'featured', direction: 'desc' },
+        { field: 'publishedAt', direction: 'desc' },
+      ],
+    },
+    {
+      title: 'Alfabético',
+      name: 'titleAsc',
+      by: [{ field: 'title', direction: 'asc' }],
+    },
   ],
 })
+

@@ -27,6 +27,8 @@ module.exports = {
         'apidevs': {
           'primary': '#C9D92E',     // Verde lima principal
           'primary-dark': '#A8B625', // Verde lima oscuro
+          'purple': '#8B5CF6',      // Morado principal para light mode
+          'purple-dark': '#7C3AED', // Morado oscuro
           'dark': '#0a0a0a',        // Negro profundo para fondos
           'gray': '#1a1a1a',        // Gris oscuro para cards
           'gray-light': '#2a2a2a',  // Gris medio para elementos

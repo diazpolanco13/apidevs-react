@@ -175,10 +175,10 @@ export default async function DocPage({
     return (
       <>
         {/* Main Content */}
-        <article className="w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8 lg:pt-6 lg:pb-16 xl:pr-80">
+        <article className="w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8 lg:pt-15 lg:pb-16 xl:pr-80">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-xs sm:text-sm text-gray-400 mb-6 flex-wrap">
-            <Link href={`/docs/${lang}`} className="hover:text-white transition-colors">
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-6 flex-wrap">
+            <Link href={`/docs/${lang}`} className="hover:text-gray-900 dark:hover:text-white transition-colors">
               {languageFlags[lang]} Docs
             </Link>
             <span>/</span>
@@ -186,28 +186,28 @@ export default async function DocPage({
               <>
                 <Link
                   href={`/docs/${lang}?category=${doc.category.slug}`}
-                  className="hover:text-white transition-colors truncate"
+                  className="hover:text-gray-900 dark:hover:text-white transition-colors truncate"
                 >
                   {doc.category.title}
                 </Link>
                 <span>/</span>
               </>
             )}
-            <span className="text-white truncate">{doc.title}</span>
+            <span className="text-gray-900 dark:text-white truncate">{doc.title}</span>
           </nav>
 
           {/* Header */}
           <header className="mb-8 lg:mb-12">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
               {doc.title}
             </h1>
             {doc.description && (
-              <p className="text-base sm:text-lg lg:text-xl text-gray-400 leading-relaxed">
+              <p className="text-base sm:text-lg lg:text-xl text-gray-700 dark:text-gray-400 leading-relaxed">
                 {doc.description}
               </p>
             )}
             {lastUpdated && (
-              <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 mt-4">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-500 mt-4">
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>

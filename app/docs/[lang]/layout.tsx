@@ -4,6 +4,8 @@ import { groq } from 'next-sanity';
 import DocsSidebar from '@/components/docs/DocsSidebar';
 import DocsHeaderWithContext from '@/components/docs/DocsHeaderWithContext';
 import BackgroundEffects from '@/components/ui/BackgroundEffects';
+import { ThemeProvider } from '@/components/docs/ThemeProvider';
+import Script from 'next/script';
 
 // Configuración de idiomas soportados
 const supportedLanguages = [
@@ -108,29 +110,58 @@ export default async function DocsLanguageLayout({
   }
 
   return (
-    <div className="docs-layout min-h-screen relative bg-apidevs-dark">
-      {/* Background Effects */}
-      <BackgroundEffects variant="minimal" />
-      
-      {/* Header */}
-      <DocsHeaderWithContext />
-      
-      {/* Main Container */}
-      <div className="max-w-[1800px] mx-auto pt-10 relative">
-        <div className="flex">
-          {/* Sidebar */}
-          <DocsSidebar 
-            sidebarData={sidebarData} 
-            currentLanguage={lang}
-            docsMap={docsMap}
-          />
-          
-          {/* Main Content */}
-          <main className="flex-1 relative z-10 min-w-0">
-            {children}
-          </main>
+    <ThemeProvider>
+      {/* Script inline para prevenir FOUC (Flash of Unstyled Content) */}
+      <Script
+        id="theme-script"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              try {
+                const theme = localStorage.getItem('docs-theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const shouldBeDark = theme === 'dark' || (!theme && prefersDark);
+                
+                if (shouldBeDark) {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.setAttribute('data-theme', 'light');
+                }
+              } catch (e) {
+                console.error('Error loading theme:', e);
+              }
+            })();
+          `,
+        }}
+      />
+
+      <div className="docs-layout min-h-screen relative bg-white dark:bg-apidevs-dark transition-colors duration-200">
+        {/* Background Effects */}
+        <BackgroundEffects variant="minimal" />
+        
+        {/* Header */}
+        <DocsHeaderWithContext />
+        
+        {/* Main Container */}
+        <div className="max-w-[1800px] mx-auto pt-auto relative">
+          <div className="flex">
+            {/* Sidebar */}
+            <DocsSidebar 
+              sidebarData={sidebarData} 
+              currentLanguage={lang}
+              docsMap={docsMap}
+            />
+            
+            {/* Main Content */}
+            <main className="flex-1 relative z-10 min-w-0">
+              {children}
+            </main>
+          </div>
         </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 }

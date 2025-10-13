@@ -431,48 +431,168 @@ body:has(.docs-layout) > footer {
 
 ### 🎯 Features Mintlify Implementadas vs Pendientes
 
-#### ✅ **Implementadas:**
+#### ✅ **COMPLETAMENTE IMPLEMENTADAS:**
 - Layout con sidebar colapsable
-- Table of Contents (TOC) sticky
-- Búsqueda con Ctrl+K
-- Responsive design móvil
+- Table of Contents (TOC) sticky con highlighting automático
+- Búsqueda con Ctrl+K (modal + API + keyboard navigation)
+- Responsive design móvil (sidebar overlay + FAB)
 - Code blocks con syntax highlighting
-- Callouts con 6 tipos
+- Callouts con 6 tipos (info, warning, error, success, note, tip)
 - Portable Text rico (headings, listas, imágenes)
 - Navegación breadcrumbs
-- SEO optimizado
-- ISR con revalidación
+- SEO optimizado (meta tags dinámicos)
+- ISR con revalidación (60 segundos)
+- **🌙☀️ Dark/Light Mode** (Context API + localStorage + toggle sidebar)
+- **🌍 Multi-idioma (i18n)** - Estructura base con selector idioma
 
-#### 🚧 **Pendientes (Mintlify tiene):**
+---
 
-**1. Multi-idioma (i18n)** 🌍
-- **Mintlify:** Selector de idioma en footer sidebar (🇺🇸 English, 🇫🇷 Français, 🇪🇸 Español, 🇨🇳 简体中文)
-- **Implementación sugerida:**
-  - Agregar campo `language: string` en schema `documentation`
-  - Rutas: `/docs/[lang]/[slug]` (ej: `/docs/es/que-es-apidevs`)
-  - Selector en `DocsSidebar` footer
-  - Usar `mcp_sanity_translate_document` para traducir contenido automáticamente
-  - Context provider para idioma actual
-  - Detectar idioma del browser con `navigator.language`
+### 🌙☀️ **Sistema Dark/Light Mode (IMPLEMENTADO)**
 
-**2. Dark/Light Mode** 🌙☀️
-- **Mintlify:** Toggle en sidebar footer (🌙/☀️) con transición suave
-- **Implementación sugerida:**
-  - Context provider `ThemeProvider` con `useState('dark')`
-  - Toggle button en `DocsHeader` o `DocsSidebar`
-  - CSS variables para colores adaptables:
-    ```css
-    :root[data-theme="light"] {
-      --bg-dark: #ffffff;
-      --text-primary: #000000;
-      --apidevs-primary: #C9D92E; /* mantener */
+#### Arquitectura Completa:
+
+**1. ThemeProvider** (`components/docs/ThemeProvider.tsx`)
+- Client Component con Context API
+- Estado: `'light' | 'dark'`
+- Persistencia: `localStorage.getItem('docs-theme')`
+- Detección sistema: `window.matchMedia('(prefers-color-scheme: dark)')`
+- Aplica: `document.documentElement.classList.add('dark')` + `data-theme` attribute
+
+```typescript
+// Hook de uso:
+const { theme, toggleTheme, setTheme } = useTheme();
+
+// Provider en layout:
+<ThemeProvider>
+  {/* Todo el contenido de docs */}
+</ThemeProvider>
+```
+
+**2. Script FOUC Prevention** (`app/docs/[lang]/layout.tsx`)
+```typescript
+<Script
+  id="theme-script"
+  strategy="beforeInteractive"
+  dangerouslySetInnerHTML={{
+    __html: `
+      (function() {
+        const theme = localStorage.getItem('docs-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const shouldBeDark = theme === 'dark' || (!theme && prefersDark);
+        
+        if (shouldBeDark) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    `,
+  }}
+/>
+```
+
+**3. Toggle Button** (`components/docs/DocsSidebar.tsx`)
+- Ubicación: Footer del sidebar
+- Estilos Mintlify: fondo gris claro/oscuro con border
+- Icono dinámico: 🌙 Moon (dark mode) / ☀️ Sun (light mode)
+- Switch icon on hover (⇄)
+
+**4. Sistema de Colores Dual:**
+
+| Elemento | Light Mode | Dark Mode |
+|----------|------------|-----------|
+| **Background** | `bg-white` | `bg-apidevs-dark` |
+| **Texto principal** | `text-gray-900` | `text-white` |
+| **Texto secundario** | `text-gray-700` | `text-gray-300` |
+| **Acentos/Links activos** | `text-apidevs-purple` (#8B5CF6) | `text-apidevs-primary` (#C9D92E) |
+| **Bordes** | `border-gray-300` | `border-gray-800` |
+| **Cards/Sidebar** | `bg-gray-100` | `bg-gray-900/50` |
+| **Hover states** | `hover:bg-gray-200` | `hover:bg-gray-800/70` |
+| **Search bar** | `bg-gray-200` | `bg-gray-900/50` |
+| **TOC active** | `border-apidevs-purple` | `border-apidevs-primary` |
+
+**5. Componentes Adaptados:**
+- ✅ `DocsHeader.tsx` - Logo dinámico (negro/blanco) + search bar
+- ✅ `DocsSidebar.tsx` - Backgrounds, borders, links activos
+- ✅ `DocsSearch.tsx` - Modal, input, resultados, kbd shortcuts
+- ✅ `TableOfContents.tsx` - Border, texto, links activos
+- ✅ `PortableTextComponents.tsx` - Headings, listas, callouts, code blocks
+- ✅ `SidebarLanguageSelector.tsx` - Dropdown estilizado
+
+**⚠️ IMPORTANTE para implementar Blog:**
+- El `ThemeProvider` está en el layout de `/docs`, NO es global
+- Si el blog necesita dark/light mode, debe:
+  1. Reutilizar el mismo `ThemeProvider` a nivel global en `app/layout.tsx`, O
+  2. Crear su propio provider específico de blog
+
+---
+
+### 🌍 **Multi-idioma (i18n) - Estado Actual**
+
+#### ✅ **Implementado:**
+
+**1. Estructura de Rutas:**
+```
+/docs/[lang]/[slug]
+```
+- Soporta: `es` (español), `en` (inglés)
+- Ejemplo: `/docs/es/que-es-apidevs`, `/docs/en/what-is-apidevs`
+
+**2. Selector de Idioma** (`components/docs/SidebarLanguageSelector.tsx`)
+- Client Component con estado local
+- Ubicación: Footer del sidebar
+- Estilos: Dropdown estilo Mintlify con flags y checkmark
+- Funcionalidad: Cambia ruta preservando el slug
+- Transiciones: Loading state durante cambio
+
+**3. Schema Documentation:**
+```typescript
+{
+  name: 'documentation',
+  fields: [
+    {
+      name: 'language',
+      type: 'string',
+      options: {
+        list: [
+          { title: '🇪🇸 Español', value: 'es' },
+          { title: '🇺🇸 English', value: 'en' }
+        ]
+      }
+    },
+    // ... otros campos
+  ]
+}
+```
+
+**4. Mapeo de Documentos:**
+El layout hace query para mapear documentos entre idiomas:
+```typescript
+const docsMap = sidebarData.reduce((acc, category) => {
+  category.pages.forEach(page => {
+    if (page.slug && page.language) {
+      if (!acc[page.slug]) acc[page.slug] = {};
+      acc[page.slug][page.language] = page._id;
     }
-    ```
-  - localStorage: `localStorage.setItem('theme', 'light')`
-  - Persistir preferencia entre sesiones
-  - Clases Tailwind: `dark:bg-white dark:text-black`
+  });
+  return acc;
+}, {});
+```
 
-**3. Versioning** 📚
+#### 🚧 **Pendiente (para otra IA implementar):**
+- [ ] Traducir documentos existentes con `mcp_sanity_translate_document`
+- [ ] Crear versiones EN de todos los docs ES
+- [ ] Implementar detección automática de idioma del browser
+- [ ] Agregar más idiomas (FR, PT, CN)
+
+**⚠️ IMPORTANTE para implementar Blog:**
+- Si el blog necesita multi-idioma, puede reutilizar el mismo sistema
+- Schema `post` debería incluir campo `language: string`
+- Rutas sugeridas: `/blog/[lang]/[slug]` o `/blog/[slug]` con filtro
+
+---
+
+### 🚧 **Pendientes (Mintlify tiene):**
+
+**1. Versioning** 📚
 - **Mintlify:** Dropdown en header para cambiar versión (v1.0, v2.0)
 - **Implementación sugerida:**
   - Usar releases de Sanity para versiones
@@ -480,21 +600,12 @@ body:has(.docs-layout) > footer {
   - Dropdown en header con versiones disponibles
   - Query GROQ filtrando por versión
 
-### 🚀 Próximos Pasos Prioritarios
+---
 
-- [ ] **Multi-idioma** (PRIORIDAD ALTA)
-  - Agregar selector de idioma en footer sidebar
-  - Schema con campo `language` en documentación
-  - Rutas tipo `/docs/es/[slug]` y `/docs/en/[slug]`
-  - Traducir documentos existentes (ES, EN)
-  - Context provider para idioma
-  
-- [ ] **Dark/Light Mode** (PRIORIDAD ALTA)
-  - ThemeProvider con Context API
-  - Toggle en sidebar footer (🌙/☀️)
-  - CSS variables y clases dark:
-  - localStorage para persistir
-  
+### 🚀 Próximos Pasos (Docs)
+
+- [x] **Multi-idioma** - ✅ Estructura base implementada
+- [x] **Dark/Light Mode** - ✅ Sistema completo implementado
 - [ ] **Contenido y Categorías** (PRIORIDAD MEDIA)
   - Crear categoría "Guías" (tutoriales paso a paso)
   - Crear categoría "API Reference" (documentación técnica)
@@ -819,24 +930,51 @@ SANITY_API_TOKEN=skk...
 ## 🎨 Paleta de Colores APIDevs
 
 ```css
-/* Verde-Amarillo Principal */
---apidevs-primary: #C9D92E
+/* Colores Principales de Marca */
+--apidevs-primary: #C9D92E    /* Verde lima - Dark mode accent */
+--apidevs-purple: #8B5CF6     /* Morado - Light mode accent (NUEVO) */
+--purple-brand: #9333EA        /* Morado oscuro - Lifetime tier */
 
-/* Morado */
---purple: #9333EA
+/* Sistema Dark/Light Mode */
+/* LIGHT MODE: */
+--light-bg: #FFFFFF
+--light-text-primary: #111827 (gray-900)
+--light-text-secondary: #374151 (gray-700)
+--light-border: #D1D5DB (gray-300)
+--light-accent: #8B5CF6 (apidevs-purple)
+
+/* DARK MODE: */
+--dark-bg: #0a0a0a (apidevs-dark)
+--dark-text-primary: #FFFFFF
+--dark-text-secondary: #9CA3AF (gray-400)
+--dark-border: #1F2937 (gray-800)
+--dark-accent: #C9D92E (apidevs-primary)
 
 /* Badges */
 --free-badge: #2563EB (blue-600)
 --premium-badge: #9333EA (purple-600)
 
 /* Backgrounds */
---bg-dark: #000000
 --bg-card: #1F2937 (gray-800)
 
-/* Text */
---text-primary: #FFFFFF
---text-secondary: #9CA3AF (gray-400)
+/* Configuración Tailwind (tailwind.config.js) */
+colors: {
+  'apidevs': {
+    'primary': '#C9D92E',      // Verde lima
+    'primary-dark': '#A8B625',
+    'purple': '#8B5CF6',       // NUEVO - Para light mode
+    'purple-dark': '#7C3AED',
+    'dark': '#0a0a0a',
+    // ... otros
+  }
+}
 ```
+
+**⚠️ IMPORTANTE para implementar Blog:**
+- Si el blog necesita colores consistentes, debe usar las mismas clases dark:
+- `text-apidevs-purple dark:text-apidevs-primary` para acentos
+- `bg-white dark:bg-apidevs-dark` para backgrounds
+- Mantener la coherencia visual con docs e indicadores
 
 ---
 
@@ -1029,34 +1167,833 @@ mcp_supabase_execute_sql({
 
 ---
 
-**Última actualización:** 12 octubre 2025  
-**Commit:** `ad68b76` - Sistema de Documentación Completo  
-**Branch:** `feature/docs-mintlify-clone`
+---
 
-**Cambios Recientes (Sesión Completa):**
-- ✅ Responsive design completo (mobile sidebar, header adaptativo)
-- ✅ Búsqueda funcional con API + GROQ + keyboard navigation
-- ✅ Búsqueda centrada en navbar con layout de 3 columnas
-- ✅ Fix styled-jsx removido (movido a CSS global)
-- ✅ Fix TypeScript en PortableTextComponents (image URL builder)
-- ✅ Documento "¿Qué es APIDevs?" creado y publicado
-- ✅ Build exitoso (50 páginas estáticas generadas)
+## 📝 **Sistema de Blog (✅ IMPLEMENTADO)**
 
-**Estado Actual del Sistema Docs:**
-- 📄 **2 documentos publicados:**
-  - `/docs/que-es-apidevs` (Introducción a la empresa)
-  - `/docs/guia-inicio-tradingview` (Guía TradingView)
-- 📁 **1 categoría:** Comenzar
-- 🎨 **Diseño:** Mintlify/LuxAlgo clone completo
-- 🔍 **Búsqueda:** Funcional con debounce y resultados en tiempo real
-- 📱 **Responsive:** Mobile sidebar con FAB y overlay
-- ⚡ **Performance:** ISR con revalidación cada 60 segundos
+**Fecha Implementación:** 13 octubre 2025  
+**Estado:** 🟢 Funcional - Listo para contenido
+
+### 🎯 **Objetivo del Blog:**
+- Contenido SEO para atraer tráfico orgánico
+- Tutoriales de trading y análisis técnico
+- Noticias y actualizaciones de APIDevs
+- Casos de éxito de usuarios
+
+### 🏗️ **Arquitectura Implementada:**
+
+#### **Rutas Implementadas:**
+```
+/blog                    # ✅ Listado de posts (grid + filtros)
+/blog/[slug]            # ✅ Post individual con Portable Text
+/blog/category/[slug]   # 🚧 Pendiente
+/blog/author/[slug]     # 🚧 Pendiente
+```
+
+**URL del Blog:** `http://localhost:3000/blog`
+
+#### **Schemas Sanity Implementados:**
+
+**1. Schema `post` (Artículo del Blog)** ✅
+**Archivo:** `sanity/schemas/post.ts`
+
+```typescript
+{
+  name: 'post',
+  title: 'Blog Post',
+  type: 'document',
+  fields: [
+    // Estado de publicación
+    {
+      name: 'status',
+      type: 'string',
+      options: {
+        list: [
+          { title: '📝 Borrador', value: 'draft' },
+          { title: '✅ Publicado', value: 'published' },
+          { title: '👀 En Revisión', value: 'review' },
+          { title: '📅 Programado', value: 'scheduled' }
+        ]
+      },
+      initialValue: 'draft',
+      validation: Rule => Rule.required()
+    },
+    {
+      name: 'visibility',
+      type: 'string',
+      options: {
+        list: [
+          { title: '🌍 Público', value: 'public' },
+          { title: '🔒 Privado', value: 'private' },
+          { title: '🔑 Solo Miembros', value: 'members-only' }
+        ]
+      },
+      initialValue: 'public'
+    },
+    {
+      name: 'title',
+      type: 'string',
+      validation: Rule => Rule.required()
+    },
+    {
+      name: 'slug',
+      type: 'slug',
+      options: { source: 'title' },
+      validation: Rule => Rule.required()
+    },
+    {
+      name: 'excerpt',
+      type: 'text',
+      rows: 3,
+      description: 'Resumen corto para cards (150-200 chars)'
+    },
+    {
+      name: 'mainImage',
+      type: 'image',
+      options: { hotspot: true },
+      fields: [
+        { name: 'alt', type: 'string', title: 'Alt text' }
+      ]
+    },
+    {
+      name: 'content',
+      type: 'array',
+      of: [
+        { type: 'block' },
+        { type: 'image' },
+        { type: 'codeBlock' },      // Reutilizar de docs
+        { type: 'callout' },        // Reutilizar de docs
+        { type: 'videoEmbed' }      // Reutilizar de docs
+      ]
+    },
+    {
+      name: 'author',
+      type: 'reference',
+      to: [{ type: 'author' }]
+    },
+    {
+      name: 'categories',
+      type: 'array',
+      of: [{ type: 'reference', to: [{ type: 'blogCategory' }] }]
+    },
+    {
+      name: 'tags',
+      type: 'array',
+      of: [{ type: 'string' }]
+    },
+    {
+      name: 'publishedAt',
+      type: 'datetime',
+      validation: Rule => Rule.required()
+    },
+    {
+      name: 'readingTime',
+      type: 'number',
+      description: 'Tiempo estimado de lectura (minutos)'
+    },
+    {
+      name: 'featured',
+      type: 'boolean',
+      description: 'Destacar en homepage'
+    },
+    {
+      name: 'language',
+      type: 'string',
+      options: {
+        list: [
+          { title: '🇪🇸 Español', value: 'es' },
+          { title: '🇺🇸 English', value: 'en' }
+        ]
+      },
+      initialValue: 'es'
+    },
+    {
+      name: 'seo',
+      type: 'object',
+      fields: [
+        { name: 'metaTitle', type: 'string' },
+        { name: 'metaDescription', type: 'text' },
+        { name: 'keywords', type: 'array', of: [{ type: 'string' }] }
+      ]
+    }
+  ],
+  preview: {
+    select: {
+      title: 'title',
+      author: 'author.name',
+      media: 'mainImage'
+    }
+  }
+}
+```
+
+**2. Schema `blogCategory` (Categorías del Blog)** ✅
+**Archivo:** `sanity/schemas/blogCategory.ts`
+
+```typescript
+{
+  name: 'blogCategory',
+  title: 'Blog Category',
+  type: 'document',
+  fields: [
+    {
+      name: 'order',
+      type: 'number',
+      description: 'Orden de visualización en sidebar',
+      validation: Rule => Rule.required()
+    },
+    {
+      name: 'title',
+      type: 'string',
+      validation: Rule => Rule.required()
+    },
+    {
+      name: 'slug',
+      type: 'slug',
+      options: { source: 'title' }
+    },
+    {
+      name: 'description',
+      type: 'text'
+    },
+    {
+      name: 'icon',
+      type: 'string',
+      description: 'Emoji para la categoría'
+    },
+    {
+      name: 'color',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Verde APIDevs', value: 'primary' },
+          { title: 'Morado', value: 'purple' },
+          { title: 'Azul', value: 'blue' },
+          { title: 'Rojo', value: 'red' }
+        ]
+      }
+    }
+  ]
+}
+```
+
+**3. Schema `author` (Autores)** ✅
+**Archivo:** `sanity/schemas/author.ts`
+
+```typescript
+{
+  name: 'author',
+  title: 'Author',
+  type: 'document',
+  fields: [
+    {
+      name: 'name',
+      type: 'string',
+      validation: Rule => Rule.required()
+    },
+    {
+      name: 'slug',
+      type: 'slug',
+      options: { source: 'name' }
+    },
+    {
+      name: 'bio',
+      type: 'text',
+      rows: 3
+    },
+    {
+      name: 'avatar',
+      type: 'image',
+      options: { hotspot: true }
+    },
+    {
+      name: 'role',
+      type: 'string',
+      description: 'Ej: "Trader Profesional", "Analista Técnico"'
+    },
+    {
+      name: 'social',
+      type: 'object',
+      fields: [
+        { name: 'twitter', type: 'url' },
+        { name: 'linkedin', type: 'url' },
+        { name: 'website', type: 'url' }
+      ]
+    }
+  ]
+}
+```
+
+### 📂 **Estructura de Archivos Implementada:**
+
+```
+apidevs-react/
+├── app/
+│   └── blog/
+│       ├── page.tsx                    # ✅ Listado posts (ISR 1h)
+│       └── [slug]/page.tsx             # ✅ Post individual (SSG + ISR)
+│
+├── components/
+│   └── blog/
+│       ├── BlogHero.tsx                # ✅ Post destacado (Hero section)
+│       ├── BlogCard.tsx                # ✅ Card post para grid
+│       ├── BlogGrid.tsx                # ✅ Grid con filtros + búsqueda
+│       ├── CategoryBadge.tsx           # ✅ Badge categorías con colores
+│       ├── PostHeader.tsx              # ✅ Header post con metadata
+│       ├── PostContent.tsx             # ✅ Portable Text (reutiliza docs)
+│       ├── AuthorCard.tsx              # ✅ Card info autor
+│       ├── RelatedPosts.tsx            # ✅ Posts relacionados
+│       ├── ShareButtons.tsx            # ✅ Compartir en redes sociales
+│       └── TableOfContents.tsx         # ✅ TOC sticky (reutilizado de docs)
+│
+├── sanity/
+│   ├── schemas/
+│   │   ├── post.ts                     # ✅ IMPLEMENTADO
+│   │   ├── blogCategory.ts             # ✅ IMPLEMENTADO
+│   │   └── author.ts                   # ✅ IMPLEMENTADO
+│   ├── lib/
+│   │   └── blog-queries.ts             # ✅ IMPLEMENTADO - 6 queries
+│   └── deskStructure.ts                # ✅ Sección "📝 Blog" agregada
+```
+
+### 🔍 **Queries GROQ Implementadas:**
+
+**Archivo:** `sanity/lib/blog-queries.ts`
+
+**6 Queries Principales:**
+
+```typescript
+// blog-queries.ts
+import { defineQuery } from 'next-sanity'
+
+// 1. Todos los posts publicados (con paginación)
+export const BLOG_POSTS_QUERY = defineQuery(`
+  *[_type == "post" && status == "published" && language == $language && visibility == "public"] 
+  | order(publishedAt desc) [0...$limit] {
+    _id,
+    title,
+    slug,
+    excerpt,
+    mainImage,
+    publishedAt,
+    readingTime,
+    featured,
+    author->{
+      name,
+      avatar,
+      role
+    },
+    categories[]->{
+      title,
+      slug,
+      color,
+      icon
+    }
+  }
+`)
+
+// 2. Posts destacados (featured)
+export const FEATURED_POSTS_QUERY = defineQuery(`
+  *[_type == "post" && status == "published" && featured == true && language == $language] 
+  | order(publishedAt desc) [0...3] {
+    _id,
+    "slug": slug.current,
+    title,
+    excerpt,
+    mainImage,
+    publishedAt,
+    readingTime,
+    featured,
+    author->,
+    categories[]->
+  }
+`)
+
+// 3. Categorías con conteo de posts
+export const BLOG_CATEGORIES_QUERY = defineQuery(`
+  *[_type == "blogCategory"] | order(order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    description,
+    icon,
+    color,
+    order,
+    "postCount": count(*[_type == "post" && references(^._id) && status == "published"])
+  }
+`)
+
+// 4. Post por slug
+export const POST_BY_SLUG_QUERY = defineQuery(`
+  *[_type == "post" && slug.current == $slug && status == "published"][0] {
+    _id,
+    title,
+    slug,
+    excerpt,
+    mainImage,
+    content,
+    publishedAt,
+    readingTime,
+    author->{
+      name,
+      bio,
+      avatar,
+      role,
+      social
+    },
+    categories[]->{
+      title,
+      slug,
+      color,
+      icon
+    },
+    tags,
+    seo
+  }
+`)
+
+// 5. Posts relacionados
+export const RELATED_POSTS_QUERY = defineQuery(`
+  *[_type == "post" && _id != $currentId && count(categories[@._ref in $categoryIds]) > 0] | order(publishedAt desc) [0...3] {
+    _id,
+    title,
+    slug,
+    excerpt,
+    mainImage,
+    publishedAt
+  }
+`)
+
+// 6. Static generation (todos los slugs)
+export const POST_SLUGS_QUERY = defineQuery(`
+  *[_type == "post" && status == "published" && defined(slug.current)].slug.current
+`)
+```
+
+**Filtros Implementados:**
+- ✅ `status == "published"` - Solo posts publicados
+- ✅ `visibility == "public"` - Solo posts públicos
+- ✅ `language == $language` - Multi-idioma (ES/EN)
+- ✅ `featured == true` - Posts destacados
+- ✅ Referencias expandidas con `->` para autor y categorías
+
+### 🎨 **Diseño Implementado:**
+
+**Inspiración:** Blog de LuxAlgo adaptado con colores APIDevs
+
+**Página Principal (`/blog`):**
+
+**1. Hero Section (Post Destacado):**
+- Layout 2:3 columnas (imagen:contenido)
+- Imagen left con aspect ratio 16:10
+- Badge "⭐ Destacado" con color APIDevs primary
+- Categorías con badges personalizados
+- Hover effect con scale en imagen
+- Metadata: autor (avatar + nombre + rol), fecha, tiempo lectura
+- CTA "Leer artículo completo" con flecha animada
+
+**2. Sección "Últimos Artículos":**
+- Título + subtítulo descriptivo
+- Layout 2 columnas: Main content (flex-1) + Sidebar (w-80)
+
+**3. Grid de Posts:**
+- Component `BlogGrid` con:
+  - Filtros por categoría (Tabs horizontales)
+  - Búsqueda en tiempo real
+  - Grid responsive: 1→2→3 columnas
+  - Cards `BlogCard` con hover effects
+
+**4. Sidebar Desktop (hidden lg:block):**
+- **Categorías:**
+  - Card con bg-gray-900/30 + backdrop-blur
+  - Lista de categorías con iconos emoji
+  - Contador de posts por categoría
+  - Hover bg-gray-800/50
+  
+- **Newsletter:**
+  - Gradient bg from-apidevs-primary/10 to-purple-500/10
+  - Input email + botón suscribirse
+  - Colores APIDevs primary
+
+**5. Estado Vacío:**
+- Cuando no hay posts publicados
+- Mensaje informativo con nota para publicar desde `/studio`
+
+**Página Individual (`/blog/[slug]`):**
+- `PostHeader` - Título, autor, metadata
+- `PostContent` - Portable Text (reutiliza componentes de docs)
+- `AuthorCard` - Info del autor con bio y social links
+- `RelatedPosts` - Grid 3 posts relacionados
+- `ShareButtons` - Twitter, LinkedIn, Facebook, Copy link
+- `TableOfContents` - TOC sticky (reutilizado de docs)
+
+**Componentes Reutilizados de Docs:**
+- ✅ `PortableTextComponents` - Code blocks, callouts, imágenes
+- ✅ `TableOfContents` - TOC con auto-highlighting
+- ✅ `BackgroundEffects` - Partículas espaciales (variant="minimal")
+
+**Colores APIDevs Blog:**
+```css
+/* Backgrounds */
+--blog-bg: #0a0a0a (apidevs-dark)
+--card-bg: bg-gray-900/30
+--hover-bg: bg-gray-800/50
+
+/* Text */
+--text-primary: text-white
+--text-secondary: text-gray-400
+
+/* Acentos */
+--primary: #C9D92E (green-lime)
+--purple: #9333EA (purple-600)
+
+/* Badges */
+--featured-badge: bg-apidevs-primary text-gray-900
+--category-badge: Dinámico según color de categoría
+```
+
+### 🎛️ **Sanity Studio - Sección Blog:**
+
+**Ubicación:** `/studio` → "📝 Blog"
+
+**Estructura Sidebar:**
+
+```typescript
+// sanity/deskStructure.ts
+S.listItem()
+  .title('📝 Blog')
+  .child(
+    S.list()
+      .title('Sistema de Blog')
+      .items([
+        // ✨ Quick Actions
+        S.listItem()
+          .title('✨ Quick Actions')
+          .child(
+            S.list().items([
+              '➕ Nuevo Post',
+              '⭐ Posts Destacados',
+              '🚧 Borradores'
+            ])
+          ),
+        
+        S.divider(),
+        
+        // 📄 Todos los Posts
+        S.documentTypeList('post'),
+        
+        S.divider(),
+        
+        // 📊 Por Estado
+        S.listItem()
+          .title('📊 Por Estado')
+          .child(
+            S.list().items([
+              '✅ Publicados',
+              '🚧 Borradores',
+              '👀 En Revisión',
+              '📅 Programados'
+            ])
+          ),
+        
+        S.divider(),
+        
+        // 🏷️ Categorías
+        S.documentTypeList('blogCategory'),
+        
+        // 👤 Autores
+        S.documentTypeList('author')
+      ])
+  )
+```
+
+**Features Studio:**
+- ✅ Quick actions para crear posts rápidamente
+- ✅ Filtros por estado (draft, published, review, scheduled)
+- ✅ Vista de posts destacados
+- ✅ Gestión de categorías con orden personalizado
+- ✅ Gestión de autores
+
+### 🚧 **Pendientes (Posts por Categoría):**
+
+**NO Implementado:**
+- [ ] `/blog/category/[slug]` - Página filtrada por categoría
+export const POSTS_BY_CATEGORY_QUERY = defineQuery(`
+  *[_type == "post" && $categorySlug in categories[]->slug.current] | order(publishedAt desc) {
+    _id,
+    title,
+    slug,
+    excerpt,
+    mainImage,
+    publishedAt,
+    readingTime
+  }
+`;
+```
+
+### 🔧 **Fix Crítico: BackgroundEffects Export**
+
+**Problema Resuelto:**
+```
+Error: Unsupported Server Component type: undefined
+```
+
+**Causa:**
+- `components/ui/BackgroundEffects/index.ts` solo exportaba default
+- `import { BackgroundEffects }` buscaba named export
+- Causaba error "undefined component"
+
+**Solución:**
+```typescript
+// components/ui/BackgroundEffects/index.ts
+export { default } from './BackgroundEffects';
+export { default as BackgroundEffects } from './BackgroundEffects'; // ✅ Agregado
+```
+
+**Fecha fix:** 13 octubre 2025
+
+### ✅ **Decisiones de Arquitectura Implementadas:**
+
+1. **Layout Independiente de Docs:**
+   - ✅ Blog usa navbar principal de APIDevs
+   - ✅ NO oculta navbar/footer (solo docs lo hace)
+   - ✅ NO tiene sidebar fijo como docs
+   - ✅ Usa `BackgroundEffects` con variant="minimal"
+
+2. **Schemas Separados:**
+   - ✅ `post` ≠ `documentation` (schemas independientes)
+   - ✅ `blogCategory` ≠ `docCategory` (propósitos diferentes)
+   - ✅ Queries GROQ separadas en `blog-queries.ts`
+
+3. **Componentes Reutilizados:**
+   - ✅ `PortableTextComponents.tsx` de docs (Server Component)
+   - ✅ `TableOfContents.tsx` de docs
+   - ✅ `BackgroundEffects` con variant="minimal"
+   - ❌ NO se reutiliza `ThemeProvider` (blog no tiene dark/light mode por ahora)
+
+4. **Middleware:**
+   - ✅ Blog NO necesita skip de Supabase auth
+   - ✅ Posts son públicos por defecto
+   - ✅ Filtro `visibility == "public"` en queries
+
+5. **ISR Configuration Implementada:**
+```typescript
+// app/blog/page.tsx
+export const revalidate = 3600; // ISR: Revalidar cada hora
+
+async function getBlogData() {
+  const [featuredPosts, recentPosts, categories] = await Promise.all([
+    client.fetch(FEATURED_POSTS_QUERY, { language: 'es' }, {
+      next: { revalidate: 3600, tags: ['blog', 'featured'] }
+    }),
+    client.fetch(BLOG_POSTS_QUERY, { language: 'es', limit: 12 }, {
+      next: { revalidate: 3600, tags: ['blog'] }
+    }),
+    client.fetch(BLOG_CATEGORIES_QUERY, {}, {
+      next: { revalidate: 3600, tags: ['blog-categories'] }
+    })
+  ]);
+  return { featuredPosts, recentPosts, categories };
+}
+
+// app/blog/[slug]/page.tsx
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const slugs = await client.fetch(POST_SLUGS_QUERY);
+  return slugs.map((slug: string) => ({ slug }));
+}
+
+const post = await client.fetch(POST_BY_SLUG_QUERY, { slug }, {
+  next: { 
+    revalidate: 3600, 
+    tags: [`blog:${slug}`] 
+  }
+});
+```
+
+### ✅ **Implementación Completada (Checklist):**
+
+- [x] **Fase 1: Schemas** ✅ 100%
+  - [x] Crear `sanity/schemas/post.ts` (con status + visibility)
+  - [x] Crear `sanity/schemas/blogCategory.ts` (con order + color)
+  - [x] Crear `sanity/schemas/author.ts` (con bio + social)
+  - [x] Agregar a `sanity/schemas/index.ts`
+  - [x] Deploy schema: `npx sanity schema deploy`
+
+- [x] **Fase 2: Queries** ✅ 100%
+  - [x] Crear `sanity/lib/blog-queries.ts`
+  - [x] Implementar 6 queries principales
+  - [x] Filtros: status, visibility, language, featured
+
+- [x] **Fase 3: Páginas** ✅ 100%
+  - [x] Crear `app/blog/page.tsx` (Hero + Grid + Sidebar)
+  - [x] Crear `app/blog/[slug]/page.tsx` (Post detalle)
+  - [x] Configurar ISR 1 hora
+  - [x] generateStaticParams para SSG
+
+- [x] **Fase 4: Componentes** ✅ 100%
+  - [x] `BlogHero.tsx` - Post destacado Hero
+  - [x] `BlogCard.tsx` - Card individual con hover
+  - [x] `BlogGrid.tsx` - Grid con filtros + búsqueda
+  - [x] `CategoryBadge.tsx` - Badges con colores
+  - [x] `PostHeader.tsx` - Header con metadata
+  - [x] `PostContent.tsx` - Reutiliza PortableTextComponents
+  - [x] `AuthorCard.tsx` - Info autor completa
+  - [x] `RelatedPosts.tsx` - Posts relacionados
+  - [x] `ShareButtons.tsx` - Compartir redes sociales
+  - [x] `TableOfContents.tsx` - TOC sticky (de docs)
+
+- [x] **Fase 5: Sanity Studio** ✅ 100%
+  - [x] Sección "📝 Blog" en deskStructure
+  - [x] Quick Actions (Nuevo Post, Destacados, Borradores)
+  - [x] Filtros por estado
+  - [x] Gestión categorías y autores
+
+- [x] **Fase 6: Contenido Inicial** ✅ 100%
+  - [x] 3 categorías creadas (Gestión de Riesgo, Indicadores, Piscotrading)
+  - [x] 1 autor creado (Carlos Díaz - CEO APIDevs)
+  - [x] 1 post ejemplo publicado
+  - [x] Post con imagen, categorías, autor completo
+
+- [ ] **Fase 7: SEO (Pendiente)** 🚧
+  - [x] Meta tags dinámicos (title, description)
+  - [x] Open Graph metadata
+  - [ ] Sitemap blog
+  - [ ] Schema.org JSON-LD
+  - [ ] Canonical URLs
+
+### 📊 **Contenido Publicado:**
+
+**Categorías (3):**
+1. 🎯 **Gestión de Riesgo** - Order: 1, Color: Primary
+2. 📊 **Indicadores** - Order: 2, Color: Purple  
+3. 🧠 **Piscotrading** - Order: 3, Color: Blue
+
+**Autores (1):**
+- **Carlos Díaz** - CEO APIDevs  
+  - Avatar: ✅ Publicado
+  - Bio: Trader y desarrollador
+  - Role: CEO APIDevs
+
+**Posts Publicados (1):**
+- **"Cómo Calcular el Tamaño de tu Posición en Trading"**
+  - Status: ✅ Published
+  - Featured: ✅ Yes
+  - Language: ES
+  - Categories: Gestión de Riesgo, Indicadores
+  - Reading Time: 5 min
+  - Published: 12 octubre 2025
+  - Image: ✅ Funcionando
+  - Content: Pasos detallados (1. Capital Total, 2. Riesgo %, 3. Stop Loss)
+
+### 🚀 **Próximos Pasos:**
+
+**Contenido (Prioridad Alta):**
+- [ ] Crear 5-10 posts adicionales para llenar grid
+- [ ] Agregar imágenes featured a todos los posts
+- [ ] Traducir posts al inglés
+- [ ] Crear más autores (equipo APIDevs)
+
+**Features (Prioridad Media):**
+- [ ] Implementar `/blog/category/[slug]`
+- [ ] Implementar `/blog/author/[slug]`
+- [ ] Newsletter form funcional (integrar con servicio email)
+- [ ] Búsqueda avanzada con Algolia/Meilisearch
+- [ ] Comentarios (Disqus/Giscus)
+
+**SEO (Prioridad Media):**
+- [ ] Sitemap.xml para blog
+- [ ] Schema.org Article markup
+- [ ] Canonical URLs
+- [ ] RSS Feed
+
+**UX (Prioridad Baja):**
+- [ ] Dark/Light mode para blog
+- [ ] Infinite scroll en lugar de paginación
+- [ ] Reading progress bar
+- [ ] Estimated reading time automático
+- [ ] Print stylesheet
+
+### 💡 **Consejos para Crear Contenido:**
+
+**Usando MCP Sanity:**
+```typescript
+// Crear post con AI
+mcp_sanity_create_document({
+  resource: { projectId: 'txlvgvel', dataset: 'production' },
+  type: 'post',
+  instruction: 'Crear artículo sobre [TEMA] con 1000 palabras, incluir introducción, 3 secciones principales con listas, y conclusión',
+  workspaceName: 'default'
+})
+
+// Traducir post existente
+mcp_sanity_translate_document({
+  resource: { projectId: 'txlvgvel', dataset: 'production' },
+  documentIds: ['POST_ID'],
+  language: { id: 'en', title: 'English' },
+  operation: 'create',
+  workspaceName: 'default'
+})
+```
 
 ---
 
-**🎯 Objetivo:** Esta guía te permite entender y trabajar con:
-1. El catálogo de indicadores VIP
-2. El sistema de documentación tipo Mintlify (NUEVO)
+**Última actualización:** 13 octubre 2025  
+**Commit:** Blog APIDevs - Sistema completo implementado  
+**Branch:** `main`
 
-Usando los MCPs de Sanity y Supabase disponibles para crear, editar y optimizar contenido.
+**Cambios Recientes (Sesión 13 octubre 2025):**
+- ✅ **Blog APIDevs 100% Implementado y Funcional**
+- ✅ 3 Schemas Sanity creados (post, blogCategory, author)
+- ✅ 6 Queries GROQ con filtros avanzados
+- ✅ 10 Componentes React creados
+- ✅ Páginas /blog y /blog/[slug] con ISR
+- ✅ Hero destacado + Grid posts + Sidebar
+- ✅ Fix crítico BackgroundEffects export
+- ✅ Sección "📝 Blog" en Sanity Studio
+- ✅ 1 post ejemplo publicado con contenido rico
+- ✅ Documentación completa actualizada
+
+**Estado Actual del Sistema:**
+
+**📚 Documentación (`/docs`):**
+- ✅ 2 documentos publicados (ES)
+- ✅ 1 categoría activa
+- ✅ Sistema i18n base implementado
+- ✅ Dark/Light mode funcional
+- ✅ Búsqueda con Ctrl+K
+- ✅ Responsive completo
+
+**📊 Indicadores (`/indicadores`):**
+- ✅ 6 indicadores migrados
+- ✅ Sidebar adaptativo por plan (free/pro/lifetime)
+- ✅ Catálogo con filtros dinámicos
+- ✅ ISR 1 hora + SSG
+
+**📝 Blog (`/blog`):**
+- ✅ **100% FUNCIONAL** (implementado 13 oct 2025)
+- ✅ 1 post publicado con contenido rico
+- ✅ 3 categorías + 1 autor
+- ✅ Hero + Grid + Sidebar completos
+- ✅ ISR 1 hora + SSG
+- 🚧 Pendiente: más contenido y páginas por categoría
+
+---
+
+**🎯 Objetivo de esta Guía:**
+
+Esta guía te permite entender y trabajar con el sistema Sanity CMS de APIDevs, que gestiona:
+
+1. ✅ **Catálogo de Indicadores VIP** (6 indicadores, sidebar adaptativo por plan)
+2. ✅ **Sistema de Documentación tipo Mintlify** (dark/light mode, i18n, búsqueda)
+3. ✅ **Blog** (Hero, Grid, categorías, autores - 100% funcional)
+
+**Usando los MCPs de Sanity y Supabase** disponibles para crear, editar y optimizar contenido.
+
+**URLs del Sistema:**
+- Indicadores: `http://localhost:3000/indicadores`
+- Documentación: `http://localhost:3000/docs`
+- Blog: `http://localhost:3000/blog`
+- Studio: `http://localhost:3000/studio`
 

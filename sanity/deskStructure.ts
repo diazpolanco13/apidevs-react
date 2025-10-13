@@ -191,6 +191,144 @@ export const structure: StructureResolver = (S) =>
       S.divider(),
       
       // ===================================
+      // 📝 BLOG SECTION
+      // ===================================
+      S.listItem()
+        .title('📝 Blog')
+        .icon(DocumentIcon)
+        .child(
+          S.list()
+            .title('Sistema de Blog')
+            .items([
+              // Quick Actions
+              S.listItem()
+                .title('✨ Quick Actions')
+                .child(
+                  S.list()
+                    .title('Acciones Rápidas')
+                    .items([
+                      S.listItem()
+                        .title('➕ Nuevo Post')
+                        .icon(DocumentIcon)
+                        .child(
+                          S.documentTypeList('post')
+                            .title('Todos los Posts')
+                            .filter('_type == "post"')
+                            .canHandleIntent(
+                              (intentName) => intentName === 'create'
+                            )
+                        ),
+                      
+                      S.listItem()
+                        .title('⭐ Posts Destacados')
+                        .icon(StarIcon)
+                        .child(
+                          S.documentTypeList('post')
+                            .title('Destacados')
+                            .filter('_type == "post" && featured == true')
+                            .defaultOrdering([{field: 'publishedAt', direction: 'desc'}])
+                        ),
+                      
+                      S.listItem()
+                        .title('🚧 Borradores')
+                        .child(
+                          S.documentTypeList('post')
+                            .title('Borradores')
+                            .filter('_type == "post" && status == "draft"')
+                            .defaultOrdering([{field: 'updatedAt', direction: 'desc'}])
+                        ),
+                    ])
+                ),
+              
+              S.divider(),
+              
+              // Todos los posts
+              S.listItem()
+                .title('📄 Todos los Posts')
+                .icon(DocumentIcon)
+                .child(
+                  S.documentTypeList('post')
+                    .title('Todos los Posts')
+                    .filter('_type == "post"')
+                    .defaultOrdering([{field: 'publishedAt', direction: 'desc'}])
+                ),
+              
+              S.divider(),
+              
+              // Por Estado
+              S.listItem()
+                .title('📊 Por Estado')
+                .child(
+                  S.list()
+                    .title('Filtrar por Estado')
+                    .items([
+                      S.listItem()
+                        .title('✅ Publicados')
+                        .child(
+                          S.documentTypeList('post')
+                            .title('Publicados')
+                            .filter('_type == "post" && status == "published"')
+                            .defaultOrdering([{field: 'publishedAt', direction: 'desc'}])
+                        ),
+                      
+                      S.listItem()
+                        .title('🚧 Borradores')
+                        .child(
+                          S.documentTypeList('post')
+                            .title('Borradores')
+                            .filter('_type == "post" && status == "draft"')
+                            .defaultOrdering([{field: 'updatedAt', direction: 'desc'}])
+                        ),
+                      
+                      S.listItem()
+                        .title('👀 En Revisión')
+                        .child(
+                          S.documentTypeList('post')
+                            .title('En Revisión')
+                            .filter('_type == "post" && status == "review"')
+                            .defaultOrdering([{field: 'updatedAt', direction: 'desc'}])
+                        ),
+                      
+                      S.listItem()
+                        .title('📅 Programados')
+                        .child(
+                          S.documentTypeList('post')
+                            .title('Programados')
+                            .filter('_type == "post" && status == "scheduled"')
+                            .defaultOrdering([{field: 'publishedAt', direction: 'asc'}])
+                        ),
+                    ])
+                ),
+              
+              S.divider(),
+              
+              // Categorías del blog
+              S.listItem()
+                .title('🏷️ Categorías')
+                .icon(TagIcon)
+                .child(
+                  S.documentTypeList('blogCategory')
+                    .title('Todas las Categorías')
+                    .filter('_type == "blogCategory"')
+                    .defaultOrdering([{field: 'order', direction: 'asc'}])
+                ),
+              
+              // Autores
+              S.listItem()
+                .title('👤 Autores')
+                .icon(ComponentIcon)
+                .child(
+                  S.documentTypeList('author')
+                    .title('Todos los Autores')
+                    .filter('_type == "author"')
+                    .defaultOrdering([{field: 'name', direction: 'asc'}])
+                ),
+            ])
+        ),
+      
+      S.divider(),
+      
+      // ===================================
       // 📊 INDICADORES SECTION (NO TOCAR)
       // ===================================
       S.listItem()

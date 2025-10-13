@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import SidebarLanguageSelector from './SidebarLanguageSelector';
 import type { SidebarData } from '@/sanity/lib/doc-queries';
-import LanguageSwitcher from './LanguageSwitcher';
 
 interface DocsSidebarProps {
   sidebarData: SidebarData;
@@ -16,6 +15,38 @@ interface DocsSidebarProps {
 export default function DocsSidebar({ sidebarData, currentLanguage = 'es', docsMap = {} }: DocsSidebarProps) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  
+  // Cargar el tema de forma segura - solo en el cliente
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Detectar tema actual
+    const storedTheme = localStorage.getItem('docs-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme((storedTheme as 'light' | 'dark') || (prefersDark ? 'dark' : 'light'));
+    
+    // Observar cambios en el tema
+    const observer = new MutationObserver(() => {
+      setTheme(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    });
+    
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('docs-theme', newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(
       (sidebarData?.categories || [])
@@ -61,7 +92,7 @@ export default function DocsSidebar({ sidebarData, currentLanguage = 'es', docsM
   const SidebarContent = () => (
     <>
       {/* Navigation */}
-      <nav className="p-4 space-y-6 flex-1 overflow-y-auto docs-sidebar-nav">
+      <nav className="p-4 pt-8 space-y-6 flex-1 overflow-y-auto docs-sidebar-nav">
         {(sidebarData?.categories || []).map((category) => {
           const isExpanded = expandedCategories.has(category._id);
           const hasPages = category.pages && category.pages.length > 0;
@@ -72,7 +103,7 @@ export default function DocsSidebar({ sidebarData, currentLanguage = 'es', docsM
               {category.isCollapsible ? (
                 <button
                   onClick={() => toggleCategory(category._id)}
-                  className="w-full flex items-center justify-between px-2 py-1.5 text-xs font-semibold text-gray-400 hover:text-white uppercase tracking-wider transition-colors"
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white uppercase tracking-wider transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     {category.icon && (
@@ -99,7 +130,7 @@ export default function DocsSidebar({ sidebarData, currentLanguage = 'es', docsM
                   )}
                 </button>
               ) : (
-                <div className="px-2 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <div className="px-2 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                   <div className="flex items-center gap-2">
                     {category.icon && (
                       <span className="text-sm">{category.icon}</span>
@@ -120,8 +151,8 @@ export default function DocsSidebar({ sidebarData, currentLanguage = 'es', docsM
                         href={`/docs/${currentLanguage}/${page.slug}`}
                         className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-all group relative ${
                           active
-                            ? 'bg-apidevs-primary/10 text-apidevs-primary font-medium before:absolute before:left-0 before:top-1 before:bottom-1 before:w-0.5 before:bg-apidevs-primary before:rounded-r'
-                            : 'text-gray-400 hover:text-white hover:bg-gray-900/50'
+                            ? 'bg-apidevs-purple/10 dark:bg-apidevs-primary/10 text-apidevs-purple dark:text-apidevs-primary font-medium before:absolute before:left-0 before:top-1 before:bottom-1 before:w-0.5 before:bg-apidevs-purple dark:before:bg-apidevs-primary before:rounded-r'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-900/50'
                         }`}
                       >
                         {page.icon && (
@@ -141,42 +172,61 @@ export default function DocsSidebar({ sidebarData, currentLanguage = 'es', docsM
       </nav>
 
       {/* Footer - Estilo Mintlify Premium */}
-      <div className="p-4 border-t border-gray-800/50 space-y-2">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-800/50 space-y-2">
         {/* Language Selector */}
         <SidebarLanguageSelector 
           currentLanguage={currentLanguage}
           docsMap={docsMap}
         />
         
-        {/* Theme Toggle - Estilo Mintlify Premium */}
+        {/* Theme Toggle - Estilo Mintlify Premium FUNCIONAL */}
         <button
-          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg bg-gray-900/40 border border-gray-700/50 text-gray-300 hover:bg-gray-800/70 hover:border-gray-600/50 transition-all duration-200 group"
-          onClick={() => {
-            // TODO: Implementar dark/light mode
-            console.log('Theme toggle - Coming soon!');
-          }}
-          title="Theme toggle (Coming soon)"
+          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-900/40 border border-gray-300 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800/70 hover:border-gray-400 dark:hover:border-gray-600/50 transition-all duration-200 group"
+          onClick={toggleTheme}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
         >
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
-            {/* Moon Icon */}
-            <svg 
-              className="w-4 h-4 flex-shrink-0 text-gray-400 group-hover:text-gray-300 transition-colors" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" 
-              />
-            </svg>
-            <span className="text-sm font-medium truncate">Dark mode</span>
+            {theme === 'dark' ? (
+              <>
+                {/* Moon Icon - Dark Mode Active */}
+                <svg 
+                  className="w-4 h-4 flex-shrink-0 text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-300 transition-colors" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" 
+                  />
+                </svg>
+                <span className="text-sm font-medium truncate">Dark mode</span>
+              </>
+            ) : (
+              <>
+                {/* Sun Icon - Light Mode Active */}
+                <svg 
+                  className="w-4 h-4 flex-shrink-0 text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-300 transition-colors" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" 
+                  />
+                </svg>
+                <span className="text-sm font-medium truncate">Light mode</span>
+              </>
+            )}
           </div>
-          {/* Optional Sun Icon on hover */}
+          {/* Toggle Icon on Hover */}
           <svg 
-            className="w-4 h-4 flex-shrink-0 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" 
+            className="w-4 h-4 flex-shrink-0 text-gray-500 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -185,7 +235,7 @@ export default function DocsSidebar({ sidebarData, currentLanguage = 'es', docsM
               strokeLinecap="round" 
               strokeLinejoin="round" 
               strokeWidth={2} 
-              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" 
+              d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" 
             />
           </svg>
         </button>
@@ -196,7 +246,7 @@ export default function DocsSidebar({ sidebarData, currentLanguage = 'es', docsM
   return (
     <>
       {/* Desktop Sidebar - Hidden en móvil, visible desde lg */}
-      <aside className="hidden lg:flex lg:flex-col sticky top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-apidevs-dark/95 backdrop-blur-sm border-r border-gray-800/50 overflow-hidden z-40">
+      <aside className="hidden lg:flex lg:flex-col sticky top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-white dark:bg-apidevs-dark/95 backdrop-blur-sm border-r border-gray-200 dark:border-gray-800/50 overflow-hidden z-40">
         <SidebarContent />
       </aside>
 
@@ -205,12 +255,12 @@ export default function DocsSidebar({ sidebarData, currentLanguage = 'es', docsM
         <>
           {/* Overlay */}
           <div
-            className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            className="lg:hidden fixed inset-0 bg-black/60 dark:bg-black/60 backdrop-blur-sm z-40"
             onClick={() => setIsMobileOpen(false)}
           />
 
           {/* Sidebar Drawer */}
-          <aside className="lg:hidden fixed top-16 left-0 bottom-0 w-72 bg-apidevs-dark border-r border-gray-800/50 z-50 flex flex-col animate-slide-in-left">
+          <aside className="lg:hidden fixed top-16 left-0 bottom-0 w-72 bg-white dark:bg-apidevs-dark border-r border-gray-200 dark:border-gray-800/50 z-50 flex flex-col animate-slide-in-left">
             <SidebarContent />
           </aside>
         </>
