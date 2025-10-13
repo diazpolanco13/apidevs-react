@@ -293,6 +293,7 @@ export default async function BlogPostPage({
                 user={user}
                 subscription={subscription}
                 hasLifetimeAccess={hasLifetimeAccess}
+                visibility={post.visibility as 'public' | 'authenticated' | 'premium'}
               />
 
               {/* Table of Contents */}
