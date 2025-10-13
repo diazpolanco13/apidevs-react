@@ -81,7 +81,6 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
               type="text"
               placeholder="Buscar artículos..."
               className="w-64 pl-10 pr-4 py-2 bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-apidevs-primary/50 focus:border-apidevs-primary/50 transition-all"
-              readOnly
             />
           </div>
         </div>
