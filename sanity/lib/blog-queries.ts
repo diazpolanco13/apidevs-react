@@ -12,7 +12,7 @@ import { defineQuery } from 'next-sanity'
  * Con paginación y filtro por idioma
  */
 export const BLOG_POSTS_QUERY = defineQuery(`
-  *[_type == "post" && status == "published" && language == $language && visibility == "public"] | order(publishedAt desc) [0...$limit] {
+  *[_type == "post" && status == "published" && language == $language] | order(publishedAt desc) [0...$limit] {
     _id,
     _createdAt,
     "slug": slug.current,
