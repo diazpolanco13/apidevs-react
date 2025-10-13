@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation';
 import { docsClient } from '@/sanity/lib/client';
-import { WELCOME_PAGE_QUERY, ALL_DOCS_QUERY, type WelcomePage } from '@/sanity/lib/doc-queries';
+import { WELCOME_PAGE_QUERY, ALL_DOCS_QUERY } from '@/sanity/lib/doc-queries';
+import { PortableText } from '@portabletext/react';
+import { portableTextComponents } from '@/components/docs/PortableTextComponents';
 import Link from 'next/link';
-import Image from 'next/image';
 
 // Configuración de idiomas soportados
 const supportedLanguages = ['es', 'en'] as const;
@@ -33,7 +34,7 @@ export async function generateMetadata({
   }
 
   // Fetch welcome page para metadata
-  const welcomePage = await docsClient.fetch<WelcomePage>(WELCOME_PAGE_QUERY, { language: lang });
+  const welcomePage = await docsClient.fetch(WELCOME_PAGE_QUERY, { language: lang });
 
   return {
     title: welcomePage?.seo?.metaTitle || `${welcomePage?.title} - APIDevs`,
@@ -53,9 +54,9 @@ export default async function DocsLanguagePage({
     notFound();
   }
 
-  // Fetch welcome page y documentos
+  // Fetch welcome page y documentos (excluyendo la misma página de bienvenida)
   const [welcomePage, docs] = await Promise.all([
-    docsClient.fetch<WelcomePage>(WELCOME_PAGE_QUERY, { language: lang }),
+    docsClient.fetch(WELCOME_PAGE_QUERY, { language: lang }),
     docsClient.fetch(ALL_DOCS_QUERY, { language: lang })
   ]);
 
@@ -75,9 +76,12 @@ export default async function DocsLanguagePage({
       </div>
     );
   }
+  
+  // Filtrar la página de bienvenida de los docs para no duplicarla
+  const filteredDocs = docs.filter((doc: any) => doc._id !== welcomePage._id);
 
   // Agrupar por categoría
-  const docsByCategory = docs.reduce((acc: any, doc: any) => {
+  const docsByCategory = filteredDocs.reduce((acc: any, doc: any) => {
     const categorySlug = doc.categorySlug || 'uncategorized';
     if (!acc[categorySlug]) {
       acc[categorySlug] = {
@@ -98,68 +102,27 @@ export default async function DocsLanguagePage({
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8 lg:pt-24 lg:pb-16">
       {/* Header con contenido de Sanity */}
-      <header className="mb-12 lg:mb-16 text-center">
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <span className="text-3xl">{languageFlags[lang]}</span>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
+      <header className="mb-12 lg:mb-16">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-4xl">{welcomePage.icon || '📚'}</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent">
             {welcomePage.title}
           </h1>
         </div>
-        {welcomePage.subtitle && (
-          <p className="text-lg sm:text-xl text-apidevs-primary font-medium mb-6">
-            {welcomePage.subtitle}
+        {welcomePage.description && (
+          <p className="text-lg sm:text-xl text-gray-300 leading-relaxed max-w-4xl">
+            {welcomePage.description}
           </p>
         )}
-        <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto">
-          {welcomePage.description}
-        </p>
       </header>
 
-      {/* Quick Links - Cards principales */}
-      {welcomePage.quickLinks && welcomePage.quickLinks.length > 0 && (
-        <div className="mb-16">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">{welcomePage.quickStartIcon || '🚀'}</span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white">
-              {welcomePage.quickStartTitle || 'Comenzar'}
-            </h2>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {welcomePage.quickLinks.map((link, idx) => (
-              <Link
-                key={idx}
-                href={`/docs/${lang}/${link.href}`}
-                className={`group relative overflow-hidden p-6 bg-gradient-to-br ${
-                  link.featured 
-                    ? 'from-apidevs-primary/10 to-transparent border-apidevs-primary/30' 
-                    : 'from-gray-800/30 to-transparent border-gray-800'
-                } border hover:border-apidevs-primary/50 rounded-xl transition-all hover:shadow-lg hover:shadow-apidevs-primary/10`}
-              >
-                {link.featured && (
-                  <div className="absolute top-3 right-3">
-                    <span className="text-apidevs-primary text-sm">⭐</span>
-                  </div>
-                )}
-                
-                <div className="flex items-start gap-4">
-                  {link.icon && (
-                    <span className="text-3xl flex-shrink-0">{link.icon}</span>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-apidevs-primary transition-colors">
-                      {link.title}
-                    </h3>
-                    {link.description && (
-                      <p className="text-sm text-gray-400 line-clamp-2">
-                        {link.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+      {/* Contenido rico de la página de bienvenida */}
+      {welcomePage.content && welcomePage.content.length > 0 && (
+        <div className="mb-16 prose prose-invert prose-lg max-w-none">
+          <PortableText 
+            value={welcomePage.content} 
+            components={portableTextComponents}
+          />
         </div>
       )}
 
@@ -214,7 +177,7 @@ export default async function DocsLanguagePage({
       )}
 
       {/* Empty State */}
-      {docs.length === 0 && (
+      {filteredDocs.length === 0 && (
         <div className="text-center py-16 px-4">
           <div className="text-6xl mb-4">📝</div>
           <h3 className="text-2xl font-bold text-white mb-2">

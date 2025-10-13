@@ -66,7 +66,7 @@ export default defineConfig({
       ],
 
       // Tipos de documentos a internacionalizar
-      schemaTypes: ['documentation', 'docCategory', 'docsWelcomePage'],
+      schemaTypes: ['documentation', 'docCategory'],
 
       // Campo para almacenar el idioma
       languageField: 'language',

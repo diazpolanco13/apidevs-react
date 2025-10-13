@@ -22,29 +22,14 @@ export const DOC_CATEGORIES_QUERY = groq`
 // PÁGINA DE BIENVENIDA
 // ==========================================
 
+// Ahora usamos el schema 'documentation' con slug especial para la página de bienvenida
 export const WELCOME_PAGE_QUERY = groq`
-  *[_type == "docsWelcomePage" && language == $language][0] {
+  *[_type == "documentation" && language == $language && (slug.current == "bienvenido-a-apidevs" || slug.current == "welcome")][0] {
     _id,
     title,
-    subtitle,
     description,
-    heroImage {
-      asset->{
-        _id,
-        url
-      },
-      alt
-    },
-    quickLinks[] {
-      title,
-      description,
-      icon,
-      href,
-      featured
-    },
-    quickStartTitle,
-    quickStartIcon,
-    language,
+    icon,
+    content,
     seo {
       metaTitle,
       metaDescription,
@@ -58,7 +43,7 @@ export const WELCOME_PAGE_QUERY = groq`
 // ==========================================
 
 export const ALL_DOCS_QUERY = groq`
-  *[_type == "documentation" && language == $language] | order(category->order asc, order asc) {
+  *[_type == "documentation" && language == $language && !(slug.current in ["bienvenido-a-apidevs", "welcome"])] | order(category->order asc, order asc) {
     _id,
     title,
     "slug": slug.current,
@@ -88,7 +73,7 @@ export const SIDEBAR_DOCS_QUERY = groq`
       order,
       isCollapsible,
       defaultExpanded,
-      "pages": *[_type == "documentation" && category._ref == ^._id && language == $language] | order(order asc) {
+      "pages": *[_type == "documentation" && category._ref == ^._id && language == $language && !(slug.current in ["bienvenido-a-apidevs", "welcome"])] | order(order asc) {
         _id,
         title,
         "slug": slug.current,
