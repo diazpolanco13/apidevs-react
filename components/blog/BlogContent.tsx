@@ -104,30 +104,35 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
             </button>
           ))}
 
-          {/* SEARCH BAR INTEGRADA */}
+          {/* SEARCH BAR MEJORADA - MÁS VISIBLE */}
           <div className="ml-auto relative group hidden lg:block">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar artículos..."
-              className="w-64 pl-10 pr-10 py-2 bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-apidevs-primary/50 focus:border-apidevs-primary/50 transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            {/* Glow effect cuando está en focus */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-apidevs-primary/20 via-purple-500/20 to-apidevs-primary/20 rounded-xl opacity-0 group-focus-within:opacity-100 blur-lg transition-all duration-500"></div>
+            
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-apidevs-primary/70 group-focus-within:text-apidevs-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </button>
-            )}
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar artículos..."
+                className="w-72 pl-11 pr-10 py-2.5 bg-gray-900/80 backdrop-blur-sm border-2 border-gray-700/50 rounded-xl text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-apidevs-primary/50 focus:bg-gray-900 transition-all shadow-lg hover:border-gray-600/50"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-apidevs-primary transition-colors"
+                >
+                  <svg className="h-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
