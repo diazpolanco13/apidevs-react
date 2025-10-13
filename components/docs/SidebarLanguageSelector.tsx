@@ -109,23 +109,23 @@ export default function SidebarLanguageSelector({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Trigger Button - EXACTO como imagen */}
+      {/* Trigger Button - EXACTO tu imagen */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isTransitioning}
         className={`
-          w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg
+          w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg
           border-2 transition-all duration-200
           ${isOpen 
-            ? 'bg-[#2a3441] border-apidevs-primary text-white' 
-            : 'bg-[#1a1f2e] border-transparent text-gray-300 hover:bg-[#2a3441] hover:border-gray-700'
+            ? 'bg-[#2d3748] border-apidevs-primary text-white' 
+            : 'bg-[#1a202c] border-transparent text-gray-300 hover:bg-[#2d3748]'
           }
           ${isTransitioning ? 'opacity-50 cursor-not-allowed' : ''}
         `}
         aria-label="Select language"
       >
-        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <span className="text-xs font-bold text-gray-400 flex-shrink-0 w-6">{currentLang.code}</span>
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <span className="text-xs font-bold text-gray-500 flex-shrink-0 w-6">{currentLang.code}</span>
           <span className="text-sm font-medium truncate">{currentLang.name}</span>
         </div>
         <svg
@@ -140,9 +140,9 @@ export default function SidebarLanguageSelector({
         </svg>
       </button>
 
-      {/* Dropdown Menu - EXACTO como imagen */}
+      {/* Dropdown Menu - EXACTO tu imagen */}
       {isOpen && (
-        <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#1a1f2e] border border-gray-700 rounded-lg shadow-2xl overflow-hidden">
+        <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#1e293b] border border-gray-700 rounded-lg shadow-2xl overflow-hidden">
           {/* Available Languages */}
           <div className="py-1.5">
             {availableLanguages.map((language) => {
@@ -154,19 +154,19 @@ export default function SidebarLanguageSelector({
                   onClick={() => handleLanguageChange(language.id)}
                   disabled={isTransitioning}
                   className={`
-                    w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors duration-150
+                    w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors duration-150
                     ${
                       isSelected
-                        ? 'bg-[#2a3441] text-apidevs-primary'
-                        : 'text-gray-300 hover:bg-[#252b38]'
+                        ? 'bg-[#2d3748] text-apidevs-primary'
+                        : 'text-gray-300 hover:bg-[#2d3748]'
                     }
                     ${isTransitioning ? 'cursor-not-allowed opacity-50' : ''}
                   `}
                 >
-                  <span className="text-xs font-bold text-gray-400 flex-shrink-0 w-6">{language.code}</span>
+                  <span className="text-xs font-bold text-gray-500 flex-shrink-0 w-6">{language.code}</span>
                   <span className="text-sm font-medium flex-1">{language.name}</span>
                   {isSelected && (
-                    <svg className="w-4 h-4 text-apidevs-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 text-apidevs-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -187,11 +187,11 @@ export default function SidebarLanguageSelector({
                 {comingSoonLanguages.map((language) => (
                   <div
                     key={language.id}
-                    className="flex items-center gap-3 px-3 py-2.5 text-gray-600 cursor-not-allowed opacity-50"
+                    className="flex items-center gap-3 px-4 py-2.5 text-gray-600 cursor-not-allowed opacity-50"
                   >
                     <span className="text-xs font-bold flex-shrink-0 w-6">{language.code}</span>
                     <span className="text-sm font-medium flex-1">{language.name}</span>
-                    <span className="text-[10px] uppercase font-bold tracking-wider flex-shrink-0">SOON</span>
+                    <span className="text-[10px] uppercase font-bold tracking-wide text-gray-600 flex-shrink-0">SOON</span>
                   </div>
                 ))}
               </div>
