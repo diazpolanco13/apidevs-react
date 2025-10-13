@@ -1259,11 +1259,14 @@ mcp_supabase_execute_sql({
       name: 'content',
       type: 'array',
       of: [
-        { type: 'block' },
-        { type: 'image' },
-        { type: 'codeBlock' },      // Reutilizar de docs
-        { type: 'callout' },        // Reutilizar de docs
-        { type: 'videoEmbed' }      // Reutilizar de docs
+        { type: 'block' },          // Texto enriquecido (h2-h4, listas, etc)
+        { type: 'image' },          // Imágenes con caption
+        { type: 'codeBlock' },      // ✅ Code blocks con syntax highlighting
+        { type: 'callout' },        // ✅ Cajas info/warning/error/success/note/tip
+        { type: 'videoEmbed' },     // ✅ Videos YouTube/Vimeo
+        { type: 'cardGroup' },      // ✨ NUEVO - Grupos de cards (1-4 cols)
+        { type: 'tabs' },           // ✨ NUEVO - Pestañas interactivas (2-8 tabs)
+        { type: 'accordion' }       // ✨ NUEVO - Secciones colapsables
       ]
     },
     {
@@ -1440,21 +1443,247 @@ apidevs-react/
 │       ├── BlogGrid.tsx                # ✅ Grid con filtros + búsqueda
 │       ├── CategoryBadge.tsx           # ✅ Badge categorías con colores
 │       ├── PostHeader.tsx              # ✅ Header post con metadata
-│       ├── PostContent.tsx             # ✅ Portable Text (reutiliza docs)
+│       ├── PostContent.tsx             # ✅ Portable Text enriquecido
 │       ├── AuthorCard.tsx              # ✅ Card info autor
 │       ├── RelatedPosts.tsx            # ✅ Posts relacionados
 │       ├── ShareButtons.tsx            # ✅ Compartir en redes sociales
-│       └── TableOfContents.tsx         # ✅ TOC sticky (reutilizado de docs)
+│       ├── TableOfContents.tsx         # ✅ TOC sticky (reutilizado de docs)
+│       ├── CardGroup.tsx               # ✅ NUEVO - Grupos de cards
+│       ├── Tabs.tsx                    # ✅ NUEVO - Pestañas interactivas
+│       └── Accordion.tsx               # ✅ NUEVO - Secciones colapsables
 │
 ├── sanity/
 │   ├── schemas/
-│   │   ├── post.ts                     # ✅ IMPLEMENTADO
+│   │   ├── post.ts                     # ✅ IMPLEMENTADO - Con componentes avanzados
 │   │   ├── blogCategory.ts             # ✅ IMPLEMENTADO
 │   │   └── author.ts                   # ✅ IMPLEMENTADO
 │   ├── lib/
 │   │   └── blog-queries.ts             # ✅ IMPLEMENTADO - 6 queries
 │   └── deskStructure.ts                # ✅ Sección "📝 Blog" agregada
 ```
+
+### 🎨 **Componentes Avanzados para Contenido (NUEVO):**
+
+El blog incluye **8 componentes de Portable Text** para crear contenido enriquecido:
+
+#### **1. 💻 Code Block** (de docs)
+**Uso en Sanity Studio:** Insertar → Code Block
+
+**Características:**
+- Syntax highlighting para 20+ lenguajes
+- Filename opcional (ej: `app/page.tsx`)
+- Números de línea opcionales
+- Header estilo macOS con dots (🔴🟡🟢)
+- Copy button en hover
+
+**Ejemplo:**
+```typescript
+// Título: "Ejemplo de código TypeScript"
+// Filename: utils/helpers.ts
+// Language: TypeScript
+// showLineNumbers: true
+
+export function calculateRisk(capital: number, riskPercent: number) {
+  return (capital * riskPercent) / 100;
+}
+```
+
+#### **2. 💡 Callout** (de docs)
+**Uso en Sanity Studio:** Insertar → 💡 Callout
+
+**6 Tipos disponibles:**
+- 💡 **Info** - Información general (azul)
+- ✅ **Success** - Éxito o confirmación (verde)
+- ⚠️ **Warning** - Advertencia importante (amarillo)
+- 🚨 **Error** - Error o peligro (rojo)
+- 📝 **Note** - Nota adicional (gris)
+- 💡 **Tip** - Consejo útil (morado)
+
+**Campos:**
+- `type` (required) - Tipo de callout
+- `title` (optional) - Título del callout
+- `content` (required) - Contenido texto
+
+**Ejemplo:**
+```markdown
+⚠️ Warning
+**Riesgo en Trading**
+Nunca arriesgues más del 2% de tu capital en una sola operación.
+```
+
+#### **3. 🎥 Video Embed** (de docs)
+**Uso en Sanity Studio:** Insertar → 🎥 Video
+
+**Características:**
+- Soporte YouTube, Vimeo, Loom
+- 4 aspect ratios: 16:9, 4:3, 1:1, 9:16
+- Título opcional
+- Responsive iframe
+
+**Campos:**
+- `url` (required) - URL del video
+- `title` (optional) - Título descriptivo
+- `aspectRatio` (default: 16:9)
+
+#### **4. 🃏 Card Group** ✨ NUEVO
+**Uso en Sanity Studio:** Insertar → 🃏 Card Group
+
+**Características:**
+- Grid responsive 1-4 columnas
+- Cards con icono emoji + título + descripción
+- Links opcionales (internos o externos)
+- Hover effects con scale
+
+**Campos:**
+- `title` (optional) - Título del grupo
+- `cols` (required) - Número de columnas (1-4)
+- `cards` (array, min 1, max 12):
+  - `title` (required)
+  - `icon` (optional) - Emoji
+  - `description` (optional)
+  - `href` (optional) - Link (URL o slug)
+
+**Ejemplo de uso:**
+```
+📚 Recursos Recomendados
+Columnas: 3
+
+Card 1:
+  Icon: 📊
+  Title: "Análisis Técnico Básico"
+  Description: "Aprende los fundamentos del análisis técnico"
+  Link: /docs/analisis-tecnico
+
+Card 2:
+  Icon: 💰
+  Title: "Gestión de Riesgo"
+  Description: "Protege tu capital con estrategias probadas"
+  Link: /blog/gestion-riesgo
+
+Card 3:
+  Icon: 🎯
+  Title: "Trading Plan"
+  Description: "Crea tu plan de trading personalizado"
+  Link: /blog/trading-plan
+```
+
+**Renderizado:**
+```tsx
+<CardGroup value={{
+  title: "Recursos Recomendados",
+  cols: 3,
+  cards: [...]
+}} />
+```
+
+#### **5. 📑 Tabs** ✨ NUEVO
+**Uso en Sanity Studio:** Insertar → 📑 Tabs
+
+**Características:**
+- Pestañas interactivas client-side
+- 2-8 tabs por componente
+- Transición suave entre tabs
+- Border bottom animado
+- Colores APIDevs
+
+**Campos:**
+- `items` (array, min 2, max 8):
+  - `label` (required) - Texto de la pestaña
+  - `content` (required) - Contenido (texto largo)
+
+**Ejemplo de uso:**
+```
+Tabs: Comparación de Timeframes
+
+Tab 1:
+  Label: "1H"
+  Content: "El timeframe de 1 hora es ideal para swing trading..."
+
+Tab 2:
+  Label: "4H"
+  Content: "El timeframe de 4 horas proporciona señales más confiables..."
+
+Tab 3:
+  Label: "1D"
+  Content: "El timeframe diario es perfecto para inversiones a largo plazo..."
+```
+
+**Renderizado:**
+```tsx
+<Tabs value={{
+  items: [
+    { label: "1H", content: "..." },
+    { label: "4H", content: "..." },
+    { label: "1D", content: "..." }
+  ]
+}} />
+```
+
+#### **6. 📋 Accordion** ✨ NUEVO
+**Uso en Sanity Studio:** Insertar → 📋 Accordion
+
+**Características:**
+- Sección colapsable/expandible
+- Animación smooth con transición
+- Icono chevron rotatorio
+- Estado "abierto por defecto" opcional
+- Hover effects
+
+**Campos:**
+- `title` (required) - Título visible
+- `content` (required) - Contenido oculto
+- `defaultOpen` (optional, default: false)
+
+**Ejemplo de uso:**
+```
+Accordion 1:
+  Title: "¿Qué es el Stop Loss?"
+  Content: "El Stop Loss es una orden que cierra automáticamente tu posición..."
+  Default Open: true
+
+Accordion 2:
+  Title: "¿Cómo calcular el tamaño de posición?"
+  Content: "Para calcular el tamaño de posición, necesitas..."
+  Default Open: false
+```
+
+**Renderizado:**
+```tsx
+<Accordion value={{
+  title: "¿Qué es el Stop Loss?",
+  content: "El Stop Loss es...",
+  defaultOpen: true
+}} />
+```
+
+#### **7. 🖼️ Image** (nativo Sanity)
+**Características:**
+- Hotspot para crop inteligente
+- Caption opcional
+- Alt text requerido (SEO + Accesibilidad)
+- Optimización automática por Sanity CDN
+
+#### **8. 📝 Block** (texto enriquecido)
+**Estilos disponibles:**
+- Normal (párrafo)
+- H2, H3, H4 (headings)
+- Blockquote (citas)
+
+**Listas:**
+- Bullet (con checkmark verde ✓)
+- Number (numerada)
+- Checkbox
+
+**Marks:**
+- **Strong** (negrita)
+- *Emphasis* (cursiva)
+- `Code` (inline con bg gris)
+- Underline
+- Strike-through
+- Highlight (bg amarillo)
+- Links (con target blank)
+
+---
 
 ### 🔍 **Queries GROQ Implementadas:**
 
@@ -1731,26 +1960,145 @@ export const POSTS_BY_CATEGORY_QUERY = defineQuery(`
 `;
 ```
 
-### 🔧 **Fix Crítico: BackgroundEffects Export**
+### 📚 **Guía de Uso: Crear Contenido Rico en el Blog**
 
-**Problema Resuelto:**
+#### **Flujo de Trabajo Recomendado:**
+
+**1. Crear Post en Sanity Studio:**
 ```
-Error: Unsupported Server Component type: undefined
+1. Ir a http://localhost:3000/studio
+2. Click en "📝 Blog" → "➕ Nuevo Post"
+3. Llenar campos básicos:
+   - Title (se genera slug automático)
+   - Excerpt (150-200 chars)
+   - Main Image (obligatorio, con alt text)
+   - Author (seleccionar de lista)
+   - Categories (array, puede ser múltiple)
+   - Tags (array de strings)
+   - Language (ES/EN)
+   - Status: "✅ Publicado"
+   - Visibility: "🌍 Público"
 ```
 
-**Causa:**
-- `components/ui/BackgroundEffects/index.ts` solo exportaba default
-- `import { BackgroundEffects }` buscaba named export
-- Causaba error "undefined component"
+**2. Crear Contenido Enriquecido:**
 
-**Solución:**
+El editor de `content` tiene un menú "+" para insertar componentes:
+
+**Estructura Sugerida de un Post:**
+```markdown
+[Párrafo introductorio con **negritas** y *cursivas*]
+
+## Sección Principal (H2)
+
+[Párrafo explicativo]
+
+[💡 Callout tipo "Info" con consejo clave]
+
+### Subsección (H3)
+
+[Lista numerada con pasos]
+1. Primer paso
+2. Segundo paso
+3. Tercer paso
+
+[🎥 Video Embed si hay tutorial]
+
+[🃏 Card Group con recursos relacionados - 3 columnas]
+
+### Comparativa (H3)
+
+[📑 Tabs para comparar opciones]
+
+### Preguntas Frecuentes (H3)
+
+[📋 Accordion 1: ¿Pregunta frecuente 1?]
+[📋 Accordion 2: ¿Pregunta frecuente 2?]
+
+[⚠️ Callout tipo "Warning" con advertencia importante]
+
+## Conclusión (H2)
+
+[Párrafo de cierre]
+
+[✅ Callout tipo "Success" con llamado a la acción]
+```
+
+**3. Publicar:**
+```
+1. Verificar preview en Studio
+2. Cambiar Status a "✅ Publicado"
+3. Click "Publish"
+4. Visitar http://localhost:3000/blog para ver el post
+5. Esperar máx 1 hora para ISR (o forzar refresh)
+```
+
+#### **Tips de Contenido:**
+
+**Usar Card Groups cuando:**
+- Necesitas mostrar recursos relacionados
+- Quieres crear navegación visual a otros posts/docs
+- Presentas múltiples opciones o servicios
+
+**Usar Tabs cuando:**
+- Comparas frameworks, estrategias, timeframes
+- Muestras código en diferentes lenguajes
+- Presentas información alternativa (Principiante vs Avanzado)
+
+**Usar Accordion cuando:**
+- Creas sección de FAQs
+- Contenido opcional que no todos necesitan leer
+- Listas largas que ocupan mucho espacio
+
+**Usar Callouts cuando:**
+- Info importante que destaca del contenido (💡 Info)
+- Advertencias críticas (⚠️ Warning, 🚨 Error)
+- Confirmaciones o buenas prácticas (✅ Success)
+- Tips rápidos (💡 Tip)
+- Notas adicionales (📝 Note)
+
+#### **Consultas MCP Útiles:**
+
+**Ver todos los posts:**
 ```typescript
-// components/ui/BackgroundEffects/index.ts
-export { default } from './BackgroundEffects';
-export { default as BackgroundEffects } from './BackgroundEffects'; // ✅ Agregado
+mcp_sanity_query_documents({
+  resource: { projectId: 'mpxhkyzk', dataset: 'production' },
+  query: '*[_type == "post"] | order(publishedAt desc) {title, status, publishedAt}'
+})
 ```
 
-**Fecha fix:** 13 octubre 2025
+**Crear post con AI:**
+```typescript
+mcp_sanity_create_document({
+  resource: { projectId: 'mpxhkyzk', dataset: 'production' },
+  type: 'post',
+  instruction: 'Crear artículo sobre [TEMA] con introducción, 3 secciones principales con listas, callout de advertencia, y conclusión con CTA',
+  workspaceName: 'default'
+})
+```
+
+**Actualizar contenido con AI:**
+```typescript
+mcp_sanity_update_document({
+  resource: { projectId: 'mpxhkyzk', dataset: 'production' },
+  operations: [{
+    documentId: 'POST_ID',
+    instruction: 'Agregar sección sobre gestión de riesgo con 3 bullets y un callout de warning'
+  }],
+  workspaceName: 'default'
+})
+```
+
+**Traducir post:**
+```typescript
+mcp_sanity_translate_document({
+  resource: { projectId: 'mpxhkyzk', dataset: 'production' },
+  documentIds: ['POST_ID'],
+  language: { id: 'en', title: 'English' },
+  operation: 'create',
+  protectedPhrases: ['APIDevs', 'TradingView', 'Stop Loss'],
+  workspaceName: 'default'
+})
+```
 
 ### ✅ **Decisiones de Arquitectura Implementadas:**
 
@@ -1947,13 +2295,19 @@ mcp_sanity_translate_document({
 - ✅ **Blog APIDevs 100% Implementado y Funcional**
 - ✅ 3 Schemas Sanity creados (post, blogCategory, author)
 - ✅ 6 Queries GROQ con filtros avanzados
-- ✅ 10 Componentes React creados
+- ✅ 13 Componentes React creados (10 básicos + 3 avanzados)
+- ✅ **Componentes Avanzados de Contenido:**
+  - 🃏 CardGroup - Grupos de cards 1-4 columnas
+  - 📑 Tabs - Pestañas interactivas 2-8 tabs
+  - 📋 Accordion - Secciones colapsables
 - ✅ Páginas /blog y /blog/[slug] con ISR
 - ✅ Hero destacado + Grid posts + Sidebar
-- ✅ Fix crítico BackgroundEffects export
+- ✅ Schema `post` con 8 tipos de componentes Portable Text
 - ✅ Sección "📝 Blog" en Sanity Studio
-- ✅ 1 post ejemplo publicado con contenido rico
-- ✅ Documentación completa actualizada
+- ✅ 2 posts publicados con contenido rico
+- ✅ Documentación completa con guía de uso
+- ✅ Fix imageUrl helper (mainImage completo vs mainImage.asset)
+- ✅ Fix tipos TypeScript (Author con campos opcionales)
 
 **Estado Actual del Sistema:**
 
