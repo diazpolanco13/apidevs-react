@@ -112,11 +112,8 @@ export default async function DocsLanguageLayout({
       {/* Background Effects */}
       <BackgroundEffects variant="minimal" />
       
-      {/* Header with Context */}
-      <DocsHeaderWithContext 
-        currentLanguage={lang}
-        docsMap={docsMap}
-      />
+      {/* Header */}
+      <DocsHeaderWithContext />
       
       {/* Main Container */}
       <div className="max-w-[1800px] mx-auto pt-10 relative">

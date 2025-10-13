@@ -109,27 +109,28 @@ export default function SidebarLanguageSelector({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Trigger Button - EXACTO tu imagen */}
+      {/* Trigger Button - Estilo Mintlify Premium */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isTransitioning}
         className={`
-          w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg
-          border-2 transition-all duration-200
+          w-full flex items-center justify-between gap-2.5 px-3.5 py-2.5 rounded-lg
+          transition-all duration-200
           ${isOpen 
-            ? 'bg-[#2d3748] border-apidevs-primary text-white' 
-            : 'bg-[#1a202c] border-transparent text-gray-300 hover:bg-[#2d3748]'
+            ? 'bg-gray-800/90 text-white shadow-lg' 
+            : 'bg-gray-900/40 text-gray-300 hover:bg-gray-800/70'
           }
           ${isTransitioning ? 'opacity-50 cursor-not-allowed' : ''}
+          border border-gray-700/50 hover:border-gray-600/50
         `}
         aria-label="Select language"
       >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <span className="text-xs font-bold text-gray-500 flex-shrink-0 w-6">{currentLang.code}</span>
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          <span className="text-xs font-bold text-gray-500 uppercase flex-shrink-0">{currentLang.code}</span>
           <span className="text-sm font-medium truncate">{currentLang.name}</span>
         </div>
         <svg
-          className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${
+          className={`w-4 h-4 flex-shrink-0 text-gray-400 transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
           }`}
           fill="none"
@@ -140,11 +141,11 @@ export default function SidebarLanguageSelector({
         </svg>
       </button>
 
-      {/* Dropdown Menu - EXACTO tu imagen */}
+      {/* Dropdown Menu - Estilo Mintlify Premium */}
       {isOpen && (
-        <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#1e293b] border border-gray-700 rounded-lg shadow-2xl overflow-hidden">
+        <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#1a1f2e] border border-gray-700/70 rounded-xl shadow-2xl shadow-black/40 overflow-hidden backdrop-blur-sm">
           {/* Available Languages */}
-          <div className="py-1.5">
+          <div className="py-1">
             {availableLanguages.map((language) => {
               const isSelected = language.id === currentLanguage;
 
@@ -154,19 +155,19 @@ export default function SidebarLanguageSelector({
                   onClick={() => handleLanguageChange(language.id)}
                   disabled={isTransitioning}
                   className={`
-                    w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors duration-150
+                    w-full flex items-center gap-2.5 px-3.5 py-2 text-left transition-all duration-150
                     ${
                       isSelected
-                        ? 'bg-[#2d3748] text-apidevs-primary'
-                        : 'text-gray-300 hover:bg-[#2d3748]'
+                        ? 'bg-gray-800/60 text-white'
+                        : 'text-gray-300 hover:bg-gray-800/40'
                     }
                     ${isTransitioning ? 'cursor-not-allowed opacity-50' : ''}
                   `}
                 >
-                  <span className="text-xs font-bold text-gray-500 flex-shrink-0 w-6">{language.code}</span>
+                  <span className="text-lg flex-shrink-0">{language.flag}</span>
                   <span className="text-sm font-medium flex-1">{language.name}</span>
                   {isSelected && (
-                    <svg className="w-5 h-5 text-apidevs-primary flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -182,16 +183,18 @@ export default function SidebarLanguageSelector({
           {/* Coming Soon Languages */}
           {comingSoonLanguages.length > 0 && (
             <>
-              <div className="border-t border-gray-700/50" />
-              <div className="py-1.5">
+              <div className="border-t border-gray-700/50 my-1" />
+              <div className="py-1">
                 {comingSoonLanguages.map((language) => (
                   <div
                     key={language.id}
-                    className="flex items-center gap-3 px-4 py-2.5 text-gray-600 cursor-not-allowed opacity-50"
+                    className="flex items-center gap-2.5 px-3.5 py-2 text-gray-500 cursor-not-allowed"
                   >
-                    <span className="text-xs font-bold flex-shrink-0 w-6">{language.code}</span>
+                    <span className="text-lg flex-shrink-0 opacity-50">{language.flag}</span>
                     <span className="text-sm font-medium flex-1">{language.name}</span>
-                    <span className="text-[10px] uppercase font-bold tracking-wide text-gray-600 flex-shrink-0">SOON</span>
+                    <svg className="w-3 h-3 text-gray-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
                   </div>
                 ))}
               </div>
