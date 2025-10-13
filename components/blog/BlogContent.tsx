@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { BlogPostCard, BlogCategory } from '@/sanity/lib/blog-queries';
 import BlogHero from './BlogHero';
 import BlogCard from './BlogCard';
+import Pagination from './Pagination';
 
 interface BlogContentProps {
   featuredPosts: BlogPostCard[];
@@ -16,6 +17,25 @@ interface BlogContentProps {
 export default function BlogContent({ featuredPosts, recentPosts, categories }: BlogContentProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const contentRef = useRef<HTMLDivElement>(null);
+  
+  // Configuración de paginación
+  const POSTS_PER_PAGE = 8; // 2 filas de 4 columnas
+  
+  // Reset página cuando cambian filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery]);
+  
+  // Scroll suave al cambiar de página
+  const scrollToContent = () => {
+    if (contentRef.current) {
+      const yOffset = -100; // Offset para el navbar
+      const y = contentRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  };
 
   // Filtrar posts según categoría y búsqueda
   const filteredPosts = useMemo(() => {
@@ -60,6 +80,20 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
     
     return Array.from(categoriesMap.values());
   }, [filteredPosts, searchQuery]);
+  
+  // Lógica de paginación
+  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
+  const paginatedPosts = useMemo(() => {
+    const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+    const endIndex = startIndex + POSTS_PER_PAGE;
+    return filteredPosts.slice(startIndex, endIndex);
+  }, [filteredPosts, currentPage, POSTS_PER_PAGE]);
+  
+  // Handler para cambio de página
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    scrollToContent();
+  };
 
   // Agrupar posts por categoría para las secciones
   const postsByCategory = useMemo(() => {
@@ -137,7 +171,7 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-12 space-y-16">
+      <div ref={contentRef} className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-12 space-y-16">
         {/* Vista de BÚSQUEDA - Agrupada por categorías */}
         {searchQuery && !selectedCategory ? (
           <div>
@@ -256,17 +290,29 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filteredPosts.map((post, index) => (
-                  <div
-                    key={post._id}
-                    style={{ animationDelay: `${index * 0.05}s` }}
-                    className="animate-fade-in-up"
-                  >
-                    <BlogCard post={post} />
-                  </div>
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {paginatedPosts.map((post, index) => (
+                    <div
+                      key={post._id}
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                      className="animate-fade-in-up"
+                    >
+                      <BlogCard post={post} />
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Paginación para vista filtrada */}
+                {totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    className="mt-12"
+                  />
+                )}
+              </>
             )}
           </div>
         ) : (
