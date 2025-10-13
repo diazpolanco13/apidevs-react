@@ -182,7 +182,7 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
                         ({item.posts.length} {item.posts.length === 1 ? 'resultado' : 'resultados'})
                       </span>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                       {item.posts.map((post, index) => (
                         <div
                           key={post._id}
@@ -251,7 +251,7 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {filteredPosts.map((post, index) => (
                   <div
                     key={post._id}
@@ -314,7 +314,7 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {item.posts.slice(0, 3).map((post, index) => (
                     <div
                       key={post._id}
@@ -346,7 +346,7 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {recentPosts.slice(3, 12).map((post, index) => (
                     <div
                       key={post._id}
