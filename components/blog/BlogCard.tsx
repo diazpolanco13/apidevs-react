@@ -90,13 +90,13 @@ export default function BlogCard({ post, variant = 'default' }: BlogCardProps) {
   // VARIANTE DEFAULT - Vertical normal
   return (
     <Link href={`/blog/${post.slug}`} className="group block h-full">
-      <div className="relative h-full overflow-hidden rounded-2xl bg-gray-900/40 backdrop-blur-sm border border-gray-800/50 group-hover:border-gray-700 transition-all duration-500 group-hover:transform group-hover:scale-[1.02]">
+      <div className="relative h-full overflow-hidden rounded-xl bg-gray-900/40 backdrop-blur-sm border border-gray-800/50 group-hover:border-gray-700 transition-all duration-500 group-hover:transform group-hover:scale-[1.02]">
         {/* Glow effect sutil */}
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-apidevs-primary/20 to-purple-500/10 rounded-2xl opacity-0 group-hover:opacity-100 blur-xl transition-all duration-500"></div>
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-apidevs-primary/20 to-purple-500/10 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-all duration-500"></div>
         
         <div className="relative h-full flex flex-col">
           {/* IMAGEN */}
-          <div className="relative aspect-[16/10] overflow-hidden">
+          <div className="relative aspect-[16/9] overflow-hidden">
             {imageUrl ? (
               <>
                 <Image
@@ -108,15 +108,15 @@ export default function BlogCard({ post, variant = 'default' }: BlogCardProps) {
                 {/* Gradiente overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent" />
                 
-                {/* Badge categoría tipo LuxAlgo con color APIDevs */}
-                {post.categories && post.categories.length > 0 && (
-                  <div className="absolute top-4 left-4 z-10">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-apidevs-primary backdrop-blur-sm text-black text-xs font-bold rounded uppercase tracking-wide shadow-lg">
-                      {post.categories[0].icon && <span className="text-sm">{post.categories[0].icon}</span>}
-                      {post.categories[0].title}
-                    </span>
-                  </div>
-                )}
+              {/* Badge categoría tipo LuxAlgo con color APIDevs */}
+              {post.categories && post.categories.length > 0 && (
+                <div className="absolute top-3 left-3 z-10">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-apidevs-primary backdrop-blur-sm text-black text-[10px] font-bold rounded uppercase tracking-wide shadow-lg">
+                    {post.categories[0].icon && <span className="text-xs">{post.categories[0].icon}</span>}
+                    {post.categories[0].title}
+                  </span>
+                </div>
+              )}
               </>
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-apidevs-primary/20 to-purple-500/20 flex items-center justify-center">
@@ -126,14 +126,14 @@ export default function BlogCard({ post, variant = 'default' }: BlogCardProps) {
           </div>
 
           {/* CONTENIDO */}
-          <div className="flex-1 flex flex-col p-6 space-y-4">
+          <div className="flex-1 flex flex-col p-4 space-y-3">
             {/* Título clean */}
-            <h3 className="text-xl font-bold text-white leading-tight line-clamp-2 group-hover:text-apidevs-primary transition-colors duration-300">
+            <h3 className="text-lg font-bold text-white leading-tight line-clamp-2 group-hover:text-apidevs-primary transition-colors duration-300">
               {post.title}
             </h3>
 
             {/* Meta info minimalista */}
-            <div className="flex items-center gap-3 text-sm text-gray-400">
+            <div className="flex items-center gap-2 text-xs text-gray-400">
               {post.author && (
                 <>
                   <span className="font-medium">By {post.author.name}</span>
@@ -149,16 +149,16 @@ export default function BlogCard({ post, variant = 'default' }: BlogCardProps) {
             </div>
 
             {/* Excerpt */}
-            <p className="text-gray-400 text-sm leading-relaxed line-clamp-2 flex-1">
+            <p className="text-gray-400 text-xs leading-relaxed line-clamp-2 flex-1">
               {post.excerpt || 'Descubre estrategias y análisis profesional para mejorar tu trading.'}
             </p>
 
             {/* CTA minimalista */}
-            <div className="pt-2">
-              <div className="inline-flex items-center gap-2 text-sm font-semibold text-apidevs-primary group-hover:text-apidevs-primary-light transition-colors">
+            <div className="pt-1">
+              <div className="inline-flex items-center gap-2 text-xs font-semibold text-apidevs-primary group-hover:text-apidevs-primary-light transition-colors">
                 <span>Read more</span>
                 <svg 
-                  className="w-4 h-4 group-hover:translate-x-1 transition-transform" 
+                  className="w-3 h-3 group-hover:translate-x-1 transition-transform" 
                   fill="none" 
                   viewBox="0 0 24 24" 
                   stroke="currentColor"

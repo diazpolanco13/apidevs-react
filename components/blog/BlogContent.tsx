@@ -15,17 +15,51 @@ interface BlogContentProps {
 
 export default function BlogContent({ featuredPosts, recentPosts, categories }: BlogContentProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Filtrar posts según categoría seleccionada
+  // Filtrar posts según categoría y búsqueda
   const filteredPosts = useMemo(() => {
-    if (!selectedCategory) {
-      return recentPosts;
+    let posts = recentPosts;
+    
+    // Filtrar por categoría
+    if (selectedCategory) {
+      posts = posts.filter(post => 
+        post.categories?.some(cat => cat._id === selectedCategory)
+      );
     }
     
-    return recentPosts.filter(post => 
-      post.categories?.some(cat => cat._id === selectedCategory)
-    );
-  }, [recentPosts, selectedCategory]);
+    // Filtrar por búsqueda
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      posts = posts.filter(post => {
+        const titleMatch = post.title.toLowerCase().includes(query);
+        const excerptMatch = post.excerpt?.toLowerCase().includes(query);
+        return titleMatch || excerptMatch;
+      });
+    }
+    
+    return posts;
+  }, [recentPosts, selectedCategory, searchQuery]);
+
+  // Agrupar posts de búsqueda por categoría
+  const searchResultsByCategory = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    
+    // Usamos el tipo de categoría que viene en los posts (más simple)
+    type PostCategory = NonNullable<BlogPostCard['categories']>[number];
+    const categoriesMap = new Map<string, { category: PostCategory; posts: BlogPostCard[] }>();
+    
+    filteredPosts.forEach(post => {
+      post.categories?.forEach(cat => {
+        if (!categoriesMap.has(cat._id)) {
+          categoriesMap.set(cat._id, { category: cat, posts: [] });
+        }
+        categoriesMap.get(cat._id)!.posts.push(post);
+      });
+    });
+    
+    return Array.from(categoriesMap.values());
+  }, [filteredPosts, searchQuery]);
 
   // Agrupar posts por categoría para las secciones
   const postsByCategory = useMemo(() => {
@@ -79,31 +113,46 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
             </div>
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar artículos..."
-              className="w-64 pl-10 pr-4 py-2 bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-apidevs-primary/50 focus:border-apidevs-primary/50 transition-all"
+              className="w-64 pl-10 pr-10 py-2 bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-apidevs-primary/50 focus:border-apidevs-primary/50 transition-all"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-12 space-y-16">
-        {/* Vista filtrada - Mostrar cuando hay un filtro activo */}
-        {selectedCategory ? (
+        {/* Vista de BÚSQUEDA - Agrupada por categorías */}
+        {searchQuery && !selectedCategory ? (
           <div>
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                  {categories.find(c => c._id === selectedCategory)?.title}
+                  Resultados para "<span className="text-apidevs-primary">{searchQuery}</span>"
                 </h2>
                 <p className="text-gray-400">
                   {filteredPosts.length} {filteredPosts.length === 1 ? 'artículo encontrado' : 'artículos encontrados'}
+                  {searchResultsByCategory.length > 1 && (
+                    <> en <span className="text-white font-semibold">{searchResultsByCategory.length} categorías</span></>
+                  )}
                 </p>
               </div>
               <button
-                onClick={() => setSelectedCategory(null)}
+                onClick={() => setSearchQuery('')}
                 className="flex items-center gap-2 text-sm font-semibold text-apidevs-primary hover:text-apidevs-primary-light transition-colors group"
               >
-                <span>Ver todos</span>
+                <span>Limpiar búsqueda</span>
                 <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -113,10 +162,89 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
             {filteredPosts.length === 0 ? (
               <div className="text-center py-20 bg-gray-900/20 rounded-2xl border border-gray-800/50">
                 <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-2xl font-bold text-gray-300 mb-2">No hay artículos en esta categoría</h3>
-                <p className="text-gray-500 mb-6">Intenta con otra categoría</p>
+                <h3 className="text-2xl font-bold text-gray-300 mb-2">No se encontraron resultados</h3>
+                <p className="text-gray-500 mb-6">Intenta con otros términos de búsqueda</p>
                 <button
-                  onClick={() => setSelectedCategory(null)}
+                  onClick={() => setSearchQuery('')}
+                  className="px-5 py-2.5 bg-apidevs-primary hover:bg-apidevs-primary-dark text-black font-semibold rounded-lg transition-colors"
+                >
+                  Ver todos los artículos
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-16">
+                {searchResultsByCategory.map((item, categoryIndex) => (
+                  <div key={item.category._id}>
+                    <div className="flex items-center gap-3 mb-6">
+                      {item.category.icon && <span className="text-2xl">{item.category.icon}</span>}
+                      <h3 className="text-2xl font-bold text-white">{item.category.title}</h3>
+                      <span className="text-sm text-gray-400">
+                        ({item.posts.length} {item.posts.length === 1 ? 'resultado' : 'resultados'})
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {item.posts.map((post, index) => (
+                        <div
+                          key={post._id}
+                          style={{ animationDelay: `${(categoryIndex * 3 + index) * 0.05}s` }}
+                          className="animate-fade-in-up"
+                        >
+                          <BlogCard post={post} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (selectedCategory || searchQuery) ? (
+          /* Vista filtrada por CATEGORÍA (con o sin búsqueda) */
+          <div>
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                  {searchQuery ? (
+                    <>Resultados para "<span className="text-apidevs-primary">{searchQuery}</span>"</>
+                  ) : (
+                    categories.find(c => c._id === selectedCategory)?.title
+                  )}
+                </h2>
+                <p className="text-gray-400">
+                  {filteredPosts.length} {filteredPosts.length === 1 ? 'artículo encontrado' : 'artículos encontrados'}
+                  {selectedCategory && searchQuery && (
+                    <> en <span className="text-white font-semibold">{categories.find(c => c._id === selectedCategory)?.title}</span></>
+                  )}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setSearchQuery('');
+                }}
+                className="flex items-center gap-2 text-sm font-semibold text-apidevs-primary hover:text-apidevs-primary-light transition-colors group"
+              >
+                <span>Limpiar filtros</span>
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {filteredPosts.length === 0 ? (
+              <div className="text-center py-20 bg-gray-900/20 rounded-2xl border border-gray-800/50">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-2xl font-bold text-gray-300 mb-2">
+                  {searchQuery ? 'No se encontraron resultados' : 'No hay artículos en esta categoría'}
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  {searchQuery ? 'Intenta con otros términos de búsqueda' : 'Intenta con otra categoría'}
+                </p>
+                <button
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setSearchQuery('');
+                  }}
                   className="px-5 py-2.5 bg-apidevs-primary hover:bg-apidevs-primary-dark text-black font-semibold rounded-lg transition-colors"
                 >
                   Ver todos los artículos

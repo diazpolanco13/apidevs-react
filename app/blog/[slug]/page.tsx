@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { client } from '@/sanity/lib/client';
 import {
   POST_BY_SLUG_QUERY,
@@ -13,7 +14,10 @@ import AuthorCard from '@/components/blog/AuthorCard';
 import RelatedPosts from '@/components/blog/RelatedPosts';
 import ShareButtons from '@/components/blog/ShareButtons';
 import TableOfContents from '@/components/blog/TableOfContents';
+import PostAccessCard from '@/components/blog/PostAccessCard';
 import { BackgroundEffects } from '@/components/ui/BackgroundEffects';
+import { createClient } from '@/utils/supabase/server';
+import { getUser, getSubscription } from '@/utils/supabase/queries';
 
 // ISR: Revalidar cada hora
 export const revalidate = 3600;
@@ -108,16 +112,58 @@ async function getPost(slug: string) {
   }
 }
 
+// Función para determinar el plan del usuario
+function getUserPlan(user: any, subscription: any, hasLifetimeAccess: boolean) {
+  if (!user) return 'guest';
+  if (hasLifetimeAccess) return 'lifetime';
+  
+  const metadata = subscription?.metadata as { plan_type?: string } | null;
+  if (metadata?.plan_type) return metadata.plan_type;
+  
+  const productName = ((subscription as any)?.prices?.products as any)?.name?.toLowerCase() || '';
+  if (productName.includes('lifetime')) return 'lifetime';
+  
+  if (subscription?.status === 'active') return 'pro';
+  
+  return 'free';
+}
+
 export default async function BlogPostPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  const post = await getPost(params.slug);
+  const supabase = createClient();
+  
+  const [post, user, subscription] = await Promise.all([
+    getPost(params.slug),
+    getUser(supabase),
+    getSubscription(supabase),
+  ]);
 
   if (!post) {
     notFound();
   }
+
+  // Verificar si tiene compras Lifetime (igual que en indicadores)
+  let hasLifetimeAccess = false;
+  if (user) {
+    const { data: lifetimePurchases } = await (supabase as any)
+      .from('purchases')
+      .select('id, is_lifetime_purchase, order_total_cents, payment_method')
+      .eq('customer_email', user.email)
+      .eq('is_lifetime_purchase', true)
+      .eq('payment_status', 'paid')
+      .gt('order_total_cents', 0);
+    
+    const paidLifetimePurchases = (lifetimePurchases || []).filter(
+      (p: any) => p.order_total_cents > 0 && p.payment_method !== 'free'
+    );
+    
+    hasLifetimeAccess = paidLifetimePurchases.length > 0;
+  }
+
+  const userPlan = getUserPlan(user, subscription, hasLifetimeAccess);
 
   // Extraer headings para Table of Contents
   const headings = post.content
@@ -136,24 +182,45 @@ export default async function BlogPostPage({
 
       <article className="container mx-auto px-4 py-12 relative z-10">
         <div className="max-w-7xl mx-auto">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-gray-400 mb-8">
-            <a href="/blog" className="hover:text-apidevs-primary transition-colors">
-              Blog
-            </a>
-            <span>→</span>
+          {/* Breadcrumb mejorado */}
+          <nav className="flex items-center gap-3 mb-8 flex-wrap">
+            <Link 
+              href="/blog" 
+              className="group flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-900/50 transition-all duration-200"
+            >
+              <svg className="w-4 h-4 text-gray-500 group-hover:text-apidevs-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span className="text-sm font-medium text-gray-400 group-hover:text-white transition-colors">Blog</span>
+            </Link>
+            
+            <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            
             {post.categories && post.categories.length > 0 && (
               <>
-                <a
-                  href={`/blog/category/${post.categories[0].slug}`}
-                  className="hover:text-apidevs-primary transition-colors"
+                <Link 
+                  href="/blog"
+                  className="group flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-900/50 transition-all duration-200"
                 >
-                  {post.categories[0].title}
-                </a>
-                <span>→</span>
+                  {post.categories[0].icon && (
+                    <span className="text-sm">{post.categories[0].icon}</span>
+                  )}
+                  <span className="text-sm font-medium text-gray-400 group-hover:text-apidevs-primary transition-colors">
+                    {post.categories[0].title}
+                  </span>
+                </Link>
+                
+                <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </>
             )}
-            <span className="text-gray-500 line-clamp-1">{post.title}</span>
+            
+            <span className="text-sm text-gray-500 font-medium line-clamp-1 max-w-md">
+              {post.title}
+            </span>
           </nav>
 
           <div className="flex gap-8">
@@ -167,7 +234,14 @@ export default async function BlogPostPage({
               {/* Post Content */}
               <div className="mt-8 prose prose-invert prose-lg max-w-none">
                 <Suspense fallback={<div className="h-96 bg-gray-900/20 animate-pulse rounded-xl" />}>
-                  <PostContent content={post.content} />
+                  <PostContent 
+                    content={post.content}
+                    visibility={post.visibility as 'public' | 'authenticated' | 'premium'}
+                    userPlan={userPlan as 'guest' | 'free' | 'pro' | 'lifetime'}
+                    user={user}
+                    subscription={subscription}
+                    hasLifetimeAccess={hasLifetimeAccess}
+                  />
                 </Suspense>
               </div>
 
@@ -213,6 +287,14 @@ export default async function BlogPostPage({
 
             {/* Sidebar - Desktop Only */}
             <aside className="hidden xl:block w-80 space-y-6 sticky top-24 self-start">
+              {/* Access Card - SIEMPRE VISIBLE EN LA PARTE SUPERIOR */}
+              <PostAccessCard 
+                userPlan={userPlan as 'guest' | 'free' | 'pro' | 'lifetime'}
+                user={user}
+                subscription={subscription}
+                hasLifetimeAccess={hasLifetimeAccess}
+              />
+
               {/* Table of Contents */}
               {headings.length > 0 && (
                 <Suspense fallback={<div className="h-96 bg-gray-900/20 animate-pulse rounded-xl" />}>

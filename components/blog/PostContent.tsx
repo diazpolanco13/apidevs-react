@@ -4,6 +4,11 @@ import Image from 'next/image';
 import CardGroup from './CardGroup';
 import Tabs from './Tabs';
 import Accordion from './Accordion';
+import PostAccessCard from './PostAccessCard';
+import type { User } from '@supabase/supabase-js';
+import type { Tables } from '@/types_db';
+
+type Subscription = Tables<'subscriptions'>;
 
 // Reutilizamos los componentes de docs pero adaptados para blog
 const portableTextComponents = {
@@ -221,9 +226,21 @@ const portableTextComponents = {
 
 interface PostContentProps {
   content: any[];
+  visibility?: 'public' | 'authenticated' | 'premium';
+  userPlan: 'guest' | 'free' | 'pro' | 'lifetime';
+  user: User | null;
+  subscription: Subscription | null;
+  hasLifetimeAccess: boolean;
 }
 
-export default function PostContent({ content }: PostContentProps) {
+export default function PostContent({ 
+  content, 
+  visibility = 'public',
+  userPlan,
+  user,
+  subscription,
+  hasLifetimeAccess 
+}: PostContentProps) {
   if (!content || content.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -232,6 +249,47 @@ export default function PostContent({ content }: PostContentProps) {
     );
   }
 
+  // Determinar si el usuario tiene acceso
+  const hasAccess = () => {
+    // Contenido público: todos tienen acceso
+    if (visibility === 'public') return true;
+    
+    // Contenido autenticado: solo usuarios logueados
+    if (visibility === 'authenticated' && user) return true;
+    
+    // Contenido premium: solo PRO o Lifetime
+    if (visibility === 'premium' && (userPlan === 'pro' || userPlan === 'lifetime')) return true;
+    
+    return false;
+  };
+
+  const canAccess = hasAccess();
+
+  // Si no tiene acceso, mostrar preview limitado con gradiente
+  if (!canAccess) {
+    // Mostrar solo los primeros 2 bloques como preview
+    const previewContent = content.slice(0, 2);
+    
+    return (
+      <div className="prose-custom">
+        {/* Preview del contenido */}
+        <PortableText
+          value={previewContent}
+          components={portableTextComponents}
+        />
+        
+        {/* Gradiente de difuminado que indica contenido bloqueado */}
+        <div className="relative -mt-20 h-40 bg-gradient-to-b from-transparent via-black/60 to-black pointer-events-none" />
+        
+        {/* Mensaje sutil indicando que el contenido continúa en el sidebar */}
+        <div className="text-center py-8 text-gray-500">
+          <p className="text-sm">👉 Continúa leyendo desbloqueando el contenido premium</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si tiene acceso, mostrar todo el contenido sin interrupciones
   return (
     <div className="prose-custom">
       <PortableText
