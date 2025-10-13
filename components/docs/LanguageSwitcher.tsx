@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { getTranslatedSlug } from '@/app/docs/actions';
 
 interface Language {
   id: string;
@@ -28,13 +29,13 @@ const languages: Language[] = [
 
 interface LanguageSwitcherProps {
   currentLanguage: string;
-  currentSlug?: string;
+  currentDocId?: string;
   className?: string;
 }
 
 export default function LanguageSwitcher({ 
   currentLanguage, 
-  currentSlug,
+  currentDocId,
   className = ''
 }: LanguageSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +45,13 @@ export default function LanguageSwitcher({
   const pathname = usePathname();
 
   const currentLang = languages.find(lang => lang.id === currentLanguage) || languages[0];
+
+  // Persistir idioma seleccionado
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('preferred-docs-language', currentLanguage);
+    }
+  }, [currentLanguage]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -79,20 +87,31 @@ export default function LanguageSwitcher({
     setIsOpen(false);
 
     try {
-      // Extract current slug from pathname
+      // Verificar si estamos en una página específica de documentación
       const pathParts = pathname.split('/');
       const docsIndex = pathParts.findIndex(part => part === 'docs');
       
-      if (docsIndex !== -1 && pathParts[docsIndex + 1] && pathParts[docsIndex + 2]) {
-        // We're on a specific doc page: /docs/[lang]/[slug]
-        const currentSlug = pathParts[docsIndex + 2];
-        router.push(`/docs/${newLanguageId}/${currentSlug}`);
+      if (docsIndex !== -1 && pathParts[docsIndex + 2] && currentDocId) {
+        // Estamos en una página específica: /docs/[lang]/[slug]
+        // Intentar obtener el slug traducido
+        const translatedSlug = await getTranslatedSlug(currentDocId, newLanguageId);
+        
+        if (translatedSlug) {
+          // Existe traducción, navegar al documento traducido
+          router.push(`/docs/${newLanguageId}/${translatedSlug}`);
+        } else {
+          // No existe traducción, ir a la página principal del idioma
+          console.warn(`No translation found for document ${currentDocId} in ${newLanguageId}`);
+          router.push(`/docs/${newLanguageId}`);
+        }
       } else {
-        // We're on the docs landing page: /docs/[lang]
+        // Estamos en la landing page: /docs/[lang]
         router.push(`/docs/${newLanguageId}`);
       }
     } catch (error) {
       console.error('Error changing language:', error);
+      // Fallback: ir a la landing page del nuevo idioma
+      router.push(`/docs/${newLanguageId}`);
     } finally {
       // Reset transition state after a delay
       setTimeout(() => setIsTransitioning(false), 300);

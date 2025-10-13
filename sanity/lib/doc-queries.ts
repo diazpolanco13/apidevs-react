@@ -86,6 +86,24 @@ export const SIDEBAR_DOCS_QUERY = groq`
 `
 
 // ==========================================
+// OBTENER TRADUCCIONES DE UN DOCUMENTO
+// ==========================================
+
+export const DOC_TRANSLATIONS_QUERY = groq`
+  *[_type == "translation.metadata" && references($docId)][0] {
+    translations[] {
+      _key,
+      "doc": value->{
+        _id,
+        "slug": slug.current,
+        language,
+        title
+      }
+    }
+  }
+`
+
+// ==========================================
 // PÁGINA INDIVIDUAL POR SLUG
 // ==========================================
 

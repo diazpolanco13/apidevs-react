@@ -9,9 +9,10 @@ import LanguageSwitcher from './LanguageSwitcher';
 interface DocsHeaderProps {
   onMenuToggle?: () => void;
   currentLanguage?: string;
+  currentDocId?: string;
 }
 
-export default function DocsHeader({ onMenuToggle, currentLanguage = 'es' }: DocsHeaderProps = {}) {
+export default function DocsHeader({ onMenuToggle, currentLanguage = 'es', currentDocId }: DocsHeaderProps = {}) {
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-apidevs-dark/95 border-b border-gray-800/50 z-50 backdrop-blur-xl">
       <div className="h-full px-4 flex items-center max-w-screen-2xl mx-auto gap-4">
@@ -51,6 +52,7 @@ export default function DocsHeader({ onMenuToggle, currentLanguage = 'es' }: Doc
           {/* Language Switcher */}
           <LanguageSwitcher 
             currentLanguage={currentLanguage}
+            currentDocId={currentDocId}
             className="hidden sm:block"
           />
           

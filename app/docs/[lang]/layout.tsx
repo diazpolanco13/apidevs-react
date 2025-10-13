@@ -1,7 +1,8 @@
 import { docsClient } from '@/sanity/lib/client';
 import { SIDEBAR_DOCS_QUERY } from '@/sanity/lib/doc-queries';
+import { groq } from 'next-sanity';
 import DocsSidebar from '@/components/docs/DocsSidebar';
-import DocsHeader from '@/components/docs/DocsHeader';
+import DocsHeaderWithContext from '@/components/docs/DocsHeaderWithContext';
 import BackgroundEffects from '@/components/ui/BackgroundEffects';
 
 // Configuración de idiomas soportados
@@ -75,12 +76,33 @@ export default async function DocsLanguageLayout({
     );
   }
 
-  // Fetch sidebar data para el idioma específico con manejo de errores
+  // Fetch sidebar data y crear map de slug -> docId para el idioma específico
   let sidebarData;
+  let docsMap: Record<string, string> = {};
+  
   try {
+    // Fetch sidebar data
     sidebarData = await docsClient.fetch(SIDEBAR_DOCS_QUERY, { language: lang });
+    
+    // Crear map de slug -> docId para el selector de idiomas
+    const docsMapQuery = groq`
+      *[_type == "documentation" && language == $language] {
+        "slug": slug.current,
+        _id
+      }
+    `;
+    const docs = await docsClient.fetch<Array<{ slug: string; _id: string }>>(
+      docsMapQuery,
+      { language: lang }
+    );
+    
+    docsMap = docs.reduce((acc, doc) => {
+      acc[doc.slug] = doc._id;
+      return acc;
+    }, {} as Record<string, string>);
+    
   } catch (error) {
-    console.error('Error fetching sidebar data:', error);
+    console.error('Error fetching docs data:', error);
     // Fallback: datos vacíos si falla la query
     sidebarData = { categories: [] };
   }
@@ -90,8 +112,11 @@ export default async function DocsLanguageLayout({
       {/* Background Effects */}
       <BackgroundEffects variant="minimal" />
       
-      {/* Header */}
-      <DocsHeader currentLanguage={lang} />
+      {/* Header with Context */}
+      <DocsHeaderWithContext 
+        currentLanguage={lang}
+        docsMap={docsMap}
+      />
       
       {/* Main Container */}
       <div className="max-w-[1800px] mx-auto pt-10 relative">
@@ -100,6 +125,7 @@ export default async function DocsLanguageLayout({
           <DocsSidebar 
             sidebarData={sidebarData} 
             currentLanguage={lang}
+            docsMap={docsMap}
           />
           
           {/* Main Content */}

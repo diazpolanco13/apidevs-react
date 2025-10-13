@@ -3,15 +3,17 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import SidebarLanguageSelector from './SidebarLanguageSelector';
 import type { SidebarData } from '@/sanity/lib/doc-queries';
 import LanguageSwitcher from './LanguageSwitcher';
 
 interface DocsSidebarProps {
   sidebarData: SidebarData;
   currentLanguage?: string;
+  docsMap?: Record<string, string>;
 }
 
-export default function DocsSidebar({ sidebarData, currentLanguage = 'es' }: DocsSidebarProps) {
+export default function DocsSidebar({ sidebarData, currentLanguage = 'es', docsMap = {} }: DocsSidebarProps) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
@@ -138,31 +140,29 @@ export default function DocsSidebar({ sidebarData, currentLanguage = 'es' }: Doc
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-800/50 space-y-3">
-        {/* Language Switcher - Solo visible en móvil */}
-        <div className="lg:hidden">
-          <LanguageSwitcher 
-            currentLanguage={currentLanguage}
-            className="w-full"
-          />
-        </div>
+      {/* Footer - Estilo Mintlify */}
+      <div className="p-4 border-t border-gray-800/50 space-y-2">
+        {/* Language Selector */}
+        <SidebarLanguageSelector 
+          currentLanguage={currentLanguage}
+          docsMap={docsMap}
+        />
         
-        {/* Back to Home */}
-        <Link
-          href="/"
-          className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-400 hover:text-apidevs-primary transition-colors rounded-md hover:bg-gray-900/50"
+        {/* Theme Toggle (Placeholder) */}
+        <button
+          className="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800/50 hover:text-white transition-all duration-200"
+          onClick={() => {
+            // TODO: Implementar dark/light mode
+            console.log('Theme toggle - Coming soon!');
+          }}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
-          <span>Volver a APIDEVs</span>
-        </Link>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+            <span className="text-sm font-medium truncate">Dark mode</span>
+          </div>
+        </button>
       </div>
     </>
   );
