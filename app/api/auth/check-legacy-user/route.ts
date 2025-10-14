@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Buscar en legacy_users
     const { data: legacyUser, error: legacyError } = await (supabase as any)

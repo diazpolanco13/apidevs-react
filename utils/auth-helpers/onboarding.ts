@@ -18,9 +18,9 @@ export async function checkOnboardingStatus(userId: string): Promise<{
   completed: boolean;
   profile: UserProfile | null;
 }> {
-  const supabase = createClient();
-  
-  const { data: profile, error } = await (supabase as any)
+  const supabase = await createClient();
+
+  const { data: profile, error } = await supabase
     .from('users')
     .select('onboarding_completed, tradingview_username, full_name, country, city, phone, postal_code, address, timezone, avatar_url, telegram_username')
     .eq('id', userId)
@@ -32,8 +32,8 @@ export async function checkOnboardingStatus(userId: string): Promise<{
   }
 
   return {
-    completed: profile?.onboarding_completed || false,
-    profile: profile
+    completed: (profile as any)?.onboarding_completed || false,
+    profile: profile as UserProfile | null
   };
 }
 

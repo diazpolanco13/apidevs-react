@@ -32,12 +32,19 @@ interface PlotlyGeoMapProps {
 
 export default function PlotlyGeoMap({ countries }: PlotlyGeoMapProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const [plotReady, setPlotReady] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
+    // Dar tiempo extra para que Plotly se inicialice completamente
+    const timer = setTimeout(() => {
+      setPlotReady(true);
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
-  if (!isMounted) {
+  if (!isMounted || !plotReady) {
     return (
       <div className="w-full h-[600px] bg-gradient-to-br from-slate-900/50 to-slate-800/50 rounded-xl flex items-center justify-center border border-white/5">
         <div className="text-center">
@@ -205,7 +212,10 @@ export default function PlotlyGeoMap({ countries }: PlotlyGeoMapProps) {
       width: 1920,
       scale: 2
     },
-    scrollZoom: true,
+    // Deshabilitamos scrollZoom para evitar el error _scrollZoom en React 19
+    scrollZoom: false,
+    doubleClick: 'reset',
+    staticPlot: false,
   };
 
   return (
@@ -217,6 +227,12 @@ export default function PlotlyGeoMap({ countries }: PlotlyGeoMapProps) {
         className="w-full h-full"
         useResizeHandler={true}
         style={{ width: '100%', height: '100%' }}
+        onError={(error) => {
+          console.warn('Plotly error (non-critical):', error);
+        }}
+        onInitialized={() => {
+          // Componente inicializado correctamente
+        }}
       />
 
       {/* Leyenda personalizada overlay */}
@@ -238,7 +254,7 @@ export default function PlotlyGeoMap({ countries }: PlotlyGeoMapProps) {
         </div>
         <div className="mt-3 pt-3 border-t border-white/10 text-xs text-gray-400">
           <span className="block">🖱️ Arrastra para mover</span>
-          <span className="block mt-1">🔍 Scroll para zoom</span>
+          <span className="block mt-1">🔍 Doble click para reset</span>
           <span className="block mt-1">📍 Tamaño = Volumen</span>
         </div>
       </div>

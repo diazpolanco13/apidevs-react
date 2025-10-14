@@ -13,13 +13,14 @@ import ActiveUserTimeline from '@/components/admin/active-users/ActiveUserTimeli
 import AdminIndicatorAccessList from '@/components/admin/active-users/AdminIndicatorAccessList';
 
 interface ActiveUserDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function ActiveUserDetailPage({ params }: ActiveUserDetailPageProps) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
 
   // ==================== QUERIES FUNDAMENTALES ====================
   
@@ -49,7 +50,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
       first_purchase_date,
       last_purchase_date
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (userError || !user) {
@@ -60,7 +61,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
   // 2. Datos de autenticación desde auth.users usando supabaseAdmin (Service Role)
   let authUser = null;
   try {
-    const { data, error: authError } = await supabaseAdmin.auth.admin.getUserById(params.id);
+    const { data, error: authError } = await supabaseAdmin.auth.admin.getUserById(id);
     if (!authError) {
       authUser = data;
     } else {
@@ -74,7 +75,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
   const { data: customer, error: customerError } = await (supabaseAdmin as any)
     .from('customers')
     .select('stripe_customer_id')
-    .eq('id', params.id)
+    .eq('id', id)
     .maybeSingle(); // maybeSingle() no falla si no hay registro
 
   if (customerError) {
@@ -91,7 +92,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
         products (*)
       )
     `)
-    .eq('user_id', params.id)
+    .eq('user_id', id)
     .order('created', { ascending: false });
 
   if (subscriptionsError) {
@@ -125,7 +126,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
         image_1
       )
     `)
-    .eq('user_id', params.id)
+    .eq('user_id', id)
     .order('granted_at', { ascending: false });
 
   if (accessError) {
@@ -140,7 +141,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
   const { data: paymentIntents, error: paymentIntentsError } = await (supabaseAdmin as any)
     .from('payment_intents')
     .select('*')
-    .eq('user_id', params.id)
+    .eq('user_id', id)
     .order('created', { ascending: false });
 
   if (paymentIntentsError) {
@@ -151,7 +152,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
   const { data: invoices, error: invoicesError } = await (supabaseAdmin as any)
     .from('invoices')
     .select('*')
-    .eq('user_id', params.id)
+    .eq('user_id', id)
     .order('created', { ascending: false});
 
   if (invoicesError) {
@@ -242,7 +243,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
   // Vista Facturación (Tab 2 - FASE 4)
   const billingView = (
     <ActiveUserBilling
-      userId={params.id}
+      userId={id}
       stripeCustomerId={(customer as any)?.stripe_customer_id}
       paymentIntents={(paymentIntents as any) || []}
       invoices={(invoices as any) || []}
@@ -254,7 +255,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
   // Vista Acciones Admin (Tab 3 - FASE 5)
   const actionsView = (
     <ActiveUserActions
-      userId={params.id}
+      userId={id}
       userEmail={primaryEmail}
       userName={(user as any).full_name || 'Usuario sin nombre'}
       subscriptionId={(activeSubscription as any)?.id || null}
@@ -265,7 +266,7 @@ export default async function ActiveUserDetailPage({ params }: ActiveUserDetailP
   // Vista Timeline (Tab 4 - FASE 6)
   const timelineView = (
     <ActiveUserTimeline
-      userId={params.id}
+      userId={id}
     />
   );
 

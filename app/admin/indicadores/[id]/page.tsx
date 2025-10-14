@@ -9,13 +9,14 @@ export const metadata = {
 };
 
 type Params = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export default async function IndicatorDetailPage({ params }: Params) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
 
   // Verificar autenticación
   const {
@@ -30,7 +31,7 @@ export default async function IndicatorDetailPage({ params }: Params) {
   const { data: indicator, error } = await supabase
     .from('indicators')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (error || !indicator) {
@@ -41,7 +42,7 @@ export default async function IndicatorDetailPage({ params }: Params) {
   const { data: accessesRaw, error: accessesError } = await supabase
     .from('indicator_access')
     .select('*')
-    .eq('indicator_id', params.id)
+    .eq('indicator_id', id)
     .order('granted_at', { ascending: false });
 
   if (accessesError) {

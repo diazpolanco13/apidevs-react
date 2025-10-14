@@ -31,7 +31,7 @@ interface CampaignPerformance {
 }
 
 export default async function CampaignsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Obtener datos de campaign_performance (vista materializada)
   const { data: campaigns, error } = await supabase

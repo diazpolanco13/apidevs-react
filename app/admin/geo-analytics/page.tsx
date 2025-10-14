@@ -29,7 +29,7 @@ interface CountryStats {
 export const revalidate = 300;
 
 export default async function GeoAnalyticsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Obtener estadísticas globales
   const { data: globalStats } = await supabase

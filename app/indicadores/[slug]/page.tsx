@@ -62,7 +62,7 @@ export const revalidate = 3600;
 
 export default async function IndicatorPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const supabase = createClient();
+  const supabase = await createClient();
   
   const [indicator, user, subscription] = await Promise.all([
     client.fetch<IndicatorDetail>(

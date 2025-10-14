@@ -11,9 +11,9 @@ import RefundsCard from '@/components/admin/purchases/detail/RefundsCard';
 import AdminActionsCard from '@/components/admin/purchases/detail/AdminActionsCard';
 
 interface PurchaseDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 interface Purchase {
@@ -31,8 +31,9 @@ interface Purchase {
 }
 
 export async function generateMetadata({ params }: PurchaseDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
   return {
-    title: `Compra #${params.id} | Admin Dashboard`,
+    title: `Compra #${id} | Admin Dashboard`,
     description: 'Vista detallada de la compra'
   };
 }
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: PurchaseDetailPageProps): Pro
 
 async function getPurchaseDetail(id: string) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // 🚀 TIMEOUT WRAPPER: Evita queries colgadas  
     const withTimeout = (promise: any, ms = 5000) => {
@@ -208,7 +209,8 @@ async function getPurchaseDetail(id: string) {
 // ==================== PAGE ====================
 
 export default async function PurchaseDetailPage({ params }: PurchaseDetailPageProps) {
-  const data = await getPurchaseDetail(params.id);
+  const { id } = await params;
+  const data = await getPurchaseDetail(id);
 
   if (!data || !data.purchase) {
     notFound();

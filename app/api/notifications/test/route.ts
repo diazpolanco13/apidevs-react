@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 // Solo para desarrollo - agregar el número de notificaciones deseado
 export async function POST(request: Request) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
 // GET para obtener el contador actual
 export async function GET() {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {

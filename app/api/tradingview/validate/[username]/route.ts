@@ -4,10 +4,10 @@ const TRADINGVIEW_API = 'http://185.218.124.241:5001';
 
 export async function GET(
   request: Request,
-  { params }: { params: { username: string } }
+  { params }: { params: Promise<{ username: string }> }
 ) {
+  const { username } = await params;
   try {
-    const username = params.username;
 
     if (!username || username.length < 3) {
       return NextResponse.json(

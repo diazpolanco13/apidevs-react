@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { signInWithPassword } from '@/utils/auth-helpers/server';
 import { handleRequest } from '@/utils/auth-helpers/client';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 // Define prop type with allowEmail boolean
 interface PasswordSignInProps {
@@ -21,6 +21,12 @@ export default function PasswordSignIn({
 }: PasswordSignInProps) {
   const router = redirectMethod === 'client' ? useRouter() : null;
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Evitar hydration mismatch por extensiones que inyectan atributos en inputs (p.ej. Keeper)
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Traducir errores al español
   const translateError = (errorMsg: string) => {
@@ -48,8 +54,10 @@ export default function PasswordSignIn({
     setIsSubmitting(false);
   };
 
+  if (!isMounted) return null;
+
   return (
-    <div>
+    <div suppressHydrationWarning>
       {/* Error Message - Inline */}
       {error && (
         <div className="mb-4 p-4 bg-gradient-to-r from-red-500/20 to-red-600/20 backdrop-blur-xl border border-red-500/50 rounded-lg animate-slide-in">

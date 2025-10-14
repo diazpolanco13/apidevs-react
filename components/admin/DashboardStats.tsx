@@ -3,7 +3,7 @@ import { Users, UserPlus, RefreshCw, Zap, DollarSign, Activity, ShoppingCart, Tr
 import DashboardTabs from './DashboardTabs';
 
 export default async function DashboardStats() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   try {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();

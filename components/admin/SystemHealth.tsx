@@ -12,7 +12,7 @@ interface ServiceStatus {
 async function checkSupabaseHealth(): Promise<ServiceStatus> {
   const startTime = Date.now();
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Simple query para verificar conectividad
     const { error } = await supabase
@@ -80,7 +80,7 @@ async function checkStripeHealth(): Promise<ServiceStatus> {
     }
     
     // Verificar que hay productos en la base de datos (indicador de sincronización)
-    const supabase = createClient();
+    const supabase = await createClient();
     const { count, error } = await supabase
       .from('products')
       .select('*', { count: 'exact', head: true });
@@ -178,7 +178,7 @@ async function checkTradingViewService(): Promise<ServiceStatus> {
 async function checkSupabaseAuth(): Promise<ServiceStatus> {
   const startTime = Date.now();
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Verificar que el servicio de auth está disponible
     const { error } = await supabase.auth.getSession();

@@ -42,7 +42,7 @@ interface PurchaseRow {
 
 async function getPurchaseMetrics(): Promise<PurchaseMetrics | null> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Obtener rango de fechas (mes actual)
     const now = new Date();
@@ -189,7 +189,7 @@ async function getPurchaseMetrics(): Promise<PurchaseMetrics | null> {
 
 async function getSubscriptionsData() {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Obtener todas las suscripciones (no lifetime)
     // ✅ Mostrar TODAS las compras (PI-, INV-, etc.) - El usuario las ve, el admin también debe verlas
@@ -307,7 +307,7 @@ async function getSubscriptionsData() {
 
 async function getOneTimeData() {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Obtener todas las compras lifetime
     // ✅ FILTRAR: Solo mostrar registros de invoices (INV-), no payment intents (PI-)
@@ -448,7 +448,7 @@ async function getOneTimeData() {
 
 async function getRefundsData() {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Obtener todas las compras con reembolsos
     // ✅ FILTRAR: Solo mostrar registros de invoices (INV-), no payment intents (PI-)
@@ -593,7 +593,7 @@ async function getRefundsData() {
 
 async function getOverviewData() {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Timeline data - Obtener TODAS las compras para que el filtro del frontend funcione correctamente
     // ✅ El componente RevenueChart tiene filtros (7D, 30D, 90D, Todo) que necesitan todos los datos

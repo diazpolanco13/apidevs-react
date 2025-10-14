@@ -9,13 +9,14 @@ export const metadata = {
 };
 
 type Params = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export default async function EditIndicatorPage({ params }: Params) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
 
   // Verificar autenticación
   const {
@@ -30,7 +31,7 @@ export default async function EditIndicatorPage({ params }: Params) {
   const { data: indicator, error } = await supabase
     .from('indicators')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (error || !indicator) {
@@ -45,7 +46,7 @@ export default async function EditIndicatorPage({ params }: Params) {
       {/* Header con breadcrumb */}
       <div className="mb-8">
         <Link
-          href={`/admin/indicadores/${params.id}`}
+          href={`/admin/indicadores/${id}`}
           className="mb-4 inline-flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white"
         >
           <svg

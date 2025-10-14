@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 export default async function IndicadoresAdminPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Verificar autenticación y permisos admin
   const {

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -51,6 +52,11 @@ export default function TrendChart({
   comparisonColor = 'rgb(147, 51, 234)', // purple-600
   formatValue = (value) => value.toString()
 }: TrendChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const hasComparison = data.some(d => d.comparisonValue !== undefined);
 
   const chartData = {
@@ -164,7 +170,16 @@ export default function TrendChart({
     <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700/50 p-6">
       <h3 className="text-lg font-semibold text-gray-100 mb-4">{title}</h3>
       <div className="h-[300px]">
-        <Line data={chartData} options={options} />
+        {!isMounted ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-2"></div>
+              <div className="text-gray-400 text-sm">Cargando gráfico...</div>
+            </div>
+          </div>
+        ) : (
+          <Line data={chartData} options={options} />
+        )}
       </div>
     </div>
   );

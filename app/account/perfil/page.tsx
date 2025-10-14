@@ -8,7 +8,7 @@ import LoyaltyTeaser from '@/components/account/LoyaltyTeaser';
 import { getUserLoyaltyProfile } from '@/utils/supabase/loyalty';
 
 export default async function PerfilPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const user = await getUser(supabase);
 
   if (!user) {

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Bell, Lock, Zap, ArrowRight } from 'lucide-react';
 
 export default async function NotificacionesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const [user, subscription] = await Promise.all([
     getUser(supabase),
     getSubscription(supabase)

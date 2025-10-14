@@ -6,7 +6,7 @@ import { cache } from 'react';
 // 🔧 FIX: Cachear la función de autenticación para evitar rate limiting
 // Esto previene múltiples llamadas a getUser() en el mismo request
 const getAuthUser = cache(async () => {
-  const supabase = createClient();
+  const supabase = await createClient();
   return await supabase.auth.getUser();
 });
 

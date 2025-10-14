@@ -6,10 +6,11 @@ const API_KEY = '92a1e4a8c74e1871c658301f3e8ae31c31ed6bfd68629059617fac621932e1e
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación admin
     const {
@@ -20,7 +21,7 @@ export async function POST(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { id: indicatorId } = params;
+    const indicatorId = id;
     const body = await req.json();
     const { access_id, tradingview_username, reason } = body;
 

@@ -13,7 +13,7 @@ interface Purchase {
 }
 
 export default async function RecentActivity() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // ⚠️ CRÍTICO: Ordenar por created_at en lugar de order_date para obtener las compras más recientes
   const { data: recentPurchases, error } = await supabase

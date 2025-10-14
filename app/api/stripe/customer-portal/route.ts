@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     const isAjax = req.headers.get('accept')?.includes('application/json');
 
     // Verificar autenticación
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {

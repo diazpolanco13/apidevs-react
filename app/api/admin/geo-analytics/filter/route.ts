@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Query visitor_tracking filtrado por rango de fechas
     const { data: visits, error: visitsError } = await supabase

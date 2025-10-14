@@ -20,7 +20,7 @@ export async function GET() {
     );
 
     // 2. Obtener datos técnicos de Supabase
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: supabaseIndicators } = await supabase
       .from('indicators')
       .select('pine_id, access_tier, category, status, type')

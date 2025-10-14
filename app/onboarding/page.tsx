@@ -6,9 +6,10 @@ import Onboarding from '@/components/ui/Onboarding';
 export default async function OnboardingPage({
   searchParams
 }: {
-  searchParams: { redirect?: string };
+  searchParams: Promise<{ redirect?: string }>;
 }) {
-  const supabase = createClient();
+  const resolvedSearchParams = await searchParams;
+  const supabase = await createClient();
   
   const {
     data: { user },
@@ -23,12 +24,12 @@ export default async function OnboardingPage({
   const { completed } = await checkOnboardingStatus(user.id);
 
   if (completed) {
-    redirect(searchParams.redirect || '/account');
+    redirect(resolvedSearchParams.redirect || '/account');
   }
 
   return (
     <Onboarding 
-      redirectPath={searchParams.redirect || '/account'} 
+      redirectPath={resolvedSearchParams.redirect || '/account'} 
     />
   );
 }

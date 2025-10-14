@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import ConfiguracionClient from './ConfiguracionClient';
 
 export default async function ConfiguracionPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const user = await getUser(supabase);
 
   if (!user) {

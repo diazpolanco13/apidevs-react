@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Verificar que sea admin
     const { data: { user } } = await supabase.auth.getUser();

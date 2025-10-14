@@ -1,11 +1,5 @@
 import DocsHeader from '@/components/docs/DocsHeader';
-import dynamic from 'next/dynamic';
-
-// Cargar BackgroundEffects dinámicamente (es client component)
-const BackgroundEffects = dynamic(
-  () => import('@/components/ui/BackgroundEffects'),
-  { ssr: false }
-);
+import ClientBackgroundEffects from '@/components/ClientBackgroundEffects';
 
 export const revalidate = 3600; // Revalidar cada hora
 
@@ -18,7 +12,7 @@ export default async function DocsLayout({
   return (
     <div className="docs-layout min-h-screen bg-apidevs-dark text-white relative">
       {/* Background Effects - Partículas espaciales */}
-      <BackgroundEffects variant="minimal" showGrid={false} showParticles={true} />
+      <ClientBackgroundEffects variant="minimal" showGrid={false} showParticles={true} />
 
       {/* Top Navigation Bar */}
       <DocsHeader />

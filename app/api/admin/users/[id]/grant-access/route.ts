@@ -7,10 +7,11 @@ const API_KEY = '92a1e4a8c74e1871c658301f3e8ae31c31ed6bfd68629059617fac621932e1e
 // POST - Conceder acceso individual a un indicador
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación admin
     const {
@@ -21,7 +22,7 @@ export async function POST(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { id: userId } = params;
+    const userId = id;
     const body = await req.json();
     const { indicator_id, duration_type } = body;
 

@@ -8,7 +8,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación
     const {
@@ -102,10 +102,11 @@ export async function PUT(
 // DELETE - Eliminar indicador
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación
     const {
@@ -116,7 +117,6 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { id } = params;
 
     // Verificar que el indicador existe
     const { data: existing } = await supabase

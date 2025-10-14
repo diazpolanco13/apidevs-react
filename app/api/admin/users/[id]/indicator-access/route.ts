@@ -4,10 +4,11 @@ import { NextResponse } from 'next/server';
 // GET - Obtener todos los accesos a indicadores de un usuario
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación admin
     const {
@@ -18,7 +19,7 @@ export async function GET(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { id: userId } = params;
+    const userId = id;
 
     // Verificar que el usuario existe
     const { data: targetUser, error: userError } = await supabase

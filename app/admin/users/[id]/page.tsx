@@ -7,19 +7,20 @@ import UserPurchaseHistory from '@/components/admin/UserPurchaseHistory';
 import UserStats from '@/components/admin/UserStats';
 
 interface UserDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function UserDetailPage({ params }: UserDetailPageProps) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
 
   // Fetch user details
   const { data: user, error: userError } = await supabase
     .from('legacy_users')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (userError || !user) {
@@ -31,7 +32,7 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
   const { data: purchases, error: purchasesError } = await supabase
     .from('purchases')
     .select('*')
-    .or(`customer_email.eq.${(user as any).email},legacy_user_id.eq.${params.id}`)
+    .or(`customer_email.eq.${(user as any).email},legacy_user_id.eq.${id}`)
     .order('order_date', { ascending: false });
 
   if (purchasesError) {

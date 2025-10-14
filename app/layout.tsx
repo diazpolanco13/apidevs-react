@@ -3,20 +3,12 @@ import ConditionalFooter from '@/components/ui/Footer/ConditionalFooter';
 import Navbar from '@/components/ui/Navbar';
 import { Toaster } from '@/components/ui/Toasts/toaster';
 import { ConfirmEmailDialog } from '@/components/ui/ConfirmEmailDialog';
-import dynamic from 'next/dynamic';
 import { PropsWithChildren, Suspense } from 'react';
+import ClientBootstrap from '@/components/ClientBootstrap';
 import { getURL } from '@/utils/helpers';
 import 'styles/main.css';
 
-// ✅ NUEVO SISTEMA DE COOKIES - Simple y funcional sin Context API
-const SimpleCookieBanner = dynamic(() => import('@/components/SimpleCookieBanner'), {
-  ssr: false
-});
-
-// ✅ CHAT WIDGET - Widget flotante de chat
-const ChatWidget = dynamic(() => import('@/components/chat-widget'), {
-  ssr: false
-});
+// Componentes cliente movidos a ClientBootstrap
 
 // Importar fuentes de Google Fonts
 import { Work_Sans } from 'next/font/google';
@@ -76,10 +68,8 @@ export default async function RootLayout({ children }: PropsWithChildren) {
           <Toaster />
         </Suspense>
         <ConfirmEmailDialog />
-        {/* ✅ Banner de cookies con diseño premium */}
-        <SimpleCookieBanner />
-        {/* ✅ Widget de chat flotante */}
-        <ChatWidget />
+        {/* Bootstrap de componentes cliente (cookie banner y chat widget) */}
+        <ClientBootstrap />
       </body>
     </html>
   );

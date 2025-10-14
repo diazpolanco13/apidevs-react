@@ -6,7 +6,7 @@ import { CheckCircle, Mail, CreditCard, Calendar, ArrowRight, Sparkles } from 'l
 import SuccessConfetti from './SuccessConfetti';
 
 export default async function SuccessPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const [user, subscription] = await Promise.all([
     getUser(supabase),
     getSubscription(supabase)

@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     }
 
     // Verificar autenticación
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {

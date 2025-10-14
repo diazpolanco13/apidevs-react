@@ -9,7 +9,7 @@ export const metadata = {
 };
 
 export default async function NewIndicatorPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Verificar autenticación
   const {

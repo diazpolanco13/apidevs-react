@@ -5,7 +5,7 @@ import { getUser } from '@/utils/supabase/queries';
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const user = await getUser(supabase);
 
     if (!user) {

@@ -49,10 +49,15 @@ type TimeRange = '7d' | '30d' | '90d' | 'all';
 
 export default function RevenueChart({ data }: RevenueChartProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
+  const [isMounted, setIsMounted] = useState(false);
   const chartRef = useRef<ChartJS<'line'>>(null);
-  
+
   // ⚠️ CRÍTICO: Forzar re-render cuando cambian los datos
   const [chartKey, setChartKey] = useState(0);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Formatear moneda
   const formatCurrency = (value: number) => {
@@ -321,11 +326,18 @@ export default function RevenueChart({ data }: RevenueChartProps) {
 
       {/* Chart */}
       <div className="h-80">
-        {filteredData.length > 0 ? (
-          <Line 
+        {!isMounted ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-2"></div>
+              <div className="text-gray-500 text-sm">Cargando gráfico...</div>
+            </div>
+          </div>
+        ) : filteredData.length > 0 ? (
+          <Line
             key={chartKey}
-            ref={chartRef} 
-            data={chartData} 
+            ref={chartRef}
+            data={chartData}
             options={options}
             redraw={true}
           />

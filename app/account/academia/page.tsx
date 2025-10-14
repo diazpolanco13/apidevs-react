@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { GraduationCap, Lock, Crown, ArrowRight } from 'lucide-react';
 
 export default async function AcademiaPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const [user, subscription] = await Promise.all([
     getUser(supabase),
     getSubscription(supabase)

@@ -71,13 +71,13 @@ export default async function SignIn({
     viewProp = id;
   } else {
     const preferredSignInView =
-      cookies().get('preferredSignInView')?.value || null;
+      (await cookies()).get('preferredSignInView')?.value || null;
     viewProp = getDefaultSignInView(preferredSignInView);
     return redirect(`/signin/${viewProp}`);
   }
 
   // Check if the user is already logged in and redirect to the account page if so
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user }
@@ -90,7 +90,7 @@ export default async function SignIn({
   }
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
+    <div suppressHydrationWarning className="min-h-screen bg-black relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.1),transparent_70%)]"></div>

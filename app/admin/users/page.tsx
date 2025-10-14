@@ -25,27 +25,28 @@ type Subscription = {
 export default async function AdminUsersPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const supabase = createClient();
+  const resolvedSearchParams = await searchParams;
+  const supabase = await createClient();
 
   // Parámetros de búsqueda y filtros
-  const page = Number(searchParams.page) || 1;
+  const page = Number(resolvedSearchParams.page) || 1;
   const limit = 20; // 20 elementos por página
   const offset = (page - 1) * limit;
-  const search = searchParams.search as string || '';
-  const country = searchParams.country as string || '';
+  const search = resolvedSearchParams.search as string || '';
+  const country = resolvedSearchParams.country as string || '';
   
   // Filtros para usuarios legacy
-  const status = searchParams.status as string || '';
-  const customerType = searchParams.customerType as string || '';
-  const migrationStatus = searchParams.migrationStatus as string || '';
-  const sortField = searchParams.sortField as string || 'wordpress_created_at';
-  const sortDirection = searchParams.sortDirection as string || 'desc';
+  const status = resolvedSearchParams.status as string || '';
+  const customerType = resolvedSearchParams.customerType as string || '';
+  const migrationStatus = resolvedSearchParams.migrationStatus as string || '';
+  const sortField = resolvedSearchParams.sortField as string || 'wordpress_created_at';
+  const sortDirection = resolvedSearchParams.sortDirection as string || 'desc';
   
   // Filtros para usuarios activos
-  const subscriptionStatus = searchParams.subscriptionStatus as string || '';
-  const onboarding = searchParams.onboarding as string || '';
+  const subscriptionStatus = resolvedSearchParams.subscriptionStatus as string || '';
+  const onboarding = resolvedSearchParams.onboarding as string || '';
 
   // ==================== USUARIOS ACTIVOS ====================
   // Query para usuarios activos (tabla users)

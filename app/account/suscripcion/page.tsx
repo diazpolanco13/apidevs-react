@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function SuscripcionPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const [user, subscription] = await Promise.all([
     getUser(supabase),
     getSubscription(supabase)

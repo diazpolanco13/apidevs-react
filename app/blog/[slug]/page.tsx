@@ -39,12 +39,13 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
+  const { slug } = await params;
   try {
     const post = await client.fetch(
       POST_BY_SLUG_QUERY,
-      { slug: params.slug },
+      { slug: slug },
       { next: { revalidate: 3600 } }
     );
 
@@ -131,12 +132,13 @@ function getUserPlan(user: any, subscription: any, hasLifetimeAccess: boolean) {
 export default async function BlogPostPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const supabase = createClient();
+  const { slug } = await params;
+  const supabase = await createClient();
   
   const [post, user, subscription] = await Promise.all([
-    getPost(params.slug),
+    getPost(slug),
     getUser(supabase),
     getSubscription(supabase),
   ]);

@@ -6,10 +6,11 @@ const TRADINGVIEW_API = 'http://185.218.124.241:5001';
 // POST - Revocar TODOS los accesos de un usuario
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación admin
     const {
@@ -20,7 +21,7 @@ export async function POST(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { id: userId } = params;
+    const userId = id;
 
     // Obtener usuario
     const { data: targetUser, error: userError } = await supabase

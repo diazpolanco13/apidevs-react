@@ -6,7 +6,7 @@ import { TrendingUp, Lock, Zap, ArrowRight } from 'lucide-react';
 import UserIndicatorsList from '@/components/account/UserIndicatorsList';
 
 export default async function IndicadoresPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const [user, subscription] = await Promise.all([
     getUser(supabase),
     getSubscription(supabase)

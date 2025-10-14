@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 // GET - Obtener todos los indicadores
 export async function GET() {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación
     const {
@@ -53,7 +53,7 @@ export async function GET() {
 // POST - Crear nuevo indicador
 export async function POST(req: Request) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación
     const {

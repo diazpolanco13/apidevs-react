@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient() as any;
-    const cookieStore = cookies();
+    const supabase = await createClient() as any;
+    const cookieStore = await cookies();
     
     // Obtener session_id de la cookie
     const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
