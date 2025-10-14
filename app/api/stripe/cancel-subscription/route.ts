@@ -1,7 +1,6 @@
 import { stripe } from '@/utils/stripe/config';
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
-import { stripeLimiter } from '@/lib/rate-limit';
 import { subscriptionIdSchema, validateSchema } from '@/lib/validation';
 import { z } from 'zod';
 
@@ -19,29 +18,6 @@ const cancelSubscriptionSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    // Rate limiting: 5 solicitudes por minuto por IP
-    const identifier = req.headers.get('x-forwarded-for') ||
-                      req.headers.get('x-real-ip') ||
-                      'anonymous';
-
-    const rateLimitResult = stripeLimiter.check(5, identifier);
-
-    if (!rateLimitResult.success) {
-      return NextResponse.json({
-        error: "Demasiadas solicitudes",
-        message: "Has excedido el límite de solicitudes. Por favor, espera un momento.",
-        retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
-      }, {
-        status: 429,
-        headers: {
-          'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-          'X-RateLimit-Reset': new Date(rateLimitResult.reset).toISOString(),
-          'Retry-After': Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString()
-        }
-      });
-    }
-
     // Validar input con Zod
     const body = await req.json();
     const validation = validateSchema(cancelSubscriptionSchema, body);

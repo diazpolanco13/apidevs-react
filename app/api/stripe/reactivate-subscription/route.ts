@@ -2,36 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { stripe } from '@/utils/stripe/config';
 import { getUser } from '@/utils/supabase/queries';
-import { stripeLimiter } from '@/lib/rate-limit';
 
 // Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    // Rate limiting: 5 solicitudes por minuto por IP
-    const identifier = req.headers.get('x-forwarded-for') ||
-                      req.headers.get('x-real-ip') ||
-                      'anonymous';
-
-    const rateLimitResult = stripeLimiter.check(5, identifier);
-
-    if (!rateLimitResult.success) {
-      return NextResponse.json({
-        error: "Demasiadas solicitudes",
-        message: "Has excedido el límite de solicitudes. Por favor, espera un momento.",
-        retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
-      }, {
-        status: 429,
-        headers: {
-          'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-          'X-RateLimit-Reset': new Date(rateLimitResult.reset).toISOString(),
-          'Retry-After': Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString()
-        }
-      });
-    }
-
     const supabase = await createClient();
     const user = await getUser(supabase);
 
