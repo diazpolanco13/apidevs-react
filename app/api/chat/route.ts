@@ -2,6 +2,7 @@ import { streamText } from "ai";
 import { xai } from "@ai-sdk/xai";
 import { createClient } from "@/utils/supabase/server";
 import { getUserAccessDetails } from "@/lib/ai/tools/access-management-tools";
+import { chatLimiter } from "@/lib/rate-limit";
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -9,6 +10,30 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    // Rate limiting: 10 mensajes por minuto por IP/usuario
+    const identifier = request.headers.get('x-forwarded-for') ||
+                      request.headers.get('x-real-ip') ||
+                      'anonymous';
+
+    const rateLimitResult = chatLimiter.check(10, identifier);
+
+    if (!rateLimitResult.success) {
+      return new Response(JSON.stringify({
+        error: "Demasiadas solicitudes",
+        message: "Has excedido el límite de 10 mensajes por minuto. Por favor, espera un momento.",
+        retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
+      }), {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'X-RateLimit-Reset': new Date(rateLimitResult.reset).toISOString(),
+          'Retry-After': Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString()
+        }
+      });
+    }
+
     const { messages } = await request.json();
 
     // Verificar autenticación

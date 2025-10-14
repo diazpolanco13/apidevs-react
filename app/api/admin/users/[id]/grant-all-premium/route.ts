@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
+import { adminLimiter } from '@/lib/rate-limit';
 
 const TRADINGVIEW_API = 'http://185.218.124.241:5001';
 
@@ -13,6 +14,29 @@ export async function POST(
 ) {
   const { id } = await params;
   try {
+    // Rate limiting: 100 solicitudes por minuto para operaciones admin
+    const identifier = req.headers.get('x-forwarded-for') ||
+                      req.headers.get('x-real-ip') ||
+                      'admin';
+
+    const rateLimitResult = adminLimiter.check(100, identifier);
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json({
+        error: "Demasiadas solicitudes",
+        message: "Has excedido el límite de solicitudes administrativas. Por favor, espera un momento.",
+        retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
+      }, {
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'X-RateLimit-Reset': new Date(rateLimitResult.reset).toISOString(),
+          'Retry-After': Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString()
+        }
+      });
+    }
+
     const supabase = await createClient();
 
     // Verificar autenticación admin
