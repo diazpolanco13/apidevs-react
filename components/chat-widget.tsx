@@ -531,7 +531,7 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
 
       {/* Widget de chat */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-96 h-[500px] bg-[#1a1a1a] rounded-lg shadow-2xl border border-[#333] flex flex-col backdrop-blur-sm">
+        <div className="fixed bottom-24 right-2 z-50 w-96 h-[500px] bg-[#1a1a1a] rounded-lg shadow-2xl border border-[#333] flex flex-col backdrop-blur-sm">
           {/* Header */}
           <div className="bg-[#C9D92E] text-black p-4 rounded-t-lg flex justify-between items-center shadow-lg">
             <div className="flex items-center gap-3">
