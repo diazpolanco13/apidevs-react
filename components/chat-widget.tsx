@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { ChatAuth } from "./chat-auth";
 
@@ -27,6 +27,8 @@ function ChatWidget() {
   const [guestEmail, setGuestEmail] = useState<string>("");
   const [showAuth, setShowAuth] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // Verificar autenticación al abrir el chat
   useEffect(() => {
@@ -34,6 +36,27 @@ function ChatWidget() {
       checkAuthStatus();
     }
   }, [isOpen, authChecked]);
+
+  // Auto-scroll cuando llegan nuevos mensajes o cuando está cargando
+  useEffect(() => {
+    if (messages.length > 0 || isLoading) {
+      scrollToBottom();
+    }
+  }, [messages, isLoading]);
+
+  // Función para hacer scroll automático al final
+  const scrollToBottom = () => {
+    // Solo hacer scroll si el usuario está cerca del final (últimos 100px)
+    // Esto evita interrumpir la lectura de mensajes antiguos
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+
+      if (isNearBottom) {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   const checkAuthStatus = async () => {
     const supabase = createClient();
@@ -276,7 +299,10 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 bg-[#1a1a1a] space-y-3">
+          <div
+            ref={messagesContainerRef}
+            className="flex-1 overflow-y-auto p-4 bg-[#1a1a1a] space-y-3"
+          >
             {messages.length === 0 && (
               <div className="text-center text-gray-300 text-sm">
                 <div className="flex justify-center mb-3">
@@ -317,6 +343,9 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
                 </div>
               </div>
             ))}
+
+            {/* Elemento invisible para hacer scroll automático */}
+            <div ref={messagesEndRef} />
             
             {isLoading && (
               <div className="flex justify-start">
