@@ -14,8 +14,14 @@ export async function POST(request: Request) {
     const { data: { user }, error } = await supabase.auth.getUser();
 
     if (error || !user) {
-      return new Response("No autorizado", { status: 401 });
+      console.error('❌ Error de autenticación en chat API:', error);
+      return new Response(JSON.stringify({ error: "No autorizado", details: error?.message }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
+
+    console.log('✅ Usuario autenticado:', user.email);
 
     // Verificar si es una consulta administrativa no autorizada
     const lastMessage = messages[messages.length - 1]?.content?.toLowerCase() || '';
@@ -403,16 +409,38 @@ IMPORTANTE GENERAL:
 - Mantén un tono amigable y profesional`;
 
     // Llamar al modelo con tools disponibles - USAR GROK-3
-    const result = await streamText({
-      model: xai('grok-3'), // Cambiar a grok-3 (modelo actual)
-      system: systemPrompt,
-      messages,
-      tools: availableTools,
-    });
+    console.log('🤖 Llamando a Grok-3...');
 
-    return result.toTextStreamResponse();
-  } catch (error) {
-    console.error('Error en chat API:', error);
-    return new Response("Error interno del servidor", { status: 500 });
+    try {
+      const result = await streamText({
+        model: xai('grok-3'), // Cambiar a grok-3 (modelo actual)
+        system: systemPrompt,
+        messages,
+        tools: availableTools,
+      });
+
+      console.log('✅ Respuesta de Grok-3 generada');
+      return result.toTextStreamResponse();
+    } catch (aiError: any) {
+      console.error('❌ Error llamando a Grok-3:', aiError);
+      return new Response(JSON.stringify({
+        error: "Error al generar respuesta",
+        details: aiError?.message || String(aiError),
+        type: aiError?.name || 'AIError'
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+  } catch (error: any) {
+    console.error('❌ Error general en chat API:', error);
+    return new Response(JSON.stringify({
+      error: "Error interno del servidor",
+      details: error?.message || String(error),
+      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }

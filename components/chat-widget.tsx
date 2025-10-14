@@ -385,7 +385,9 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
       });
 
       if (!response.ok) {
-        throw new Error("Error en la respuesta");
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Error del servidor:', errorData);
+        throw new Error(errorData.details || errorData.error || `Error HTTP ${response.status}`);
       }
 
       // Crear mensaje vacío del asistente
@@ -421,12 +423,13 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
         ));
       }
 
-    } catch (error) {
-      console.error("Error:", error);
+    } catch (error: any) {
+      console.error("❌ Error en handleSubmit:", error);
+      const errorMessage = error?.message || "Error desconocido";
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         role: "assistant",
-        content: "Lo siento, hubo un error. Por favor intenta de nuevo.",
+        content: `❌ Lo siento, hubo un error al procesar tu mensaje:\n\n${errorMessage}\n\nPor favor intenta de nuevo o contacta a soporte si el problema persiste.`,
       }]);
     } finally {
       setIsLoading(false);
