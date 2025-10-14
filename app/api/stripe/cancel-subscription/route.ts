@@ -2,6 +2,8 @@ import { stripe } from '@/utils/stripe/config';
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { stripeLimiter } from '@/lib/rate-limit';
+import { subscriptionIdSchema, validateSchema } from '@/lib/validation';
+import { z } from 'zod';
 
 interface SubscriptionUpdate {
   cancel_at_period_end: boolean;
@@ -10,6 +12,10 @@ interface SubscriptionUpdate {
 
 // Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
 export const dynamic = 'force-dynamic';
+
+const cancelSubscriptionSchema = z.object({
+  subscriptionId: subscriptionIdSchema
+});
 
 export async function POST(req: Request) {
   try {
@@ -36,14 +42,21 @@ export async function POST(req: Request) {
       });
     }
 
-    const { subscriptionId } = await req.json();
+    // Validar input con Zod
+    const body = await req.json();
+    const validation = validateSchema(cancelSubscriptionSchema, body);
 
-    if (!subscriptionId) {
-      return NextResponse.json(
-        { error: 'Subscription ID requerido' },
-        { status: 400 }
-      );
+    if (!validation.success) {
+      return NextResponse.json({
+        error: "Datos inválidos",
+        message: "El ID de suscripción no es válido",
+        details: validation.errors
+      }, {
+        status: 400
+      });
     }
+
+    const { subscriptionId } = validation.data;
 
     // Verificar autenticación
     const supabase = await createClient();

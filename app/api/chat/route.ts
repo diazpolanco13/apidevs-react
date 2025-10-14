@@ -3,6 +3,7 @@ import { xai } from "@ai-sdk/xai";
 import { createClient } from "@/utils/supabase/server";
 import { getUserAccessDetails } from "@/lib/ai/tools/access-management-tools";
 import { chatLimiter } from "@/lib/rate-limit";
+import { chatRequestSchema, validateSchema } from "@/lib/validation";
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -34,7 +35,22 @@ export async function POST(request: Request) {
       });
     }
 
-    const { messages } = await request.json();
+    // Validar input con Zod
+    const body = await request.json();
+    const validation = validateSchema(chatRequestSchema, body);
+
+    if (!validation.success) {
+      return new Response(JSON.stringify({
+        error: "Datos inválidos",
+        message: "El formato de los mensajes no es correcto",
+        details: validation.errors
+      }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const { messages } = validation.data;
 
     // Verificar autenticación
     const supabase = await createClient();
