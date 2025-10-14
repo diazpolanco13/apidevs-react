@@ -13,6 +13,11 @@ const SimpleCookieBanner = dynamic(() => import('@/components/SimpleCookieBanner
   ssr: false
 });
 
+// ✅ CHAT WIDGET - Widget flotante de chat
+const ChatWidget = dynamic(() => import('@/components/chat-widget'), {
+  ssr: false
+});
+
 // Importar fuentes de Google Fonts
 import { Work_Sans } from 'next/font/google';
 
@@ -73,6 +78,8 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <ConfirmEmailDialog />
         {/* ✅ Banner de cookies con diseño premium */}
         <SimpleCookieBanner />
+        {/* ✅ Widget de chat flotante */}
+        <ChatWidget />
       </body>
     </html>
   );
