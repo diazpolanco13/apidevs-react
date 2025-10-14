@@ -39,7 +39,7 @@ export default function SignUp({ allowEmail, redirectMethod, selectedPlan, planI
         onSubmit={(e) => handleSubmit(e)}
       >
         <div className="space-y-4">
-          <div>
+          <div suppressHydrationWarning>
             <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
               Email
             </label>

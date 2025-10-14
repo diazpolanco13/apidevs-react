@@ -4,6 +4,28 @@ import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { ChatAuth } from "./chat-auth";
 
+// Estilos CSS para scrollbar personalizada (solo WebKit)
+const customScrollbarStyles = `
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #2a2a2a;
+    border-radius: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #C9D92E 0%, #B8C428 100%);
+    border-radius: 10px;
+    border: 2px solid #2a2a2a;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #B8C428 0%, #A5B125 100%);
+  }
+`;
+
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -221,6 +243,16 @@ function ChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
+  // Inyectar estilos CSS personalizados para scrollbar
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = customScrollbarStyles;
+    document.head.appendChild(styleElement);
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
+
   // Verificar autenticación al abrir el chat
   useEffect(() => {
     if (isOpen && !authChecked) {
@@ -231,19 +263,28 @@ function ChatWidget() {
   // Auto-scroll cuando llegan nuevos mensajes o cuando está cargando
   useEffect(() => {
     if (messages.length > 0 || isLoading) {
-      scrollToBottom();
+      // Usar setTimeout para asegurar que el DOM se haya actualizado
+      setTimeout(() => scrollToBottom(), 50);
     }
   }, [messages, isLoading]);
 
+  // Scroll al abrir el chat
+  useEffect(() => {
+    if (isOpen && messages.length > 0) {
+      setTimeout(() => scrollToBottom(), 100);
+    }
+  }, [isOpen]);
+
   // Función para hacer scroll automático al final
   const scrollToBottom = () => {
-    // Solo hacer scroll si el usuario está cerca del final (últimos 100px)
-    // Esto evita interrumpir la lectura de mensajes antiguos
+    // Si el bot está escribiendo (isLoading), siempre hacer scroll automático
+    // Si no está escribiendo, solo hacer scroll si el usuario está cerca del final
     if (messagesContainerRef.current) {
       const container = messagesContainerRef.current;
       const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
 
-      if (isNearBottom) {
+      // Forzar scroll si está cargando (bot escribiendo) o si está cerca del final
+      if (isLoading || isNearBottom) {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }
     }
@@ -444,22 +485,25 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
           onClick={() => setIsOpen(!isOpen)}
           className="relative group transition-all duration-300 hover:scale-105"
         >
-          {/* GIF animado */}
+          {/* GIF animado optimizado (WebP desde Supabase CDN con fallback a GIF) */}
           <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-[#aaff00] bg-black hover:border-[#C9D92E] transition-colors duration-300">
-            <img 
-              src="/chatbot-boton.gif" 
-              alt="Chat APIDevs" 
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                // Fallback si el GIF no carga
-                const target = e.currentTarget;
-                const sibling = target.nextElementSibling as HTMLElement | null;
-                if (target && sibling) {
-                  target.style.display = 'none';
-                  sibling.style.display = 'flex';
-                }
-              }}
-            />
+            <picture>
+              <source srcSet="https://zzieiqxlxfydvexalbsr.supabase.co/storage/v1/object/public/static-assets/animations/chatbot-boton.webp" type="image/webp" />
+              <img 
+                src="/chatbot-boton.gif" 
+                alt="Chat APIDevs" 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback si el GIF no carga
+                  const target = e.currentTarget;
+                  const sibling = target.nextElementSibling as HTMLElement | null;
+                  if (target && sibling) {
+                    target.style.display = 'none';
+                    sibling.style.display = 'flex';
+                  }
+                }}
+              />
+            </picture>
             {/* Fallback icon si el GIF no carga */}
             <div className="w-full h-full bg-[#aaff00] text-black flex items-center justify-center" style={{display: 'none'}}>
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -489,7 +533,7 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 w-96 h-[500px] bg-[#1a1a1a] rounded-lg shadow-2xl border border-[#333] flex flex-col backdrop-blur-sm">
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#aaff00] to-[#C9D92E] text-black p-4 rounded-t-lg flex justify-between items-center">
+          <div className="bg-[#C9D92E] text-black p-4 rounded-t-lg flex justify-between items-center shadow-lg">
             <div className="flex items-center gap-3">
               {/* GIF del búho leyendo */}
               <div className="w-8 h-8 rounded-full overflow-hidden bg-white/20 flex items-center justify-center">
@@ -536,7 +580,11 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
           {/* Messages */}
           <div
             ref={messagesContainerRef}
-            className="flex-1 overflow-y-auto p-4 bg-[#1a1a1a] space-y-3"
+            className="flex-1 overflow-y-auto p-4 bg-[#1a1a1a] space-y-3 custom-scrollbar"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#C9D92E #2a2a2a'
+            }}
           >
             {messages.length === 0 && (
               <div className="text-center text-gray-300 text-sm">
@@ -629,7 +677,7 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
                 <button
                   type="submit"
                   disabled={isLoading || !input.trim()}
-                  className="px-4 py-2 bg-[#aaff00] text-white rounded-lg hover:bg-[#C9D92E] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-semibold"
+                  className="px-4 py-2 bg-[#C9D92E] text-black rounded-lg hover:bg-[#B8C428] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm font-bold shadow-md hover:shadow-xl hover:scale-105"
                 >
                   {isLoading ? "..." : "Enviar"}
                 </button>

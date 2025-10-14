@@ -25,6 +25,8 @@
     "delete-invalid-users": "tsx scripts/delete-invalid-legacy-users.ts",
     "check-remaining-users": "tsx scripts/check-remaining-users.ts",
     "migrate-avatars": "tsx scripts/migrate-avatars.ts",
+    "optimize-gifs": "tsx scripts/optimize-gifs.ts",
+    "migrate-gifs-to-supabase": "tsx scripts/migrate-gifs-to-supabase.ts",
     "sanity:studio": "next dev",
     "sanity:migrate": "tsx scripts/migrate-indicators-to-sanity.ts",
     "prepare": "husky"
