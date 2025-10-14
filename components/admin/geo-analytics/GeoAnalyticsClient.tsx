@@ -1,12 +1,25 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { Globe, Users, ShoppingCart, TrendingUp, MapPin, RefreshCw } from 'lucide-react';
 import PlotlyGeoMap from './PlotlyGeoMap';
 import CountryStatsTable from './CountryStatsTable';
 import DateRangeFilter from './DateRangeFilter';
-import TrendChart from '../analytics/TrendChart';
 import PeriodComparison from '../analytics/PeriodComparison';
+
+// Dynamic import para Chart.js (code splitting)
+const TrendChart = dynamic(() => import('../analytics/TrendChart'), {
+  loading: () => (
+    <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700/50 p-6 h-[350px] flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-2"></div>
+        <div className="text-gray-400 text-sm">Cargando gráfico...</div>
+      </div>
+    </div>
+  ),
+  ssr: false
+});
 
 interface CountryStats {
   country: string;
