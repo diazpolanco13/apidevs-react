@@ -56,7 +56,7 @@ export default function Pricing({ user, products, subscription, showHeader = tru
       return router.push('/signin/signup');
     }
 
-    const { errorRedirect, sessionId } = await checkoutWithStripe(
+    const { errorRedirect, checkoutUrl } = await checkoutWithStripe(
       price,
       '/account'
     );
@@ -66,7 +66,7 @@ export default function Pricing({ user, products, subscription, showHeader = tru
       return router.push(errorRedirect);
     }
 
-    if (!sessionId) {
+    if (!checkoutUrl) {
       setPriceIdLoading(undefined);
       return router.push(
         getErrorRedirect(
@@ -77,8 +77,8 @@ export default function Pricing({ user, products, subscription, showHeader = tru
       );
     }
 
-    const stripe = await getStripe();
-    stripe?.redirectToCheckout({ sessionId });
+    // Stripe.js v8+: Redirigir usando la URL directa de checkout
+    window.location.href = checkoutUrl;
 
     setPriceIdLoading(undefined);
   };

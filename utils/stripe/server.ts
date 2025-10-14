@@ -15,7 +15,8 @@ type Price = Tables<'prices'>;
 
 type CheckoutResponse = {
   errorRedirect?: string;
-  sessionId?: string;
+  sessionId?: string; // Deprecated - mantener por compatibilidad
+  checkoutUrl?: string; // Stripe.js v8+ - URL directa de checkout
 };
 
 export async function checkoutWithStripe(
@@ -150,7 +151,10 @@ export async function checkoutWithStripe(
 
     // Instead of returning a Response, just return the data or error.
     if (session) {
-      return { sessionId: session.id };
+      return {
+        sessionId: session.id, // Deprecated - mantener por compatibilidad
+        checkoutUrl: session.url || undefined // Stripe.js v8+ - URL directa
+      };
     } else {
       throw new Error('Unable to create checkout session.');
     }
