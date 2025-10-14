@@ -51,7 +51,14 @@ export async function POST(request: Request) {
       legacy_customer_type: 'new',
       legacy_lifetime_spent: 0,
       legacy_purchase_count: 0,
-      has_legacy_discount_eligible: false
+      has_legacy_discount_eligible: false,
+
+      // 📅 FECHAS HISTÓRICAS
+      customer_since: null,
+      wordpress_created_at: null,
+      legacy_imported_at: null,
+      first_purchase_date: null,
+      wordpress_customer_id: null
     };
 
     try {
@@ -61,7 +68,8 @@ export async function POST(request: Request) {
         .select(`
           full_name, email, tradingview_username, customer_tier, total_lifetime_spent, purchase_count,
           legacy_customer, is_legacy_user, legacy_discount_percentage, legacy_benefits,
-          legacy_customer_type, loyalty_discount_percentage
+          legacy_customer_type, loyalty_discount_percentage, customer_since, wordpress_created_at,
+          legacy_imported_at, first_purchase_date, wordpress_customer_id
         `)
         .eq('id', user.id)
         .single();
@@ -69,16 +77,25 @@ export async function POST(request: Request) {
       // Si no encontramos datos en users, buscar en legacy_users
       let legacyDiscountPercentage = 0;
       let legacyTier = 'free';
+      let legacyCustomerSince = null;
+      let legacyFirstPurchase = null;
+      let legacyImportedAt = null;
+      let wordpressCustomerId = null;
+
       if (userError && user.email) {
         const { data: legacyData } = await supabase
           .from('legacy_users')
-          .select('legacy_discount_percentage, customer_tier')
+          .select('legacy_discount_percentage, customer_tier, wordpress_created_at, first_purchase_date, migrated_at, wordpress_customer_id')
           .eq('email', user.email.toLowerCase().trim())
           .single();
 
         if (legacyData) {
           legacyDiscountPercentage = (legacyData as any).legacy_discount_percentage || 0;
           legacyTier = (legacyData as any).customer_tier || 'free';
+          legacyCustomerSince = (legacyData as any).wordpress_created_at;
+          legacyFirstPurchase = (legacyData as any).first_purchase_date;
+          legacyImportedAt = (legacyData as any).migrated_at;
+          wordpressCustomerId = (legacyData as any).wordpress_customer_id;
         }
       }
 
@@ -99,6 +116,13 @@ export async function POST(request: Request) {
         userProfile.legacy_lifetime_spent = (userData as any).total_lifetime_spent || 0;
         userProfile.legacy_purchase_count = (userData as any).purchase_count || 0;
 
+        // 📅 FECHAS HISTÓRICAS - Priorizar users sobre legacy_users
+        userProfile.customer_since = (userData as any).customer_since || legacyCustomerSince;
+        userProfile.wordpress_created_at = (userData as any).wordpress_created_at || legacyCustomerSince;
+        userProfile.legacy_imported_at = (userData as any).legacy_imported_at || legacyImportedAt;
+        userProfile.first_purchase_date = (userData as any).first_purchase_date || legacyFirstPurchase;
+        userProfile.wordpress_customer_id = (userData as any).wordpress_customer_id || wordpressCustomerId;
+
         // Determinar si es elegible para descuento legacy
         userProfile.has_legacy_discount_eligible = (
           userProfile.legacy_customer ||
@@ -113,6 +137,13 @@ export async function POST(request: Request) {
           userProfile.legacy_discount_percentage = legacyDiscountPercentage;
           userProfile.customer_tier = legacyTier;
           userProfile.has_legacy_discount_eligible = true;
+
+          // 📅 Usar fechas de legacy_users
+          userProfile.customer_since = legacyCustomerSince;
+          userProfile.wordpress_created_at = legacyCustomerSince;
+          userProfile.legacy_imported_at = legacyImportedAt;
+          userProfile.first_purchase_date = legacyFirstPurchase;
+          userProfile.wordpress_customer_id = wordpressCustomerId;
         }
       }
 
@@ -270,6 +301,12 @@ DATOS DEL USUARIO ACTUAL:
 - Porcentaje de descuento legacy: ${userProfile.legacy_discount_percentage}%
 - Beneficios legacy: ${Object.keys(userProfile.legacy_benefits).length > 0 ? JSON.stringify(userProfile.legacy_benefits) : 'Ninguno'}
 
+📅 INFORMACIÓN HISTÓRICA:
+- Fecha de registro original: ${userProfile.wordpress_created_at ? new Date(userProfile.wordpress_created_at).toLocaleDateString('es-ES') : 'No disponible'}
+- Primera compra: ${userProfile.first_purchase_date ? new Date(userProfile.first_purchase_date).toLocaleDateString('es-ES') : 'No disponible'}
+- Fecha de migración a nueva plataforma: ${userProfile.legacy_imported_at ? new Date(userProfile.legacy_imported_at).toLocaleDateString('es-ES') : 'No disponible'}
+- ID de cliente WordPress: ${userProfile.wordpress_customer_id || 'No disponible'}
+
 ${adminAccessData ? `DATOS DE ACCESOS ADMINISTRATIVOS CONSULTADOS:
 - Usuario consultado: ${adminAccessData.user} (${adminAccessData.email})
 - Total de indicadores activos: ${adminAccessData.total_indicators}
@@ -305,6 +342,9 @@ Tú: "Actualmente tienes el plan ${userProfile.subscription_tier} (${userProfile
 
 Usuario: "¿cuántos indicadores tengo?"
 Tú: "Tienes acceso a ${userProfile.total_indicators} indicadores"
+
+Usuario: "¿cuánto tiempo tengo con APIDevs?"
+Tú: "Eres uno de nuestros primeros clientes desde ${userProfile.wordpress_created_at ? new Date(userProfile.wordpress_created_at).toLocaleDateString('es-ES') + ' (' + Math.floor((new Date().getTime() - new Date(userProfile.wordpress_created_at).getTime()) / (1000 * 60 * 60 * 24)) + ' días)' : 'WordPress'}. Tu lealtad histórica es muy apreciada y por eso tienes un descuento especial del ${userProfile.legacy_discount_percentage}% en todos nuestros planes."
 
 EJEMPLOS DE RESPUESTAS PARA CLIENTES LEGACY:
 
