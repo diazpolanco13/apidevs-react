@@ -16,6 +16,196 @@ interface UserData {
   full_name: string;
   subscription_status?: string;
   subscription_tier?: string;
+  // 🚀 Nuevos campos para legacy
+  is_legacy_user?: boolean;
+  legacy_customer?: boolean;
+  legacy_discount_percentage?: number;
+  legacy_benefits?: any;
+  legacy_customer_type?: string;
+  legacy_lifetime_spent?: number;
+  legacy_purchase_count?: number;
+  has_legacy_discount_eligible?: boolean;
+}
+
+// Función para determinar el indicador de carga apropiado
+function getLoadingIndicator(messages: Message[], userData: UserData | null): string {
+  const lastMessage = messages[messages.length - 1];
+  const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+
+  if (!lastUserMessage) return "🤔 Pensando...";
+
+  const content = lastUserMessage.content.toLowerCase();
+
+  // Detectar consultas sobre indicadores/accesos
+  if (content.includes('indicador') || content.includes('acceso') || content.includes('usuario') ||
+      content.includes('tradingview') || content.includes('cuántos') || content.includes('tiene')) {
+    return "🔍 Consultando base de datos...";
+  }
+
+  // Detectar consultas administrativas (solo para admin)
+  if (userData?.email === 'api@apidevs.io' &&
+      (content.includes('muestra') || content.includes('lista') || content.includes('todos'))) {
+    return "📊 Procesando datos administrativos...";
+  }
+
+  // Detectar consultas sobre precios/planes
+  if (content.includes('precio') || content.includes('cuesta') || content.includes('plan') ||
+      content.includes('suscripción') || content.includes('pago')) {
+    return "💰 Calculando precios...";
+  }
+
+  // Detectar consultas técnicas/soporte
+  if (content.includes('ayuda') || content.includes('problema') || content.includes('error') ||
+      content.includes('cómo') || content.includes('no funciona')) {
+    return "🔧 Procesando consulta técnica...";
+  }
+
+  // Default
+  return "🤔 Generando respuesta inteligente...";
+}
+
+// Componente para sugerencias contextuales
+interface ContextualSuggestionsProps {
+  userData: UserData | null;
+  messages: Message[];
+  onSuggestionClick: (suggestion: string) => void;
+}
+
+function ContextualSuggestions({ userData, messages, onSuggestionClick }: ContextualSuggestionsProps) {
+  // Verificar explícitamente que userData existe y es admin
+  const isAdmin = userData && userData.email === 'api@apidevs.io';
+  const isLegacyUser = userData && (userData.has_legacy_discount_eligible ||
+                                  userData.is_legacy_user ||
+                                  userData.legacy_customer ||
+                                  (userData.legacy_discount_percentage || 0) > 0);
+
+  if (!userData) return null; // No mostrar sugerencias si no hay datos del usuario
+
+  const lastMessage = messages[messages.length - 1];
+  const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+
+  if (!lastUserMessage) return null;
+
+  const content = lastUserMessage.content.toLowerCase();
+
+  // 🚀 Sugerencias especiales para usuarios LEGACY preguntando precios
+  if (isLegacyUser && (content.includes('cuánto cuesta') || content.includes('precio') || content.includes('plan'))) {
+    return (
+      <div className="flex flex-wrap gap-2 mt-3 px-2">
+        <SuggestionButton
+          text="¿Cuánto descuento tengo?"
+          onClick={() => onSuggestionClick("¿Cuánto descuento tengo como cliente legacy?")}
+          special={true}
+        />
+        <SuggestionButton
+          text="¿Precio con descuento?"
+          onClick={() => onSuggestionClick("¿Cuál sería el precio con mi descuento legacy?")}
+        />
+        <SuggestionButton
+          text="¡Suscríbeme con descuento!"
+          onClick={() => onSuggestionClick("Quiero suscribirme al plan PRO con mi descuento legacy")}
+        />
+      </div>
+    );
+  }
+
+  // Sugerencias para consultas sobre precios (usuarios normales)
+  if (content.includes('cuánto cuesta') || content.includes('precio') || content.includes('plan')) {
+    return (
+      <div className="flex flex-wrap gap-2 mt-3 px-2">
+        <SuggestionButton
+          text="¿Hay descuentos?"
+          onClick={() => onSuggestionClick("¿Hay descuentos o promociones disponibles?")}
+        />
+        <SuggestionButton
+          text="¿Puedo cambiar de plan?"
+          onClick={() => onSuggestionClick("¿Puedo cambiar de plan mensual a anual?")}
+        />
+        <SuggestionButton
+          text="¿Cuáles son las diferencias?"
+          onClick={() => onSuggestionClick("¿Cuáles son las diferencias entre los planes?")}
+        />
+      </div>
+    );
+  }
+
+  // Sugerencias para administradores sobre accesos (SOLO SI ES VERDADERAMENTE ADMIN)
+  if (isAdmin && (content.includes('indicador') || content.includes('acceso') || content.includes('usuario'))) {
+    return (
+      <div className="flex flex-wrap gap-2 mt-3 px-2">
+        <SuggestionButton
+          text="¿Cuántos usuarios tienen PRO?"
+          onClick={() => onSuggestionClick("¿Cuántos usuarios tienen plan PRO activo?")}
+        />
+        <SuggestionButton
+          text="¿Quién tiene acceso al RSI?"
+          onClick={() => onSuggestionClick("¿Qué usuarios tienen acceso al indicador RSI?")}
+        />
+        <SuggestionButton
+          text="¿Hay expiraciones pronto?"
+          onClick={() => onSuggestionClick("¿Qué accesos van a expirar en los próximos 7 días?")}
+        />
+      </div>
+    );
+  }
+
+  // Sugerencias para usuarios sobre indicadores
+  if (userData && (content.includes('indicador') || content.includes('acceso'))) {
+    return (
+      <div className="flex flex-wrap gap-2 mt-3 px-2">
+        <SuggestionButton
+          text="¿Cuántos indicadores tengo?"
+          onClick={() => onSuggestionClick("¿Cuántos indicadores tengo activos actualmente?")}
+        />
+        <SuggestionButton
+          text="¿Cuándo expira mi acceso?"
+          onClick={() => onSuggestionClick("¿Cuándo expira mi acceso a los indicadores?")}
+        />
+        <SuggestionButton
+          text="¿Puedo renovar?"
+          onClick={() => onSuggestionClick("¿Puedo renovar mi acceso a los indicadores?")}
+        />
+      </div>
+    );
+  }
+
+  // Sugerencias generales después del primer mensaje
+  if (messages.length === 2) {
+    return (
+      <div className="flex flex-wrap gap-2 mt-3 px-2">
+        <SuggestionButton
+          text="¿Qué indicadores ofrecen?"
+          onClick={() => onSuggestionClick("¿Qué indicadores ofrecen en APIDevs?")}
+        />
+        <SuggestionButton
+          text="¿Cómo me registro?"
+          onClick={() => onSuggestionClick("¿Cómo me registro en la plataforma?")}
+        />
+        <SuggestionButton
+          text="¿Necesito TradingView?"
+          onClick={() => onSuggestionClick("¿Necesito tener cuenta de TradingView para usar los indicadores?")}
+        />
+      </div>
+    );
+  }
+
+  return null;
+}
+
+// Componente para botones de sugerencias
+function SuggestionButton({ text, onClick, special }: { text: string; onClick: () => void; special?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-full text-xs transition-all duration-200 whitespace-nowrap ${
+        special
+          ? "bg-gradient-to-r from-[#aaff00] to-[#C9D92E] text-black font-semibold hover:from-[#C9D92E] hover:to-[#aaff00] shadow-lg animate-pulse"
+          : "bg-[#2a2a2a] hover:bg-[#3a3a3a] border border-[#444] hover:border-[#555] text-gray-300 hover:text-[#aaff00]"
+      }`}
+    >
+      {text}
+    </button>
+  );
 }
 
 function ChatWidget() {
@@ -83,15 +273,30 @@ function ChatWidget() {
   };
 
   const addWelcomeMessage = (user: UserData) => {
-    const welcomeMessage = `¡Hola ${user.full_name || user.email}! 👋 
+    const isLegacyUser = user.has_legacy_discount_eligible ||
+                        user.is_legacy_user ||
+                        user.legacy_customer ||
+                        (user.legacy_discount_percentage || 0) > 0;
+
+    let welcomeMessage = `¡Hola ${user.full_name || user.email}! 👋
 
 Soy tu asistente de APIDevs y puedo ayudarte con:
 • Información sobre tu cuenta y suscripción
 • Consultas sobre indicadores y planes
-• Soporte técnico
+• Soporte técnico`;
+
+    // 🚀 Agregar mensaje especial para usuarios LEGACY
+    if (isLegacyUser) {
+      const discountPercent = user.legacy_discount_percentage || 50;
+      welcomeMessage += `
+
+⭐ **¡Felicitaciones!** Eres uno de nuestros primeros y más valiosos clientes legacy. Como reconocimiento a tu lealtad histórica, tienes un **${discountPercent}% de descuento** en todos nuestros planes.`;
+    }
+
+    welcomeMessage += `
 
 ¿En qué puedo ayudarte hoy?`;
-    
+
     setMessages([{
       id: Date.now().toString(),
       role: "assistant",
@@ -350,9 +555,28 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-[#2a2a2a] text-[#aaff00] border border-[#333] px-3 py-2 rounded-lg">
-                  <p className="text-sm font-medium">🤔 Pensando...</p>
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <span className="animate-spin">⚡</span>
+                    {getLoadingIndicator(messages, userData)}
+                  </p>
                 </div>
               </div>
+            )}
+
+            {/* Sugerencias contextuales */}
+            {!isLoading && messages.length > 0 && (
+              <ContextualSuggestions
+                userData={userData}
+                messages={messages}
+                onSuggestionClick={(suggestion) => {
+                  setInput(suggestion);
+                  // Auto-enviar después de un pequeño delay
+                  setTimeout(() => {
+                    const form = document.querySelector('form');
+                    if (form) form.requestSubmit();
+                  }, 100);
+                }}
+              />
             )}
           </div>
 

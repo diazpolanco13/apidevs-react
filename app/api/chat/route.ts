@@ -17,6 +17,20 @@ export async function POST(request: Request) {
       return new Response("No autorizado", { status: 401 });
     }
 
+    // Verificar si es una consulta administrativa no autorizada
+    const lastMessage = messages[messages.length - 1]?.content?.toLowerCase() || '';
+    const isAdminQuery = lastMessage.includes('expirar') ||
+                        lastMessage.includes('accesos van a') ||
+                        lastMessage.includes('próximos') ||
+                        (lastMessage.includes('indicadores') && lastMessage.includes('tiene') && lastMessage.includes('@'));
+
+    if (isAdminQuery && user.email !== 'api@apidevs.io') {
+      console.warn(`🚫 Usuario no admin intentó consulta administrativa: ${user.email}`);
+      return new Response("Esta consulta requiere permisos de administrador. Contacta al soporte si necesitas ayuda.", {
+        status: 403
+      });
+    }
+
     // 🔄 PRE-FETCH DE DATOS DEL USUARIO USANDO MCP DE SUPABASE
     let userProfile = {
       full_name: "Usuario",
@@ -27,14 +41,28 @@ export async function POST(request: Request) {
       has_active_subscription: false,
       total_indicators: 0,
       customer_tier: "free",
-      is_admin: user.email === 'api@apidevs.io' // ✅ Detectar automáticamente si es admin
+      is_admin: user.email === 'api@apidevs.io', // ✅ Detectar automáticamente si es admin
+
+      // 🚀 NUEVOS CAMPOS PARA USUARIOS LEGACY
+      is_legacy_user: false,
+      legacy_customer: false,
+      legacy_discount_percentage: 0,
+      legacy_benefits: {},
+      legacy_customer_type: 'new',
+      legacy_lifetime_spent: 0,
+      legacy_purchase_count: 0,
+      has_legacy_discount_eligible: false
     };
 
     try {
       // Obtener datos del usuario desde la tabla users (usando campos que realmente existen)
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('full_name, email, tradingview_username, customer_tier, total_lifetime_spent, purchase_count, legacy_customer')
+        .select(`
+          full_name, email, tradingview_username, customer_tier, total_lifetime_spent, purchase_count,
+          legacy_customer, is_legacy_user, legacy_discount_percentage, legacy_benefits,
+          legacy_customer_type, loyalty_discount_percentage
+        `)
         .eq('id', user.id)
         .single();
 
@@ -44,6 +72,22 @@ export async function POST(request: Request) {
         userProfile.tradingview_username = (userData as any).tradingview_username || "No configurado";
         userProfile.customer_tier = (userData as any).customer_tier || "free";
         userProfile.subscription_tier = (userData as any).customer_tier || "free";
+
+        // 🚀 DETECCIÓN DE USUARIOS LEGACY
+        userProfile.is_legacy_user = (userData as any).is_legacy_user || false;
+        userProfile.legacy_customer = (userData as any).legacy_customer || false;
+        userProfile.legacy_discount_percentage = (userData as any).legacy_discount_percentage || 0;
+        userProfile.legacy_benefits = (userData as any).legacy_benefits || {};
+        userProfile.legacy_customer_type = (userData as any).legacy_customer_type || 'new';
+        userProfile.legacy_lifetime_spent = (userData as any).total_lifetime_spent || 0;
+        userProfile.legacy_purchase_count = (userData as any).purchase_count || 0;
+
+        // Determinar si es elegible para descuento legacy
+        userProfile.has_legacy_discount_eligible = (
+          userProfile.legacy_customer ||
+          userProfile.is_legacy_user ||
+          userProfile.legacy_discount_percentage > 0
+        );
       }
 
       // Verificar suscripción activa en Stripe
@@ -82,7 +126,8 @@ export async function POST(request: Request) {
     const availableTools = {};
 
     // Solo admins pueden usar tools de gestión de accesos
-    if (user.email === 'api@apidevs.io') {
+    const isAdmin = user.email === 'api@apidevs.io';
+    if (isAdmin) {
       Object.assign(availableTools, {
         getUserAccessDetails
       });
@@ -91,7 +136,8 @@ export async function POST(request: Request) {
     // PLAN B: Pre-fetch data para consultas administrativas
     let adminAccessData = null;
 
-    if (user.email === 'api@apidevs.io') {
+    // Solo procesar consultas administrativas si el usuario ES admin
+    if (isAdmin) {
       try {
         // Buscar si el último mensaje contiene una consulta sobre accesos de usuario
         const lastMessage = messages[messages.length - 1]?.content?.toLowerCase() || '';
@@ -192,6 +238,12 @@ DATOS DEL USUARIO ACTUAL:
 - Indicadores disponibles: ${userProfile.total_indicators}
 - Es administrador: ${userProfile.is_admin ? 'Sí' : 'No'}
 
+🚀 INFORMACIÓN LEGACY (CLIENTES DE WORDPRESS):
+- Es cliente legacy: ${userProfile.has_legacy_discount_eligible ? 'SÍ' : 'NO'}
+- Tipo de cliente legacy: ${userProfile.legacy_customer_type}
+- Porcentaje de descuento legacy: ${userProfile.legacy_discount_percentage}%
+- Beneficios legacy: ${Object.keys(userProfile.legacy_benefits).length > 0 ? JSON.stringify(userProfile.legacy_benefits) : 'Ninguno'}
+
 ${adminAccessData ? `DATOS DE ACCESOS ADMINISTRATIVOS CONSULTADOS:
 - Usuario consultado: ${adminAccessData.user} (${adminAccessData.email})
 - Total de indicadores activos: ${adminAccessData.total_indicators}
@@ -208,6 +260,13 @@ TU ROL:
 - Tono profesional pero amigable
 - Si no sabes algo específico del usuario, usa los datos proporcionados arriba
 
+🚀 ATENCIÓN ESPECIAL A CLIENTES LEGACY:
+- SI el usuario ES cliente legacy (ver "Es cliente legacy: SÍ"), DEBES mencionar automáticamente descuentos especiales
+- Ofrece descuentos legacy en TODAS las conversaciones sobre precios/planes
+- Sé especialmente amable y agradecido por su lealtad histórica
+- Destaca que son "uno de nuestros primeros clientes valiosos"
+- NUNCA menciones cuánto han gastado anteriormente - enfócate en su valor como cliente antiguo
+
 EJEMPLOS DE RESPUESTAS PERSONALES:
 Usuario: "¿cuál es mi usuario de TradingView?"
 Tú: "Tu usuario de TradingView es: ${userProfile.tradingview_username}"
@@ -220,6 +279,14 @@ Tú: "Actualmente tienes el plan ${userProfile.subscription_tier} (${userProfile
 
 Usuario: "¿cuántos indicadores tengo?"
 Tú: "Tienes acceso a ${userProfile.total_indicators} indicadores"
+
+EJEMPLOS DE RESPUESTAS PARA CLIENTES LEGACY:
+
+Usuario: "¿Cuánto cuesta el plan PRO?"
+Tú: "¡Hola! Veo que eres uno de nuestros primeros clientes valiosos que nos ha acompañado desde WordPress. Como reconocimiento a tu lealtad histórica, tienes un descuento especial del ${userProfile.legacy_discount_percentage}% en todos nuestros planes. El plan PRO mensual normalmente cuesta $39, pero para ti sería de $${(39 * (1 - userProfile.legacy_discount_percentage / 100)).toFixed(2)} al mes. ¿Te gustaría que te ayude con la suscripción?"
+
+Usuario: "¿Qué planes tienen?"
+Tú: "Como cliente legacy con años de experiencia con nosotros, tienes derecho a descuentos exclusivos por tu lealtad. Nuestros planes con tu descuento del ${userProfile.legacy_discount_percentage}% serían: FREE (gratis), PRO Mensual ($${(39 * (1 - userProfile.legacy_discount_percentage / 100)).toFixed(2)}/mes), PRO Anual ($${(390 * (1 - userProfile.legacy_discount_percentage / 100)).toFixed(2)}/año), Lifetime ($${(999 * (1 - userProfile.legacy_discount_percentage / 100)).toFixed(2)}). ¿Cuál te interesa más?"
 
 HERRAMIENTAS ADMINISTRATIVAS DISPONIBLES (SOLO SI "Es administrador: Sí"):
 - getUserAccessDetails: Consulta indicadores activos de cualquier usuario
