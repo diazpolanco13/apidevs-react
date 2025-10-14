@@ -4,6 +4,9 @@ import { NextResponse } from 'next/server';
 const TRADINGVIEW_API = 'http://185.218.124.241:5001';
 
 // POST - Conceder acceso a TODOS los indicadores Free
+// Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

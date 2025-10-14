@@ -2,6 +2,9 @@ import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 
 // PUT - Actualizar indicador
+// Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
+export const dynamic = 'force-dynamic';
+
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

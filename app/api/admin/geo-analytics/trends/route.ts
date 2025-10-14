@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * API para obtener datos de tendencias con comparación de períodos
  */
+// Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const { from, to } = await request.json();

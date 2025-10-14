@@ -1,6 +1,9 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 
+// Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
     const { email } = await req.json();

@@ -4,6 +4,8 @@ import { createClient } from "@/utils/supabase/server";
 import { getUserAccessDetails } from "@/lib/ai/tools/access-management-tools";
 
 export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
 
 export async function POST(request: Request) {
   try {

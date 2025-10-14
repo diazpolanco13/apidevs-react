@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { client } from '@/lib/sanity/client';
 import { createClient } from '@/utils/supabase/server';
 
-export const revalidate = 60; // ISR: Revalidar cada 60 segundos
+// Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {

@@ -9,6 +9,9 @@ const SESSION_COOKIE_NAME = 'apidevs_session_id';
  * API Route para registrar una conversión (compra)
  * Se llama cuando un usuario completa una compra exitosa
  */
+// Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

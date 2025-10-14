@@ -4,6 +4,9 @@ import { NextResponse } from 'next/server';
 const TRADINGVIEW_API = 'http://185.218.124.241:5001';
 const API_KEY = '92a1e4a8c74e1871c658301f3e8ae31c31ed6bfd68629059617fac621932e1ea';
 
+// Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

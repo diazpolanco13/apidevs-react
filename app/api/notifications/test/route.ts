@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server';
 
 // API Route para probar el sistema de notificaciones
 // Solo para desarrollo - agregar el número de notificaciones deseado
+// Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { client } from '@/sanity/lib/client';
 import { SEARCH_DOCS_QUERY, type SearchResult } from '@/sanity/lib/doc-queries';
 
-export const runtime = 'edge';
+// Next.js 15: Renderizado dinámico estándar (no requiere Edge Runtime)
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {

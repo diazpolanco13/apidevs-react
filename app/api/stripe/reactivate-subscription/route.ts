@@ -3,6 +3,9 @@ import { createClient } from '@/utils/supabase/server';
 import { stripe } from '@/utils/stripe/config';
 import { getUser } from '@/utils/supabase/queries';
 
+// Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();

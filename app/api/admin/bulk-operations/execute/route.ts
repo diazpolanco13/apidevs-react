@@ -11,6 +11,9 @@ type BulkOperationResult = {
   tv_response?: any;
 };
 
+// Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
