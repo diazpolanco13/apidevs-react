@@ -24,6 +24,7 @@
     "supabase:pull": "npx supabase db pull",
     "delete-invalid-users": "tsx scripts/delete-invalid-legacy-users.ts",
     "check-remaining-users": "tsx scripts/check-remaining-users.ts",
+    "migrate-avatars": "tsx scripts/migrate-avatars.ts",
     "sanity:studio": "next dev",
     "sanity:migrate": "tsx scripts/migrate-indicators-to-sanity.ts",
     "prepare": "husky"

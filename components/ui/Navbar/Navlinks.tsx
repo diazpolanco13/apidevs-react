@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { SignOut } from '@/utils/auth-helpers/server';
 import { handleRequest } from '@/utils/auth-helpers/client';
 import APIDevsLogo from '@/components/icons/APIDevsLogo';
@@ -195,10 +196,14 @@ export default function Navlinks({ user, avatarUrl, userStatus = 'online', unrea
             <button className="flex items-center space-x-1 sm:space-x-2 p-1 rounded-full hover:bg-apidevs-primary/10 transition-colors">
               <span className="relative inline-block">
                 {avatarUrl ? (
-                  <img 
-                    src={avatarUrl} 
-                    alt="TradingView Profile" 
+                  <Image
+                    src={avatarUrl}
+                    alt="TradingView Profile"
+                    width={40}
+                    height={40}
                     className="w-9 h-9 sm:w-10 sm:h-10 rounded-full outline outline-2 -outline-offset-1 outline-apidevs-primary/50 object-cover shadow-lg shadow-apidevs-primary/30"
+                    priority
+                    unoptimized={avatarUrl.includes('tradingview.com')}
                   />
                 ) : (
                   <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-primary rounded-full outline outline-2 -outline-offset-1 outline-apidevs-primary/50 flex items-center justify-center text-black font-semibold text-sm sm:text-base shadow-lg shadow-apidevs-primary/30">

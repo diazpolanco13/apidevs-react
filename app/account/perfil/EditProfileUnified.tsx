@@ -234,7 +234,8 @@ export default function EditProfileUnified({ userId, userEmail, initialData }: P
                   <div className="flex-1 relative">
                     <input
                       type="text"
-                      value={tvUsername}
+                      value={tvUsername || ''}
+                      readOnly
                       disabled
                       className="w-full px-4 py-3 pr-12 bg-black/30 border border-white/5 rounded-lg text-white cursor-not-allowed"
                     />

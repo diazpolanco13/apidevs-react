@@ -264,13 +264,38 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
     if (!validateStep(2)) return;
 
     setIsSubmitting(true);
-    
+
     try {
       const supabase = createClient();
-      
+
       // Usar el username verificado de TradingView
       const verifiedUsername = validationResult?.username || formData.tradingview_username.trim();
-      
+
+      // 🖼️ Procesar y optimizar avatar si existe
+      let optimizedAvatarUrl = profileImage;
+
+      if (profileImage) {
+        console.log('🖼️ Optimizando avatar de TradingView...');
+
+        try {
+          const avatarResponse = await fetch('/api/avatar/process', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tradingViewImageUrl: profileImage })
+          });
+
+          if (avatarResponse.ok) {
+            const { optimizedUrl } = await avatarResponse.json();
+            optimizedAvatarUrl = optimizedUrl;
+            console.log('✅ Avatar optimizado:', optimizedUrl);
+          } else {
+            console.warn('⚠️ No se pudo optimizar el avatar, usando original');
+          }
+        } catch (avatarError) {
+          console.warn('⚠️ Error optimizando avatar, usando original:', avatarError);
+        }
+      }
+
       // Update user profile with onboarding data
       const { error } = await (supabase as any)
         .from('users')
@@ -283,7 +308,7 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
           city: formData.city.trim(),
           postal_code: formData.postal_code.trim(),
           timezone: formData.timezone || moment.tz.guess(),
-          avatar_url: profileImage, // Guardar imagen de perfil de TradingView
+          avatar_url: optimizedAvatarUrl, // 🚀 Guardar imagen optimizada desde Supabase Storage
           onboarding_completed: true
         })
         .eq('id', user.id);
@@ -300,7 +325,7 @@ export default function Onboarding({ redirectPath = '/account' }: OnboardingProp
 
       // Success - redirect to intended destination
       router.push(redirectPath);
-      
+
     } catch (error) {
       console.error('Error updating profile:', error);
       setErrors({ tradingview_username: 'Error al guardar los datos. Inténtalo de nuevo.' });
