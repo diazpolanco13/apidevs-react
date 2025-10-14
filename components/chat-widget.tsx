@@ -12,19 +12,19 @@ interface Message {
 
 interface UserData {
   id: string;
-  email: string;
-  full_name: string;
+  email: string | null;
+  full_name: string | null;
   subscription_status?: string;
   subscription_tier?: string;
-  customer_tier?: string;
+  customer_tier?: string | null;
   // 🚀 Nuevos campos para legacy
-  is_legacy_user?: boolean;
-  legacy_customer?: boolean;
-  legacy_discount_percentage?: number;
+  is_legacy_user?: boolean | null;
+  legacy_customer?: boolean | null;
+  legacy_discount_percentage?: number | null;
   legacy_benefits?: any;
-  legacy_customer_type?: string;
-  legacy_lifetime_spent?: number;
-  legacy_purchase_count?: number;
+  legacy_customer_type?: string | null;
+  legacy_lifetime_spent?: number | null;
+  legacy_purchase_count?: number | null;
   has_legacy_discount_eligible?: boolean;
 }
 

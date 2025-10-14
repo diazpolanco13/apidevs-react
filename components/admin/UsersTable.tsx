@@ -8,12 +8,12 @@ import MobilePagination from './MobilePagination';
 interface User {
   id: string;
   email: string;
-  full_name: string;
-  country: string;
-  city: string;
-  wordpress_created_at: string;
-  reactivation_status: string;
-  customer_type: string;
+  full_name: string | null;
+  country: string | null;
+  city: string | null;
+  wordpress_created_at: string | null;
+  reactivation_status: string | null;
+  customer_type: string | null;
 }
 
 interface UsersTableProps {
@@ -60,7 +60,9 @@ export default function UsersTable({
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | null) => {
+    if (!status) return <span className="text-gray-500 text-xs">Sin estado</span>;
+
     const styles = {
       pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
       contacted: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
@@ -82,7 +84,8 @@ export default function UsersTable({
     );
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Sin fecha';
     return new Date(dateString).toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'short',
@@ -90,7 +93,7 @@ export default function UsersTable({
     });
   };
 
-  const getCountryFlag = (countryCode: string) => {
+  const getCountryFlag = (countryCode: string | null) => {
     if (!countryCode) return '🌍';
     
     const flags: { [key: string]: string } = {

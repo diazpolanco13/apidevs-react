@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
 
     // Calcular métricas globales
     type Visit = {
-      purchased?: boolean;
-      purchase_amount_cents?: number;
-      country?: string;
+      purchased?: boolean | null;
+      purchase_amount_cents?: number | null;
+      country?: string | null;
     };
 
     const typedVisits: Visit[] = Array.isArray(visits) ? visits : [];

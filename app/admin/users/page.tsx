@@ -9,7 +9,7 @@ import { Users as UsersIcon, TrendingUp, UserCheck, UserX, Sparkles, Activity } 
 
 type ActiveUser = {
   id: string;
-  email: string;
+  email: string | null;
   full_name: string | null;
   country: string | null;
   city: string | null;
@@ -105,7 +105,7 @@ export default async function AdminUsersPage({
   const lifetimeUserIds = new Set<string>();
   
   safeActiveUsers.forEach(user => {
-    if (lifetimePurchaseEmails.has(user.email)) {
+    if (user.email && lifetimePurchaseEmails.has(user.email)) {
       lifetimeUserIds.add(user.id);
     }
   });
@@ -123,7 +123,7 @@ export default async function AdminUsersPage({
   const freeUserIds = new Set<string>();
   
   safeActiveUsers.forEach(user => {
-    if (freePlanEmails.has(user.email)) {
+    if (user.email && freePlanEmails.has(user.email)) {
       freeUserIds.add(user.id);
     }
   });

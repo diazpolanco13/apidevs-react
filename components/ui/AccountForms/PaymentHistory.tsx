@@ -21,11 +21,11 @@ interface Purchase {
   id: string;
   order_number: string;
   order_total_cents: number;
-  product_name: string;
+  product_name: string | null;
   order_date: string;
   order_status: string;
-  is_lifetime_purchase: boolean;
-  product_category: string;
+  is_lifetime_purchase: boolean | null;
+  product_category: string | null;
   legacy_user_id: string | null;
 }
 
@@ -208,7 +208,7 @@ export default function PaymentHistory({ subscription, userEmail, actualPricePai
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-white truncate">
-                          {mapProductName(purchase.product_name)}
+                          {mapProductName(purchase.product_name || 'Producto desconocido')}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-gray-400">
                           <span>{formatDate(purchase.order_date)}</span>

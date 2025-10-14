@@ -147,7 +147,7 @@ export function useActivityTracker() {
 
       // Insertar en Supabase
       const { error } = await supabase
-        .from('user_activity_log')
+        .from('user_activity_events')
         .insert([eventData] as any);
 
       if (error) {

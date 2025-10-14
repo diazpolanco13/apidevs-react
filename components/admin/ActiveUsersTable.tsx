@@ -8,7 +8,7 @@ import { CheckCircle, XCircle, Clock } from 'lucide-react';
 
 interface User {
   id: string;
-  email: string;
+  email: string | null;
   full_name: string | null;
   country: string | null;
   city: string | null;

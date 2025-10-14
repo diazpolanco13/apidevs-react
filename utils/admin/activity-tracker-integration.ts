@@ -29,7 +29,7 @@ export async function fetchUserActivityEvents(
   if (filter === '90days') filterDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
   let query = supabase
-    .from('user_activity_log')
+    .from('user_activity_events')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
