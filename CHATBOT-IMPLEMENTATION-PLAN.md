@@ -979,20 +979,28 @@ legacy_discount_percentage INTEGER -- Mismo valor que en legacy_users
 
 #### **3. Lógica de Implementación:**
 
-##### **Detección de Usuarios Legacy:**
+##### **Detección de Usuarios Legacy + Asignación Automática:**
 ```typescript
-// 1. Buscar primero en tabla users
-const { data: userData } = await supabase
-  .from('users')
-  .select('legacy_discount_percentage, customer_tier')
-  .eq('id', user.id)
+// 1. Buscar en tabla users (prioridad)
+const userData = await supabase.from('users').select('*').eq('id', user.id)
 
 // 2. Si no está en users, buscar en legacy_users
 if (!userData) {
-  const { data: legacyData } = await supabase
-    .from('legacy_users')
-    .select('legacy_discount_percentage, customer_tier')
-    .eq('email', user.email)
+  const legacyData = await supabase.from('legacy_users').select('*').eq('email', user.email)
+}
+
+// 3. Asignar descuento automático basado en tier para usuarios legacy
+if (userProfile.is_legacy_user && userProfile.legacy_discount_percentage === 0) {
+  const tierDiscounts = {
+    'diamond': 30,   // Máximo descuento
+    'platinum': 25,
+    'gold': 20,
+    'silver': 15,
+    'bronze': 10,
+    'free': 5
+  };
+  userProfile.legacy_discount_percentage = tierDiscounts[userProfile.customer_tier] || 5;
+  console.log(`🔧 Descuento automático ${userProfile.legacy_discount_percentage}% asignado`);
 }
 ```
 

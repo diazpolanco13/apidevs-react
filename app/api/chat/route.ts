@@ -109,7 +109,23 @@ export async function POST(request: Request) {
         // 🚀 DETECCIÓN DE USUARIOS LEGACY
         userProfile.is_legacy_user = (userData as any).is_legacy_user || false;
         userProfile.legacy_customer = (userData as any).legacy_customer || false;
-        userProfile.legacy_discount_percentage = (userData as any).legacy_discount_percentage || legacyDiscountPercentage || 0;
+
+        // Asignar descuento basado en tier si es legacy pero no tiene descuento asignado
+        let discountPercentage = (userData as any).legacy_discount_percentage || legacyDiscountPercentage || 0;
+        if (userProfile.is_legacy_user && discountPercentage === 0) {
+          // Asignar descuento automático basado en tier para usuarios legacy
+          const tierDiscounts: { [key: string]: number } = {
+            'diamond': 30,
+            'platinum': 25,
+            'gold': 20,
+            'silver': 15,
+            'bronze': 10,
+            'free': 5
+          };
+          discountPercentage = tierDiscounts[userProfile.customer_tier] || 5;
+          console.log(`🔧 Asignando descuento automático ${discountPercentage}% para usuario legacy ${userProfile.customer_tier}`);
+        }
+        userProfile.legacy_discount_percentage = discountPercentage;
         userProfile.customer_tier = (userData as any).customer_tier || legacyTier || 'free';
         userProfile.legacy_benefits = (userData as any).legacy_benefits || {};
         userProfile.legacy_customer_type = (userData as any).legacy_customer_type || 'new';
