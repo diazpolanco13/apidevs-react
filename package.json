@@ -3,6 +3,7 @@
   "scripts": {
     "dev": "next dev --turbo",
     "build": "next build",
+    "analyze": "ANALYZE=true npm run build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
@@ -80,6 +81,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.5.5",
     "@sanity/eslint-config-studio": "^4.0.0",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^24.5.1",
