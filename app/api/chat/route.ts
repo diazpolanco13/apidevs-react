@@ -66,6 +66,22 @@ export async function POST(request: Request) {
         .eq('id', user.id)
         .single();
 
+      // Si no encontramos datos en users, buscar en legacy_users
+      let legacyDiscountPercentage = 0;
+      let legacyTier = 'free';
+      if (userError && user.email) {
+        const { data: legacyData } = await supabase
+          .from('legacy_users')
+          .select('legacy_discount_percentage, customer_tier')
+          .eq('email', user.email.toLowerCase().trim())
+          .single();
+
+        if (legacyData) {
+          legacyDiscountPercentage = (legacyData as any).legacy_discount_percentage || 0;
+          legacyTier = (legacyData as any).customer_tier || 'free';
+        }
+      }
+
       if (!userError && userData) {
         userProfile.full_name = (userData as any).full_name || "Usuario";
         userProfile.email = (userData as any).email || user.email || "No disponible";
@@ -76,7 +92,8 @@ export async function POST(request: Request) {
         // 🚀 DETECCIÓN DE USUARIOS LEGACY
         userProfile.is_legacy_user = (userData as any).is_legacy_user || false;
         userProfile.legacy_customer = (userData as any).legacy_customer || false;
-        userProfile.legacy_discount_percentage = (userData as any).legacy_discount_percentage || 0;
+        userProfile.legacy_discount_percentage = (userData as any).legacy_discount_percentage || legacyDiscountPercentage || 0;
+        userProfile.customer_tier = (userData as any).customer_tier || legacyTier || 'free';
         userProfile.legacy_benefits = (userData as any).legacy_benefits || {};
         userProfile.legacy_customer_type = (userData as any).legacy_customer_type || 'new';
         userProfile.legacy_lifetime_spent = (userData as any).total_lifetime_spent || 0;
@@ -88,6 +105,15 @@ export async function POST(request: Request) {
           userProfile.is_legacy_user ||
           userProfile.legacy_discount_percentage > 0
         );
+      } else {
+        // Si no hay datos en users pero sí en legacy_users, usar esos datos
+        if (legacyDiscountPercentage > 0) {
+          userProfile.is_legacy_user = true;
+          userProfile.legacy_customer = true;
+          userProfile.legacy_discount_percentage = legacyDiscountPercentage;
+          userProfile.customer_tier = legacyTier;
+          userProfile.has_legacy_discount_eligible = true;
+        }
       }
 
       // Verificar suscripción activa en Stripe

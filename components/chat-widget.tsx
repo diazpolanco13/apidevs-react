@@ -16,6 +16,7 @@ interface UserData {
   full_name: string;
   subscription_status?: string;
   subscription_tier?: string;
+  customer_tier?: string;
   // 🚀 Nuevos campos para legacy
   is_legacy_user?: boolean;
   legacy_customer?: boolean;
@@ -278,19 +279,45 @@ function ChatWidget() {
                         user.legacy_customer ||
                         (user.legacy_discount_percentage || 0) > 0;
 
-    let welcomeMessage = `¡Hola ${user.full_name || user.email}! 👋
+    // Determinar el tier del cliente con formato elegante
+    const getTierDisplay = (tier: string) => {
+      const tierMap: { [key: string]: string } = {
+        'diamond': '💎 DIAMOND',
+        'platinum': '🏆 PLATINUM',
+        'gold': '🥇 GOLD',
+        'silver': '🥈 SILVER',
+        'bronze': '🥉 BRONZE',
+        'free': '🆓 FREE'
+      };
+      return tierMap[tier?.toLowerCase()] || '👤 CLIENTE';
+    };
 
-Soy tu asistente de APIDevs y puedo ayudarte con:
+    const tierDisplay = getTierDisplay(user.customer_tier || 'free');
+    const userName = user.full_name || user.email || 'Usuario';
+
+    let welcomeMessage = `¡Hola ${userName}! 👋
+
+Bienvenido a APIDevs como cliente **${tierDisplay}**.
+
+Soy tu asistente personal y puedo ayudarte con:
 • Información sobre tu cuenta y suscripción
 • Consultas sobre indicadores y planes
-• Soporte técnico`;
+• Soporte técnico especializado`;
 
     // 🚀 Agregar mensaje especial para usuarios LEGACY
     if (isLegacyUser) {
-      const discountPercent = user.legacy_discount_percentage || 50;
+      const discountPercent = user.legacy_discount_percentage || 30; // Default 30% como máximo
+
       welcomeMessage += `
 
-⭐ **¡Felicitaciones!** Eres uno de nuestros primeros y más valiosos clientes legacy. Como reconocimiento a tu lealtad histórica, tienes un **${discountPercent}% de descuento** en todos nuestros planes.`;
+⭐ **¡Felicitaciones!** Como uno de nuestros primeros y más valiosos clientes legacy, tienes un **${discountPercent}% de descuento** especial en todos nuestros planes por tu lealtad histórica.`;
+    } else {
+      // Mensaje especial para nuevos clientes según su tier
+      if (tierDisplay !== '👤 CLIENTE') {
+        welcomeMessage += `
+
+🌟 **¡Gracias por elegirnos!** Como cliente ${tierDisplay}, tienes acceso completo a todas nuestras herramientas premium.`;
+      }
     }
 
     welcomeMessage += `
