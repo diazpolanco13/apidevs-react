@@ -4,6 +4,7 @@ import { getUserAccessDetails } from "@/lib/ai/tools/access-management-tools";
 import { chatLimiter } from "@/lib/rate-limit";
 import { chatRequestSchema, validateSchema } from "@/lib/validation";
 import { getAIModel, getDefaultModelConfig, type ModelConfig } from "@/lib/ai/providers";
+import { buildSystemPrompt, type UserProfile, type AdminAccessData, type AIConfiguration } from "@/lib/ai/prompt-builder";
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -391,8 +392,120 @@ export async function POST(request: Request) {
       console.log(`⚠️ adminAccessData es NULL - la IA no tiene datos pre-fetched`);
     }
 
-    // System prompt específico para APIDevs con datos del usuario incluidos
+    // Obtener configuración del modelo a usar
+    let modelConfig: ModelConfig = getDefaultModelConfig();
+    
+    try {
+      // Intentar leer configuración de BD (ai_configuration)
+      // Si la tabla no existe, usar configuración por defecto
+      // @ts-ignore - ai_configuration table not in generated types yet
+      const { data: aiConfig, error: configError } = await supabase
+        .from('ai_configuration' as any)
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (!configError && aiConfig) {
+        modelConfig = {
+          provider: (aiConfig as any).model_provider as 'xai' | 'openrouter',
+          model: (aiConfig as any).model_name,
+        };
+        
+        // 🚀 NUEVO SISTEMA DINÁMICO: Construir system prompt desde configuración de BD
+        console.log(`✅ Usando configuración de BD para construir system prompt dinámico`);
+        
+        // Preparar userProfile con formato correcto
+        const formattedUserProfile: UserProfile = {
+          full_name: userProfile.full_name,
+          email: userProfile.email,
+          tradingview_username: userProfile.tradingview_username,
+          customer_tier: userProfile.customer_tier,
+          subscription_status: userProfile.subscription_status,
+          subscription_tier: userProfile.subscription_tier,
+          has_active_subscription: userProfile.has_active_subscription,
+          total_indicators: userProfile.total_indicators,
+          is_admin: userProfile.is_admin,
+          is_legacy_user: userProfile.is_legacy_user,
+          legacy_discount_percentage: userProfile.legacy_discount_percentage,
+          customer_since: userProfile.customer_since,
+          wordpress_created_at: userProfile.wordpress_created_at,
+          first_purchase_date: userProfile.first_purchase_date,
+        };
+        
+        // Preparar adminAccessData con formato correcto (si existe)
+        const formattedAdminAccessData: AdminAccessData | null = adminAccessData ? {
+          user: adminAccessData.user,
+          email: adminAccessData.email,
+          total_indicators: adminAccessData.total_indicators,
+          free_indicators: adminAccessData.free_indicators,
+          premium_indicators: adminAccessData.premium_indicators,
+          indicators_list: adminAccessData.indicators_list,
+        } : null;
+        
+        // Extraer configuración AI
+        const aiConfiguration: AIConfiguration = {
+          system_prompt: (aiConfig as any).system_prompt, // ✅ USAR EL SYSTEM PROMPT DEL ADMIN
+          custom_greeting: (aiConfig as any).custom_greeting, // ✅ USAR EL GREETING DEL ADMIN
+          platform_info: (aiConfig as any).platform_info,
+          pricing_config: (aiConfig as any).pricing_config,
+          user_type_configs: (aiConfig as any).user_type_configs,
+          response_templates: (aiConfig as any).response_templates,
+          behavior_rules: (aiConfig as any).behavior_rules,
+          admin_instructions: (aiConfig as any).admin_instructions,
+        };
+        
+        // Construir system prompt dinámicamente
+        const systemPrompt = buildSystemPrompt(
+          aiConfiguration,
+          formattedUserProfile,
+          formattedAdminAccessData
+        );
+        
+        console.log(`📝 System prompt generado dinámicamente (${systemPrompt.length} caracteres)`);
+        
+        // Llamar al modelo con tools disponibles
+        console.log(`🤖 Llamando a ${modelConfig.provider}/${modelConfig.model}...`);
 
+        try {
+          const aiModel = getAIModel(modelConfig);
+          
+          const result = streamText({
+            model: aiModel,
+            system: systemPrompt,
+            messages,
+            tools: availableTools,
+          });
+
+          console.log(`🔄 Stream iniciado para ${modelConfig.provider}/${modelConfig.model}`);
+          
+          // Usar toTextStreamResponse() por ahora - toDataStream() requiere más cambios
+          const response = result.toTextStreamResponse();
+          
+          console.log(`✅ Respuesta de ${modelConfig.provider}/${modelConfig.model} lista para enviar`);
+          return response;
+        } catch (aiError: any) {
+          console.error('❌ Error llamando al modelo AI:', aiError);
+          return new Response(JSON.stringify({
+            error: "Error al generar respuesta",
+            details: aiError?.message || String(aiError),
+            type: aiError?.name || 'AIError'
+          }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+      
+      // Si no hay configuración en BD, usar fallback hardcodeado antiguo
+      console.log(`⚠️ No se encontró configuración en BD, usando system prompt hardcodeado legacy`);
+      
+    } catch (error) {
+      console.warn('⚠️  Error leyendo configuración AI, usando default:', error);
+    }
+
+    // FALLBACK LEGACY: System prompt hardcodeado antiguo (solo si falla BD)
     const systemPrompt = `Eres el asistente virtual de APIDevs Trading Platform.
 
 INFORMACIÓN SOBRE APIDEVS:
@@ -516,39 +629,8 @@ IMPORTANTE GENERAL:
 - Para preguntas técnicas sobre indicadores o planes, explica normalmente
 - Mantén un tono amigable y profesional`;
 
-    // Obtener configuración del modelo a usar
-    let modelConfig: ModelConfig = getDefaultModelConfig();
-    
-    try {
-      // Intentar leer configuración de BD (ai_configuration)
-      // Si la tabla no existe, usar configuración por defecto
-      // @ts-ignore - ai_configuration table not in generated types yet
-      const { data: aiConfig, error: configError } = await supabase
-        .from('ai_configuration' as any)
-        .select('model_provider, model_name')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
-      if (!configError && aiConfig && (aiConfig as any).model_provider && (aiConfig as any).model_name) {
-        modelConfig = {
-          provider: (aiConfig as any).model_provider as 'xai' | 'openrouter',
-          model: (aiConfig as any).model_name,
-        };
-        console.log(`✅ Usando configuración de BD: ${modelConfig.provider}/${modelConfig.model}`);
-      } else {
-        console.log(`ℹ️  Usando configuración por defecto: ${modelConfig.provider}/${modelConfig.model}`);
-        if (configError) {
-          console.log(`📋 Info: ${configError.message} (tabla ai_configuration no existe aún)`);
-        }
-      }
-    } catch (error) {
-      console.warn('⚠️  Error leyendo configuración AI, usando default:', error);
-    }
-
-    // Llamar al modelo con tools disponibles
-    console.log(`🤖 Llamando a ${modelConfig.provider}/${modelConfig.model}...`);
+    // FALLBACK LEGACY: Llamar al modelo con el prompt hardcodeado antiguo
+    console.log(`🤖 Usando FALLBACK legacy - Llamando a ${modelConfig.provider}/${modelConfig.model}...`);
 
     try {
       const aiModel = getAIModel(modelConfig);
@@ -568,7 +650,7 @@ IMPORTANTE GENERAL:
       console.log(`✅ Respuesta de ${modelConfig.provider}/${modelConfig.model} lista para enviar`);
       return response;
     } catch (aiError: any) {
-      console.error('❌ Error llamando a Grok-3:', aiError);
+      console.error('❌ Error llamando al modelo AI:', aiError);
       return new Response(JSON.stringify({
         error: "Error al generar respuesta",
         details: aiError?.message || String(aiError),

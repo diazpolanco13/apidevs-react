@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { Save, RefreshCw, AlertCircle, Bot, FileText, Building2, Users, Settings as SettingsIcon } from 'lucide-react';
+import { AIConfig } from './IAMainView';
+
+// Importar los sub-editores
 import ModelConfiguration from './ModelConfiguration';
 import SystemPromptEditor from './SystemPromptEditor';
 import ToolsConfiguration from './ToolsConfiguration';
@@ -9,15 +13,19 @@ import GreetingConfiguration from './GreetingConfiguration';
 import AdvancedSettings from './AdvancedSettings';
 import ConfigurationPreview from './ConfigurationPreview';
 import QuickActions from './QuickActions';
-import { Save, RefreshCw, AlertCircle } from 'lucide-react';
-import { AIConfig } from './IAMainView';
+import PlatformInfoEditor from './PlatformInfoEditor';
+import PricingConfigEditor from './PricingConfigEditor';
+import UserTypeConfigEditor from './UserTypeConfigEditor';
 
 interface Props {
   config: AIConfig | null;
   setConfig: (config: AIConfig | null) => void;
 }
 
+type SubTab = 'modelo' | 'prompt' | 'plataforma' | 'usuarios' | 'avanzado';
+
 export default function ConfiguracionTab({ config, setConfig }: Props) {
+  const [activeSubTab, setActiveSubTab] = useState<SubTab>('modelo');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -79,6 +87,39 @@ export default function ConfiguracionTab({ config, setConfig }: Props) {
     );
   }
 
+  const subTabs = [
+    {
+      id: 'modelo' as SubTab,
+      name: 'Modelo IA',
+      icon: Bot,
+      description: 'Provider, modelo, parámetros',
+    },
+    {
+      id: 'prompt' as SubTab,
+      name: 'Prompt & Comportamiento',
+      icon: FileText,
+      description: 'System prompt, greeting, estilo',
+    },
+    {
+      id: 'plataforma' as SubTab,
+      name: 'Plataforma & Precios',
+      icon: Building2,
+      description: 'Info general y planes',
+    },
+    {
+      id: 'usuarios' as SubTab,
+      name: 'Tipos de Usuario',
+      icon: Users,
+      description: 'Configuración por segmento',
+    },
+    {
+      id: 'avanzado' as SubTab,
+      name: 'Avanzado',
+      icon: SettingsIcon,
+      description: 'Tools, rate limit, logs',
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Messages */}
@@ -95,37 +136,169 @@ export default function ConfiguracionTab({ config, setConfig }: Props) {
         </div>
       )}
 
+      {/* Sub-Tabs Navigation */}
+      <div className="bg-gradient-to-br from-gray-800/30 to-gray-900/30 backdrop-blur-xl border border-white/10 rounded-2xl p-2">
+        <div className="flex gap-2 overflow-x-auto">
+          {subTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeSubTab === tab.id;
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveSubTab(tab.id)}
+                className={`
+                  flex items-center gap-2 px-4 py-3 rounded-xl font-medium text-sm transition-all whitespace-nowrap
+                  ${
+                    isActive
+                      ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/50 text-white shadow-lg'
+                      : 'text-gray-400 hover:text-gray-300 hover:bg-white/5'
+                  }
+                `}
+              >
+                <Icon className={`h-4 w-4 ${isActive ? 'text-purple-400' : 'text-gray-500'}`} />
+                <div className="flex flex-col items-start">
+                  <span>{tab.name}</span>
+                  <span className={`text-[10px] ${isActive ? 'text-purple-300/70' : 'text-gray-500'}`}>
+                    {tab.description}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Main Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Main Configuration */}
+        {/* Left Column - Sub-Tab Content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Model Configuration */}
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <ModelConfiguration config={config} updateConfig={updateConfig} />
-          </div>
+          
+          {/* 🤖 MODELO IA */}
+          {activeSubTab === 'modelo' && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <ModelConfiguration config={config} updateConfig={updateConfig} />
+              </div>
+            </div>
+          )}
 
-          {/* System Prompt Editor */}
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <SystemPromptEditor config={config} updateConfig={updateConfig} />
-          </div>
+          {/* 📝 PROMPT & COMPORTAMIENTO */}
+          {activeSubTab === 'prompt' && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <SystemPromptEditor config={config} updateConfig={updateConfig} />
+              </div>
+              
+              <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <GreetingConfiguration config={config} updateConfig={updateConfig} />
+              </div>
+            </div>
+          )}
 
-          {/* Tools Configuration */}
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <ToolsConfiguration config={config} updateConfig={updateConfig} />
-          </div>
+          {/* 🏢 PLATAFORMA & PRECIOS */}
+          {activeSubTab === 'plataforma' && (
+            <div className="space-y-6">
+              <PlatformInfoEditor
+                platformInfo={config.platform_info || {
+                  name: "APIDevs Trading Platform",
+                  description: "Plataforma de indicadores de TradingView",
+                  features: []
+                }}
+                onChange={(info) => updateConfig({ platform_info: info })}
+              />
 
-          {/* Greeting Configuration */}
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <GreetingConfiguration config={config} updateConfig={updateConfig} />
-          </div>
+              <PricingConfigEditor
+                pricingConfig={config.pricing_config || {
+                  plans: {
+                    free: { name: "FREE", price: 0, currency: "USD", features: [] },
+                    pro_monthly: { name: "PRO Mensual", price: 39, currency: "USD", billing: "monthly", features: [] },
+                    pro_yearly: { name: "PRO Anual", price: 390, currency: "USD", billing: "yearly", features: [] },
+                    lifetime: { name: "Lifetime", price: 999, currency: "USD", billing: "one_time", features: [] }
+                  }
+                }}
+                onChange={(pricing) => updateConfig({ pricing_config: pricing })}
+              />
+            </div>
+          )}
 
-          {/* Advanced Settings */}
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <AdvancedSettings config={config} updateConfig={updateConfig} />
-          </div>
+          {/* 👥 TIPOS DE USUARIO */}
+          {activeSubTab === 'usuarios' && (
+            <div className="space-y-6">
+              <UserTypeConfigEditor
+                configs={config.user_type_configs || {
+                  visitor: {
+                    label: "Visitantes",
+                    greeting_template: "¡Hola! 👋",
+                    capabilities: [],
+                    restrictions: [],
+                    tone: "informativo",
+                    show_pricing: true,
+                    show_discounts: false,
+                    call_to_action: null
+                  },
+                  registered_no_purchase: {
+                    label: "Registrados",
+                    greeting_template: "¡Hola! 👋",
+                    capabilities: [],
+                    restrictions: [],
+                    tone: "amigable",
+                    show_pricing: true,
+                    show_discounts: false,
+                    call_to_action: null
+                  },
+                  pro_active: {
+                    label: "PRO",
+                    greeting_template: "¡Hola! 👋",
+                    capabilities: [],
+                    restrictions: [],
+                    tone: "profesional",
+                    show_pricing: false,
+                    show_discounts: false,
+                    call_to_action: null
+                  },
+                  lifetime: {
+                    label: "Lifetime",
+                    greeting_template: "¡Hola! 👋",
+                    capabilities: [],
+                    restrictions: [],
+                    tone: "premium",
+                    show_pricing: false,
+                    show_discounts: false,
+                    call_to_action: null
+                  },
+                  legacy: {
+                    label: "Legacy",
+                    greeting_template: "¡Hola! 👋",
+                    capabilities: [],
+                    restrictions: [],
+                    tone: "agradecido",
+                    show_pricing: true,
+                    show_discounts: true,
+                    call_to_action: null
+                  }
+                }}
+                onChange={(userConfigs) => updateConfig({ user_type_configs: userConfigs })}
+              />
+            </div>
+          )}
+
+          {/* ⚙️ AVANZADO */}
+          {activeSubTab === 'avanzado' && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <ToolsConfiguration config={config} updateConfig={updateConfig} />
+              </div>
+
+              <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <AdvancedSettings config={config} updateConfig={updateConfig} />
+              </div>
+            </div>
+          )}
+
         </div>
 
-        {/* Right Column - Actions & Preview */}
+        {/* Right Column - Actions & Preview (siempre visible) */}
         <div className="space-y-6">
           {/* Quick Actions */}
           <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
@@ -139,27 +312,6 @@ export default function ConfiguracionTab({ config, setConfig }: Props) {
         </div>
       </div>
 
-      {/* Save Button - Fixed Bottom */}
-      <div className="fixed bottom-6 right-6 z-10">
-        <button
-          onClick={saveConfiguration}
-          disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {saving ? (
-            <>
-              <RefreshCw className="w-5 h-5 animate-spin" />
-              Guardando...
-            </>
-          ) : (
-            <>
-              <Save className="w-5 h-5" />
-              Guardar Cambios
-            </>
-          )}
-        </button>
-      </div>
     </div>
   );
 }
-

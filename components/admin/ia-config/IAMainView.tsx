@@ -33,6 +33,30 @@ export interface AIConfig {
   log_level: string;
   is_active: boolean;
   updated_at: string;
+  // Nuevos campos parametrizables
+  platform_info?: {
+    name: string;
+    description: string;
+    features: string[];
+  };
+  pricing_config?: {
+    plans: {
+      free: any;
+      pro_monthly: any;
+      pro_yearly: any;
+      lifetime: any;
+    };
+  };
+  user_type_configs?: {
+    visitor: any;
+    registered_no_purchase: any;
+    pro_active: any;
+    lifetime: any;
+    legacy: any;
+  };
+  response_templates?: any;
+  behavior_rules?: any;
+  admin_instructions?: any;
 }
 
 type TabType = 'configuracion' | 'conversaciones' | 'tools' | 'estadisticas' | 'historial';

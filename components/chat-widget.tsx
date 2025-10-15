@@ -87,149 +87,7 @@ function getLoadingIndicator(messages: Message[], userData: UserData | null): st
   return "🤔 Generando respuesta inteligente...";
 }
 
-// Componente para sugerencias contextuales
-interface ContextualSuggestionsProps {
-  userData: UserData | null;
-  messages: Message[];
-  onSuggestionClick: (suggestion: string) => void;
-}
-
-function ContextualSuggestions({ userData, messages, onSuggestionClick }: ContextualSuggestionsProps) {
-  // Verificar explícitamente que userData existe y es admin
-  const isAdmin = userData && userData.email === 'api@apidevs.io';
-  const isLegacyUser = userData && (userData.has_legacy_discount_eligible ||
-                                  userData.is_legacy_user ||
-                                  userData.legacy_customer ||
-                                  (userData.legacy_discount_percentage || 0) > 0);
-
-  if (!userData) return null; // No mostrar sugerencias si no hay datos del usuario
-
-  const lastMessage = messages[messages.length - 1];
-  const lastUserMessage = messages.filter(m => m.role === 'user').pop();
-
-  if (!lastUserMessage) return null;
-
-  const content = lastUserMessage.content.toLowerCase();
-
-  // 🚀 Sugerencias especiales para usuarios LEGACY preguntando precios
-  if (isLegacyUser && (content.includes('cuánto cuesta') || content.includes('precio') || content.includes('plan'))) {
-    return (
-      <div className="flex flex-wrap gap-2 mt-3 px-2">
-        <SuggestionButton
-          text="¿Cuánto descuento tengo?"
-          onClick={() => onSuggestionClick("¿Cuánto descuento tengo como cliente legacy?")}
-          special={true}
-        />
-        <SuggestionButton
-          text="¿Precio con descuento?"
-          onClick={() => onSuggestionClick("¿Cuál sería el precio con mi descuento legacy?")}
-        />
-        <SuggestionButton
-          text="¡Suscríbeme con descuento!"
-          onClick={() => onSuggestionClick("Quiero suscribirme al plan PRO con mi descuento legacy")}
-        />
-      </div>
-    );
-  }
-
-  // Sugerencias para consultas sobre precios (usuarios normales)
-  if (content.includes('cuánto cuesta') || content.includes('precio') || content.includes('plan')) {
-    return (
-      <div className="flex flex-wrap gap-2 mt-3 px-2">
-        <SuggestionButton
-          text="¿Hay descuentos?"
-          onClick={() => onSuggestionClick("¿Hay descuentos o promociones disponibles?")}
-        />
-        <SuggestionButton
-          text="¿Puedo cambiar de plan?"
-          onClick={() => onSuggestionClick("¿Puedo cambiar de plan mensual a anual?")}
-        />
-        <SuggestionButton
-          text="¿Cuáles son las diferencias?"
-          onClick={() => onSuggestionClick("¿Cuáles son las diferencias entre los planes?")}
-        />
-      </div>
-    );
-  }
-
-  // Sugerencias para administradores sobre accesos (SOLO SI ES VERDADERAMENTE ADMIN)
-  if (isAdmin && (content.includes('indicador') || content.includes('acceso') || content.includes('usuario'))) {
-    return (
-      <div className="flex flex-wrap gap-2 mt-3 px-2">
-        <SuggestionButton
-          text="¿Cuántos usuarios tienen PRO?"
-          onClick={() => onSuggestionClick("¿Cuántos usuarios tienen plan PRO activo?")}
-        />
-        <SuggestionButton
-          text="¿Quién tiene acceso al RSI?"
-          onClick={() => onSuggestionClick("¿Qué usuarios tienen acceso al indicador RSI?")}
-        />
-        <SuggestionButton
-          text="¿Hay expiraciones pronto?"
-          onClick={() => onSuggestionClick("¿Qué accesos van a expirar en los próximos 7 días?")}
-        />
-      </div>
-    );
-  }
-
-  // Sugerencias para usuarios sobre indicadores
-  if (userData && (content.includes('indicador') || content.includes('acceso'))) {
-    return (
-      <div className="flex flex-wrap gap-2 mt-3 px-2">
-        <SuggestionButton
-          text="¿Cuántos indicadores tengo?"
-          onClick={() => onSuggestionClick("¿Cuántos indicadores tengo activos actualmente?")}
-        />
-        <SuggestionButton
-          text="¿Cuándo expira mi acceso?"
-          onClick={() => onSuggestionClick("¿Cuándo expira mi acceso a los indicadores?")}
-        />
-        <SuggestionButton
-          text="¿Puedo renovar?"
-          onClick={() => onSuggestionClick("¿Puedo renovar mi acceso a los indicadores?")}
-        />
-      </div>
-    );
-  }
-
-  // Sugerencias generales después del primer mensaje
-  if (messages.length === 2) {
-    return (
-      <div className="flex flex-wrap gap-2 mt-3 px-2">
-        <SuggestionButton
-          text="¿Qué indicadores ofrecen?"
-          onClick={() => onSuggestionClick("¿Qué indicadores ofrecen en APIDevs?")}
-        />
-        <SuggestionButton
-          text="¿Cómo me registro?"
-          onClick={() => onSuggestionClick("¿Cómo me registro en la plataforma?")}
-        />
-        <SuggestionButton
-          text="¿Necesito TradingView?"
-          onClick={() => onSuggestionClick("¿Necesito tener cuenta de TradingView para usar los indicadores?")}
-        />
-      </div>
-    );
-  }
-
-  return null;
-}
-
-// Componente para botones de sugerencias
-function SuggestionButton({ text, onClick, special }: { text: string; onClick: () => void; special?: boolean }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-3 py-1.5 rounded-full text-xs transition-all duration-200 whitespace-nowrap ${
-        special
-          ? "bg-gradient-to-r from-[#aaff00] to-[#C9D92E] text-black font-semibold hover:from-[#C9D92E] hover:to-[#aaff00] shadow-lg animate-pulse"
-          : "bg-[#2a2a2a] hover:bg-[#3a3a3a] border border-[#444] hover:border-[#555] text-gray-300 hover:text-[#aaff00]"
-      }`}
-    >
-      {text}
-    </button>
-  );
-}
+// Componente ContextualSuggestions eliminado por solicitud del usuario
 
 function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -574,7 +432,7 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
           {/* Tooltip */}
           {!isOpen && (
             <div className="absolute right-20 top-1/2 transform -translate-y-1/2 bg-black text-white px-3 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              ¡Hola! ¿En qué puedo ayudarte?
+              ¡Hola! Soy Charti, tu asistente de APIDEVs.
               <div className="absolute right-0 top-1/2 transform translate-x-1 -translate-y-1/2 w-0 h-0 border-l-4 border-l-black border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
             </div>
           )}
@@ -693,21 +551,7 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
               </div>
             )}
 
-            {/* Sugerencias contextuales */}
-            {!isLoading && messages.length > 0 && (
-              <ContextualSuggestions
-                userData={userData}
-                messages={messages}
-                onSuggestionClick={(suggestion) => {
-                  setInput(suggestion);
-                  // Auto-enviar después de un pequeño delay
-                  setTimeout(() => {
-                    const form = document.querySelector('form');
-                    if (form) form.requestSubmit();
-                  }, 100);
-                }}
-              />
-            )}
+            {/* Sugerencias contextuales eliminadas */}
           </div>
 
           {/* Input o Auth */}
@@ -718,18 +562,39 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
             />
           ) : (
             <form onSubmit={handleSubmit} className="p-4 bg-[#1a1a1a] border-t border-[#333]">
-              <div className="flex gap-2">
-                <input
+              <div className="flex gap-2 items-end">
+                <textarea
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    // Auto-resize el textarea según el contenido
+                    e.target.style.height = 'auto';
+                    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                  }}
+                  onKeyDown={(e) => {
+                    // Enviar con Enter, nueva línea con Shift+Enter
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      if (!isLoading && input.trim()) {
+                        handleSubmit(e as any);
+                      }
+                    }
+                  }}
                   placeholder="Escribe tu pregunta..."
-                  className="flex-1 px-3 py-2 bg-[#2a2a2a] border border-[#333] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aaff00] focus:border-[#aaff00] text-white placeholder-gray-400 text-sm"
+                  rows={1}
+                  className="flex-1 px-3 py-2 bg-[#2a2a2a] border border-[#333] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#aaff00] focus:border-[#aaff00] text-white placeholder-gray-400 text-sm resize-none overflow-y-auto transition-all duration-200 custom-scrollbar"
+                  style={{ 
+                    minHeight: '40px', 
+                    maxHeight: '120px',
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: '#C9D92E #2a2a2a'
+                  }}
                   disabled={isLoading}
                 />
                 <button
                   type="submit"
                   disabled={isLoading || !input.trim()}
-                  className="px-4 py-2 bg-[#C9D92E] text-black rounded-lg hover:bg-[#B8C428] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm font-bold shadow-md hover:shadow-xl hover:scale-105"
+                  className="px-4 py-2 bg-[#C9D92E] text-black rounded-lg hover:bg-[#B8C428] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm font-bold shadow-md hover:shadow-xl hover:scale-105 flex-shrink-0"
                 >
                   {isLoading ? "..." : "Enviar"}
                 </button>
