@@ -693,8 +693,8 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
               </div>
             )}
 
-            {/* Sugerencias contextuales - DESHABILITADAS TEMPORALMENTE PARA DEBUG */}
-            {/* {!isLoading && messages.length > 0 && (
+            {/* Sugerencias contextuales */}
+            {!isLoading && messages.length > 0 && (
               <ContextualSuggestions
                 userData={userData}
                 messages={messages}
@@ -707,7 +707,7 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
                   }, 100);
                 }}
               />
-            )} */}
+            )}
           </div>
 
           {/* Input o Auth */}

@@ -366,8 +366,8 @@ export async function POST(request: Request) {
                 total_indicators: typedAccesses.length,
                 free_indicators: freeCount,
                 premium_indicators: premiumCount,
-                indicators_list: typedAccesses.slice(0, 5).map((a: any) => a.indicators?.name).filter(Boolean),
-                has_more: typedAccesses.length > 5
+                indicators_list: typedAccesses.map((a: any) => a.indicators?.name).filter(Boolean), // Mostrar TODOS
+                has_more: false // Ya no necesitamos este flag
               };
 
               console.log(`✅ Pre-fetch exitoso: ${adminAccessData.total_indicators} indicadores para ${emailMatch}`);
