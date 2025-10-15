@@ -11,28 +11,47 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
-    // Rate limiting: 10 mensajes por minuto por IP/usuario
-    const identifier = request.headers.get('x-forwarded-for') ||
-                      request.headers.get('x-real-ip') ||
-                      'anonymous';
+    // 🔍 Verificar autenticación PRIMERO para detectar si es admin
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    const rateLimitResult = chatLimiter.check(10, identifier);
-
-    if (!rateLimitResult.success) {
-      return new Response(JSON.stringify({
-        error: "Demasiadas solicitudes",
-        message: "Has excedido el límite de 10 mensajes por minuto. Por favor, espera un momento.",
-        retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
-      }), {
-        status: 429,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-          'X-RateLimit-Reset': new Date(rateLimitResult.reset).toISOString(),
-          'Retry-After': Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString()
-        }
+    if (authError || !user) {
+      console.error('❌ Error de autenticación en chat API:', authError);
+      return new Response(JSON.stringify({ error: "No autorizado", details: authError?.message }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
       });
+    }
+
+    const isAdmin = user.email === 'api@apidevs.io';
+    
+    // ⚡ Rate limiting: 10 mensajes por minuto por IP/usuario (EXCEPTO ADMIN)
+    if (!isAdmin) {
+      const identifier = request.headers.get('x-forwarded-for') ||
+                        request.headers.get('x-real-ip') ||
+                        user.email ||
+                        'anonymous';
+
+      const rateLimitResult = chatLimiter.check(10, identifier);
+
+      if (!rateLimitResult.success) {
+        return new Response(JSON.stringify({
+          error: "Demasiadas solicitudes",
+          message: "Has excedido el límite de 10 mensajes por minuto. Por favor, espera un momento.",
+          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
+        }), {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': new Date(rateLimitResult.reset).toISOString(),
+            'Retry-After': Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString()
+          }
+        });
+      }
+    } else {
+      console.log('👑 Admin detectado: Rate limiting deshabilitado');
     }
 
     // Validar input con Zod
@@ -52,18 +71,7 @@ export async function POST(request: Request) {
 
     const { messages } = validation.data;
 
-    // Verificar autenticación
-    const supabase = await createClient();
-    const { data: { user }, error } = await supabase.auth.getUser();
-
-    if (error || !user) {
-      console.error('❌ Error de autenticación en chat API:', error);
-      return new Response(JSON.stringify({ error: "No autorizado", details: error?.message }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
+    // La autenticación ya se verificó arriba (línea 16)
     console.log('✅ Usuario autenticado:', user.email);
 
     // Verificar si es una consulta administrativa no autorizada
@@ -247,8 +255,7 @@ export async function POST(request: Request) {
     // Determinar qué tools están disponibles según el rol del usuario
     const availableTools = {};
 
-    // Solo admins pueden usar tools de gestión de accesos
-    const isAdmin = user.email === 'api@apidevs.io';
+    // Solo admins pueden usar tools de gestión de accesos (isAdmin ya está definido arriba)
     if (isAdmin) {
       Object.assign(availableTools, {
         getUserAccessDetails
