@@ -103,53 +103,39 @@ export const getUserAccessDetails = tool({
         }).length
       };
 
-      return {
-        success: true,
-        user: {
-          email: (targetUser as any).email,
-          full_name: (targetUser as any).full_name,
-          tradingview_username: (targetUser as any).tradingview_username,
-          customer_tier: (targetUser as any).customer_tier
-        },
-        access_stats: accessStats,
-        active_accesses: typedAccesses.map((access: any) => ({
-          indicator_name: access.indicators?.name,
-          pine_id: access.indicators?.pine_id,
-          category: access.indicators?.category,
-          tier: access.indicators?.access_tier,
-          granted_at: access.granted_at,
-          expires_at: access.expires_at,
-          duration_type: access.duration_type,
-          access_source: access.access_source,
-          days_until_expiry: access.expires_at ?
-            Math.ceil((new Date(access.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) :
-            null
-        }))
-      };
+      // 🚀 CAMBIO CRÍTICO: Retornar texto simple en lugar de JSON complejo
+      // Esto evita que el stream se trabe con respuestas muy grandes
+      
+      const freeCount = typedAccesses.filter((a: any) => a.indicators?.access_tier === 'free').length;
+      const premiumCount = typedAccesses.filter((a: any) => a.indicators?.access_tier === 'premium').length;
+      
+      // Formatear lista de indicadores de forma legible
+      const indicatorsList = typedAccesses.map((access: any, index: number) => {
+        const name = access.indicators?.name || 'Sin nombre';
+        const tier = access.indicators?.access_tier === 'premium' ? '⭐ PREMIUM' : '🆓 GRATIS';
+        const duration = access.duration_type === '1L' ? 'Acceso de por vida' : `Expira: ${access.expires_at || 'N/A'}`;
+        return `${index + 1}. ${name} - ${tier} (${duration})`;
+      }).join('\n');
+      
+      // Retornar texto formateado listo para mostrar al usuario
+      const textResponse = `
+📊 RESUMEN DE ACCESOS PARA ${(targetUser as any).full_name}
 
-      // Crear respuesta formateada para que el AI la use fácilmente
-      const formattedResponse = {
-        success: true,
-        summary: `${(targetUser as any).full_name} (${(targetUser as any).email}) tiene ${typedAccesses.length} indicadores activos: ${typedAccesses.filter((a: any) => a.indicators?.access_tier === 'free').length} gratuitos y ${typedAccesses.filter((a: any) => a.indicators?.access_tier === 'premium').length} premium.`,
-        user_info: {
-          name: (targetUser as any).full_name,
-          email: (targetUser as any).email,
-          tradingview_username: (targetUser as any).tradingview_username,
-          tier: (targetUser as any).customer_tier
-        },
-        active_indicators: typedAccesses.map((access: any) => ({
-          name: access.indicators?.name,
-          category: access.indicators?.category,
-          tier: access.indicators?.access_tier,
-          expires_at: access.expires_at,
-          duration: access.duration_type
-        }))
-      };
+Usuario: ${(targetUser as any).email}
+TradingView: ${(targetUser as any).tradingview_username}
+Tier: ${(targetUser as any).customer_tier || 'Standard'}
 
-      console.log(`✅ RETORNO FINAL FORMATEADO:`, JSON.stringify(formattedResponse, null, 2));
+Total de indicadores activos: ${typedAccesses.length}
+- Gratuitos: ${freeCount}
+- Premium: ${premiumCount}
 
-      // Retornar respuesta optimizada para que el AI la use fácilmente
-      return formattedResponse;
+📋 LISTA DE INDICADORES:
+${indicatorsList}
+      `.trim();
+      
+      console.log(`✅ RETORNO FINAL (${textResponse.length} caracteres):`, textResponse.substring(0, 200) + '...');
+      
+      return textResponse;
 
     } catch (error) {
       console.error('Error en getUserAccessDetails:', error);

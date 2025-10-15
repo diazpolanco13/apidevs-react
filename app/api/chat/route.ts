@@ -488,15 +488,20 @@ IMPORTANTE GENERAL:
     try {
       const aiModel = getAIModel(modelConfig);
       
-      const result = await streamText({
+      const result = streamText({
         model: aiModel,
         system: systemPrompt,
         messages,
         tools: availableTools,
       });
 
-      console.log(`✅ Respuesta de ${modelConfig.provider}/${modelConfig.model} generada`);
-      return result.toTextStreamResponse();
+      console.log(`🔄 Stream iniciado para ${modelConfig.provider}/${modelConfig.model}`);
+      
+      // Convertir a stream response
+      const response = result.toTextStreamResponse();
+      
+      console.log(`✅ Respuesta de ${modelConfig.provider}/${modelConfig.model} lista para enviar`);
+      return response;
     } catch (aiError: any) {
       console.error('❌ Error llamando a Grok-3:', aiError);
       return new Response(JSON.stringify({
