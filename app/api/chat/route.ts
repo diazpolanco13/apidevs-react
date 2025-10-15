@@ -252,44 +252,65 @@ export async function POST(request: Request) {
       // Continuamos con datos por defecto si falla
     }
 
-    // Determinar qué tools están disponibles según el rol del usuario
+    // 🚨 TOOLS DESHABILITADOS: toTextStreamResponse() no incluye tool results en el stream
+    // En su lugar, usamos pre-fetch de datos (líneas 265-348) que SÍ se incluyen en el system prompt
     const availableTools = {};
 
-    // Solo admins pueden usar tools de gestión de accesos (isAdmin ya está definido arriba)
-    if (isAdmin) {
-      Object.assign(availableTools, {
-        getUserAccessDetails
-      });
-    }
+    // ANTES: Tools habilitados pero no funcionaban con streaming
+    // if (isAdmin) {
+    //   Object.assign(availableTools, {
+    //     getUserAccessDetails
+    //   });
+    // }
 
     // PLAN B: Pre-fetch data para consultas administrativas
     let adminAccessData = null;
 
-    // Solo procesar consultas administrativas si el usuario ES admin
-    if (isAdmin) {
+    // Pre-fetch para CUALQUIER consulta sobre indicadores (admin o no)
+    if (true) { // Siempre intentar pre-fetch
       try {
         // Buscar si el último mensaje contiene una consulta sobre accesos de usuario
         const lastMessage = messages[messages.length - 1]?.content?.toLowerCase() || '';
 
-        // Detectar consultas administrativas con patrones específicos
+        // Detectar consultas sobre indicadores
         let emailMatch = null;
 
-        // Patrón 1: "indicadores tiene [email]"
-        const pattern1 = lastMessage.match(/indicadores\s+tiene\s+activos?\s+([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
-        if (pattern1) {
-          emailMatch = pattern1[1];
+        // 🔍 Detectar si pregunta por SUS PROPIOS indicadores
+        const askingOwnIndicators = (
+          lastMessage.includes('mis indicadores') ||
+          lastMessage.includes('mi cuenta') ||
+          lastMessage.includes('mis accesos') ||
+          lastMessage.includes('qué indicadores tengo') ||
+          lastMessage.includes('cuántos indicadores') ||
+          lastMessage.includes('qué tengo activ') ||
+          lastMessage.includes('sabes que indicadores')
+        );
+
+        if (askingOwnIndicators) {
+          // El usuario pregunta por SUS indicadores
+          emailMatch = user.email;
+          console.log(`🔍 Usuario preguntando por SUS propios indicadores: ${user.email}`);
         }
 
-        // Patrón 2: "accesos de [email]"
-        const pattern2 = lastMessage.match(/accesos?\s+de\s+([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
-        if (pattern2 && !emailMatch) {
-          emailMatch = pattern2[1];
-        }
+        // Solo admins pueden consultar otros emails
+        if (isAdmin && !emailMatch) {
+          // Patrón 1: "indicadores tiene [email]"
+          const pattern1 = lastMessage.match(/indicadores\s+tiene\s+activos?\s+([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
+          if (pattern1) {
+            emailMatch = pattern1[1];
+          }
 
-        // Patrón 3: "qué tiene [email]"
-        const pattern3 = lastMessage.match(/qué\s+tiene\s+([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
-        if (pattern3 && !emailMatch) {
-          emailMatch = pattern3[1];
+          // Patrón 2: "accesos de [email]"
+          const pattern2 = lastMessage.match(/accesos?\s+de\s+([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
+          if (pattern2 && !emailMatch) {
+            emailMatch = pattern2[1];
+          }
+
+          // Patrón 3: "qué tiene [email]"
+          const pattern3 = lastMessage.match(/qué\s+tiene\s+([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
+          if (pattern3 && !emailMatch) {
+            emailMatch = pattern3[1];
+          }
         }
 
         if (emailMatch && emailMatch.includes('@')) {
@@ -448,10 +469,13 @@ Tú: "El acceso de Pedro al RSI PRO+ expira el 15 de noviembre de 2025"
 - NO inventes información, usa SOLO lo que el tool te devuelve
 - Si el tool te devuelve un texto formateado, muéstralo TAL CUAL al usuario
 
-INSTRUCCIONES ESPECIALES PARA CONSULTAS ADMINISTRATIVAS:
-- Si el usuario pregunta "¿qué indicadores tiene X?" o "¿cuáles son los accesos de X?", RESPONDE INMEDIATAMENTE con la información de "DATOS DE ACCESOS ADMINISTRATIVOS CONSULTADOS"
-- NO digas "voy a consultar" - usa directamente los datos proporcionados
-- Formato de respuesta: "[Nombre del usuario] tiene [total] indicadores activos: [gratuitos] gratuitos y [premium] premium. Sus indicadores incluyen [lista de nombres]"
+🚨 INSTRUCCIONES PARA CONSULTAS SOBRE INDICADORES:
+- SI ves "DATOS DE ACCESOS ADMINISTRATIVOS CONSULTADOS" arriba, SIGNIFICA que ya tenemos los datos listos
+- NO digas "déjame consultar" - los datos YA ESTÁN AHÍ
+- MUESTRA inmediatamente: "[Usuario] tiene [total] indicadores: [free] gratuitos y [premium] premium"
+- LISTA los indicadores por nombre
+- Formato profesional: emojis 🆓 para free, ⭐ para premium
+- Si el usuario pregunta por SUS PROPIOS indicadores y ves los datos, responde DIRECTAMENTE
 
 ⚠️ REGLA ABSOLUTA - NUNCA IGNORES ESTO:
 Si usas la herramienta getUserAccessDetails:
@@ -515,7 +539,7 @@ IMPORTANTE GENERAL:
 
       console.log(`🔄 Stream iniciado para ${modelConfig.provider}/${modelConfig.model}`);
       
-      // Convertir a stream response
+      // Usar toTextStreamResponse() por ahora - toDataStream() requiere más cambios
       const response = result.toTextStreamResponse();
       
       console.log(`✅ Respuesta de ${modelConfig.provider}/${modelConfig.model} lista para enviar`);
