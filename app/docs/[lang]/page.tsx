@@ -100,17 +100,17 @@ export default async function DocsLanguagePage({
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8 lg:pt-24 lg:pb-16">
+    <div className="w-full pb-16">
       {/* Header con contenido de Sanity */}
-      <header className="mb-12 lg:mb-16">
-        <div className="flex items-center gap-3 mb-6">
+      <header className="mb-12 lg:mb-16 text-center">
+        <div className="flex items-center justify-center gap-3 mb-6">
           <span className="text-4xl">{welcomePage.icon || '📚'}</span>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white">
             {welcomePage.title}
           </h1>
         </div>
         {welcomePage.description && (
-          <p className="text-lg sm:text-xl text-gray-300 leading-relaxed max-w-4xl">
+          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl mx-auto">
             {welcomePage.description}
           </p>
         )}
@@ -129,13 +129,13 @@ export default async function DocsLanguagePage({
       {/* Documentos por categoría */}
       {Object.keys(docsByCategory).length > 0 && (
         <div className="space-y-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             {lang === 'es' ? 'Toda la Documentación' : 'All Documentation'}
           </h2>
           
           {Object.entries(docsByCategory).map(([categorySlug, category]: [string, any]) => (
             <div key={categorySlug}>
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
                 <span className="w-1 h-6 bg-apidevs-primary rounded-full"></span>
                 <span className="text-lg">{category.icon}</span>
                 {category.title}
@@ -145,23 +145,23 @@ export default async function DocsLanguagePage({
                   <Link
                     key={doc._id}
                     href={`/docs/${lang}/${doc.slug}`}
-                    className="group flex items-center gap-3 p-4 bg-gray-900/30 hover:bg-gray-900/50 border border-gray-800/50 hover:border-apidevs-primary/30 rounded-lg transition-all"
+                    className="group flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900/30 hover:bg-gray-100 dark:hover:bg-gray-900/50 border border-gray-200 dark:border-gray-800/50 hover:border-apidevs-primary/30 rounded-lg transition-all"
                   >
                     {doc.icon && (
                       <span className="text-xl flex-shrink-0">{doc.icon}</span>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-white group-hover:text-apidevs-primary transition-colors truncate">
+                      <h4 className="font-medium text-gray-900 dark:text-white group-hover:text-apidevs-primary transition-colors truncate">
                         {doc.title}
                       </h4>
                       {doc.description && (
-                        <p className="text-sm text-gray-400 line-clamp-1 mt-1">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1 mt-1">
                           {doc.description}
                         </p>
                       )}
                     </div>
                     <svg 
-                      className="w-5 h-5 text-gray-600 group-hover:text-apidevs-primary transition-colors flex-shrink-0" 
+                      className="w-5 h-5 text-gray-400 dark:text-gray-600 group-hover:text-apidevs-primary transition-colors flex-shrink-0" 
                       fill="none" 
                       stroke="currentColor" 
                       viewBox="0 0 24 24"

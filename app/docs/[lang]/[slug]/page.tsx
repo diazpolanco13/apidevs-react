@@ -8,7 +8,7 @@ import {
   type DocPage
 } from '@/sanity/lib/doc-queries';
 import { portableTextComponents } from '@/components/docs/PortableTextComponents';
-import TableOfContents from '@/components/docs/TableOfContents';
+import TableOfContentsRight from '@/components/docs/TableOfContentsRight';
 
 // Configuración de idiomas soportados
 const supportedLanguages = ['es', 'en'] as const;
@@ -173,9 +173,9 @@ export default async function DocPage({
     };
 
     return (
-      <>
+      <div className="flex gap-8">
         {/* Main Content */}
-        <article className="w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8 lg:pt-15 lg:pb-16 xl:pr-80">
+        <article className="flex-1 pb-16 max-w-3xl min-w-0">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-6 flex-wrap">
             <Link href={`/docs/${lang}`} className="hover:text-gray-900 dark:hover:text-white transition-colors">
@@ -291,9 +291,9 @@ export default async function DocPage({
           )}
         </article>
 
-        {/* Table of Contents - Fixed Right Side */}
-        <TableOfContents headings={headings} />
-      </>
+        {/* Table of Contents - DERECHO */}
+        <TableOfContentsRight content={doc.content} />
+      </div>
     );
   } catch (error) {
     console.error('Error in DocPage:', error);

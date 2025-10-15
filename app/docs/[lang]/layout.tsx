@@ -1,11 +1,10 @@
 import { docsClient } from '@/sanity/lib/client';
-import { SIDEBAR_DOCS_QUERY } from '@/sanity/lib/doc-queries';
 import { groq } from 'next-sanity';
-import DocsSidebar from '@/components/docs/DocsSidebar';
-import DocsHeaderWithContext from '@/components/docs/DocsHeaderWithContext';
+import ClaudeStyleNavbar from '@/components/docs/ClaudeStyleNavbar';
+import ClaudeStyleTabs from '@/components/docs/ClaudeStyleTabs';
+import ClaudeSidebarWrapper from '@/components/docs/ClaudeSidebarWrapper';
 import BackgroundEffects from '@/components/ui/BackgroundEffects';
 import { ThemeProvider } from '@/components/docs/ThemeProvider';
-import Script from 'next/script';
 
 // Configuración de idiomas soportados
 const supportedLanguages = [
@@ -78,87 +77,61 @@ export default async function DocsLanguageLayout({
     );
   }
 
-  // Fetch sidebar data y crear map de slug -> docId para el idioma específico
-  let sidebarData;
-  let docsMap: Record<string, string> = {};
+  // Fetch categorías con sus páginas para tabs y sidebar
+  let categories = [];
   
   try {
-    // Fetch sidebar data
-    sidebarData = await docsClient.fetch(SIDEBAR_DOCS_QUERY, { language: lang });
-    
-    // Crear map de slug -> docId para el selector de idiomas
-    const docsMapQuery = groq`
-      *[_type == "documentation" && language == $language] {
-        "slug": slug.current,
-        _id
+    const categoriesQuery = groq`
+      *[_type == "docCategory" && language == $language] | order(order asc) {
+        _id,
+        title,
+        slug,
+        icon,
+        order,
+        "pages": *[_type == "documentation" && category._ref == ^._id && language == $language && !(slug.current in ["bienvenido-a-apidevs", "welcome"])] | order(order asc) {
+          _id,
+          title,
+          "slug": slug.current,
+          icon,
+          description,
+          order
+        }
       }
     `;
-    const docs = await docsClient.fetch<Array<{ slug: string; _id: string }>>(
-      docsMapQuery,
-      { language: lang }
-    );
-    
-    docsMap = docs.reduce((acc, doc) => {
-      acc[doc.slug] = doc._id;
-      return acc;
-    }, {} as Record<string, string>);
-    
+    categories = await docsClient.fetch(categoriesQuery, { language: lang });
   } catch (error) {
-    console.error('Error fetching docs data:', error);
-    // Fallback: datos vacíos si falla la query
-    sidebarData = { categories: [] };
+    console.error('Error fetching categories:', error);
+    categories = [];
   }
 
   return (
     <ThemeProvider>
-      {/* Script inline para prevenir FOUC (Flash of Unstyled Content) */}
-      <Script
-        id="theme-script"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              try {
-                const theme = localStorage.getItem('docs-theme');
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const shouldBeDark = theme === 'dark' || (!theme && prefersDark);
-                
-                if (shouldBeDark) {
-                  document.documentElement.classList.add('dark');
-                  document.documentElement.setAttribute('data-theme', 'dark');
-                } else {
-                  document.documentElement.classList.remove('dark');
-                  document.documentElement.setAttribute('data-theme', 'light');
-                }
-              } catch (e) {
-                console.error('Error loading theme:', e);
-              }
-            })();
-          `,
-        }}
-      />
-
-      <div className="docs-layout min-h-screen relative bg-white dark:bg-apidevs-dark transition-colors duration-200">
+      <div className="docs-layout min-h-screen relative bg-white dark:bg-[#0A0A0A] transition-colors duration-200">
         {/* Background Effects */}
         <BackgroundEffects variant="minimal" />
         
-        {/* Header */}
-        <DocsHeaderWithContext />
+        {/* Claude Style Navbar */}
+        <ClaudeStyleNavbar currentLanguage={lang} />
         
-        {/* Main Container */}
-        <div className="max-w-[1800px] mx-auto pt-auto relative">
-          <div className="flex">
-            {/* Sidebar */}
-            <DocsSidebar 
-              sidebarData={sidebarData} 
-              currentLanguage={lang}
-              docsMap={docsMap}
-            />
-            
-            {/* Main Content */}
-            <main className="flex-1 relative z-10 min-w-0">
-              {children}
-            </main>
+        {/* Claude Style Navigation Tabs */}
+        <ClaudeStyleTabs categories={categories} currentLanguage={lang} />
+        
+        {/* Main Content with Sidebar - con padding-top para navbar + tabs */}
+        <div className="pt-28 relative">
+          {/* Contenedor centrado que engloba sidebar + contenido + TOC */}
+          <div className="max-w-[1400px] mx-auto px-8 sm:px-12 lg:px-16">
+            <div className="flex gap-8">
+              {/* Sidebar IZQUIERDO - Lista de páginas de la categoría */}
+              <ClaudeSidebarWrapper 
+                categories={categories}
+                currentLanguage={lang}
+              />
+              
+              {/* Content Container - Centro */}
+              <main className="flex-1 relative z-10 min-w-0">
+                {children}
+              </main>
+            </div>
           </div>
         </div>
       </div>

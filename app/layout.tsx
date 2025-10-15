@@ -49,7 +49,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
-    <html lang="es" className="h-full">
+    <html lang="es" className="h-full" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/favicon_io/apple-touch-icon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -57,6 +57,29 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
         <link rel="manifest" href="/favicon_io/site.webmanifest" />
         <meta name="theme-color" content="#C9D92E" />
+        
+        {/* Script de tema - ANTES de que React hidrate para prevenir FOUC */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('docs-theme');
+                  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  const shouldBeDark = theme === 'dark' || (!theme && prefersDark);
+                  
+                  if (shouldBeDark) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body className={`bg-apidevs-dark ${workSans.variable} font-sans h-full`}>
         <Navbar />
