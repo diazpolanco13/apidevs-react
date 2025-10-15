@@ -19,8 +19,9 @@ import {
   Cog6ToothIcon,
   UsersIcon,
   GlobeAltIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
-import { Shield, TrendingUp, Package, Megaphone, BarChart3 } from 'lucide-react';
+import { Shield, TrendingUp, Package, Megaphone, BarChart3, BrainCircuit } from 'lucide-react';
 
 interface NavigationItem {
   name: string;
@@ -50,6 +51,7 @@ export default function AdminDashboardLayout({
     { name: 'Usuarios', href: '/admin/users', icon: UsersIcon },
     { name: 'Compras', href: '/admin/compras', icon: Package },
     { name: 'Indicadores', href: '/admin/indicadores', icon: BarChart3 },
+    { name: 'Asistente IA', href: '/admin/ia-config', icon: BrainCircuit },
     { name: 'Campañas', href: '/admin/campaigns', icon: Megaphone },
     { name: 'Geo-Analytics', href: '/admin/geo-analytics', icon: GlobeAltIcon },
     { name: 'Reportes', href: '/admin', icon: TrendingUp, badge: 'Próximamente' },

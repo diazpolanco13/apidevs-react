@@ -21,15 +21,20 @@
 }
 
 .logo {
-  @apply cursor-pointer rounded-full transform duration-100 ease-in-out flex items-center;
+  @apply cursor-pointer transform duration-100 ease-in-out flex items-center;
 }
 
-.logo:focus {
-  @apply outline-none;
+.logo:hover,
+.logo:focus,
+.logo:active,
+.logo:focus-visible,
+.logo:focus-within {
+  @apply outline-none bg-transparent !important;
+  background: transparent !important;
   box-shadow: none !important;
-}
-
-.logo:focus-visible {
-  @apply outline-none;
-  box-shadow: none !important;
+  text-shadow: none !important;
+  border: none !important;
+  ring: 0 !important;
+  --tw-ring-shadow: none !important;
+  --tw-ring-offset-shadow: none !important;
 }

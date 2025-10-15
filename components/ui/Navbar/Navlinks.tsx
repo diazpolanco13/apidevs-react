@@ -76,7 +76,30 @@ export default function Navlinks({ user, avatarUrl, userStatus = 'online', unrea
       )}
 
       <div className="flex items-center flex-1">
-        <Link href="/" className={`${s.logo} focus:outline-none`} aria-label="APIDevs Trading">
+        <Link 
+          href="/" 
+          className="cursor-pointer transform duration-100 ease-in-out flex items-center"
+          aria-label="APIDevs Trading"
+          style={{ 
+            boxShadow: 'none !important',
+            textShadow: 'none !important',
+            background: 'transparent !important',
+            outline: 'none !important',
+            border: 'none !important'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.setProperty('box-shadow', 'none', 'important');
+            e.currentTarget.style.setProperty('background', 'transparent', 'important');
+            e.currentTarget.style.setProperty('outline', 'none', 'important');
+          }}
+          onFocus={(e) => {
+            e.preventDefault();
+            e.currentTarget.blur();
+          }}
+          onClick={(e) => {
+            e.currentTarget.blur();
+          }}
+        >
           {/* Logo responsive - tamaño balanceado */}
           <div className="block sm:hidden">
             <APIDevsLogo width={130} height={32} />

@@ -164,8 +164,22 @@
   box-sizing: inherit;
 }
 
-*:focus:not(ol):not(.logo *) {
+*:focus:not(ol):not(a):not(.logo):not(.logo *) {
   @apply outline-none ring-2 ring-pink-500 ring-opacity-50;
+}
+
+/* Eliminar TODOS los efectos del logo */
+a[aria-label="APIDevs Trading"],
+a[aria-label="APIDevs Trading"]:hover,
+a[aria-label="APIDevs Trading"]:focus,
+a[aria-label="APIDevs Trading"]:active {
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  text-shadow: none !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  --tw-shadow: 0 0 #0000 !important;
 }
 
 html {
@@ -276,10 +290,14 @@ p a {
     box-shadow: 0 0 0 2px rgba(201, 217, 46, 0.5) !important;
   }
   
-  /* Logo sin focus */
-  a.logo:focus {
+  /* Logo sin focus ni hover */
+  a.logo:focus,
+  a.logo:hover,
+  a.logo:focus-visible {
     outline: none !important;
     box-shadow: none !important;
+    background: transparent !important;
+    text-shadow: none !important;
   }
 
   /* Success page animations */
