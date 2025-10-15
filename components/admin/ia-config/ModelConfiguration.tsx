@@ -1,6 +1,7 @@
 'use client';
 
-import { Cpu, Zap, ThermometerSun, Hash } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Cpu, Zap, ThermometerSun, Hash, RefreshCw } from 'lucide-react';
 import { AIConfig } from './AIConfigurationClient';
 
 interface Props {
@@ -8,12 +9,59 @@ interface Props {
   updateConfig: (updates: Partial<AIConfig>) => void;
 }
 
+interface OpenRouterModel {
+  id: string;
+  name: string;
+  description: string;
+  contextWindow: number;
+  pricing: {
+    prompt: number;
+    completion: number;
+  };
+  isFree: boolean;
+  provider: string;
+}
+
 export default function ModelConfiguration({ config, updateConfig }: Props) {
+  const [openRouterModels, setOpenRouterModels] = useState<OpenRouterModel[]>([]);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [modelsError, setModelsError] = useState<string | null>(null);
+
+  // Modelos estáticos de X.AI
+  const xaiModels = ['grok-3', 'grok-2-1212'];
+
+  // Cargar modelos de OpenRouter dinámicamente
+  useEffect(() => {
+    if (config.model_provider === 'openrouter') {
+      loadOpenRouterModels();
+    }
+  }, [config.model_provider]);
+
+  const loadOpenRouterModels = async () => {
+    setLoadingModels(true);
+    setModelsError(null);
+    try {
+      const response = await fetch('/api/ai/models');
+      const data = await response.json();
+      
+      if (data.success) {
+        setOpenRouterModels(data.models);
+      } else {
+        setModelsError(data.message || 'Error al cargar modelos');
+      }
+    } catch (error) {
+      console.error('Error loading OpenRouter models:', error);
+      setModelsError('Error de conexión');
+    } finally {
+      setLoadingModels(false);
+    }
+  };
+
   const modelProviders = [
     { 
       value: 'xai', 
       label: 'X.AI (Grok)', 
-      models: ['grok-3', 'grok-2-1212'],
+      models: xaiModels,
       icon: '🚀',
       description: 'Modelo rápido y confiable de X.AI',
       recommended: true
@@ -21,14 +69,19 @@ export default function ModelConfiguration({ config, updateConfig }: Props) {
     { 
       value: 'openrouter', 
       label: 'OpenRouter (400+ Modelos)', 
-      models: [
-        'anthropic/claude-3.5-sonnet',
-        'openai/gpt-4o',
-        'openai/gpt-4o-mini',
-        'google/gemini-2.0-flash-exp:free',
-        'meta-llama/llama-3.3-70b-instruct',
-        'deepseek/deepseek-chat'
-      ],
+      models: openRouterModels.length > 0 
+        ? openRouterModels.map(m => m.id)
+        : [
+          // Fallback estático si no se pueden cargar dinámicamente
+          'anthropic/claude-3.5-sonnet',
+          'openai/gpt-4o',
+          'openai/gpt-4o-mini',
+          'google/gemini-2.0-flash-exp:free',
+          'meta-llama/llama-3.3-70b-instruct',
+          'deepseek/deepseek-r1',
+          'deepseek/deepseek-r1:free',
+          'deepseek/deepseek-chat'
+        ],
       icon: '🌐',
       description: 'Acceso a múltiples proveedores AI',
       recommended: true
@@ -36,6 +89,11 @@ export default function ModelConfiguration({ config, updateConfig }: Props) {
   ];
 
   const selectedProvider = modelProviders.find(p => p.value === config.model_provider);
+  
+  // Obtener info detallada del modelo seleccionado si es de OpenRouter
+  const selectedModelInfo = config.model_provider === 'openrouter' 
+    ? openRouterModels.find(m => m.id === config.model_name)
+    : null;
 
   return (
     <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
@@ -96,36 +154,110 @@ export default function ModelConfiguration({ config, updateConfig }: Props) {
         {/* Model Name Selection */}
         {selectedProvider && (
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Modelo Específico
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-300">
+                Modelo Específico {config.model_provider === 'openrouter' && `(${openRouterModels.length} disponibles)`}
+              </label>
+              {config.model_provider === 'openrouter' && (
+                <button
+                  onClick={loadOpenRouterModels}
+                  disabled={loadingModels}
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/30 disabled:opacity-50 transition-colors"
+                >
+                  <RefreshCw className={`w-3 h-3 ${loadingModels ? 'animate-spin' : ''}`} />
+                  {loadingModels ? 'Cargando...' : 'Actualizar'}
+                </button>
+              )}
+            </div>
+
+            {modelsError && (
+              <div className="mb-2 p-2 bg-red-500/10 border border-red-500/30 rounded text-xs text-red-400">
+                ⚠️ {modelsError} - Usando lista estática
+              </div>
+            )}
+
             <select
               value={config.model_name}
               onChange={(e) => updateConfig({ model_name: e.target.value })}
               className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-apidevs-primary"
+              disabled={loadingModels}
             >
-              {selectedProvider.models.map((model) => (
-                <option key={model} value={model} className="bg-gray-900">
-                  {model}
-                </option>
-              ))}
+              {config.model_provider === 'openrouter' && openRouterModels.length > 0 ? (
+                // Mostrar modelos dinámicos con información de precio
+                openRouterModels.map((model) => (
+                  <option key={model.id} value={model.id} className="bg-gray-900">
+                    {model.name} {model.isFree ? '(GRATIS)' : `($${model.pricing.prompt.toFixed(2)}/1M)`}
+                  </option>
+                ))
+              ) : (
+                // Fallback a lista estática
+                selectedProvider.models.map((model) => (
+                  <option key={model} value={model} className="bg-gray-900">
+                    {model}
+                  </option>
+                ))
+              )}
             </select>
+            
+            {/* Mostrar info detallada del modelo seleccionado */}
+            {selectedModelInfo && (
+              <div className="mt-2 p-2 bg-gray-800/50 border border-gray-700 rounded text-xs text-gray-300">
+                <div className="flex items-center justify-between">
+                  <span>Contexto: <strong>{selectedModelInfo.contextWindow.toLocaleString()} tokens</strong></span>
+                  <span>
+                    {selectedModelInfo.isFree ? (
+                      <strong className="text-green-400">GRATIS</strong>
+                    ) : (
+                      <span>
+                        Entrada: <strong>${selectedModelInfo.pricing.prompt.toFixed(2)}/1M</strong>
+                      </span>
+                    )}
+                  </span>
+                </div>
+                {selectedModelInfo.description && (
+                  <p className="mt-1 text-gray-400">{selectedModelInfo.description}</p>
+                )}
+              </div>
+            )}
             
             {/* Model Info for OpenRouter */}
             {config.model_provider === 'openrouter' && (
-              <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <span className="text-blue-400 text-lg">ℹ️</span>
-                  <div className="text-xs text-gray-300">
-                    <p className="font-semibold mb-1 text-blue-300">Modelos OpenRouter:</p>
-                    <ul className="space-y-1 text-gray-400">
-                      <li><strong>Claude 3.5 Sonnet:</strong> Excelente con tools, contexto 200K tokens</li>
-                      <li><strong>GPT-4o:</strong> Multimodal de OpenAI, contexto 128K tokens</li>
-                      <li><strong>GPT-4o Mini:</strong> Más económico, rápido y eficiente</li>
-                      <li><strong>Gemini 2.0 Flash:</strong> Gratuito, 1M tokens de contexto</li>
-                      <li><strong>Llama 3.3 70B:</strong> Open-source de Meta, muy capaz</li>
-                      <li><strong>DeepSeek Chat:</strong> Económico y potente, 64K tokens</li>
-                    </ul>
+              <div className="mt-3 space-y-2">
+                {/* DeepSeek R1 Highlight */}
+                {(config.model_name === 'deepseek/deepseek-r1' || config.model_name === 'deepseek/deepseek-r1:free') && (
+                  <div className="p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <span className="text-2xl">⭐</span>
+                      <div className="text-xs text-gray-300">
+                        <p className="font-bold mb-1 text-purple-300">DeepSeek R1 - MODELO MÁS RECIENTE</p>
+                        <ul className="space-y-1 text-gray-400">
+                          <li>✅ <strong>671B parámetros</strong> (37B activos - MoE)</li>
+                          <li>✅ <strong>164K tokens</strong> de contexto</li>
+                          <li>✅ <strong>Supera a GPT-4</strong> en matemáticas y código</li>
+                          <li>✅ <strong>Razonamiento avanzado</strong> similar a OpenAI o1</li>
+                          <li>💰 <strong>${config.model_name.includes(':free') ? '0 (GRATIS)' : '~$0.14/1M tokens'}</strong></li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* General Info */}
+                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <span className="text-blue-400 text-lg">ℹ️</span>
+                    <div className="text-xs text-gray-300">
+                      <p className="font-semibold mb-1 text-blue-300">Modelos OpenRouter disponibles:</p>
+                      <ul className="space-y-1 text-gray-400">
+                        <li><strong>DeepSeek R1 ⭐:</strong> NUEVO - 671B params, supera a GPT-4</li>
+                        <li><strong>Claude 3.5 Sonnet:</strong> Excelente con tools, 200K contexto</li>
+                        <li><strong>GPT-4o:</strong> Multimodal de OpenAI, 128K contexto</li>
+                        <li><strong>GPT-4o Mini:</strong> Económico, rápido ($0.15/1M)</li>
+                        <li><strong>Gemini 2.0 Flash:</strong> GRATIS, 1M contexto</li>
+                        <li><strong>Llama 3.3 70B:</strong> Open-source, muy capaz</li>
+                        <li><strong>DeepSeek Chat:</strong> Base económico ($0.14/1M)</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>

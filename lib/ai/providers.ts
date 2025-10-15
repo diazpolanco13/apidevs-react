@@ -96,9 +96,33 @@ export const AVAILABLE_MODELS = {
     },
     {
       id: 'deepseek/deepseek-chat',
-      name: 'DeepSeek Chat',
-      description: 'Modelo económico y potente, excelente relación calidad/precio',
+      name: 'DeepSeek Chat (V3/V3.2)',
+      description: 'Modelo base económico y rápido',
       contextWindow: 64000,
+    },
+    {
+      id: 'deepseek/deepseek-r1',
+      name: 'DeepSeek R1 (MÁS RECIENTE) ⭐',
+      description: 'ÚLTIMO MODELO - 671B params, razonamiento avanzado, supera a GPT-4',
+      contextWindow: 164000,
+    },
+    {
+      id: 'deepseek/deepseek-r1:free',
+      name: 'DeepSeek R1 (Free) ⭐',
+      description: 'VERSIÓN GRATIS del modelo más reciente, ideal para testing',
+      contextWindow: 164000,
+    },
+    {
+      id: 'deepseek/deepseek-r1-0528',
+      name: 'DeepSeek R1 0528',
+      description: 'Snapshot del 28 de mayo, estable',
+      contextWindow: 164000,
+    },
+    {
+      id: 'deepseek/deepseek-r1-0528:free',
+      name: 'DeepSeek R1 0528 (Free)',
+      description: 'Versión gratuita del snapshot 0528',
+      contextWindow: 164000,
     },
   ],
 } as const;
