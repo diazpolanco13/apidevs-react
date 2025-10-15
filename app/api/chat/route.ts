@@ -283,13 +283,24 @@ export async function POST(request: Request) {
           lastMessage.includes('qué indicadores tengo') ||
           lastMessage.includes('cuántos indicadores') ||
           lastMessage.includes('qué tengo activ') ||
-          lastMessage.includes('sabes que indicadores')
+          lastMessage.includes('sabes que indicadores') ||
+          lastMessage.includes('indicadores activos') ||
+          lastMessage.includes('cuáles son mis') ||
+          lastMessage.includes('tengo acceso') ||
+          // Si solo dice "indicadores" sin especificar de quién
+          (lastMessage.includes('indicadores') && !lastMessage.includes('@'))
         );
 
         if (askingOwnIndicators) {
           // El usuario pregunta por SUS indicadores
           emailMatch = user.email;
           console.log(`🔍 Usuario preguntando por SUS propios indicadores: ${user.email}`);
+        }
+        
+        // 🚨 FALLBACK: Si es admin y menciona "indicadores", siempre cargar SUS datos
+        if (isAdmin && lastMessage.includes('indicadores') && !emailMatch) {
+          emailMatch = user.email;
+          console.log(`🔍 Admin pidiendo indicadores (fallback): cargando ${user.email}`);
         }
 
         // Solo admins pueden consultar otros emails
@@ -360,12 +371,24 @@ export async function POST(request: Request) {
               };
 
               console.log(`✅ Pre-fetch exitoso: ${adminAccessData.total_indicators} indicadores para ${emailMatch}`);
+              console.log(`📋 Indicadores encontrados:`, adminAccessData.indicators_list);
+            } else {
+              console.warn(`⚠️ No se encontraron indicadores activos para ${emailMatch}`);
             }
+          } else {
+            console.warn(`⚠️ Usuario ${emailMatch} no tiene tradingview_username o no existe`);
           }
         }
       } catch (error) {
-        console.warn('Error en pre-fetch de accesos:', error);
+        console.warn('❌ Error en pre-fetch de accesos:', error);
       }
+    }
+    
+    // 🔍 DEBUG: Log si adminAccessData tiene datos
+    if (adminAccessData) {
+      console.log(`🎯 adminAccessData cargado en system prompt:`, JSON.stringify(adminAccessData, null, 2));
+    } else {
+      console.log(`⚠️ adminAccessData es NULL - la IA no tiene datos pre-fetched`);
     }
 
     // System prompt específico para APIDevs con datos del usuario incluidos
