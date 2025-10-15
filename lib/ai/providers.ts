@@ -38,7 +38,7 @@ export function getAIModel(config: ModelConfig) {
     
     case 'openrouter':
       // OpenRouter usando el provider de OpenAI con baseURL personalizado
-      return openrouter(config.model);
+      return openrouter.chat(config.model);
     
     default:
       throw new Error(`Provider no soportado: ${config.provider}`);

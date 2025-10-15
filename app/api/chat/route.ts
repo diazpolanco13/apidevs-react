@@ -452,18 +452,19 @@ IMPORTANTE GENERAL:
 - Mantén un tono amigable y profesional`;
 
     // Obtener configuración del modelo a usar
-    // Primero intentar leer de la BD (ai_configuration), si no, usar default
     let modelConfig: ModelConfig = getDefaultModelConfig();
     
     try {
-      // @ts-ignore - ai_configuration table not in types yet
-      const { data: aiConfig } = await (supabase as any)
-        .from('ai_configuration')
+      // Intentar leer configuración de BD (ai_configuration)
+      // Si la tabla no existe, usar configuración por defecto
+      // @ts-ignore - ai_configuration table not in generated types yet
+      const { data: aiConfig, error: configError } = await supabase
+        .from('ai_configuration' as any)
         .select('model_provider, model_name')
         .eq('is_active', true)
         .single();
       
-      if (aiConfig && (aiConfig as any).model_provider && (aiConfig as any).model_name) {
+      if (!configError && aiConfig && (aiConfig as any).model_provider && (aiConfig as any).model_name) {
         modelConfig = {
           provider: (aiConfig as any).model_provider as 'xai' | 'openrouter',
           model: (aiConfig as any).model_name,
@@ -471,6 +472,9 @@ IMPORTANTE GENERAL:
         console.log(`✅ Usando configuración de BD: ${modelConfig.provider}/${modelConfig.model}`);
       } else {
         console.log(`ℹ️  Usando configuración por defecto: ${modelConfig.provider}/${modelConfig.model}`);
+        if (configError) {
+          console.log(`📋 Info: ${configError.message} (tabla ai_configuration no existe aún)`);
+        }
       }
     } catch (error) {
       console.warn('⚠️  Error leyendo configuración AI, usando default:', error);
