@@ -462,7 +462,9 @@ IMPORTANTE GENERAL:
         .from('ai_configuration' as any)
         .select('model_provider, model_name')
         .eq('is_active', true)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
       
       if (!configError && aiConfig && (aiConfig as any).model_provider && (aiConfig as any).model_name) {
         modelConfig = {

@@ -32,11 +32,20 @@ export default function ConfiguracionTab({ config, setConfig }: Props) {
 
       const supabase = createClient();
       
+      // Primero, desactivar TODOS los otros registros activos
+      // @ts-ignore - ai_configuration table not in types yet
+      await (supabase as any)
+        .from('ai_configuration')
+        .update({ is_active: false })
+        .neq('id', config.id);
+      
+      // Luego, actualizar y activar este registro
       // @ts-ignore - ai_configuration table not in types yet
       const { error } = await (supabase as any)
         .from('ai_configuration')
         .update({
           ...config,
+          is_active: true,
           updated_at: new Date().toISOString(),
         })
         .eq('id', config.id);
