@@ -314,62 +314,71 @@ function ChatWidget() {
     setAuthChecked(true);
   };
 
-  const addWelcomeMessage = (user: UserData) => {
-    const isLegacyUser = user.has_legacy_discount_eligible ||
-                        user.is_legacy_user ||
-                        user.legacy_customer ||
-                        (user.legacy_discount_percentage || 0) > 0;
+  const addWelcomeMessage = async (user: UserData) => {
+    // 🤖 Generar saludo personalizado usando la IA
+    setIsLoading(true);
 
-    // Determinar el tier del cliente con formato elegante
-    const getTierDisplay = (tier: string) => {
-      const tierMap: { [key: string]: string } = {
-        'diamond': '💎 DIAMOND',
-        'platinum': '🏆 PLATINUM',
-        'gold': '🥇 GOLD',
-        'silver': '🥈 SILVER',
-        'bronze': '🥉 BRONZE',
-        'free': '🆓 FREE'
-      };
-      return tierMap[tier?.toLowerCase()] || '👤 CLIENTE';
-    };
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [{
+            role: "user",
+            content: "hola"
+          }],
+        }),
+      });
 
-    const tierDisplay = getTierDisplay(user.customer_tier || 'free');
-    const userName = user.full_name || user.email || 'Usuario';
-
-    let welcomeMessage = `¡Hola ${userName}! 👋
-
-Bienvenido a APIDevs como cliente **${tierDisplay}**.
-
-Soy tu asistente personal y puedo ayudarte con:
-• Información sobre tu cuenta y suscripción
-• Consultas sobre indicadores y planes
-• Soporte técnico especializado`;
-
-    // 🚀 Agregar mensaje especial para usuarios LEGACY
-    if (isLegacyUser) {
-      const discountPercent = user.legacy_discount_percentage || 30; // Default 30% como máximo
-
-      welcomeMessage += `
-
-⭐ **¡Felicitaciones!** Como uno de nuestros primeros y más valiosos clientes legacy, tienes un **${discountPercent}% de descuento** especial en todos nuestros planes por tu lealtad histórica.`;
-    } else {
-      // Mensaje especial para nuevos clientes según su tier
-      if (tierDisplay !== '👤 CLIENTE') {
-        welcomeMessage += `
-
-🌟 **¡Gracias por elegirnos!** Como cliente ${tierDisplay}, tienes acceso completo a todas nuestras herramientas premium.`;
+      if (!response.ok) {
+        throw new Error(`Error HTTP ${response.status}`);
       }
+
+      // Crear mensaje vacío del asistente
+      const assistantMessageId = Date.now().toString();
+      setMessages([{
+        id: assistantMessageId,
+        role: "assistant",
+        content: "",
+      }]);
+
+      // Leer la respuesta como stream
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error("No se pudo leer la respuesta");
+      }
+
+      let fullResponse = "";
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = new TextDecoder().decode(value);
+        fullResponse += chunk;
+
+        // Actualizar el mensaje en tiempo real
+        setMessages([{
+          id: assistantMessageId,
+          role: "assistant",
+          content: fullResponse,
+        }]);
+      }
+
+    } catch (error) {
+      console.error("Error generando saludo:", error);
+      // Fallback a mensaje simple si falla la IA
+      const userName = user.full_name || user.email || 'Usuario';
+      setMessages([{
+        id: Date.now().toString(),
+        role: "assistant",
+        content: `¡Hola ${userName}! 👋\n\nSoy tu asistente de APIDevs. ¿En qué puedo ayudarte?`,
+      }]);
+    } finally {
+      setIsLoading(false);
     }
-
-    welcomeMessage += `
-
-¿En qué puedo ayudarte hoy?`;
-
-    setMessages([{
-      id: Date.now().toString(),
-      role: "assistant",
-      content: welcomeMessage,
-    }]);
   };
 
   const handleAuthSuccess = (userData: UserData) => {
