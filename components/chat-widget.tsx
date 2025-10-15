@@ -351,13 +351,18 @@ function ChatWidget() {
       }
 
       let fullResponse = "";
+      let chunkCount = 0;
       
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.log(`✅ Saludo generado. Total chunks: ${chunkCount}, Longitud: ${fullResponse.length}`);
+          break;
+        }
 
         const chunk = new TextDecoder().decode(value);
         fullResponse += chunk;
+        chunkCount++;
 
         // Actualizar el mensaje en tiempo real
         setMessages([{
@@ -365,6 +370,11 @@ function ChatWidget() {
           role: "assistant",
           content: fullResponse,
         }]);
+        
+        // Scroll automático
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
       }
 
     } catch (error) {
@@ -424,6 +434,10 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
     setIsLoading(true);
 
     try {
+      // Crear timeout de 60 segundos para la petición
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
+      
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -432,7 +446,10 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
         body: JSON.stringify({
           messages: [...messages, userMessage],
         }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -455,12 +472,22 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
       }
 
       let fullResponse = "";
+      let chunkCount = 0;
       
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.log(`✅ Stream finalizado. Total chunks: ${chunkCount}, Longitud: ${fullResponse.length}`);
+          break;
+        }
 
         const chunk = new TextDecoder().decode(value);
+        chunkCount++;
+        
+        // Log cada 10 chunks para no saturar la consola
+        if (chunkCount % 10 === 0) {
+          console.log(`📦 Chunk ${chunkCount}: ${chunk.substring(0, 50)}...`);
+        }
         
         // Agregar el chunk directamente al mensaje
         fullResponse += chunk;
@@ -471,11 +498,27 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
             ? { ...msg, content: fullResponse }
             : msg
         ));
+        
+        // Forzar scroll al final mientras recibe el stream
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
       }
+      
+      console.log(`📝 Respuesta completa recibida (${fullResponse.length} caracteres)`);
+      console.log(`🔍 Primeros 200 caracteres: ${fullResponse.substring(0, 200)}`);
 
     } catch (error: any) {
       console.error("❌ Error en handleSubmit:", error);
-      const errorMessage = error?.message || "Error desconocido";
+      
+      let errorMessage = "Error desconocido";
+      
+      if (error?.name === 'AbortError') {
+        errorMessage = "⏱️ La respuesta está tardando demasiado. El servidor puede estar procesando una consulta compleja. Por favor intenta:\n\n1. Reformular tu pregunta de forma más específica\n2. Esperar unos segundos y volver a intentar\n3. Contactar a soporte si el problema persiste";
+      } else {
+        errorMessage = error?.message || "Error desconocido";
+      }
+      
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         role: "assistant",
