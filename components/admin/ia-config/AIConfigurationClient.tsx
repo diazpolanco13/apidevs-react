@@ -54,7 +54,8 @@ export default function AIConfigurationClient() {
       setLoading(true);
       const supabase = createClient();
       
-      const { data, error } = await supabase
+      // @ts-ignore - ai_configuration table not in types yet
+      const { data, error } = await (supabase as any)
         .from('ai_configuration')
         .select('*')
         .eq('is_active', true)
@@ -83,7 +84,8 @@ export default function AIConfigurationClient() {
 
       const supabase = createClient();
       
-      const { error } = await supabase
+      // @ts-ignore - ai_configuration table not in types yet
+      const { error } = await (supabase as any)
         .from('ai_configuration')
         .update({
           ...config,

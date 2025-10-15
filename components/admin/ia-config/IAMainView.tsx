@@ -108,7 +108,13 @@ export default function IAMainView({ initialConfig }: Props) {
       {/* Tabs Navigation */}
       <div className="mb-8">
         <div className="border-b border-gray-800">
-          <nav className="flex justify-start space-x-1 -mb-px overflow-x-auto">
+          <nav 
+            className="flex justify-start space-x-1 -mb-px overflow-x-auto scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-gray-800/50 hover:scrollbar-thumb-purple-500/70"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'rgba(147, 51, 234, 0.5) rgba(31, 41, 55, 0.5)',
+            }}
+          >
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -119,7 +125,7 @@ export default function IAMainView({ initialConfig }: Props) {
                   onClick={() => setActiveTab(tab.id)}
                   disabled={!!tab.badge}
                   className={`
-                    group relative flex items-center gap-3 px-6 py-4 border-b-2 font-medium text-sm transition-all whitespace-nowrap
+                    group relative flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-all whitespace-nowrap flex-shrink-0
                     ${
                       isActive
                         ? 'border-apidevs-primary text-apidevs-primary'
@@ -130,7 +136,7 @@ export default function IAMainView({ initialConfig }: Props) {
                   `}
                 >
                   <Icon
-                    className={`h-5 w-5 ${
+                    className={`h-4 w-4 flex-shrink-0 ${
                       isActive
                         ? 'text-apidevs-primary'
                         : tab.badge
@@ -140,12 +146,12 @@ export default function IAMainView({ initialConfig }: Props) {
                   />
 
                   <div className="flex flex-col items-start">
-                    <span className="flex items-center gap-2">
-                      {tab.name}
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-sm">{tab.name}</span>
                       {tab.count !== null && (
                         <span
                           className={`
-                            px-2 py-0.5 rounded-full text-xs font-semibold
+                            px-1.5 py-0.5 rounded text-xs font-semibold
                             ${
                               isActive
                                 ? 'bg-apidevs-primary/20 text-apidevs-primary'
@@ -157,13 +163,13 @@ export default function IAMainView({ initialConfig }: Props) {
                         </span>
                       )}
                       {tab.badge && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-500 border border-yellow-500/30">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-yellow-500/20 text-yellow-500 border border-yellow-500/30">
                           {tab.badge}
                         </span>
                       )}
                     </span>
                     <span
-                      className={`text-xs ${
+                      className={`text-[10px] leading-tight ${
                         isActive
                           ? 'text-apidevs-primary/70'
                           : tab.badge
@@ -180,6 +186,24 @@ export default function IAMainView({ initialConfig }: Props) {
           </nav>
         </div>
       </div>
+
+      {/* Custom scrollbar styles */}
+      <style jsx>{`
+        nav::-webkit-scrollbar {
+          height: 6px;
+        }
+        nav::-webkit-scrollbar-track {
+          background: rgba(31, 41, 55, 0.5);
+          border-radius: 3px;
+        }
+        nav::-webkit-scrollbar-thumb {
+          background: rgba(147, 51, 234, 0.5);
+          border-radius: 3px;
+        }
+        nav::-webkit-scrollbar-thumb:hover {
+          background: rgba(147, 51, 234, 0.7);
+        }
+      `}</style>
 
       {/* Tab Content */}
       <div className="mt-6">

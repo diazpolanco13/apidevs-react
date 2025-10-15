@@ -32,7 +32,8 @@ export default function ConfiguracionTab({ config, setConfig }: Props) {
 
       const supabase = createClient();
       
-      const { error } = await supabase
+      // @ts-ignore - ai_configuration table not in types yet
+      const { error } = await (supabase as any)
         .from('ai_configuration')
         .update({
           ...config,
@@ -119,7 +120,7 @@ export default function ConfiguracionTab({ config, setConfig }: Props) {
         <div className="space-y-6">
           {/* Quick Actions */}
           <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sticky top-6">
-            <QuickActions onSave={saveConfiguration} saving={saving} />
+            <QuickActions onSave={saveConfiguration} onReload={() => window.location.reload()} saving={saving} />
           </div>
 
           {/* Configuration Preview */}
