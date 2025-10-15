@@ -33,21 +33,6 @@ export default function ModelConfiguration({ config, updateConfig }: Props) {
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'context'>('name');
   const [showDropdown, setShowDropdown] = useState(false);
   
-  // 💰 Estados para balance de OpenRouter
-  const [accountBalance, setAccountBalance] = useState<{
-    balance: number;
-    usage: number;
-    limit: number;
-    is_free_tier: boolean;
-    usage_breakdown?: {
-      daily: number;
-      weekly: number;
-      monthly: number;
-    };
-  } | null>(null);
-  const [loadingBalance, setLoadingBalance] = useState(false);
-  const [balanceError, setBalanceError] = useState<string | null>(null);
-
   // Modelos estáticos de X.AI
   const xaiModels = ['grok-3', 'grok-2-1212'];
 
@@ -55,7 +40,6 @@ export default function ModelConfiguration({ config, updateConfig }: Props) {
   useEffect(() => {
     if (config.model_provider === 'openrouter') {
       loadOpenRouterModels();
-      loadOpenRouterBalance();
     }
   }, [config.model_provider]);
 
@@ -79,25 +63,6 @@ export default function ModelConfiguration({ config, updateConfig }: Props) {
     }
   };
 
-  const loadOpenRouterBalance = async () => {
-    setLoadingBalance(true);
-    setBalanceError(null);
-    try {
-      const response = await fetch('/api/ai/balance');
-      const data = await response.json();
-      
-      if (data.success) {
-        setAccountBalance(data.balance);
-      } else {
-        setBalanceError(data.message || 'Error al cargar balance');
-      }
-    } catch (error) {
-      console.error('Error loading OpenRouter balance:', error);
-      setBalanceError('Error de conexión');
-    } finally {
-      setLoadingBalance(false);
-    }
-  };
 
   const modelProviders = [
     { 
@@ -227,244 +192,20 @@ export default function ModelConfiguration({ config, updateConfig }: Props) {
           </div>
         </div>
 
-        {/* OpenRouter Account Balance */}
+        {/* OpenRouter Balance Moved to Estadísticas Tab */}
         {config.model_provider === 'openrouter' && (
-          <div className="mt-4">
-            {loadingBalance ? (
-              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-center gap-2">
-                <RefreshCw className="w-4 h-4 text-blue-400 animate-spin" />
-                <span className="text-sm text-blue-300">Cargando balance de cuenta...</span>
+          <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-blue-400" />
+              <div>
+                <p className="text-sm font-medium text-blue-300">
+                  Balance y métricas de consumo
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Consulta el balance de OpenRouter y estadísticas de uso en el tab de <span className="text-blue-400 font-medium">Estadísticas</span>
+                </p>
               </div>
-            ) : balanceError ? (
-              <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-yellow-400">⚠️</span>
-                  <span className="text-sm font-medium text-yellow-300">No se pudo cargar el balance</span>
-                </div>
-                <p className="text-xs text-gray-400">{balanceError}</p>
-                <button
-                  onClick={loadOpenRouterBalance}
-                  className="mt-2 px-3 py-1 text-xs bg-yellow-500/20 text-yellow-300 rounded hover:bg-yellow-500/30 transition-colors"
-                >
-                  Reintentar
-                </button>
-              </div>
-            ) : accountBalance ? (
-              <div className="p-4 bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20 rounded-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-green-400" />
-                    Balance de Cuenta OpenRouter
-                  </h4>
-                  <button
-                    onClick={loadOpenRouterBalance}
-                    className="p-1 hover:bg-white/10 rounded transition-colors"
-                    title="Actualizar balance"
-                  >
-                    <RefreshCw className="w-3 h-3 text-gray-400" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  {/* Balance disponible */}
-                  <div className="bg-black/20 rounded-lg p-3 border border-green-500/20">
-                    <div className="text-[10px] text-gray-400 mb-1">Disponible</div>
-                    <div className="text-lg font-bold text-green-400">
-                      ${accountBalance.balance.toFixed(2)}
-                    </div>
-                  </div>
-
-                  {/* Consumo total */}
-                  <div className="bg-black/20 rounded-lg p-3 border border-blue-500/20">
-                    <div className="text-[10px] text-gray-400 mb-1">Consumido</div>
-                    <div className="text-lg font-bold text-blue-400">
-                      ${accountBalance.usage.toFixed(2)}
-                    </div>
-                  </div>
-
-                  {/* Límite */}
-                  <div className="bg-black/20 rounded-lg p-3 border border-purple-500/20">
-                    <div className="text-[10px] text-gray-400 mb-1">Límite</div>
-                    <div className="text-lg font-bold text-purple-400">
-                      ${accountBalance.limit.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Barra de progreso */}
-                <div className="mt-3">
-                  <div className="flex justify-between text-[10px] text-gray-400 mb-1">
-                    <span>Uso del límite</span>
-                    <span>{((accountBalance.usage / accountBalance.limit) * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="h-2 bg-black/30 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-500 ${
-                        (accountBalance.usage / accountBalance.limit) > 0.8
-                          ? 'bg-gradient-to-r from-red-500 to-orange-500'
-                          : (accountBalance.usage / accountBalance.limit) > 0.5
-                          ? 'bg-gradient-to-r from-yellow-500 to-orange-500'
-                          : 'bg-gradient-to-r from-green-500 to-blue-500'
-                      }`}
-                      style={{ width: `${Math.min((accountBalance.usage / accountBalance.limit) * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Métricas de consumo temporal */}
-                {(accountBalance as any).usage_breakdown && (
-                  <div className="mt-4 pt-3 border-t border-white/10">
-                    <h5 className="text-xs font-semibold text-gray-300 mb-2">📊 Consumo por Período</h5>
-                    <div className="grid grid-cols-3 gap-2">
-                      {/* Diario */}
-                      <div className="bg-black/30 rounded p-2 border border-blue-500/20">
-                        <div className="text-[9px] text-gray-500 mb-1">Hoy</div>
-                        <div className="text-sm font-bold text-blue-300">
-                          ${((accountBalance as any).usage_breakdown.daily || 0).toFixed(3)}
-                        </div>
-                      </div>
-                      
-                      {/* Semanal */}
-                      <div className="bg-black/30 rounded p-2 border border-purple-500/20">
-                        <div className="text-[9px] text-gray-500 mb-1">Esta semana</div>
-                        <div className="text-sm font-bold text-purple-300">
-                          ${((accountBalance as any).usage_breakdown.weekly || 0).toFixed(3)}
-                        </div>
-                      </div>
-                      
-                      {/* Mensual */}
-                      <div className="bg-black/30 rounded p-2 border border-pink-500/20">
-                        <div className="text-[9px] text-gray-500 mb-1">Este mes</div>
-                        <div className="text-sm font-bold text-pink-300">
-                          ${((accountBalance as any).usage_breakdown.monthly || 0).toFixed(3)}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Proyección mensual y análisis del modelo actual */}
-                    {(() => {
-                      const dailyUsage = (accountBalance as any).usage_breakdown?.daily || 0;
-                      const weeklyUsage = (accountBalance as any).usage_breakdown?.weekly || 0;
-                      const daysInMonth = 30;
-                      
-                      // Obtener precio del modelo actual
-                      const currentModel = openRouterModels.find(m => m.id === config.model_name);
-                      const modelPrice = currentModel?.pricing?.prompt || 0;
-                      const isFreeModel = currentModel?.isFree || false;
-                      
-                      // Calcular tokens estimados basados en gasto
-                      const estimatedDailyTokens = modelPrice > 0 ? (dailyUsage / modelPrice) * 1000000 : 0;
-                      const estimatedWeeklyTokens = modelPrice > 0 ? (weeklyUsage / modelPrice) * 1000000 : 0;
-                      const estimatedMonthlyTokens = estimatedDailyTokens * 30;
-                      
-                      // Proyección de costo mensual CON EL MODELO ACTUAL
-                      const projectedMonthlyCost = isFreeModel ? 0 : (estimatedMonthlyTokens / 1000000) * modelPrice;
-                      
-                      if (dailyUsage > 0 || estimatedDailyTokens > 0) {
-                        return (
-                          <div className="mt-2 space-y-2">
-                            {/* Proyección BASADA EN MODELO ACTUAL */}
-                            <div className={`p-3 rounded border ${
-                              isFreeModel 
-                                ? 'bg-green-500/10 border-green-500/30'
-                                : projectedMonthlyCost > 5
-                                ? 'bg-red-500/10 border-red-500/30'
-                                : 'bg-orange-500/10 border-orange-500/30'
-                            }`}>
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm font-semibold text-white">
-                                  📊 Proyección con {currentModel?.name || 'modelo actual'}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-gray-300">Costo mensual estimado:</span>
-                                <span className={`text-lg font-bold ${
-                                  isFreeModel ? 'text-green-400' : 
-                                  projectedMonthlyCost > 5 ? 'text-red-400' : 'text-orange-400'
-                                }`}>
-                                  {isFreeModel ? 'GRATIS 🎁' : `~$${projectedMonthlyCost.toFixed(2)}`}
-                                </span>
-                              </div>
-                              {!isFreeModel && (
-                                <div className="text-xs text-gray-400 mt-1">
-                                  Basado en {(estimatedMonthlyTokens / 1000000).toFixed(1)}M tokens/mes @ ${modelPrice.toFixed(2)}/1M
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Detalles del modelo actual - FUENTE MÁS GRANDE */}
-                            {currentModel && !isFreeModel && (
-                              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded">
-                                <div className="text-xs font-semibold mb-2 text-blue-300">
-                                  💰 Detalles del Modelo
-                                </div>
-                                
-                                <div className="space-y-2">
-                                  {/* Costo por millón */}
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-300">Costo por 1M tokens:</span>
-                                    <span className="text-base font-bold text-blue-400">
-                                      ${modelPrice.toFixed(2)}
-                                    </span>
-                                  </div>
-                                  
-                                  {/* Tokens estimados */}
-                                  {estimatedDailyTokens > 1000 && (
-                                    <>
-                                      <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-300">Tokens/día estimados:</span>
-                                        <span className="text-base font-bold text-purple-400">
-                                          ~{(estimatedDailyTokens / 1000).toFixed(0)}K
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-300">Tokens/mes proyectados:</span>
-                                        <span className="text-base font-bold text-pink-400">
-                                          ~{(estimatedMonthlyTokens / 1000000).toFixed(1)}M
-                                        </span>
-                                      </div>
-                                    </>
-                                  )}
-                                  
-                                  {/* Alerta si el modelo es costoso */}
-                                  {modelPrice > 1 && (
-                                    <div className="mt-2 p-2 bg-red-500/20 border border-red-500/30 rounded">
-                                      <div className="text-xs text-red-300 flex items-center gap-1">
-                                        ⚠️ Modelo costoso - Considera alternativas más económicas
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Mensaje para modelos gratuitos */}
-                            {currentModel && isFreeModel && (
-                              <div className="p-3 bg-green-500/10 border border-green-500/20 rounded">
-                                <div className="text-sm text-green-400 font-semibold flex items-center gap-2">
-                                  🎁 Modelo Gratuito
-                                </div>
-                                <div className="text-xs text-green-300 mt-1">
-                                  ¡Sin costos adicionales por uso de tokens!
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      }
-                      return null;
-                    })()}
-                  </div>
-                )}
-
-                {accountBalance.is_free_tier && (
-                  <div className="mt-2 text-xs text-gray-400 flex items-center gap-1">
-                    <Gift className="w-3 h-3" />
-                    <span>Usando tier gratuito de OpenRouter</span>
-                  </div>
-                )}
-              </div>
-            ) : null}
+            </div>
           </div>
         )}
 

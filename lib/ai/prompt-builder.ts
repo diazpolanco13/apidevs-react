@@ -13,6 +13,7 @@ export interface UserProfile {
   has_active_subscription: boolean;
   total_indicators: number;
   is_admin: boolean;
+  is_guest?: boolean; // 🚀 Nuevo campo para usuarios invitados
   is_legacy_user: boolean;
   legacy_discount_percentage: number;
   customer_since: string | null;
@@ -68,24 +69,33 @@ export interface AIConfiguration {
 export function getUserType(userProfile: UserProfile | null): string {
   if (!userProfile) return 'visitor';
   
+  // 🚀 PRIORIDAD 1: Verificar si es invitado (no registrado)
+  if (userProfile.is_guest || userProfile.email === 'invitado@temporal.com') {
+    return 'visitor';
+  }
+  
+  // 🏆 PRIORIDAD 2: Clientes Legacy (descuentos especiales)
   if (userProfile.is_legacy_user && userProfile.legacy_discount_percentage > 0) {
     return 'legacy';
   }
   
+  // ♾️ PRIORIDAD 3: Lifetime (acceso permanente sin suscripción mensual)
+  if (userProfile.customer_tier === 'lifetime' || 
+      (userProfile.has_active_subscription && userProfile.subscription_tier === 'lifetime')) {
+    return 'lifetime';
+  }
+  
+  // ⭐ PRIORIDAD 4: PRO Activo (suscripción mensual/anual activa)
   if (userProfile.subscription_tier === 'pro' && userProfile.has_active_subscription) {
     return 'pro_active';
   }
   
-  if (userProfile.has_active_subscription) {
-    // Lifetime o plan especial
-    return 'lifetime';
-  }
-  
-  if (userProfile.email && userProfile.email !== 'No disponible') {
-    // Tiene cuenta pero no compras
+  // 📝 PRIORIDAD 5: Registrado sin compra (tiene cuenta pero no plan activo)
+  if (userProfile.email && userProfile.email !== 'No disponible' && userProfile.email !== 'invitado@temporal.com') {
     return 'registered_no_purchase';
   }
   
+  // 👤 DEFAULT: Visitante
   return 'visitor';
 }
 

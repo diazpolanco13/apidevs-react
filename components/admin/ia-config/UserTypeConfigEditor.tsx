@@ -147,25 +147,41 @@ export default function UserTypeConfigEditor({ configs, onChange }: UserTypeConf
                 </div>
                 <div className="flex items-center gap-2">
                   {isPreview ? (
-                    <button
+                    <div
                       onClick={(e) => {
                         e.stopPropagation();
                         setPreviewType(null);
                       }}
-                      className="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                      className="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 cursor-pointer transition-colors"
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.stopPropagation();
+                          setPreviewType(null);
+                        }
+                      }}
                     >
                       <EyeOff className="w-4 h-4" />
-                    </button>
+                    </div>
                   ) : (
-                    <button
+                    <div
                       onClick={(e) => {
                         e.stopPropagation();
                         setPreviewType(key);
                       }}
-                      className="p-2 rounded-lg bg-gray-700/50 text-gray-400 hover:bg-gray-700 hover:text-white"
+                      className="p-2 rounded-lg bg-gray-700/50 text-gray-400 hover:bg-gray-700 hover:text-white cursor-pointer transition-colors"
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.stopPropagation();
+                          setPreviewType(key);
+                        }
+                      }}
                     >
                       <Eye className="w-4 h-4" />
-                    </button>
+                    </div>
                   )}
                   {isExpanded ? (
                     <ChevronUp className={`w-5 h-5 text-${color}-400`} />

@@ -98,7 +98,6 @@ export default function IAMainView({ initialConfig }: Props) {
       description: 'Métricas de uso',
       icon: BarChart3,
       count: null,
-      badge: 'Por Desarrollar',
     },
     {
       id: 'historial' as TabType,

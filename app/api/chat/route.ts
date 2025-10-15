@@ -12,26 +12,26 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
-    // 🔍 Verificar autenticación PRIMERO para detectar si es admin
+    // 🔍 Verificar autenticación (OPCIONAL - permitir usuarios no logueados)
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-      console.error('❌ Error de autenticación en chat API:', authError);
-      return new Response(JSON.stringify({ error: "No autorizado", details: authError?.message }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    // 🚀 PERMITIR usuarios NO logueados (modo invitado)
+    const isGuest = !user || authError;
+    const isAdmin = user?.email === 'api@apidevs.io';
+    
+    if (isGuest) {
+      console.log('👤 Usuario invitado detectado - permitiendo acceso limitado al chat');
+    } else {
+      console.log(`✅ Usuario autenticado: ${user.email}`);
     }
-
-    const isAdmin = user.email === 'api@apidevs.io';
     
     // ⚡ Rate limiting: 10 mensajes por minuto por IP/usuario (EXCEPTO ADMIN)
     if (!isAdmin) {
       const identifier = request.headers.get('x-forwarded-for') ||
                         request.headers.get('x-real-ip') ||
-                        user.email ||
-                        'anonymous';
+                        user?.email ||
+                        'guest-' + (request.headers.get('x-forwarded-for') || 'unknown');
 
       const rateLimitResult = chatLimiter.check(10, identifier);
 
@@ -72,9 +72,6 @@ export async function POST(request: Request) {
 
     const { messages } = validation.data;
 
-    // La autenticación ya se verificó arriba (línea 16)
-    console.log('✅ Usuario autenticado:', user.email);
-
     // Verificar si es una consulta administrativa no autorizada
     const lastMessage = messages[messages.length - 1]?.content?.toLowerCase() || '';
     const isAdminQuery = lastMessage.includes('expirar') ||
@@ -82,8 +79,8 @@ export async function POST(request: Request) {
                         lastMessage.includes('próximos') ||
                         (lastMessage.includes('indicadores') && lastMessage.includes('tiene') && lastMessage.includes('@'));
 
-    if (isAdminQuery && user.email !== 'api@apidevs.io') {
-      console.warn(`🚫 Usuario no admin intentó consulta administrativa: ${user.email}`);
+    if (isAdminQuery && !isAdmin) {
+      console.warn(`🚫 Usuario no admin intentó consulta administrativa: ${user?.email || 'invitado'}`);
       return new Response("Esta consulta requiere permisos de administrador. Contacta al soporte si necesitas ayuda.", {
         status: 403
       });
@@ -91,15 +88,16 @@ export async function POST(request: Request) {
 
     // 🔄 PRE-FETCH DE DATOS DEL USUARIO USANDO MCP DE SUPABASE
     let userProfile = {
-      full_name: "Usuario",
-      email: user.email || "No disponible",
+      full_name: isGuest ? "Invitado" : "Usuario",
+      email: user?.email || "invitado@temporal.com",
       tradingview_username: "No configurado",
       subscription_status: "free",
       subscription_tier: "free",
       has_active_subscription: false,
       total_indicators: 0,
       customer_tier: "free",
-      is_admin: user.email === 'api@apidevs.io', // ✅ Detectar automáticamente si es admin
+      is_admin: isAdmin, // ✅ Detectar automáticamente si es admin
+      is_guest: isGuest, // 🚀 Nuevo flag para usuarios invitados
 
       // 🚀 NUEVOS CAMPOS PARA USUARIOS LEGACY
       is_legacy_user: false,
@@ -120,17 +118,19 @@ export async function POST(request: Request) {
     };
 
     try {
-      // Obtener datos del usuario desde la tabla users (usando campos que realmente existen)
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select(`
-          full_name, email, tradingview_username, customer_tier, total_lifetime_spent, purchase_count,
-          legacy_customer, is_legacy_user, legacy_discount_percentage, legacy_benefits,
-          legacy_customer_type, loyalty_discount_percentage, customer_since, wordpress_created_at,
-          legacy_imported_at, first_purchase_date, wordpress_customer_id
-        `)
-        .eq('id', user.id)
-        .single();
+      // 🚀 Solo cargar datos de BD si el usuario está logueado
+      if (!isGuest && user) {
+        // Obtener datos del usuario desde la tabla users (usando campos que realmente existen)
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select(`
+            full_name, email, tradingview_username, customer_tier, total_lifetime_spent, purchase_count,
+            legacy_customer, is_legacy_user, legacy_discount_percentage, legacy_benefits,
+            legacy_customer_type, loyalty_discount_percentage, customer_since, wordpress_created_at,
+            legacy_imported_at, first_purchase_date, wordpress_customer_id
+          `)
+          .eq('id', user.id)
+          .single();
 
       // Si no encontramos datos en users, buscar en legacy_users
       let legacyDiscountPercentage = 0;
@@ -221,31 +221,35 @@ export async function POST(request: Request) {
         }
       }
 
-      // Verificar suscripción activa en Stripe
-      const { count: activeSubscriptions, error: subError } = await supabase
-        .from('subscriptions')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('status', 'active');
+        // Verificar suscripción activa en Stripe
+        const { count: activeSubscriptions, error: subError } = await supabase
+          .from('subscriptions')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'active');
 
-      if (!subError) {
-        userProfile.has_active_subscription = (activeSubscriptions || 0) > 0;
-        userProfile.subscription_status = userProfile.has_active_subscription ? "active" : "inactive";
-        // Si tiene suscripción activa, usar "pro" en lugar del customer_tier
-        if (userProfile.has_active_subscription) {
-          userProfile.subscription_tier = "pro";
+        if (!subError) {
+          userProfile.has_active_subscription = (activeSubscriptions || 0) > 0;
+          userProfile.subscription_status = userProfile.has_active_subscription ? "active" : "inactive";
+          // Si tiene suscripción activa, usar "pro" en lugar del customer_tier
+          if (userProfile.has_active_subscription) {
+            userProfile.subscription_tier = "pro";
+          }
         }
-      }
 
-      // Contar indicadores activos
-      const { count: totalIndicators, error: indError } = await supabase
-        .from('indicator_access')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('status', 'active');
+        // Contar indicadores activos
+        const { count: totalIndicators, error: indError } = await supabase
+          .from('indicator_access')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'active');
 
-      if (!indError) {
-        userProfile.total_indicators = totalIndicators || 0;
+        if (!indError) {
+          userProfile.total_indicators = totalIndicators || 0;
+        }
+      } else {
+        // 🚀 Usuario invitado - usar datos por defecto
+        console.log('👤 Usuario invitado - usando perfil por defecto');
       }
 
     } catch (error) {
@@ -267,8 +271,8 @@ export async function POST(request: Request) {
     // PLAN B: Pre-fetch data para consultas administrativas
     let adminAccessData = null;
 
-    // Pre-fetch para CUALQUIER consulta sobre indicadores (admin o no)
-    if (true) { // Siempre intentar pre-fetch
+    // Pre-fetch para CUALQUIER consulta sobre indicadores (solo usuarios logueados)
+    if (!isGuest && user) { // Solo usuarios autenticados
       try {
         // Buscar si el último mensaje contiene una consulta sobre accesos de usuario
         const lastMessage = messages[messages.length - 1]?.content?.toLowerCase() || '';
@@ -427,6 +431,7 @@ export async function POST(request: Request) {
           has_active_subscription: userProfile.has_active_subscription,
           total_indicators: userProfile.total_indicators,
           is_admin: userProfile.is_admin,
+          is_guest: !!isGuest, // 🚀 Pasar flag de invitado al prompt builder
           is_legacy_user: userProfile.is_legacy_user,
           legacy_discount_percentage: userProfile.legacy_discount_percentage,
           customer_since: userProfile.customer_since,
@@ -515,6 +520,7 @@ INFORMACIÓN SOBRE APIDEVS:
 - Usamos Stripe para pagos y Supabase para la base de datos
 
 DATOS DEL USUARIO ACTUAL:
+- Tipo: ${isGuest ? '👤 Usuario Invitado (NO registrado)' : '✅ Usuario Registrado'}
 - Nombre: ${userProfile.full_name}
 - Email: ${userProfile.email}
 - Usuario TradingView: ${userProfile.tradingview_username}
@@ -523,6 +529,14 @@ DATOS DEL USUARIO ACTUAL:
 - Nivel de cliente: ${userProfile.customer_tier}
 - Indicadores disponibles: ${userProfile.total_indicators}
 - Es administrador: ${userProfile.is_admin ? 'Sí' : 'No'}
+
+${isGuest ? `🚀 IMPORTANTE - USUARIO INVITADO:
+- Este usuario NO está registrado en la plataforma
+- NO tiene acceso a información personalizada (indicadores, suscripciones)
+- TU OBJETIVO: Explicar los beneficios de APIDevs y motivarlo a registrarse
+- Sé amable, profesional y enfócate en mostrar el valor de la plataforma
+- Menciona que registrarse es GRATIS y le dará acceso a indicadores gratuitos
+- NO puedes consultar sus datos porque no tiene cuenta` : ''}
 
 🚀 INFORMACIÓN LEGACY (CLIENTES DE WORDPRESS):
 - Es cliente legacy: ${userProfile.has_legacy_discount_eligible ? 'SÍ' : 'NO'}

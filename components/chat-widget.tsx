@@ -98,6 +98,7 @@ function ChatWidget() {
   const [guestEmail, setGuestEmail] = useState<string>("");
   const [showAuth, setShowAuth] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -442,9 +443,13 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
       {/* Widget de chat */}
       {isOpen && (
         <div className="fixed bottom-24 right-2 z-50 w-96 h-[500px] bg-[#1a1a1a] rounded-lg shadow-2xl border border-[#333] flex flex-col backdrop-blur-sm">
-          {/* Header */}
-          <div className="bg-[#C9D92E] text-black p-4 rounded-t-lg flex justify-between items-center shadow-lg">
-            <div className="flex items-center gap-3">
+          {/* Header con gradiente animado espectacular - Colores APIDevs */}
+          <div className="relative bg-gradient-to-r from-[#B8C428] via-[#C9D92E] to-[#D4E157] bg-[length:200%_100%] text-black p-4 rounded-t-lg flex justify-between items-center shadow-lg shadow-[#C9D92E]/30 overflow-hidden animate-gradient">
+            {/* Glow effect sutil amarillo */}
+            <div className="absolute inset-0 blur-xl bg-gradient-to-r from-[#C9D92E]/30 via-[#D4E157]/20 to-transparent opacity-60"></div>
+            {/* Shimmer effect brillante dorado */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FFEB3B]/40 to-transparent animate-shimmer"></div>
+            <div className="flex items-center gap-3 relative z-10">
               {/* GIF del búho leyendo */}
               <div className="w-8 h-8 rounded-full overflow-hidden bg-white/20 flex items-center justify-center">
                 <img 
@@ -471,21 +476,97 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
                 <p className="text-xs text-black/80 font-medium">¿En qué puedo ayudarte?</p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                // Reset auth state when closing
-                setAuthChecked(false);
-                setShowAuth(false);
-                setMessages([]);
-              }}
-              className="text-black hover:text-black/70 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            
+            {/* Botones de control: Minimizar y Cerrar */}
+            <div className="flex items-center gap-2 relative z-10">
+              {/* Botón Minimizar - Solo oculta el chat */}
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  // NO borramos nada, solo ocultamos
+                }}
+                className="text-black hover:text-black/70 transition-all hover:scale-110"
+                title="Minimizar (preserva la conversación)"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+              </button>
+              
+              {/* Botón Cerrar - Reinicia todo */}
+              <button
+                onClick={() => {
+                  if (messages.length > 0) {
+                    // Mostrar modal de confirmación
+                    setShowCloseConfirm(true);
+                  } else {
+                    // Si no hay mensajes, cerrar directamente
+                    setIsOpen(false);
+                    setAuthChecked(false);
+                    setShowAuth(false);
+                    setMessages([]);
+                    setInput('');
+                  }
+                }}
+                className="text-black hover:text-red-600 transition-all hover:scale-110"
+                title="Cerrar conversación (reinicia todo)"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
+
+          {/* Modal de confirmación para cerrar - Elegante y dentro del chat */}
+          {showCloseConfirm && (
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6 rounded-lg">
+              <div className="bg-[#2a2a2a] border-2 border-red-500/50 rounded-xl p-6 max-w-sm shadow-2xl shadow-red-500/20 animate-fade-in">
+                {/* Icono de advertencia */}
+                <div className="flex justify-center mb-4">
+                  <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                </div>
+                
+                {/* Título */}
+                <h3 className="text-xl font-bold text-white text-center mb-2">
+                  ¿Cerrar conversación?
+                </h3>
+                
+                {/* Descripción */}
+                <p className="text-gray-300 text-center text-sm mb-6">
+                  Se perderán todos los mensajes de esta conversación. Esta acción no se puede deshacer.
+                </p>
+                
+                {/* Botones */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowCloseConfirm(false)}
+                    className="flex-1 px-4 py-2.5 bg-[#333] hover:bg-[#444] text-white rounded-lg font-medium transition-all border border-[#555]"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Cerrar todo
+                      setShowCloseConfirm(false);
+                      setIsOpen(false);
+                      setAuthChecked(false);
+                      setShowAuth(false);
+                      setMessages([]);
+                      setInput('');
+                    }}
+                    className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-all shadow-lg hover:shadow-red-600/50"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Messages */}
           <div
