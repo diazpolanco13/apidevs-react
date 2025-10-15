@@ -15,21 +15,23 @@ export default function ModelConfiguration({ config, updateConfig }: Props) {
       label: 'X.AI (Grok)', 
       models: ['grok-3', 'grok-2-1212'],
       icon: '🚀',
-      description: 'Modelo rápido y confiable de X.AI'
+      description: 'Modelo rápido y confiable de X.AI',
+      recommended: true
     },
     { 
-      value: 'openai', 
-      label: 'OpenAI (GPT)', 
-      models: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'],
-      icon: '🤖',
-      description: 'Mejor manejo de tools y function calling'
-    },
-    { 
-      value: 'anthropic', 
-      label: 'Anthropic (Claude)', 
-      models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
-      icon: '🧠',
-      description: 'Respuestas precisas y contextuales'
+      value: 'openrouter', 
+      label: 'OpenRouter (400+ Modelos)', 
+      models: [
+        'anthropic/claude-3.5-sonnet',
+        'openai/gpt-4o',
+        'openai/gpt-4o-mini',
+        'google/gemini-2.0-flash-exp:free',
+        'meta-llama/llama-3.3-70b-instruct',
+        'deepseek/deepseek-chat'
+      ],
+      icon: '🌐',
+      description: 'Acceso a múltiples proveedores AI',
+      recommended: true
     },
   ];
 
@@ -54,7 +56,7 @@ export default function ModelConfiguration({ config, updateConfig }: Props) {
           <label className="block text-sm font-medium text-gray-300 mb-3">
             Proveedor de IA
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {modelProviders.map((provider) => (
               <button
                 key={provider.value}
@@ -66,17 +68,24 @@ export default function ModelConfiguration({ config, updateConfig }: Props) {
                 }}
                 className={`relative p-4 rounded-xl border-2 transition-all duration-200 text-left ${
                   config.model_provider === provider.value
-                    ? 'border-purple-500 bg-purple-500/10'
-                    : 'border-white/10 bg-white/5 hover:border-purple-500/50'
+                    ? 'border-apidevs-primary bg-apidevs-primary/10'
+                    : 'border-white/10 bg-white/5 hover:border-apidevs-primary/50'
                 }`}
               >
-                <div className="text-2xl mb-2">{provider.icon}</div>
-                <div className="text-sm font-bold text-white mb-1">{provider.label}</div>
+                <div className="text-3xl mb-2">{provider.icon}</div>
+                <div className="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                  {provider.label}
+                  {(provider as any).recommended && (
+                    <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-apidevs-primary/20 text-apidevs-primary border border-apidevs-primary/30">
+                      RECOMENDADO
+                    </span>
+                  )}
+                </div>
                 <div className="text-xs text-gray-400">{provider.description}</div>
                 
                 {config.model_provider === provider.value && (
                   <div className="absolute top-2 right-2">
-                    <div className="w-3 h-3 rounded-full bg-purple-500 animate-pulse"></div>
+                    <div className="w-3 h-3 rounded-full bg-apidevs-primary animate-pulse"></div>
                   </div>
                 )}
               </button>
@@ -93,7 +102,7 @@ export default function ModelConfiguration({ config, updateConfig }: Props) {
             <select
               value={config.model_name}
               onChange={(e) => updateConfig({ model_name: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-apidevs-primary"
             >
               {selectedProvider.models.map((model) => (
                 <option key={model} value={model} className="bg-gray-900">
@@ -101,6 +110,26 @@ export default function ModelConfiguration({ config, updateConfig }: Props) {
                 </option>
               ))}
             </select>
+            
+            {/* Model Info for OpenRouter */}
+            {config.model_provider === 'openrouter' && (
+              <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <span className="text-blue-400 text-lg">ℹ️</span>
+                  <div className="text-xs text-gray-300">
+                    <p className="font-semibold mb-1 text-blue-300">Modelos OpenRouter:</p>
+                    <ul className="space-y-1 text-gray-400">
+                      <li><strong>Claude 3.5 Sonnet:</strong> Excelente con tools, contexto 200K tokens</li>
+                      <li><strong>GPT-4o:</strong> Multimodal de OpenAI, contexto 128K tokens</li>
+                      <li><strong>GPT-4o Mini:</strong> Más económico, rápido y eficiente</li>
+                      <li><strong>Gemini 2.0 Flash:</strong> Gratuito, 1M tokens de contexto</li>
+                      <li><strong>Llama 3.3 70B:</strong> Open-source de Meta, muy capaz</li>
+                      <li><strong>DeepSeek Chat:</strong> Económico y potente, 64K tokens</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

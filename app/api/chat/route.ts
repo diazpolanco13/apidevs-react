@@ -1,9 +1,9 @@
 import { streamText } from "ai";
-import { xai } from "@ai-sdk/xai";
 import { createClient } from "@/utils/supabase/server";
 import { getUserAccessDetails } from "@/lib/ai/tools/access-management-tools";
 import { chatLimiter } from "@/lib/rate-limit";
 import { chatRequestSchema, validateSchema } from "@/lib/validation";
+import { getAIModel, getDefaultModelConfig, type ModelConfig } from "@/lib/ai/providers";
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -451,18 +451,45 @@ IMPORTANTE GENERAL:
 - Para preguntas técnicas sobre indicadores o planes, explica normalmente
 - Mantén un tono amigable y profesional`;
 
-    // Llamar al modelo con tools disponibles - USAR GROK-3
-    console.log('🤖 Llamando a Grok-3...');
+    // Obtener configuración del modelo a usar
+    // Primero intentar leer de la BD (ai_configuration), si no, usar default
+    let modelConfig: ModelConfig = getDefaultModelConfig();
+    
+    try {
+      // @ts-ignore - ai_configuration table not in types yet
+      const { data: aiConfig } = await (supabase as any)
+        .from('ai_configuration')
+        .select('model_provider, model_name')
+        .eq('is_active', true)
+        .single();
+      
+      if (aiConfig && (aiConfig as any).model_provider && (aiConfig as any).model_name) {
+        modelConfig = {
+          provider: (aiConfig as any).model_provider as 'xai' | 'openrouter',
+          model: (aiConfig as any).model_name,
+        };
+        console.log(`✅ Usando configuración de BD: ${modelConfig.provider}/${modelConfig.model}`);
+      } else {
+        console.log(`ℹ️  Usando configuración por defecto: ${modelConfig.provider}/${modelConfig.model}`);
+      }
+    } catch (error) {
+      console.warn('⚠️  Error leyendo configuración AI, usando default:', error);
+    }
+
+    // Llamar al modelo con tools disponibles
+    console.log(`🤖 Llamando a ${modelConfig.provider}/${modelConfig.model}...`);
 
     try {
+      const aiModel = getAIModel(modelConfig);
+      
       const result = await streamText({
-        model: xai('grok-3'), // Cambiar a grok-3 (modelo actual)
+        model: aiModel,
         system: systemPrompt,
         messages,
         tools: availableTools,
       });
 
-      console.log('✅ Respuesta de Grok-3 generada');
+      console.log(`✅ Respuesta de ${modelConfig.provider}/${modelConfig.model} generada`);
       return result.toTextStreamResponse();
     } catch (aiError: any) {
       console.error('❌ Error llamando a Grok-3:', aiError);

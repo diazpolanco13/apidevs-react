@@ -8,7 +8,7 @@ Crear un asistente IA que pueda:
 - ✅ **Responder preguntas** sobre planes, indicadores, suscripciones
 - 🔄 **Tomar acciones** (dar accesos, cancelar planes, procesar refunds) - (FASE 2)
 - 🔄 **Mostrar datos** en formato tabla/documento (artifacts) - (FASE 2)
-- ✅ **Multi-modelo** (X.AI Grok implementado, OpenAI disponible)
+- ✅ **Multi-modelo** (X.AI Grok + OpenRouter con 400+ modelos AI)
 
 ## 🏗️ **ARQUITECTURA OBJETIVO**
 Basarse en el proyecto **Vercel AI Chatbot** (https://github.com/vercel/ai-chatbot) que ya está:
@@ -35,8 +35,15 @@ El proyecto original de Vercel AI Chatbot está clonado en:
 ```
 /home/diazpolanco13/apidevs/apidevs-react/
 ├── app/                    # Next.js 14 App Router
+│   └── api/chat/           # API route del chatbot
 ├── components/             # Componentes React
+│   ├── chat-widget.tsx     # Widget flotante del chat
+│   ├── chat-auth.tsx       # Autenticación del chat
+│   └── admin/ia-config/    # Panel de configuración IA
 ├── lib/                   # Utilidades
+│   └── ai/                 # Sistema AI
+│       ├── providers.ts    # Multi-provider (X.AI + OpenRouter)
+│       └── tools/          # Tools para el chatbot
 ├── utils/                 # Helpers
 ├── supabase/              # Base de datos Supabase
 └── types_db.ts           # Tipos TypeScript de BD
@@ -78,6 +85,9 @@ El proyecto original de Vercel AI Chatbot está clonado en:
 - **Hosting**: Vercel
 - **Indicadores**: TradingView Microservice (API completa)
 - **Sistema de Accesos**: Gestionado por API endpoints admin
+- **AI Providers**: 
+  - ✅ X.AI (Grok-3, Grok-2-1212)
+  - ✅ OpenRouter (400+ modelos: Claude, GPT-4, Gemini, Llama, DeepSeek)
 
 ---
 
@@ -721,33 +731,83 @@ El chatbot **NO puede responder preguntas personalizadas** del usuario logueado 
 El proyecto tiene **MCP de Supabase funcional** que puede ser usado para solucionar este problema.
 Puedes usar `mcp_supabase_execute_sql` para obtener datos directamente sin depender de las tools del AI SDK.
 
-1. **Opción A: Usar MCP de Supabase (RECOMENDADO) ⭐**
-   - ✅ Ya está configurado y funcionando
-   - ✅ Queries SQL directas y confiables
-   - ✅ Sin depender del modelo AI para interpretar datos
-   - ✅ Solución inmediata y gratuita
-   - Implementación: Pre-fetch de datos del usuario con MCP antes de llamar al modelo
-   
-2. **Opción B: Cambiar a OpenAI GPT-4**
-   - Mejor manejo de tools/function calling
-   - Más confiable para usar datos obtenidos
-   - Costo: ~$0.03 por 1,000 tokens
-   
+**✅ SOLUCIÓN IMPLEMENTADA: Sistema Multi-Provider con OpenRouter** ⭐
+
+El chatbot ahora soporta **múltiples proveedores de AI** con cambio dinámico desde el Admin Panel:
+
+#### **1. X.AI (Grok) - Recomendado para consultas generales**
+   - ✅ Grok-3 y Grok-2-1212 disponibles
+   - ✅ Rápido y económico (~$5/1M tokens)
+   - ⚠️ Problema conocido con tools/function calling
+   - **Mejor para:** Respuestas rápidas, preguntas generales
+
+#### **2. OpenRouter (400+ Modelos) - Recomendado para tools** ⭐
+   - ✅ **Claude 3.5 Sonnet**: Excelente con tools, 200K contexto
+   - ✅ **GPT-4o**: Multimodal, 128K contexto
+   - ✅ **GPT-4o Mini**: Económico ($0.15/1M tokens)
+   - ✅ **Gemini 2.0 Flash**: GRATIS, 1M contexto
+   - ✅ **Llama 3.3 70B**: Open-source, potente
+   - ✅ **DeepSeek Chat**: Muy económico ($0.14/1M tokens)
+   - **Mejor para:** Consultas administrativas, function calling, desarrollo
+
+#### **Configuración Actual:**
+```typescript
+// lib/ai/providers.ts
+export function getAIModel(config: ModelConfig) {
+  switch (config.provider) {
+    case 'xai':
+      return xai(config.model);
+    
+    case 'openrouter':
+      return openai(config.model, {
+        baseURL: 'https://openrouter.ai/api/v1',
+        apiKey: process.env.OPENROUTER_API_KEY,
+      });
+  }
+}
+```
+
+#### **Recomendaciones por Caso de Uso:**
+
+1. **Para consultas administrativas con tools:**
+   - Usar: `openrouter` + `anthropic/claude-3.5-sonnet`
+   - ✅ Mejor manejo de function calling
+   - ✅ Respuestas más precisas
+   - 💰 ~$3/1M tokens input
+
+2. **Para desarrollo y testing:**
+   - Usar: `openrouter` + `google/gemini-2.0-flash-exp:free`
+   - ✅ Completamente gratis
+   - ✅ 1M tokens de contexto
+   - ⚠️ Rate limits más estrictos
+
+3. **Para producción con alto tráfico:**
+   - Usar: `openrouter` + `openai/gpt-4o-mini` o `deepseek/deepseek-chat`
+   - ✅ Muy económico
+   - ✅ Buena calidad
+   - ⚡ Rápido
+
+4. **Para consultas generales simples:**
+   - Usar: `xai` + `grok-3`
+   - ✅ Rápido
+   - ✅ Económico
+   - ✅ No requiere tools
+
+#### **Documentación Completa:**
+Ver: `docs/OPENROUTER-INTEGRATION.md`
+
+#### **Opciones Alternativas (Deprecated):**
+
 3. **Opción C: Actualizar AI SDK**
    - Versión más reciente con mejor soporte
    - toDataStreamResponse() disponible
    - Mejor integración con X.AI
 
-4. **Opción D: Pre-fetch de datos (workaround manual)**
+4. **Opción D: Pre-fetch de datos (workaround manual)** ✅ YA IMPLEMENTADO
    - Obtener datos del usuario ANTES de llamar al modelo
    - Agregar información al system prompt directamente
    - Sin depender de tools
    - Solución inmediata pero menos flexible
-
-5. **Opción E: Usar Anthropic Claude**
-   - Excelente manejo de tools
-   - Respuestas más confiables
-   - Buena relación costo/beneficio
 
 ### 📋 **FASE 2 - Integración Completa con Sistema de Accesos:**
 
