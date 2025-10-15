@@ -473,7 +473,6 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
 
       let fullResponse = "";
       let chunkCount = 0;
-      const decoder = new TextDecoder();
       
       while (true) {
         const { done, value } = await reader.read();
@@ -482,37 +481,16 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
           break;
         }
 
-        const chunk = decoder.decode(value, { stream: true });
+        const chunk = new TextDecoder().decode(value);
         chunkCount++;
-        
-        // El AI SDK envía datos en formato SSE (Server-Sent Events)
-        // Cada línea puede ser: "0:texto", "2:tool_call", "3:tool_result", etc.
-        const lines = chunk.split('\n').filter(line => line.trim());
-        
-        for (const line of lines) {
-          if (line.startsWith('0:')) {
-            // Tipo 0 = texto normal
-            const text = line.substring(2).replace(/^"(.*)"$/, '$1');
-            fullResponse += text;
-          } else if (line.startsWith('3:')) {
-            // Tipo 3 = resultado de tool - también mostrarlo
-            try {
-              const toolResult = JSON.parse(line.substring(2));
-              if (toolResult && typeof toolResult === 'string') {
-                fullResponse += toolResult;
-              }
-            } catch (e) {
-              // Si no es JSON, agregar como texto
-              fullResponse += line.substring(2);
-            }
-          }
-          // Ignorar otros tipos (2: tool_call, etc.)
-        }
         
         // Log cada 10 chunks para no saturar la consola
         if (chunkCount % 10 === 0) {
-          console.log(`📦 Chunk ${chunkCount}: Longitud actual: ${fullResponse.length}`);
+          console.log(`📦 Chunk ${chunkCount}: ${chunk.substring(0, 50)}...`);
         }
+        
+        // Agregar el chunk directamente al mensaje
+        fullResponse += chunk;
         
         // Actualizar el mensaje en tiempo real
         setMessages(prev => prev.map(msg => 
@@ -715,8 +693,8 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
               </div>
             )}
 
-            {/* Sugerencias contextuales */}
-            {!isLoading && messages.length > 0 && (
+            {/* Sugerencias contextuales - DESHABILITADAS TEMPORALMENTE PARA DEBUG */}
+            {/* {!isLoading && messages.length > 0 && (
               <ContextualSuggestions
                 userData={userData}
                 messages={messages}
@@ -729,7 +707,7 @@ ${email ? `Email registrado: ${email}` : 'Modo invitado activado'}
                   }, 100);
                 }}
               />
-            )}
+            )} */}
           </div>
 
           {/* Input o Auth */}
