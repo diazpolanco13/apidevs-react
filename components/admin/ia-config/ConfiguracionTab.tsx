@@ -119,7 +119,7 @@ export default function ConfiguracionTab({ config, setConfig }: Props) {
         {/* Right Column - Actions & Preview */}
         <div className="space-y-6">
           {/* Quick Actions */}
-          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sticky top-6">
+          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
             <QuickActions onSave={saveConfiguration} onReload={() => window.location.reload()} saving={saving} />
           </div>
 
