@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get('q');
+    const lang = searchParams.get('lang') || 'es';
 
     if (!query || query.trim().length < 2) {
       return NextResponse.json(
@@ -20,7 +21,10 @@ export async function GET(request: NextRequest) {
     // Buscar en Sanity con GROQ
     const results = await client.fetch<SearchResult[]>(
       SEARCH_DOCS_QUERY,
-      { searchTerm: query.trim() },
+      { 
+        searchTerm: query.trim(),
+        language: lang
+      },
       {
         next: {
           revalidate: 60, // Cache por 1 minuto

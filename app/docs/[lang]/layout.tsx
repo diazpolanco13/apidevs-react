@@ -1,5 +1,6 @@
 import { docsClient } from '@/sanity/lib/client';
 import { groq } from 'next-sanity';
+import { createClient } from '@/utils/supabase/server';
 import ClaudeStyleNavbar from '@/components/docs/ClaudeStyleNavbar';
 import ClaudeStyleTabs from '@/components/docs/ClaudeStyleTabs';
 import ClaudeSidebarWrapper from '@/components/docs/ClaudeSidebarWrapper';
@@ -77,6 +78,62 @@ export default async function DocsLanguageLayout({
     );
   }
 
+  // Obtener datos del usuario de Supabase
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let avatarUrl = null;
+  let userStatus = 'online';
+  let unreadNotifications = 0;
+  let subscriptionType = null;
+
+  if (user?.id) {
+    const { data: profile } = await (supabase as any)
+      .from('users')
+      .select('avatar_url, user_status, unread_notifications')
+      .eq('id', user.id)
+      .single();
+    
+    avatarUrl = profile?.avatar_url || null;
+    userStatus = profile?.user_status || 'online';
+    unreadNotifications = profile?.unread_notifications || 0;
+
+    // Detectar tipo de suscripción (lifetime, pro, free)
+    const { data: lifetimePurchases } = await (supabase as any)
+      .from('purchases')
+      .select('id, is_lifetime_purchase, order_total_cents, payment_method')
+      .eq('customer_email', user.email)
+      .eq('is_lifetime_purchase', true)
+      .eq('payment_status', 'paid')
+      .order('order_total_cents', { ascending: false });
+    
+    const paidLifetime = (lifetimePurchases || []).filter(
+      (p: any) => p.order_total_cents > 0 && p.payment_method !== 'free'
+    );
+    
+    if (paidLifetime.length > 0) {
+      subscriptionType = 'lifetime';
+    } else {
+      const { data: subscription } = await (supabase as any)
+        .from('subscriptions')
+        .select('status, metadata, price_id')
+        .eq('user_id', user.id)
+        .in('status', ['active', 'trialing'])
+        .order('created', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (subscription) {
+        const metadata = subscription.metadata as { plan_type?: string } | null;
+        if (metadata?.plan_type) {
+          subscriptionType = metadata.plan_type;
+        } else {
+          subscriptionType = 'pro_monthly';
+        }
+      }
+    }
+  }
+
   // Fetch categorías con sus páginas para tabs y sidebar
   let categories = [];
   
@@ -111,7 +168,14 @@ export default async function DocsLanguageLayout({
         <BackgroundEffects variant="minimal" />
         
         {/* Claude Style Navbar */}
-        <ClaudeStyleNavbar currentLanguage={lang} />
+        <ClaudeStyleNavbar 
+          currentLanguage={lang}
+          user={user}
+          avatarUrl={avatarUrl}
+          userStatus={userStatus}
+          unreadNotifications={unreadNotifications}
+          subscriptionType={subscriptionType}
+        />
         
         {/* Claude Style Navigation Tabs */}
         <ClaudeStyleTabs categories={categories} currentLanguage={lang} />

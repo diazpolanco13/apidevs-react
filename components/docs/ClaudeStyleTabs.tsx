@@ -33,7 +33,7 @@ export default function ClaudeStyleTabs({ categories, currentLanguage = 'es' }: 
       _id: 'welcome',
       title: currentLanguage === 'es' ? 'Bienvenida' : 'Welcome',
       slug: { current: '' }, // Root de docs
-      icon: '🏠',
+      icon: '',
       order: -1,
     },
     ...sortedCategories,
@@ -126,7 +126,6 @@ export default function ClaudeStyleTabs({ categories, currentLanguage = 'es' }: 
                   }
                 `}
               >
-                {tab.icon && <span className="text-base">{tab.icon}</span>}
                 <span>{tab.title}</span>
               </button>
             );

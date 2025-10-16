@@ -105,18 +105,19 @@ export default function ClaudeStyleSearch({
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+      {/* Backdrop + Modal Container */}
+      <div 
+        className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 flex items-start justify-center pt-[10vh] px-4"
         onClick={onClose}
-      />
-
-      {/* Search Modal */}
-      <div className="fixed inset-0 z-[101] flex items-start justify-center pt-[10vh] px-4">
-        <div className="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in zoom-in-95 slide-in-from-top-2 duration-200">
+      >
+        {/* Search Modal */}
+        <div 
+          className="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in zoom-in-95 slide-in-from-top-2 duration-200"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Search Input */}
-          <div className="flex items-center gap-4 p-4 border-b border-gray-200 dark:border-gray-700">
-            <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center gap-4 p-4 border-b border-gray-200 dark:border-gray-700 group">
+            <svg className="w-5 h-5 text-gray-400 flex-shrink-0 group-focus-within:text-apidevs-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -124,12 +125,21 @@ export default function ClaudeStyleSearch({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={currentLanguage === 'es' ? 'Buscar en la documentación...' : 'Search documentation...'}
-              className="flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 outline-none text-base"
+              className="flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 text-base focus:placeholder-gray-500 dark:focus:placeholder-gray-300 transition-colors"
+              style={{
+                outline: 'none',
+                border: 'none',
+                boxShadow: 'none',
+                WebkitAppearance: 'none',
+                MozAppearance: 'none'
+              }}
               autoFocus
+              autoComplete="off"
+              spellCheck="false"
             />
             <button
               onClick={onClose}
-              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 font-mono"
+              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 font-mono transition-colors"
             >
               ESC
             </button>

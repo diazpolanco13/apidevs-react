@@ -81,23 +81,8 @@ export default function ClaudeSidebar({
           className="lg:hidden fixed top-28 left-0 z-50 w-72 h-[calc(100vh-7rem)] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 overflow-y-auto shadow-2xl"
         >
           <div className="p-6">
-            {/* Category Header */}
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                {selectedCategory.icon && (
-                  <span className="text-xl">{selectedCategory.icon}</span>
-                )}
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                  {selectedCategory.title}
-                </h2>
-              </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {selectedCategory.pages.length} {currentLanguage === 'es' ? 'páginas' : 'pages'}
-              </p>
-            </div>
-
-            {/* Pages List */}
-            <nav className="space-y-1">
+            {/* Pages List - Estilo Claude (solo títulos) */}
+            <nav className="space-y-0.5">
               {selectedCategory.pages.map((page) => {
                 const active = isPageActive(page.slug);
                 
@@ -106,35 +91,14 @@ export default function ClaudeSidebar({
                     key={page._id}
                     href={`/docs/${currentLanguage}/${page.slug}`}
                     className={`
-                      group block px-3 py-2 rounded-lg transition-all
+                      group block px-3 py-2 rounded-md text-sm font-medium transition-colors
                       ${active
-                        ? 'bg-apidevs-primary/10 text-apidevs-primary font-semibold'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800/50'
                       }
                     `}
                   >
-                    <div className="flex items-start gap-2">
-                      {page.icon && (
-                        <span className="text-base mt-0.5 flex-shrink-0">
-                          {page.icon}
-                        </span>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm leading-tight">
-                          {page.title}
-                        </div>
-                        {page.description && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                            {page.description}
-                          </div>
-                        )}
-                      </div>
-                      {active && (
-                        <svg className="w-4 h-4 text-apidevs-primary flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
+                    {page.title}
                   </Link>
                 );
               })}
@@ -164,23 +128,8 @@ export default function ClaudeSidebar({
         `}
       >
         <div className="p-6">
-          {/* Category Header */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              {selectedCategory.icon && (
-                <span className="text-xl">{selectedCategory.icon}</span>
-              )}
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                {selectedCategory.title}
-              </h2>
-            </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {selectedCategory.pages.length} {currentLanguage === 'es' ? 'páginas' : 'pages'}
-            </p>
-          </div>
-
-          {/* Pages List */}
-          <nav className="space-y-1">
+          {/* Pages List - Estilo Claude (solo títulos) */}
+          <nav className="space-y-0.5">
             {selectedCategory.pages.map((page) => {
               const active = isPageActive(page.slug);
               
@@ -189,35 +138,14 @@ export default function ClaudeSidebar({
                   key={page._id}
                   href={`/docs/${currentLanguage}/${page.slug}`}
                   className={`
-                    group block px-3 py-2 rounded-lg transition-all
+                    group block px-3 py-2 rounded-md text-sm font-medium transition-colors
                     ${active
-                      ? 'bg-apidevs-primary/10 text-apidevs-primary font-semibold'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800/50'
                     }
                   `}
                 >
-                  <div className="flex items-start gap-2">
-                    {page.icon && (
-                      <span className="text-base mt-0.5 flex-shrink-0">
-                        {page.icon}
-                      </span>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm leading-tight">
-                        {page.title}
-                      </div>
-                      {page.description && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                          {page.description}
-                        </div>
-                      )}
-                    </div>
-                    {active && (
-                      <svg className="w-4 h-4 text-apidevs-primary flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                  </div>
+                  {page.title}
                 </Link>
               );
             })}

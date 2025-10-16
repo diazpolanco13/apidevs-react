@@ -2,15 +2,28 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import APIDevsLogo from '@/components/icons/APIDevsLogo';
 import ClaudeStyleSearch from './ClaudeStyleSearch';
+import UserAvatar from '@/components/ui/UserAvatar';
 
 interface ClaudeStyleNavbarProps {
   currentLanguage?: string;
+  user?: any;
+  avatarUrl?: string | null;
+  userStatus?: string;
+  unreadNotifications?: number;
+  subscriptionType?: string | null;
 }
 
-export default function ClaudeStyleNavbar({ currentLanguage = 'es' }: ClaudeStyleNavbarProps) {
+export default function ClaudeStyleNavbar({ 
+  currentLanguage = 'es',
+  user,
+  avatarUrl,
+  userStatus = 'online',
+  unreadNotifications = 0,
+  subscriptionType = null
+}: ClaudeStyleNavbarProps) {
   const pathname = usePathname();
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [mounted, setMounted] = useState(false);
@@ -63,12 +76,24 @@ export default function ClaudeStyleNavbar({ currentLanguage = 'es' }: ClaudeStyl
           <div className="flex items-center justify-between h-14 px-8 sm:px-12 lg:px-16">
             {/* Left: Logo + Language */}
             <div className="flex items-center gap-6">
-              {/* Logo */}
+              {/* Logo - Cambia según tema y lleva a inicio */}
               <Link 
-                href={`/docs/${currentLanguage}`}
+                href="/"
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
-                <APIDevsLogo width={120} height={30} />
+                {mounted && (
+                  <Image
+                    src={theme === 'dark' ? '/logos/logo-horizontal-blanco.png' : '/logos/logo-horizontal-negro.png'}
+                    alt="APIDevs"
+                    width={120}
+                    height={30}
+                    className="h-7 w-auto"
+                    priority
+                  />
+                )}
+                {!mounted && (
+                  <div className="h-7 w-[120px] bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                )}
                 <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
                   Docs
                 </span>
@@ -112,8 +137,8 @@ export default function ClaudeStyleNavbar({ currentLanguage = 'es' }: ClaudeStyl
             </div>
           </div>
 
-          {/* Center: Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
+          {/* Center: Search Bar - Ampliada */}
+          <div className="hidden md:flex flex-1 max-w-2xl mx-8">
             <button
               onClick={() => setIsSearchOpen(true)}
               className="w-full flex items-center gap-3 px-4 py-2 bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg transition-colors group"
@@ -130,40 +155,17 @@ export default function ClaudeStyleNavbar({ currentLanguage = 'es' }: ClaudeStyl
             </button>
           </div>
 
-          {/* Right: Quick Links + Theme Toggle */}
-          <div className="flex items-center gap-4">
-            {/* Quick Links */}
-            <div className="hidden lg:flex items-center gap-1">
-              <Link
-                href="/dashboard"
-                className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/discord"
-                className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-              >
-                Discord
-              </Link>
-              <Link
-                href="/support"
-                className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-              >
-                {currentLanguage === 'es' ? 'Soporte' : 'Support'}
-              </Link>
-            </div>
-
-            {/* Get Started Button */}
-            <Link
-              href="/pricing"
-              className="hidden sm:flex items-center gap-1 px-4 py-1.5 text-sm font-semibold text-gray-900 dark:text-white bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg transition-all"
-            >
-              <span>{currentLanguage === 'es' ? 'Comenzar' : 'Get started'}</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
+          {/* Right: User Avatar + Theme Toggle */}
+          <div className="flex items-center gap-3">
+            {/* User Avatar Component */}
+            <UserAvatar
+              user={user}
+              avatarUrl={avatarUrl}
+              userStatus={userStatus}
+              unreadNotifications={unreadNotifications}
+              subscriptionType={subscriptionType}
+              compact={true}
+            />
 
             {/* Theme Toggle */}
             {mounted && (
