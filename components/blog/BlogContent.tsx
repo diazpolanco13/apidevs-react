@@ -116,38 +116,46 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
         <div className="border-b border-gray-800/50 pb-4 relative">
           {/* Layout en 2 filas en mobile, 1 fila en desktop */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            {/* Categorías con scroll horizontal en mobile */}
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide lg:flex-wrap pb-3">
-              <button
-                onClick={() => setSelectedCategory(null)}
-                className={`relative px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
-                  selectedCategory === null
-                    ? 'text-white bg-gray-800/50 rounded-lg'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg'
-                }`}
-              >
-                Recent
-                {selectedCategory === null && (
-                  <span className="absolute -bottom-3 left-0 right-0 h-0.5 bg-apidevs-primary"></span>
-                )}
-              </button>
+            {/* Categorías con scroll horizontal en mobile - Con indicador visual */}
+            <div className="relative lg:flex-1">
+              {/* Gradiente indicador de scroll a la derecha (solo mobile) */}
+              <div className="absolute right-0 top-0 bottom-3 w-16 bg-gradient-to-l from-black via-black/80 to-transparent pointer-events-none z-10 lg:hidden"></div>
               
-              {categories.map((category) => (
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide lg:flex-wrap pb-3 scroll-smooth">
                 <button
-                  key={category._id}
-                  onClick={() => setSelectedCategory(category._id)}
+                  onClick={() => setSelectedCategory(null)}
                   className={`relative px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
-                    selectedCategory === category._id
+                    selectedCategory === null
                       ? 'text-white bg-gray-800/50 rounded-lg'
                       : 'text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg'
                   }`}
                 >
-                  {category.title}
-                  {selectedCategory === category._id && (
+                  Recent
+                  {selectedCategory === null && (
                     <span className="absolute -bottom-3 left-0 right-0 h-0.5 bg-apidevs-primary"></span>
                   )}
                 </button>
-              ))}
+                
+                {categories.map((category) => (
+                  <button
+                    key={category._id}
+                    onClick={() => setSelectedCategory(category._id)}
+                    className={`relative px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
+                      selectedCategory === category._id
+                        ? 'text-white bg-gray-800/50 rounded-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg'
+                    }`}
+                  >
+                    {category.title}
+                    {selectedCategory === category._id && (
+                      <span className="absolute -bottom-3 left-0 right-0 h-0.5 bg-apidevs-primary"></span>
+                    )}
+                  </button>
+                ))}
+                
+                {/* Padding al final para que la última categoría sea visible */}
+                <div className="w-4 flex-shrink-0 lg:hidden"></div>
+              </div>
             </div>
 
             {/* SEARCH BAR - Ahora en flexbox normal */}
