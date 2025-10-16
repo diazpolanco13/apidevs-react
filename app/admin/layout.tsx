@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import AdminDashboardLayout from '@/components/admin/AdminDashboardLayout';
 import { cache } from 'react';
+import { getAdminUser } from '@/utils/admin/permissions';
 
 // 🔧 FIX: Cachear la función de autenticación para evitar rate limiting
 // Esto previene múltiples llamadas a getUser() en el mismo request
@@ -24,18 +25,29 @@ export default async function AdminLayout({
     return redirect(`/signin?message=${message}`);
   }
 
-  // 🔒 CONTROL DE ACCESO EXCLUSIVO PARA USUARIO MASTER
-  const MASTER_EMAIL = 'api@apidevs.io';
+  // 🔒 NUEVO SISTEMA: Verificar si es administrador activo en la BD
+  const adminUser = await getAdminUser(user.id);
   
-  if (user.email !== MASTER_EMAIL) {
-    const message = encodeURIComponent('Acceso denegado - Solo el administrador puede acceder al panel');
+  if (!adminUser) {
+    const message = encodeURIComponent('Acceso denegado - Solo administradores pueden acceder al panel');
     return redirect(`/?message=${message}`);
   }
 
-  const userName = user.email?.split('@')[0] || 'Admin';
+  // Actualizar last_login_at
+  const supabase = await createClient();
+  await (supabase as any)
+    .from('admin_users')
+    .update({ last_login_at: new Date().toISOString() })
+    .eq('id', user.id);
+
+  const userName = adminUser.full_name || adminUser.email.split('@')[0];
 
   return (
-    <AdminDashboardLayout userName={userName}>
+    <AdminDashboardLayout 
+      userName={userName}
+      userRole={adminUser.admin_roles.name}
+      userEmail={adminUser.email}
+    >
       {children}
     </AdminDashboardLayout>
   );

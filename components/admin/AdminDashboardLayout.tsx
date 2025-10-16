@@ -37,11 +37,15 @@ function classNames(...classes: string[]) {
 interface AdminDashboardLayoutProps {
   children: React.ReactNode;
   userName?: string;
+  userRole?: string;
+  userEmail?: string;
 }
 
 export default function AdminDashboardLayout({ 
   children,
-  userName = 'Admin'
+  userName = 'Admin',
+  userRole = 'Admin Master',
+  userEmail = 'admin@apidevs.io'
 }: AdminDashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
@@ -54,8 +58,8 @@ export default function AdminDashboardLayout({
     { name: 'Asistente IA', href: '/admin/ia-config', icon: BrainCircuit },
     { name: 'Campañas', href: '/admin/campaigns', icon: Megaphone },
     { name: 'Geo-Analytics', href: '/admin/geo-analytics', icon: GlobeAltIcon },
-    { name: 'Reportes', href: '/admin', icon: TrendingUp, badge: 'Próximamente' },
-    { name: 'Configuración', href: '/admin', icon: Cog6ToothIcon, badge: 'Próximamente' },
+  { name: 'Reportes', href: '/admin', icon: TrendingUp, badge: 'Próximamente' },
+  { name: 'Configuración', href: '/admin/configuracion', icon: Cog6ToothIcon },
   ];
 
   const isCurrentPage = (href: string) => {
@@ -142,16 +146,19 @@ export default function AdminDashboardLayout({
                   <span className="text-base font-semibold text-white tracking-wide">PANEL ADMIN</span>
                 </div>
 
-                {/* Admin Badge */}
-                <div className="mx-2 px-4 py-3 rounded-lg border border-purple-500/20 bg-purple-500/5">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Shield className="w-4 h-4 text-purple-400" />
-                    <span className="text-xs text-gray-400 uppercase tracking-wider">Acceso Total</span>
-                  </div>
-                  <span className="text-sm font-bold text-white">Admin Master</span>
-                </div>
+            {/* Admin Badge */}
+            <div className="mx-2 px-4 py-3 rounded-lg border border-purple-500/20 bg-purple-500/5">
+              <div className="flex items-center gap-2 mb-1">
+                <Shield className="w-4 h-4 text-purple-400" />
+                <span className="text-xs text-gray-400 uppercase tracking-wider">
+                  {userRole}
+                </span>
+              </div>
+              <span className="text-sm font-bold text-white">{userName}</span>
+              <span className="text-xs text-gray-500 block mt-1">{userEmail}</span>
+            </div>
 
-                <nav className="flex flex-1 flex-col">
+            <nav className="flex flex-1 flex-col">
                   <ul role="list" className="flex flex-1 flex-col gap-y-2">
                     {navigation.map((item) => renderNavigationItem(item))}
                   </ul>
@@ -204,9 +211,12 @@ export default function AdminDashboardLayout({
             <div className="mx-2 px-4 py-3 rounded-lg border border-purple-500/20 bg-purple-500/5">
               <div className="flex items-center gap-2 mb-1">
                 <Shield className="w-4 h-4 text-purple-400" />
-                <span className="text-xs text-gray-400 uppercase tracking-wider">Acceso Total</span>
+                <span className="text-xs text-gray-400 uppercase tracking-wider">
+                  {userRole}
+                </span>
               </div>
-              <span className="text-sm font-bold text-white">Admin Master</span>
+              <span className="text-sm font-bold text-white">{userName}</span>
+              <span className="text-xs text-gray-500 block mt-1">{userEmail}</span>
             </div>
 
             <nav className="flex flex-1 flex-col">

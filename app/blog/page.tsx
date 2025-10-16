@@ -58,7 +58,7 @@ export default async function BlogPage() {
     <div className="relative min-h-screen bg-black">
       <BackgroundEffects />
       
-      <div className="relative z-10 min-h-screen pt-20 pb-20">
+      <div className="relative z-10 min-h-screen pt-10 pb-20">
         <BlogContent 
           featuredPosts={featuredPosts}
           recentPosts={recentPosts}
