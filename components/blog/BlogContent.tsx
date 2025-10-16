@@ -117,7 +117,7 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
           {/* Layout en 2 filas en mobile, 1 fila en desktop */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             {/* Categorías con scroll horizontal en mobile */}
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide lg:flex-wrap">
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide lg:flex-wrap pb-3">
               <button
                 onClick={() => setSelectedCategory(null)}
                 className={`relative px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
@@ -126,12 +126,10 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
                     : 'text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg'
                 }`}
               >
-                <span className="relative">
-                  Recent
-                  {selectedCategory === null && (
-                    <span className="absolute -bottom-[18px] left-0 right-0 h-0.5 bg-apidevs-primary"></span>
-                  )}
-                </span>
+                Recent
+                {selectedCategory === null && (
+                  <span className="absolute -bottom-3 left-0 right-0 h-0.5 bg-apidevs-primary"></span>
+                )}
               </button>
               
               {categories.map((category) => (
@@ -144,12 +142,10 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
                       : 'text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg'
                   }`}
                 >
-                  <span className="relative">
-                    {category.title}
-                    {selectedCategory === category._id && (
-                      <span className="absolute -bottom-[18px] left-0 right-0 h-0.5 bg-apidevs-primary"></span>
-                    )}
-                  </span>
+                  {category.title}
+                  {selectedCategory === category._id && (
+                    <span className="absolute -bottom-3 left-0 right-0 h-0.5 bg-apidevs-primary"></span>
+                  )}
                 </button>
               ))}
             </div>
