@@ -110,42 +110,56 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
 
   return (
     <>
-      {/* FILTROS PEGADOS AL NAVBAR */}
-      <div className="max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-12 mb-10">
-        <div className="flex flex-wrap items-center gap-3 border-b border-gray-800/50 pb-4">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`relative px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${
-              selectedCategory === null
-                ? 'text-white after:absolute after:bottom-[-16px] after:left-0 after:right-0 after:h-0.5 after:bg-apidevs-primary'
-                : 'text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg'
-            }`}
-          >
-            Recent
-          </button>
-          
-          {categories.map((category) => (
+      {/* FILTROS PEGADOS AL NAVBAR - RESPONSIVE MEJORADO */}
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 mb-10">
+        {/* Contenedor con scroll horizontal en mobile */}
+        <div className="border-b border-gray-800/50 pb-4">
+          {/* Categorías con scroll horizontal en mobile */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 lg:pb-0 lg:flex-wrap">
             <button
-              key={category._id}
-              onClick={() => setSelectedCategory(category._id)}
-              className={`relative px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${
-                selectedCategory === category._id
-                  ? 'text-white after:absolute after:bottom-[-16px] after:left-0 after:right-0 after:h-0.5 after:bg-apidevs-primary'
+              onClick={() => setSelectedCategory(null)}
+              className={`relative px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
+                selectedCategory === null
+                  ? 'text-white bg-gray-800/50 rounded-lg'
                   : 'text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg'
               }`}
             >
-              {category.title}
+              <span className="relative">
+                Recent
+                {selectedCategory === null && (
+                  <span className="absolute -bottom-[18px] left-0 right-0 h-0.5 bg-apidevs-primary"></span>
+                )}
+              </span>
             </button>
-          ))}
+            
+            {categories.map((category) => (
+              <button
+                key={category._id}
+                onClick={() => setSelectedCategory(category._id)}
+                className={`relative px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
+                  selectedCategory === category._id
+                    ? 'text-white bg-gray-800/50 rounded-lg'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg'
+                }`}
+              >
+                <span className="relative">
+                  {category.title}
+                  {selectedCategory === category._id && (
+                    <span className="absolute -bottom-[18px] left-0 right-0 h-0.5 bg-apidevs-primary"></span>
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
 
-          {/* SEARCH BAR MEJORADA - MÁS VISIBLE */}
-          <div className="ml-auto relative group hidden lg:block">
+          {/* SEARCH BAR - Separada en mobile, inline en desktop */}
+          <div className="relative group mt-3 lg:mt-0 lg:absolute lg:right-6 lg:top-2">
             {/* Glow effect cuando está en focus */}
             <div className="absolute -inset-0.5 bg-gradient-to-r from-apidevs-primary/20 via-purple-500/20 to-apidevs-primary/20 rounded-xl opacity-0 group-focus-within:opacity-100 blur-lg transition-all duration-500"></div>
             
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-apidevs-primary/70 group-focus-within:text-apidevs-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                <svg className="h-4 w-4 sm:h-5 sm:w-5 text-apidevs-primary/70 group-focus-within:text-apidevs-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
@@ -154,14 +168,14 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar artículos..."
-                className="w-72 pl-11 pr-10 py-2.5 bg-gray-900/80 backdrop-blur-sm border-2 border-gray-700/50 rounded-xl text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-apidevs-primary/50 focus:bg-gray-900 transition-all shadow-lg hover:border-gray-600/50"
+                className="w-full lg:w-72 pl-10 sm:pl-11 pr-10 py-2 sm:py-2.5 bg-gray-900/80 backdrop-blur-sm border-2 border-gray-700/50 rounded-xl text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-apidevs-primary/50 focus:bg-gray-900 transition-all shadow-lg hover:border-gray-600/50"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-apidevs-primary transition-colors"
                 >
-                  <svg className="h-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
