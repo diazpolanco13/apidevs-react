@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { checkAdminPermission, PERMISSIONS } from '@/utils/admin/permissions';
 
 // Force dynamic rendering (uses cookies for auth)
 export const dynamic = 'force-dynamic';
@@ -26,8 +27,8 @@ export async function POST(request: Request) {
       data: { user }
     } = await supabase.auth.getUser();
 
-    if (!user || user.email !== 'api@apidevs.io') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user || !(await checkAdminPermission(user.id, PERMISSIONS.USERS_VIEW))) {
+      return NextResponse.json({ error: 'No autorizado - Requiere permisos de auditoría' }, { status: 401 });
     }
 
     console.log('📥 Exportando historial a CSV...');

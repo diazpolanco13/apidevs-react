@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
+import { checkAdminPermission, PERMISSIONS } from '@/utils/admin/permissions';
 
 const TRADINGVIEW_API = 'http://185.218.124.241:5001';
 const API_KEY = '92a1e4a8c74e1871c658301f3e8ae31c31ed6bfd68629059617fac621932e1ea';
@@ -21,8 +22,8 @@ export async function POST(
       data: { user }
     } = await supabase.auth.getUser();
 
-    if (!user || user.email !== 'api@apidevs.io') {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    if (!user || !(await checkAdminPermission(user.id, PERMISSIONS.USERS_GRANT_ACCESS))) {
+      return NextResponse.json({ error: 'No autorizado - Requiere permisos para conceder acceso' }, { status: 401 });
     }
 
     const userId = id;

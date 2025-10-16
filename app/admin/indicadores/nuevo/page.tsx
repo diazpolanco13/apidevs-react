@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
+import { checkAdminPermission, PERMISSIONS } from '@/utils/admin/permissions';
 import Link from 'next/link';
 import NewIndicatorForm from '@/components/admin/indicators/NewIndicatorForm';
 
@@ -16,8 +17,8 @@ export default async function NewIndicatorPage() {
     data: { user }
   } = await supabase.auth.getUser();
 
-  if (!user || user.email !== 'api@apidevs.io') {
-    redirect('/');
+  if (!user || !(await checkAdminPermission(user.id, PERMISSIONS.INDICATORS_CREATE))) {
+    redirect('/?message=' + encodeURIComponent('Acceso denegado - Requiere permisos para crear indicadores'));
   }
 
   return (

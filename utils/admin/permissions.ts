@@ -21,8 +21,15 @@ export const PERMISSIONS = {
   
   // Indicadores TradingView
   INDICATORS_VIEW: 'indicators.view',
+  INDICATORS_CREATE: 'indicators.create',
+  INDICATORS_EDIT: 'indicators.edit',
+  INDICATORS_DELETE: 'indicators.delete',
   INDICATORS_GRANT: 'indicators.grant',
   INDICATORS_REVOKE: 'indicators.revoke',
+  
+  // Gestión de accesos de usuarios
+  USERS_GRANT_ACCESS: 'users.grant_access',
+  USERS_REVOKE_ACCESS: 'users.revoke_access',
   
   // Campañas
   CAMPAIGNS_VIEW: 'campaigns.view',

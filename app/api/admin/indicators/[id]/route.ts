@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
+import { checkAdminPermission, PERMISSIONS } from '@/utils/admin/permissions';
 
 // PUT - Actualizar indicador
 // Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
@@ -18,8 +19,8 @@ export async function PUT(
       data: { user }
     } = await supabase.auth.getUser();
 
-    if (!user || user.email !== 'api@apidevs.io') {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    if (!user || !(await checkAdminPermission(user.id, PERMISSIONS.INDICATORS_EDIT))) {
+      return NextResponse.json({ error: 'No autorizado - Requiere permisos de edición de indicadores' }, { status: 401 });
     }
     const body = await req.json();
     const {
@@ -116,8 +117,8 @@ export async function DELETE(
       data: { user }
     } = await supabase.auth.getUser();
 
-    if (!user || user.email !== 'api@apidevs.io') {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    if (!user || !(await checkAdminPermission(user.id, PERMISSIONS.INDICATORS_DELETE))) {
+      return NextResponse.json({ error: 'No autorizado - Requiere permisos de eliminación de indicadores' }, { status: 401 });
     }
 
 

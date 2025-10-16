@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect, notFound } from 'next/navigation';
+import { checkAdminPermission, PERMISSIONS } from '@/utils/admin/permissions';
 import Link from 'next/link';
 import EditIndicatorForm from '@/components/admin/indicators/EditIndicatorForm';
 
@@ -23,8 +24,8 @@ export default async function EditIndicatorPage({ params }: Params) {
     data: { user }
   } = await supabase.auth.getUser();
 
-  if (!user || user.email !== 'api@apidevs.io') {
-    redirect('/');
+  if (!user || !(await checkAdminPermission(user.id, PERMISSIONS.INDICATORS_EDIT))) {
+    redirect('/?message=' + encodeURIComponent('Acceso denegado - Requiere permisos para editar indicadores'));
   }
 
   // Obtener indicador

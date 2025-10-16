@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
+import { checkAdminPermission, PERMISSIONS } from '@/utils/admin/permissions';
 import IndicadoresMainView from '@/components/admin/indicators/IndicadoresMainView';
 
 export const metadata = {
@@ -15,8 +16,8 @@ export default async function IndicadoresAdminPage() {
     data: { user }
   } = await supabase.auth.getUser();
 
-  if (!user || user.email !== 'api@apidevs.io') {
-    redirect('/');
+  if (!user || !(await checkAdminPermission(user.id, PERMISSIONS.INDICATORS_VIEW))) {
+    redirect('/?message=' + encodeURIComponent('Acceso denegado - Requiere permisos de indicadores'));
   }
 
   // Obtener todos los indicadores

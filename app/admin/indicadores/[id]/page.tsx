@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect, notFound } from 'next/navigation';
+import { checkAdminPermission, PERMISSIONS } from '@/utils/admin/permissions';
 import Link from 'next/link';
 import IndicatorDetailsTabs from '@/components/admin/indicators/IndicatorDetailsTabs';
 
@@ -23,8 +24,8 @@ export default async function IndicatorDetailPage({ params }: Params) {
     data: { user }
   } = await supabase.auth.getUser();
 
-  if (!user || user.email !== 'api@apidevs.io') {
-    redirect('/');
+  if (!user || !(await checkAdminPermission(user.id, PERMISSIONS.INDICATORS_VIEW))) {
+    redirect('/?message=' + encodeURIComponent('Acceso denegado - Requiere permisos para ver indicadores'));
   }
 
   // Obtener indicador

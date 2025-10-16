@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
+import { checkAdminPermission, PERMISSIONS } from '@/utils/admin/permissions';
 
 // GET - Obtener todos los indicadores
 // Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
@@ -14,8 +15,8 @@ export async function GET() {
       data: { user }
     } = await supabase.auth.getUser();
 
-    if (!user || user.email !== 'api@apidevs.io') {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    if (!user || !(await checkAdminPermission(user.id, PERMISSIONS.INDICATORS_VIEW))) {
+      return NextResponse.json({ error: 'No autorizado - Requiere permisos de indicadores' }, { status: 401 });
     }
 
     // Obtener indicadores
@@ -63,8 +64,8 @@ export async function POST(req: Request) {
       data: { user }
     } = await supabase.auth.getUser();
 
-    if (!user || user.email !== 'api@apidevs.io') {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    if (!user || !(await checkAdminPermission(user.id, PERMISSIONS.INDICATORS_CREATE))) {
+      return NextResponse.json({ error: 'No autorizado - Requiere permisos de creación de indicadores' }, { status: 401 });
     }
 
     // Obtener datos del body

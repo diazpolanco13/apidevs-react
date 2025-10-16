@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
+import { checkAdminPermission, PERMISSIONS } from '@/utils/admin/permissions';
 
 // GET - Obtener todos los accesos a indicadores de un usuario
 // Next.js 15: Forzar renderizado dinámico porque usa cookies (Supabase)
@@ -18,8 +19,8 @@ export async function GET(
       data: { user }
     } = await supabase.auth.getUser();
 
-    if (!user || user.email !== 'api@apidevs.io') {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    if (!user || !(await checkAdminPermission(user.id, PERMISSIONS.USERS_VIEW))) {
+      return NextResponse.json({ error: 'No autorizado - Requiere permisos de visualización de usuarios' }, { status: 401 });
     }
 
     const userId = id;
