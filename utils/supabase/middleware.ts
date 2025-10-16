@@ -196,10 +196,14 @@ export const updateSession = async (request: NextRequest) => {
     }
 
     // Only clear cookies on SPECIFIC critical errors that indicate corruption
-    if (error && (
-      error.message?.includes('refresh_token_not_found') ||
-      error.message?.includes('invalid_grant')
-    )) {
+    const errorMessage = error?.message?.toLowerCase() || '';
+    const shouldClearCookies = 
+      errorMessage.includes('refresh_token_not_found') ||
+      errorMessage.includes('refresh token not found') ||
+      errorMessage.includes('invalid_grant') ||
+      errorMessage.includes('invalid refresh token');
+    
+    if (error && shouldClearCookies) {
       console.warn('⚠️ COOKIE CORRUPTA DETECTADA - Limpiando cookies:', error.message);
       
       // Clear the invalid session cookies

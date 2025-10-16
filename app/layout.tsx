@@ -6,6 +6,7 @@ import { ConfirmEmailDialog } from '@/components/ui/ConfirmEmailDialog';
 import { PropsWithChildren, Suspense } from 'react';
 import ClientBootstrap from '@/components/ClientBootstrap';
 import { getURL } from '@/utils/helpers';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import 'styles/main.css';
 
 // Componentes cliente movidos a ClientBootstrap
@@ -93,6 +94,8 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         <ConfirmEmailDialog />
         {/* Bootstrap de componentes cliente (cookie banner y chat widget) */}
         <ClientBootstrap />
+        {/* Vercel Speed Insights - monitoreo de rendimiento */}
+        <SpeedInsights />
       </body>
     </html>
   );
