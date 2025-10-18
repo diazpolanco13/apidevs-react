@@ -240,46 +240,9 @@ export async function POST(request: NextRequest) {
         });
       }
       
-      // Guardar en la cola de contenido como imagen generada
-      const { data: queueItem, error: queueError } = await (supabaseAdmin as any)
-        .from('ai_content_queue')
-        .insert({
-          title: `Imagen generada: ${prompt.substring(0, 50)}...`,
-          content: JSON.stringify({
-            type: 'image',
-            prompt: prompt,
-            style: style,
-            size: size,
-            quality: quality,
-            images: uploadedImages, // TODAS las imágenes generadas
-            imageUrl: uploadedImages[0].url, // Primera por defecto
-            generatedAt: new Date().toISOString()
-          }),
-          generated_content: {
-            type: 'image',
-            prompt: prompt,
-            style: style,
-            size: size,
-            quality: quality,
-            images: uploadedImages, // TODAS las imágenes generadas
-            imageUrl: uploadedImages[0].url, // Primera por defecto
-            generatedAt: new Date().toISOString()
-          },
-          content_type: 'image',
-          language: 'es',
-          user_prompt: prompt,
-          status: 'pending_review',
-          created_by_admin_id: admin.id,
-          tokens_used: 0, // Las imágenes no usan tokens de texto
-          processing_time_ms: 0,
-        })
-        .select()
-        .single();
-
-      if (queueError) {
-        console.error('Error saving image to queue:', queueError);
-        // No fallar la operación por esto
-      }
+      // NO guardar en cola - solo devolver las imágenes
+      // Las imágenes se adjuntarán al post cuando el usuario haga "Crear Contenido"
+      console.log('✅ Images generated and uploaded. Ready to be attached to content.');
 
       return NextResponse.json({
         success: true,
@@ -291,7 +254,6 @@ export async function POST(request: NextRequest) {
           style: style,
           size: size,
           quality: quality,
-          queueItemId: queueItem?.id,
           generatedAt: new Date().toISOString()
         }
       });
