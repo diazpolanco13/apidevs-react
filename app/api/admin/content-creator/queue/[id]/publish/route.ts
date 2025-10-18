@@ -48,16 +48,62 @@ export async function POST(
       return NextResponse.json({ error: 'Sanity not configured' }, { status: 400 });
     }
 
-    // Crear el documento en Sanity usando el MCP
-    // Por ahora, simulamos la creación y marcamos como publicado
-    const sanityDocumentId = `sanity-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    // Preparar los datos para crear en Sanity
+    const generatedContent = queueItem.generated_content || {};
+    
+    // Construir la instrucción en lenguaje natural para Sanity MCP
+    const instruction = `Crea un post de blog en ${queueItem.language} con los siguientes datos:
 
-    // Actualizar el item en la cola
+Título: "${queueItem.title}"
+Slug: "${generatedContent.slug || queueItem.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}"
+Excerpt: "${generatedContent.excerpt || queueItem.user_prompt}"
+Contenido en markdown:
+${generatedContent.content || queueItem.content}
+
+Tags: ${generatedContent.tags?.join(', ') || 'trading'}
+Tiempo de lectura: ${generatedContent.readingTime || 5} minutos
+
+SEO:
+- Meta Título: "${generatedContent.seo?.metaTitle || queueItem.title}"
+- Meta Descripción: "${generatedContent.seo?.metaDescription || generatedContent.excerpt || queueItem.user_prompt}"
+- Keywords: ${generatedContent.seo?.keywords?.join(', ') || 'trading'}
+
+Status: draft
+Visibility: public
+`;
+
+    // Llamar a la API de Sanity para crear el documento
+    const sanityResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/content-creator/sanity`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        type: queueItem.content_type,
+        language: queueItem.language,
+        title: queueItem.title,
+        content: generatedContent.content || queueItem.content,
+        user_prompt: queueItem.user_prompt,
+        queueItemId: id
+      }),
+    });
+
+    const sanityResult = await sanityResponse.json();
+
+    if (!sanityResponse.ok || !sanityResult.documentId) {
+      console.error('Error creating in Sanity:', sanityResult);
+      return NextResponse.json({ 
+        error: 'Failed to create document in Sanity',
+        details: sanityResult 
+      }, { status: 500 });
+    }
+
+    // Actualizar el item en la cola con el ID real de Sanity
     const { error: updateError } = await (supabaseAdmin as any)
       .from('ai_content_queue')
       .update({
         status: 'published_in_sanity',
-        sanity_document_id: sanityDocumentId,
+        sanity_document_id: sanityResult.documentId,
         published_at: new Date().toISOString()
       })
       .eq('id', id);
@@ -69,7 +115,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      sanityDocumentId,
+      sanityDocumentId: sanityResult.documentId,
       message: 'Content published to Sanity successfully'
     });
 
