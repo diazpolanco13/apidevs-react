@@ -2,7 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { PERMISSIONS } from '@/utils/admin/permissions';
+
+// Constantes de permisos para evitar importar utils/admin/permissions
+const PERMISSIONS = {
+  CONTENT_AI_VIEW: 'content.ai.view',
+  CONTENT_AI_CREATE_BLOG: 'content.ai.create_blog',
+  CONTENT_AI_CREATE_DOCS: 'content.ai.create_docs',
+  CONTENT_AI_EDIT_INDICATORS: 'content.ai.edit_indicators',
+  CONTENT_AI_TRANSLATE: 'content.ai.translate',
+  CONTENT_AI_IMAGES: 'content.ai.images',
+  CONTENT_AI_PUBLISH_AUTO: 'content.ai.publish_auto',
+} as const;
 
 interface ContentCreatorPermissions {
   canView: boolean;
