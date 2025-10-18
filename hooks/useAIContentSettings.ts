@@ -37,7 +37,7 @@ export interface AIContentSettings {
 export interface AIContentQueueItem {
   id: string;
   content_type: 'blog' | 'doc' | 'indicator' | 'translation';
-  status: 'generating' | 'pending_review' | 'approved' | 'rejected' | 'published' | 'failed';
+  status: 'generating' | 'pending_review' | 'approved' | 'rejected' | 'published' | 'published_in_sanity' | 'failed';
   created_by_admin_id: string;
   reviewed_by_admin_id?: string;
   user_prompt: string;

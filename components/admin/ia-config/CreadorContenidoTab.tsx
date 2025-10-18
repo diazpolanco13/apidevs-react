@@ -849,7 +849,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                               </button>
                             </>
                           )}
-                          {item.status === 'approved' && (
+                          {(item.status === 'approved' || item.status === 'published_in_sanity') && (
                             <button 
                               onClick={() => handlePublish(item.id)}
                               className="px-3 py-1 bg-gradient-to-r from-apidevs-primary to-purple-600 hover:from-apidevs-primary/90 hover:to-purple-600/90 text-white text-xs rounded transition-colors font-bold"
