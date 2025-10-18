@@ -19,6 +19,14 @@ export default function ToolsConfiguration({ config, updateConfig }: Props) {
       icon: '👥'
     },
     {
+      id: 'generateContent',
+      name: 'Generar Contenido con IA',
+      description: 'Permite crear automáticamente artículos de blog, documentación e indicadores usando IA',
+      category: 'Admin',
+      status: 'stable',
+      icon: '✨'
+    },
+    {
       id: 'grantIndicatorAccess',
       name: 'Conceder Acceso a Indicador',
       description: 'Permite conceder acceso a indicadores específicos',

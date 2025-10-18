@@ -344,14 +344,18 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
         {activeSubTab === 'configuracion' && settings && (
                 <form id="ai-content-form" className="space-y-6">
                     {/* Información sobre habilitación */}
-                    {!config.tools_enabled && (
+                    {(!config.tools_enabled || !config.available_tools?.includes('generateContent')) && (
                       <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
                         <div className="flex items-start gap-3">
                           <AlertCircle className="h-5 w-5 text-yellow-400 mt-0.5" />
                           <div>
                             <p className="text-yellow-400 font-medium">Content Creator AI deshabilitado</p>
                             <p className="text-yellow-300 text-sm mt-1">
-                              Para habilitar la creación de contenido, ve al tab <strong>"Avanzado"</strong> y activa el toggle <strong>"Habilitar Herramientas (Tools)"</strong>. Luego guarda los cambios y recarga la página.
+                              Para habilitar la creación de contenido:
+                              <br/>1. Ve al tab <strong>"Avanzado"</strong>
+                              <br/>2. Activa el toggle <strong>"Habilitar Herramientas (Tools)"</strong>
+                              <br/>3. Activa la herramienta <strong>"Generar Contenido con IA"</strong> ✨
+                              <br/>4. Guarda los cambios y recarga la página
                             </p>
                           </div>
                         </div>
