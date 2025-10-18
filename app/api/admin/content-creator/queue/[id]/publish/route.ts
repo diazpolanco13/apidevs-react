@@ -53,14 +53,72 @@ export async function POST(
     // Preparar los datos para crear en Sanity
     const generatedContent = queueItem.generated_content || {};
     
-    // Por ahora, marcar como publicado
-    // La integración real con Sanity MCP se implementará en el siguiente paso
-    const sanityDocumentId = `draft.post-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    // Crear documento en Sanity usando la API HTTP
+    const sanityMutation = {
+      mutations: [
+        {
+          create: {
+            _type: 'post',
+            language: queueItem.language,
+            title: queueItem.title,
+            slug: {
+              _type: 'slug',
+              current: generatedContent.slug || queueItem.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+            },
+            excerpt: generatedContent.excerpt || queueItem.user_prompt.substring(0, 200),
+            content: [
+              {
+                _type: 'block',
+                children: [
+                  {
+                    _type: 'span',
+                    text: generatedContent.content || queueItem.content
+                  }
+                ]
+              }
+            ],
+            tags: generatedContent.tags || ['trading'],
+            readingTime: generatedContent.readingTime || 5,
+            status: 'draft',
+            visibility: 'public',
+            seo: {
+              _type: 'object',
+              metaTitle: generatedContent.seo?.metaTitle || queueItem.title,
+              metaDescription: generatedContent.seo?.metaDescription || generatedContent.excerpt,
+              keywords: generatedContent.seo?.keywords || []
+            }
+          }
+        }
+      ]
+    };
 
-    console.log('Marking content as published:', {
-      queueItemId: id,
-      title: queueItem.title,
-      sanityId: sanityDocumentId
+    const sanityResponse = await fetch(
+      `https://${configMap.sanity_project_id}.api.sanity.io/v2021-06-07/data/mutate/${configMap.sanity_dataset}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${configMap.sanity_token}`,
+        },
+        body: JSON.stringify(sanityMutation),
+      }
+    );
+
+    if (!sanityResponse.ok) {
+      const errorText = await sanityResponse.text();
+      console.error('Sanity API error:', errorText);
+      return NextResponse.json({ 
+        error: 'Failed to create in Sanity',
+        details: errorText
+      }, { status: 500 });
+    }
+
+    const sanityResult = await sanityResponse.json();
+    const sanityDocumentId = sanityResult.results?.[0]?.id || `draft.${Date.now()}`;
+
+    console.log('Document created in Sanity:', {
+      documentId: sanityDocumentId,
+      title: queueItem.title
     });
 
     // Actualizar el item en la cola
