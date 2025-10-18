@@ -163,7 +163,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-gray-800 border border-white/10 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <h2 className="text-xl font-semibold text-white flex items-center gap-2">
             <Plus className="h-5 w-5 text-apidevs-primary" />
@@ -177,7 +177,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Estado de Sanity */}
           {config && (
             <div className={`p-3 rounded-lg border ${
@@ -300,46 +300,48 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             </div>
           </div>
 
-          {/* CAMPOS GENERADOS (se llenan automáticamente) */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <FileText className="h-5 w-5 text-apidevs-primary" />
-              Contenido Generado
-            </h3>
+          {/* GRID 2 COLUMNAS: Contenido + Imagen */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* COLUMNA 1: Contenido Generado */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <FileText className="h-5 w-5 text-apidevs-primary" />
+                Contenido Generado
+              </h3>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Título {formData.title && '✅'}
-              </label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                placeholder="Se generará automáticamente..."
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
-                readOnly={isGenerating}
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Título {formData.title && '✅'}
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="Se generará automáticamente..."
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
+                  readOnly={isGenerating}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Contenido {formData.content && '✅'}
+                </label>
+                <textarea
+                  name="content"
+                  value={formData.content}
+                  onChange={handleChange}
+                  placeholder="Se generará automáticamente..."
+                  rows={12}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none"
+                  readOnly={isGenerating}
+                />
+              </div>
             </div>
 
+            {/* COLUMNA 2: Generación de imágenes */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Contenido {formData.content && '✅'}
-              </label>
-              <textarea
-                name="content"
-                value={formData.content}
-                onChange={handleChange}
-                placeholder="Se generará automáticamente..."
-                rows={8}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none"
-                readOnly={isGenerating}
-              />
-            </div>
-          </div>
-
-          {/* Generación de imágenes */}
-          <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Imagen (Opcional)
             </label>
@@ -377,9 +379,10 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-lg text-purple-400 hover:from-purple-600/30 hover:to-blue-600/30 transition-all"
               >
                 <Image className="h-5 w-5" />
-                Generar Imagen con Grok AI
+                Generar Imagen con IA
               </button>
             )}
+            </div>
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
