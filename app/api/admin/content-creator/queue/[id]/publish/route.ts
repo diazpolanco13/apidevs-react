@@ -87,7 +87,9 @@ export async function POST(
               metaTitle: generatedContent.seo?.metaTitle || queueItem.title,
               metaDescription: generatedContent.seo?.metaDescription || generatedContent.excerpt,
               keywords: generatedContent.seo?.keywords || []
-            }
+            },
+            // TODO: Agregar mainImage cuando tengamos la URL de la imagen generada
+            // Por ahora, el campo queda vacío y el usuario puede agregar la imagen en Sanity Studio
           }
         }
       ]
