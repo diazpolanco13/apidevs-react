@@ -174,17 +174,17 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
       setTestingGrokConnection(true);
       setGrokTestResult(null);
 
-      const grokApiKey = grokApiKeyRef.current?.value;
+      const openrouterApiKey = grokApiKeyRef.current?.value;
 
-      if (!grokApiKey) {
+      if (!openrouterApiKey) {
         setGrokTestResult({
           success: false,
-          message: 'Por favor ingresa la API key de Grok'
+          message: 'Por favor ingresa la API key de OpenRouter'
         });
         return;
       }
 
-      // Test simple de generación de imagen
+      // Test simple de generación de imagen con OpenRouter
       const response = await fetch('/api/admin/content-creator/grok/images', {
         method: 'POST',
         headers: {
@@ -194,7 +194,8 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
           prompt: 'test image generation',
           style: 'realistic',
           size: '1024x1024',
-          quality: 'standard'
+          quality: 'standard',
+          apiKey: openrouterApiKey // Pass API key for testing
         }),
       });
 
@@ -203,12 +204,12 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
       if (result.success) {
         setGrokTestResult({
           success: true,
-          message: 'Conexión con Grok API exitosa'
+          message: 'Conexión con OpenRouter DALL-E 3 API exitosa'
         });
       } else {
         setGrokTestResult({
           success: false,
-          message: result.error || 'Error al conectar con Grok API'
+          message: result.error || 'Error al conectar con OpenRouter DALL-E 3 API'
         });
       }
 
@@ -220,7 +221,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
     } catch (error) {
       setGrokTestResult({
         success: false,
-        message: error instanceof Error ? error.message : 'Error al probar la conexión con Grok'
+        message: error instanceof Error ? error.message : 'Error al probar la conexión con OpenRouter DALL-E 3'
       });
     } finally {
       setTestingGrokConnection(false);

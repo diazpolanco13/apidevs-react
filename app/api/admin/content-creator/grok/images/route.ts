@@ -7,6 +7,7 @@ interface GrokImageRequest {
   style?: 'realistic' | 'artistic' | 'cartoon' | 'abstract';
   size?: '1024x1024' | '1024x1792' | '1792x1024';
   quality?: 'standard' | 'hd';
+  apiKey?: string; // Para testing
 }
 
 interface GrokImageResponse {
@@ -18,7 +19,7 @@ interface GrokImageResponse {
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, style = 'realistic', size = '1024x1024', quality = 'standard' }: GrokImageRequest = await request.json();
+    const { prompt, style = 'realistic', size = '1024x1024', quality = 'standard', apiKey }: GrokImageRequest = await request.json();
 
     if (!prompt) {
       return NextResponse.json(
@@ -72,14 +73,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener API key de OpenRouter desde la configuración
-    const { data: openrouterConfig } = await (supabaseAdmin as any)
-      .from('system_configuration')
-      .select('value')
-      .eq('key', 'openrouter_api_key')
-      .single();
+    // Obtener API key de OpenRouter desde la configuración o del body (para test)
+    let openrouterApiKey = apiKey; // Si se pasa en el body (para test)
+    
+    if (!openrouterApiKey) {
+      const { data: openrouterConfig } = await (supabaseAdmin as any)
+        .from('system_configuration')
+        .select('value')
+        .eq('key', 'openrouter_api_key')
+        .single();
+      openrouterApiKey = openrouterConfig?.value;
+    }
 
-    if (!openrouterConfig?.value) {
+    if (!openrouterApiKey) {
       return NextResponse.json(
         { error: 'OpenRouter API key not configured for image generation' },
         { status: 400 }
@@ -108,7 +114,7 @@ export async function POST(request: NextRequest) {
       const response = await fetch(openrouterApiUrl, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${openrouterConfig.value}`,
+          'Authorization': `Bearer ${openrouterApiKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://apidevs.io',
           'X-Title': 'APIDevs Content Creator'
