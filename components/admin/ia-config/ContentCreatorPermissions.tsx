@@ -46,13 +46,19 @@ export default function ContentCreatorPermissions({ children }: Props) {
 
   const checkPermissions = async () => {
     try {
+      console.log('🚀 Starting permission check...');
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
+      console.log('👤 Authenticated user:', user);
+
       if (!user) {
+        console.log('❌ No authenticated user found');
         setLoading(false);
         return;
       }
+
+      console.log('📧 User email:', user.email);
 
       // Verificar cada permiso individualmente
       const [
@@ -73,7 +79,7 @@ export default function ContentCreatorPermissions({ children }: Props) {
         checkPermission(user.email!, PERMISSIONS.CONTENT_AI_PUBLISH_AUTO),
       ]);
 
-      setPermissions({
+      const finalPermissions = {
         canView,
         canCreateBlog,
         canCreateDocs,
@@ -81,7 +87,11 @@ export default function ContentCreatorPermissions({ children }: Props) {
         canTranslate,
         canGenerateImages,
         canPublishAuto,
-      });
+      };
+
+      console.log('🎯 Final permissions:', finalPermissions);
+
+      setPermissions(finalPermissions);
     } catch (error) {
       console.error('Error checking permissions:', error);
     } finally {
@@ -91,6 +101,7 @@ export default function ContentCreatorPermissions({ children }: Props) {
 
   const checkPermission = async (email: string, permission: string): Promise<boolean> => {
     try {
+      console.log(`🔍 Checking permission ${permission} for user ${email}`);
       const supabase = createClient();
       
       const { data: admin, error } = await (supabase as any)
@@ -108,19 +119,34 @@ export default function ContentCreatorPermissions({ children }: Props) {
         .eq('status', 'active')
         .single();
 
+      console.log(`📊 Query result for ${email}:`, { admin, error });
+
       if (error || !admin) {
         console.warn(`❌ Admin user not found or error: ${email}`, error?.message);
         return false;
       }
 
+      console.log(`👤 Admin found:`, {
+        id: admin.id,
+        status: admin.status,
+        role_slug: admin.admin_roles?.slug,
+        permissions: admin.admin_roles?.permissions
+      });
+
       // Super Admin tiene todos los permisos
       if (admin.admin_roles?.slug === 'super-admin') {
+        console.log(`✅ Super Admin detected - granting all permissions`);
         return true;
       }
 
       // Verificar permiso específico
       const userPermissions = admin.admin_roles?.permissions || {};
       const hasPermission = userPermissions[permission] === true;
+      
+      console.log(`🔐 Permission check: ${permission} = ${hasPermission}`, {
+        userPermissions,
+        requestedPermission: permission
+      });
       
       if (!hasPermission) {
         console.warn(`⚠️ Permission denied for user ${email}: ${permission}`);
