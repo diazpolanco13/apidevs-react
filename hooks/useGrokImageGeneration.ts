@@ -23,12 +23,29 @@ export function useGrokImageGeneration() {
       setGenerating(true);
       setLastResult(null);
 
+      // Obtener la API key de OpenAI desde la configuración
+      const configResponse = await fetch('/api/admin/content-creator/sanity/config');
+      const configData = await configResponse.json();
+      
+      if (!configData.success || !configData.config?.openai_api_key) {
+        const errorResult = {
+          success: false,
+          error: 'OpenAI API key not configured for image generation',
+          details: null
+        };
+        setLastResult(errorResult);
+        return errorResult;
+      }
+
       const response = await fetch('/api/admin/content-creator/grok/images', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(request),
+        body: JSON.stringify({
+          ...request,
+          apiKey: configData.config.openai_api_key
+        }),
       });
 
       const result = await response.json();

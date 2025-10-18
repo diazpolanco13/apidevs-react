@@ -82,7 +82,7 @@ export default function GrokImageGenerator({
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <h2 className="text-xl font-semibold text-white flex items-center gap-2">
             <Wand2 className="h-5 w-5 text-apidevs-primary" />
-            Generador de Imágenes con Grok
+            Generador de Imágenes con DALL-E 3
           </h2>
           <button
             onClick={handleClose}
