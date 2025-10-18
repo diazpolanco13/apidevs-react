@@ -64,13 +64,13 @@ export default function ContentCreatorPermissions({ children }: Props) {
         canGenerateImages,
         canPublishAuto,
       ] = await Promise.all([
-        checkPermission(user.id, PERMISSIONS.CONTENT_AI_VIEW),
-        checkPermission(user.id, PERMISSIONS.CONTENT_AI_CREATE_BLOG),
-        checkPermission(user.id, PERMISSIONS.CONTENT_AI_CREATE_DOCS),
-        checkPermission(user.id, PERMISSIONS.CONTENT_AI_EDIT_INDICATORS),
-        checkPermission(user.id, PERMISSIONS.CONTENT_AI_TRANSLATE),
-        checkPermission(user.id, PERMISSIONS.CONTENT_AI_IMAGES),
-        checkPermission(user.id, PERMISSIONS.CONTENT_AI_PUBLISH_AUTO),
+        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_VIEW),
+        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_CREATE_BLOG),
+        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_CREATE_DOCS),
+        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_EDIT_INDICATORS),
+        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_TRANSLATE),
+        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_IMAGES),
+        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_PUBLISH_AUTO),
       ]);
 
       setPermissions({
@@ -89,7 +89,7 @@ export default function ContentCreatorPermissions({ children }: Props) {
     }
   };
 
-  const checkPermission = async (userId: string, permission: string): Promise<boolean> => {
+  const checkPermission = async (email: string, permission: string): Promise<boolean> => {
     try {
       const supabase = createClient();
       
@@ -104,11 +104,12 @@ export default function ContentCreatorPermissions({ children }: Props) {
             permissions
           )
         `)
-        .eq('id', userId)
+        .eq('email', email)
         .eq('status', 'active')
         .single();
 
       if (error || !admin) {
+        console.warn(`❌ Admin user not found or error: ${email}`, error?.message);
         return false;
       }
 
@@ -119,7 +120,13 @@ export default function ContentCreatorPermissions({ children }: Props) {
 
       // Verificar permiso específico
       const userPermissions = admin.admin_roles?.permissions || {};
-      return userPermissions[permission] === true;
+      const hasPermission = userPermissions[permission] === true;
+      
+      if (!hasPermission) {
+        console.warn(`⚠️ Permission denied for user ${email}: ${permission}`);
+      }
+      
+      return hasPermission;
     } catch (error) {
       console.error('Error checking permission:', error);
       return false;
