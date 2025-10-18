@@ -110,7 +110,7 @@ export default function ContentCreatorPermissions({ children }: Props) {
           id,
           status,
           role_id,
-          admin_roles (
+          admin_roles!inner (
             slug,
             permissions
           )
