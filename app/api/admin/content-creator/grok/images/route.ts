@@ -189,6 +189,47 @@ export async function POST(request: NextRequest) {
           details: data
         });
       }
+
+      // SUBIR IMAGEN A SUPABASE STORAGE
+      let publicImageUrl = imageUrl;
+      
+      if (imageUrl.startsWith('data:image')) {
+        try {
+          // Extraer base64
+          const base64Data = imageUrl.split(',')[1];
+          const imageBuffer = Buffer.from(base64Data, 'base64');
+          
+          // Nombre único para la imagen
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+          const filePath = `generated/${fileName}`;
+          
+          // Subir a Supabase Storage
+          const { data: uploadData, error: uploadError } = await (supabaseAdmin as any)
+            .storage
+            .from('content-images')
+            .upload(filePath, imageBuffer, {
+              contentType: 'image/png',
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (uploadError) {
+            console.error('Error uploading to Supabase Storage:', uploadError);
+          } else {
+            // Obtener URL pública
+            const { data: publicUrlData } = (supabaseAdmin as any)
+              .storage
+              .from('content-images')
+              .getPublicUrl(filePath);
+            
+            publicImageUrl = publicUrlData.publicUrl;
+            console.log('✅ Image uploaded to Supabase Storage:', publicImageUrl);
+          }
+        } catch (uploadError) {
+          console.error('Error processing image upload:', uploadError);
+          // Continuar con base64 si falla la subida
+        }
+      }
       
       // Guardar en la cola de contenido como imagen generada
       const { data: queueItem, error: queueError } = await (supabaseAdmin as any)
@@ -201,7 +242,8 @@ export async function POST(request: NextRequest) {
             style: style,
             size: size,
             quality: quality,
-            imageUrl: imageUrl,
+            imageUrl: publicImageUrl, // URL pública de Supabase
+            base64Url: imageUrl, // Guardar también el base64 original
             generatedAt: new Date().toISOString()
           }),
           generated_content: {
@@ -210,7 +252,8 @@ export async function POST(request: NextRequest) {
             style: style,
             size: size,
             quality: quality,
-            imageUrl: imageUrl,
+            imageUrl: publicImageUrl, // URL pública de Supabase
+            base64Url: imageUrl, // Guardar también el base64 original
             generatedAt: new Date().toISOString()
           },
           content_type: 'image',
@@ -231,13 +274,15 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        imageUrl: imageUrl,
+        imageUrl: publicImageUrl, // URL pública de Supabase o base64
+        base64Url: imageUrl, // Base64 original
         details: {
           prompt: prompt,
           style: style,
           size: size,
           quality: quality,
           queueItemId: queueItem?.id,
+          storedInSupabase: publicImageUrl !== imageUrl,
           generatedAt: new Date().toISOString()
         }
       });
