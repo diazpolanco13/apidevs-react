@@ -41,10 +41,10 @@ export default function ContentCreatorPermissions({ children }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkPermissions();
+    checkUserPermissions();
   }, []);
 
-  const checkPermissions = async () => {
+  const checkUserPermissions = async () => {
     try {
       console.log('🚀 Starting permission check...');
       const supabase = createClient();
@@ -60,33 +60,27 @@ export default function ContentCreatorPermissions({ children }: Props) {
 
       console.log('📧 User email:', user.email);
 
-      // Verificar cada permiso individualmente
-      const [
-        canView,
-        canCreateBlog,
-        canCreateDocs,
-        canEditIndicators,
-        canTranslate,
-        canGenerateImages,
-        canPublishAuto,
-      ] = await Promise.all([
-        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_VIEW),
-        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_CREATE_BLOG),
-        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_CREATE_DOCS),
-        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_EDIT_INDICATORS),
-        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_TRANSLATE),
-        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_IMAGES),
-        checkPermission(user.email!, PERMISSIONS.CONTENT_AI_PUBLISH_AUTO),
-      ]);
+      // Verificar todos los permisos de una vez
+      const permissionsToCheck = [
+        PERMISSIONS.CONTENT_AI_VIEW,
+        PERMISSIONS.CONTENT_AI_CREATE_BLOG,
+        PERMISSIONS.CONTENT_AI_CREATE_DOCS,
+        PERMISSIONS.CONTENT_AI_EDIT_INDICATORS,
+        PERMISSIONS.CONTENT_AI_TRANSLATE,
+        PERMISSIONS.CONTENT_AI_IMAGES,
+        PERMISSIONS.CONTENT_AI_PUBLISH_AUTO,
+      ];
+
+      const results = await checkPermissions(user.email!, permissionsToCheck);
 
       const finalPermissions = {
-        canView,
-        canCreateBlog,
-        canCreateDocs,
-        canEditIndicators,
-        canTranslate,
-        canGenerateImages,
-        canPublishAuto,
+        canView: results[PERMISSIONS.CONTENT_AI_VIEW] || false,
+        canCreateBlog: results[PERMISSIONS.CONTENT_AI_CREATE_BLOG] || false,
+        canCreateDocs: results[PERMISSIONS.CONTENT_AI_CREATE_DOCS] || false,
+        canEditIndicators: results[PERMISSIONS.CONTENT_AI_EDIT_INDICATORS] || false,
+        canTranslate: results[PERMISSIONS.CONTENT_AI_TRANSLATE] || false,
+        canGenerateImages: results[PERMISSIONS.CONTENT_AI_IMAGES] || false,
+        canPublishAuto: results[PERMISSIONS.CONTENT_AI_PUBLISH_AUTO] || false,
       };
 
       console.log('🎯 Final permissions:', finalPermissions);
@@ -99,63 +93,34 @@ export default function ContentCreatorPermissions({ children }: Props) {
     }
   };
 
-  const checkPermission = async (email: string, permission: string): Promise<boolean> => {
+  const checkPermissions = async (email: string, permissions: string[]): Promise<Record<string, boolean>> => {
     try {
-      console.log(`🔍 Checking permission ${permission} for user ${email}`);
-      const supabase = createClient();
+      console.log(`🔍 Checking permissions for user ${email}:`, permissions);
       
-      const { data: admin, error } = await (supabase as any)
-        .from('admin_users')
-        .select(`
-          id,
-          status,
-          role_id,
-          admin_roles!inner (
-            slug,
-            permissions
-          )
-        `)
-        .eq('email', email)
-        .eq('status', 'active')
-        .single();
-
-      console.log(`📊 Query result for ${email}:`, { admin, error });
-
-      if (error || !admin) {
-        console.warn(`❌ Admin user not found or error: ${email}`, error?.message);
-        return false;
-      }
-
-      console.log(`👤 Admin found:`, {
-        id: admin.id,
-        status: admin.status,
-        role_slug: admin.admin_roles?.slug,
-        permissions: admin.admin_roles?.permissions
+      const response = await fetch('/api/admin/check-permissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          permissions
+        }),
       });
 
-      // Super Admin tiene todos los permisos
-      if (admin.admin_roles?.slug === 'super-admin') {
-        console.log(`✅ Super Admin detected - granting all permissions`);
-        return true;
+      if (!response.ok) {
+        const error = await response.json();
+        console.warn(`❌ Error checking permissions:`, error);
+        return {};
       }
 
-      // Verificar permiso específico
-      const userPermissions = admin.admin_roles?.permissions || {};
-      const hasPermission = userPermissions[permission] === true;
+      const { permissions: result } = await response.json();
+      console.log(`✅ Permissions result:`, result);
       
-      console.log(`🔐 Permission check: ${permission} = ${hasPermission}`, {
-        userPermissions,
-        requestedPermission: permission
-      });
-      
-      if (!hasPermission) {
-        console.warn(`⚠️ Permission denied for user ${email}: ${permission}`);
-      }
-      
-      return hasPermission;
+      return result;
     } catch (error) {
-      console.error('Error checking permission:', error);
-      return false;
+      console.error('Error checking permissions:', error);
+      return {};
     }
   };
 
