@@ -129,29 +129,60 @@ export async function POST(request: NextRequest) {
     // Parsear el contenido generado (esperamos JSON)
     let parsedContent;
     try {
-      parsedContent = JSON.parse(generatedContent);
+      // Intentar extraer el JSON del contenido
+      const jsonMatch = generatedContent.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        parsedContent = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('No JSON found in response');
+      }
     } catch (e) {
+      console.error('Error parsing JSON:', e);
+      console.log('Raw content:', generatedContent);
+      
       // Si no es JSON válido, intentar extraer título y contenido
       const titleMatch = generatedContent.match(/título:\s*(.+)/i);
       const title = titleMatch ? titleMatch[1].trim() : 'Título generado';
       const content = generatedContent.replace(/título:\s*.+/i, '').trim();
       
-      parsedContent = { title, content };
+      parsedContent = { 
+        title, 
+        content,
+        slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+        excerpt: content.substring(0, 200) + '...',
+        tags: [],
+        readingTime: Math.ceil(content.split(' ').length / 200),
+        seo: {
+          metaTitle: title,
+          metaDescription: content.substring(0, 150) + '...',
+          keywords: []
+        }
+      };
     }
+
+    // Asegurar que TODOS los campos tengan valores
+    const title = parsedContent.title || 'Título generado';
+    const slug = parsedContent.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const content = parsedContent.content || generatedContent;
+    const excerpt = parsedContent.excerpt || content.substring(0, 200) + '...';
 
     return NextResponse.json({
       success: true,
-      title: parsedContent.title || 'Título generado',
-      slug: parsedContent.slug || '',
-      excerpt: parsedContent.excerpt || '',
-      content: parsedContent.content || generatedContent,
-      mainImage: parsedContent.mainImage || null,
+      title: title,
+      slug: slug,
+      excerpt: excerpt,
+      content: content,
+      mainImage: parsedContent.mainImage || {
+        prompt: `Imagen profesional relacionada con: ${title}`,
+        alt: title,
+        caption: ''
+      },
       tags: parsedContent.tags || [],
-      readingTime: parsedContent.readingTime || 5,
-      seo: parsedContent.seo || {
-        metaTitle: parsedContent.title || '',
-        metaDescription: parsedContent.metaDescription || '',
-        keywords: parsedContent.keywords || []
+      readingTime: parsedContent.readingTime || Math.ceil(content.split(' ').length / 200),
+      seo: {
+        metaTitle: parsedContent.seo?.metaTitle || title.substring(0, 60),
+        metaDescription: parsedContent.seo?.metaDescription || excerpt.substring(0, 160),
+        keywords: parsedContent.seo?.keywords || parsedContent.keywords || []
       },
       tokens_used: data.usage?.total_tokens || 0,
     });
