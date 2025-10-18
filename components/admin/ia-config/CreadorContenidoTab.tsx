@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Settings, FileText, Palette, Users, Save, RefreshCw, TestTube, AlertCircle, Clock, CheckCircle, Eye, Plus, Database, Key } from 'lucide-react';
+import { Settings, FileText, Palette, Users, Save, RefreshCw, TestTube, AlertCircle, Clock, CheckCircle, Eye, Plus, Database, Key, Wand2 } from 'lucide-react';
 import { useAIContentSettings, AIContentSettings } from '@/hooks/useAIContentSettings';
 import { useSanityIntegration } from '@/hooks/useSanityIntegration';
 import ContentCreatorPermissions from './ContentCreatorPermissions';
@@ -20,6 +20,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
   const sanityProjectIdRef = useRef<HTMLInputElement>(null);
   const sanityDatasetRef = useRef<HTMLInputElement>(null);
   const sanityTokenRef = useRef<HTMLInputElement>(null);
+  const grokApiKeyRef = useRef<HTMLInputElement>(null);
   const {
     settings,
     queue,
@@ -41,6 +42,8 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
 
   const [testingConnection, setTestingConnection] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [testingGrokConnection, setTestingGrokConnection] = useState(false);
+  const [grokTestResult, setGrokTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const subTabs = [
     {
@@ -163,6 +166,64 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
       });
     } finally {
       setTestingConnection(false);
+    }
+  };
+
+  const handleTestGrokConnection = async () => {
+    try {
+      setTestingGrokConnection(true);
+      setGrokTestResult(null);
+
+      const grokApiKey = grokApiKeyRef.current?.value;
+
+      if (!grokApiKey) {
+        setGrokTestResult({
+          success: false,
+          message: 'Por favor ingresa la API key de Grok'
+        });
+        return;
+      }
+
+      // Test simple de generación de imagen
+      const response = await fetch('/api/admin/content-creator/grok/images', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: 'test image generation',
+          style: 'realistic',
+          size: '1024x1024',
+          quality: 'standard'
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setGrokTestResult({
+          success: true,
+          message: 'Conexión con Grok API exitosa'
+        });
+      } else {
+        setGrokTestResult({
+          success: false,
+          message: result.error || 'Error al conectar con Grok API'
+        });
+      }
+
+      // Mostrar resultado por 5 segundos
+      setTimeout(() => {
+        setGrokTestResult(null);
+      }, 5000);
+
+    } catch (error) {
+      setGrokTestResult({
+        success: false,
+        message: error instanceof Error ? error.message : 'Error al probar la conexión con Grok'
+      });
+    } finally {
+      setTestingGrokConnection(false);
     }
   };
 
@@ -471,6 +532,43 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                       </div>
                     </div>
 
+                    {/* Configuración de Grok API */}
+                    <div className="mt-6 p-4 bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-xl border border-purple-500/30 rounded-2xl">
+                      <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                        <Wand2 className="h-5 w-5 text-purple-400" />
+                        Configuración de Grok API (Imágenes)
+                      </h4>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Grok API Key
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            ref={grokApiKeyRef}
+                            type="password"
+                            defaultValue={settings?.grok_api_key || ''}
+                            placeholder="xai-..."
+                            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                          />
+                          <button 
+                            type="button"
+                            onClick={handleTestGrokConnection}
+                            disabled={testingGrokConnection}
+                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                          >
+                            {testingGrokConnection ? (
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <TestTube className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Necesaria para generar imágenes con Grok AI
+                        </p>
+                      </div>
+                    </div>
+
                     {/* Resultado del test de conexión */}
                     {testResult && (
                       <div className={`p-3 rounded-lg border ${
@@ -488,6 +586,28 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                             testResult.success ? 'text-green-400' : 'text-red-400'
                           }`}>
                             {testResult.message}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Resultado del test de Grok */}
+                    {grokTestResult && (
+                      <div className={`p-3 rounded-lg border ${
+                        grokTestResult.success 
+                          ? 'bg-green-900/20 border-green-500/30' 
+                          : 'bg-red-900/20 border-red-500/30'
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          {grokTestResult.success ? (
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                          ) : (
+                            <AlertCircle className="h-4 w-4 text-red-400" />
+                          )}
+                          <span className={`text-sm ${
+                            grokTestResult.success ? 'text-green-400' : 'text-red-400'
+                          }`}>
+                            {grokTestResult.message}
                           </span>
                         </div>
                       </div>
