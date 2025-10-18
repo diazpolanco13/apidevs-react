@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
           { role: 'user', content: userPrompt }
         ],
         temperature: aiSettings.temperature || 0.7,
-        max_tokens: Math.max(aiSettings.max_tokens || 8000, 8000), // Mínimo 8000 tokens para contenido completo
+        max_tokens: aiSettings.max_tokens || 8000, // Usar configuración o 8000 por defecto
       }),
     });
 

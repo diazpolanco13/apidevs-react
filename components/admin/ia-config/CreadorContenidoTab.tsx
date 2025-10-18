@@ -6,7 +6,7 @@ import { useAIContentSettings, AIContentSettings } from '@/hooks/useAIContentSet
 import { useSanityIntegration } from '@/hooks/useSanityIntegration';
 import ContentCreatorPermissions from './ContentCreatorPermissions';
 import CreateContentModal from './CreateContentModal';
-import ContentCreatorModelSelector from './ContentCreatorModelSelector';
+import ModelSelectorModal from './ModelSelectorModal';
 
 interface Props {
   config: any;
@@ -16,6 +16,7 @@ interface Props {
 export default function CreadorContenidoTab({ config, setConfig }: Props) {
   const [activeSubTab, setActiveSubTab] = useState<'configuracion' | 'cola' | 'templates'>('configuracion');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isModelSelectorOpen, setIsModelSelectorOpen] = useState(false);
   
   // Refs para los inputs de Sanity
   const sanityProjectIdRef = useRef<HTMLInputElement>(null);
@@ -367,144 +368,96 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                       </div>
                     )}
 
-                    {/* Modo de Publicación */}
-                    <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-                      <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <Settings className="h-5 w-5 text-apidevs-primary" />
-                        Modo de Publicación
-                      </h3>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="auto_publish_mode"
-                      value="draft"
-                      defaultChecked={settings.auto_publish_mode === 'draft'}
-                      className="h-4 w-4 text-apidevs-primary focus:ring-apidevs-primary border-gray-600 bg-gray-700"
-                    />
-                    <span className="ml-2 text-gray-300">Modo Borrador (Recomendado)</span>
-                  </label>
-                </div>
-                <p className="text-sm text-gray-400 ml-6">
-                  Guarda como draft, requiere aprobación manual
-                </p>
-                
-                <div className="flex items-center space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="auto_publish_mode"
-                      value="review"
-                      defaultChecked={settings.auto_publish_mode === 'review'}
-                      className="h-4 w-4 text-apidevs-primary focus:ring-apidevs-primary border-gray-600 bg-gray-700"
-                    />
-                    <span className="ml-2 text-gray-300">Modo Revisión</span>
-                  </label>
-                </div>
-                <p className="text-sm text-gray-400 ml-6">
-                  Crea en cola de revisión para aprobación
-                </p>
-                
-                <div className="flex items-center space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="auto_publish_mode"
-                      value="published"
-                      defaultChecked={settings.auto_publish_mode === 'published'}
-                      className="h-4 w-4 text-apidevs-primary focus:ring-apidevs-primary border-gray-600 bg-gray-700"
-                    />
-                    <span className="ml-2 text-gray-300">Modo Automático</span>
-                  </label>
-                </div>
-                <p className="text-sm text-gray-400 ml-6">
-                  Publica directamente en status "published" ⚠️ Sin revisión humana
-                </p>
-              </div>
-            </div>
+                    {/* Modo de Publicación y Límites - COMPACTADO EN GRID */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Modo de Publicación */}
+                      <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                        <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
+                          <Settings className="h-4 w-4 text-apidevs-primary" />
+                          Modo de Publicación
+                        </h3>
+                        <div className="space-y-2">
+                          <label className="flex items-center p-2 rounded-lg hover:bg-white/5 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="auto_publish_mode"
+                              value="draft"
+                              defaultChecked={settings.auto_publish_mode === 'draft'}
+                              className="h-4 w-4 text-apidevs-primary focus:ring-apidevs-primary border-gray-600"
+                            />
+                            <div className="ml-3">
+                              <span className="text-sm text-gray-300 font-medium">Borrador</span>
+                              <p className="text-xs text-gray-500">Requiere aprobación</p>
+                            </div>
+                          </label>
+                          
+                          <label className="flex items-center p-2 rounded-lg hover:bg-white/5 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="auto_publish_mode"
+                              value="review"
+                              defaultChecked={settings.auto_publish_mode === 'review'}
+                              className="h-4 w-4 text-apidevs-primary focus:ring-apidevs-primary border-gray-600"
+                            />
+                            <div className="ml-3">
+                              <span className="text-sm text-gray-300 font-medium">Revisión</span>
+                              <p className="text-xs text-gray-500">Cola de aprobación</p>
+                            </div>
+                          </label>
+                          
+                          <label className="flex items-center p-2 rounded-lg hover:bg-white/5 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="auto_publish_mode"
+                              value="published"
+                              defaultChecked={settings.auto_publish_mode === 'published'}
+                              className="h-4 w-4 text-apidevs-primary focus:ring-apidevs-primary border-gray-600"
+                            />
+                            <div className="ml-3">
+                              <span className="text-sm text-gray-300 font-medium">Automático</span>
+                              <p className="text-xs text-gray-500">⚠️ Sin revisión</p>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
 
-            {/* Generación de Imágenes */}
-            {permissions.canGenerateImages && (
-              <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <Palette className="h-5 w-5 text-apidevs-primary" />
-                  Generación de Imágenes con Grok
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="text-sm font-medium text-gray-300">Habilitar generación automática</label>
-                      <p className="text-xs text-gray-400">Genera imágenes para posts de blog automáticamente</p>
+                      {/* Límites de Seguridad */}
+                      <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                        <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
+                          <Users className="h-4 w-4 text-apidevs-primary" />
+                          Límites de Seguridad
+                        </h3>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1">
+                              Máximo posts/día
+                            </label>
+                            <input
+                              type="number"
+                              name="max_posts_per_day"
+                              defaultValue={settings.max_posts_per_day}
+                              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1">
+                              Máximo tokens/día
+                            </label>
+                            <input
+                              type="number"
+                              name="max_tokens_per_day"
+                              defaultValue={settings.max_tokens_per_day}
+                              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
+                            />
+                          </div>
+                          <div className="p-2 bg-gray-700/50 rounded-lg">
+                            <p className="text-xs text-gray-300">
+                              <span className="text-apidevs-primary font-medium">Hoy:</span> 3/{settings.max_posts_per_day} posts
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        name="image_generation_enabled"
-                        defaultChecked={settings.image_generation_enabled}
-                        className="sr-only peer" 
-                      />
-                      <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-apidevs-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-apidevs-primary"></div>
-                    </label>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <label className="block text-sm font-medium text-gray-300">
-                      API Key de Grok
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="password"
-                        name="grok_api_key"
-                        defaultValue={settings.grok_api_key || ''}
-                        placeholder="Ingresa tu API key de Grok..."
-                        className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-transparent"
-                      />
-                      <button type="button" className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors">
-                        Test
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Límites de Seguridad */}
-            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <Users className="h-5 w-5 text-apidevs-primary" />
-                Límites de Seguridad
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Máximo posts por día
-                  </label>
-                  <input
-                    type="number"
-                    name="max_posts_per_day"
-                    defaultValue={settings.max_posts_per_day}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Máximo tokens por día
-                  </label>
-                  <input
-                    type="number"
-                    name="max_tokens_per_day"
-                    defaultValue={settings.max_tokens_per_day}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
-                  />
-                </div>
-              </div>
-              <div className="mt-4 p-3 bg-gray-700/50 rounded-lg">
-                <p className="text-sm text-gray-300">
-                  <span className="text-apidevs-primary">Usados hoy:</span> 3/{settings.max_posts_per_day} posts | 12,450/{settings.max_tokens_per_day.toLocaleString()} tokens
-                </p>
-              </div>
-            </div>
 
             {/* Configuración de Sanity */}
             {permissions.canView && (
@@ -590,24 +543,33 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                     </div>
 
                     {/* Configuración del Modelo de IA para Contenido */}
-                    <div className="mt-6 p-4 bg-gradient-to-r from-green-600/20 to-teal-600/20 backdrop-blur-xl border border-green-500/30 rounded-2xl">
+                    <div className="bg-gradient-to-r from-green-600/20 to-teal-600/20 backdrop-blur-xl border border-green-500/30 rounded-2xl p-6">
                       <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                         <Settings className="h-5 w-5 text-green-400" />
                         Modelo de IA para Generación de Contenido
                       </h4>
-                      <p className="text-xs text-gray-300 mb-4">
+                      <p className="text-sm text-gray-300 mb-4">
                         💡 Usa la misma OpenRouter API key del chat. Selecciona un modelo premium para contenido de máxima calidad o uno gratuito para pruebas.
                       </p>
                       
-                      <ContentCreatorModelSelector
-                        selectedModel={settings?.model_name || 'anthropic/claude-3.5-sonnet'}
-                        onModelChange={(modelId) => {
-                          // Actualizar el settings con el nuevo modelo
-                          saveSettings({ model_name: modelId });
-                        }}
-                      />
+                      {/* Modelo actual y botón para abrir modal */}
+                      <div className="mb-4 p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs text-gray-400 mb-1">Modelo actual:</p>
+                            <p className="text-sm text-white font-medium">{settings?.model_name || 'anthropic/claude-3.5-sonnet'}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setIsModelSelectorOpen(true)}
+                            className="px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white rounded-lg transition-all text-sm"
+                          >
+                            Cambiar Modelo
+                          </button>
+                        </div>
+                      </div>
 
-                      <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">
                             Temperatura
@@ -636,7 +598,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50"
                           />
                           <p className="text-xs text-gray-400 mt-1">
-                            Recomendado: 8000-16000 para contenido completo y detallado
+                            Recomendado: 8000-16000 para contenido completo
                           </p>
                         </div>
                       </div>
@@ -897,6 +859,17 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
               isOpen={isCreateModalOpen}
               onClose={() => setIsCreateModalOpen(false)}
               onSuccess={handleCreateSuccess}
+            />
+
+            {/* Modal para seleccionar modelo */}
+            <ModelSelectorModal
+              isOpen={isModelSelectorOpen}
+              onClose={() => setIsModelSelectorOpen(false)}
+              currentModel={settings?.model_name || 'anthropic/claude-3.5-sonnet'}
+              onSave={async (modelId) => {
+                await saveSettings({ model_name: modelId });
+                loadSettings(); // Recargar para mostrar el nuevo modelo
+              }}
             />
           </div>
         );
