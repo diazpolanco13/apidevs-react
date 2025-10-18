@@ -111,23 +111,46 @@ export function useSanityIntegration() {
   // Test de conexión con Sanity
   const testConnection = async (): Promise<{ success: boolean; message: string }> => {
     try {
-      // Por ahora simulamos el test hasta que tengamos las credenciales reales
+      // Obtener configuración actual
+      await loadConfig();
+      
       if (!config?.isConfigured) {
         return {
           success: false,
-          message: 'Sanity configuration is not complete'
+          message: 'Configuración de Sanity incompleta'
         };
       }
 
-      // TODO: Implementar test real con MCP de Sanity
+      // Hacer test real con las credenciales
+      const response = await fetch('/api/admin/content-creator/sanity/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectId: config.projectId,
+          dataset: config.dataset,
+          token: config.token === '***configured***' ? 'using_saved_token' : config.token
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: result.error || 'Error al probar la conexión'
+        };
+      }
+
       return {
         success: true,
-        message: 'Sanity connection test successful (simulated)'
+        message: result.message || 'Conexión con Sanity exitosa'
       };
     } catch (err) {
       return {
         success: false,
-        message: err instanceof Error ? err.message : 'Connection test failed'
+        message: err instanceof Error ? err.message : 'Error al probar la conexión'
       };
     }
   };

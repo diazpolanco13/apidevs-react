@@ -39,6 +39,9 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
     testConnection,
   } = useSanityIntegration();
 
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
   const subTabs = [
     {
       id: 'configuracion' as const,
@@ -123,6 +126,43 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
     } catch (error) {
       console.error('Error saving Sanity config:', error);
       alert('Error al guardar la configuración de Sanity');
+    }
+  };
+
+  const handleTestConnection = async () => {
+    try {
+      setTestingConnection(true);
+      setTestResult(null);
+
+      // Obtener los valores actuales de los inputs
+      const projectId = sanityProjectIdRef.current?.value;
+      const dataset = sanityDatasetRef.current?.value;
+      const token = sanityTokenRef.current?.value;
+
+      if (!projectId || !dataset || !token) {
+        setTestResult({
+          success: false,
+          message: 'Por favor completa todos los campos antes de probar la conexión'
+        });
+        return;
+      }
+
+      // Hacer test de conexión con los valores actuales
+      const result = await testConnection();
+      setTestResult(result);
+
+      // Mostrar resultado por 5 segundos
+      setTimeout(() => {
+        setTestResult(null);
+      }, 5000);
+
+    } catch (error) {
+      setTestResult({
+        success: false,
+        message: error instanceof Error ? error.message : 'Error al probar la conexión'
+      });
+    } finally {
+      setTestingConnection(false);
     }
   };
 
@@ -418,13 +458,40 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                         />
                         <button 
                           type="button"
-                          onClick={testConnection}
-                          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
+                          onClick={handleTestConnection}
+                          disabled={testingConnection}
+                          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors disabled:opacity-50"
                         >
-                          <TestTube className="h-4 w-4" />
+                          {testingConnection ? (
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <TestTube className="h-4 w-4" />
+                          )}
                         </button>
                       </div>
                     </div>
+
+                    {/* Resultado del test de conexión */}
+                    {testResult && (
+                      <div className={`p-3 rounded-lg border ${
+                        testResult.success 
+                          ? 'bg-green-900/20 border-green-500/30' 
+                          : 'bg-red-900/20 border-red-500/30'
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          {testResult.success ? (
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                          ) : (
+                            <AlertCircle className="h-4 w-4 text-red-400" />
+                          )}
+                          <span className={`text-sm ${
+                            testResult.success ? 'text-green-400' : 'text-red-400'
+                          }`}>
+                            {testResult.message}
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex justify-end">
                       <button
