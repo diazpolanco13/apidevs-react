@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Plus, FileText, BookOpen, BarChart3, Loader2, Upload, CheckCircle } from 'lucide-react';
+import { X, Plus, FileText, BookOpen, BarChart3, Loader2, Upload, CheckCircle, Image, Wand2 } from 'lucide-react';
 import { useSanityIntegration } from '@/hooks/useSanityIntegration';
+import GrokImageGenerator from './GrokImageGenerator';
 
 interface CreateContentModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [sanityResult, setSanityResult] = useState<any>(null);
+  const [isImageGeneratorOpen, setIsImageGeneratorOpen] = useState(false);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   
   const { createContent, config, loading: sanityLoading } = useSanityIntegration();
 
@@ -105,6 +108,11 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleImageGenerated = (imageUrl: string) => {
+    setGeneratedImageUrl(imageUrl);
+    setIsImageGeneratorOpen(false);
   };
 
   if (!isOpen) return null;
@@ -253,6 +261,50 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             />
           </div>
 
+          {/* Generación de imágenes */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Imagen (Opcional)
+            </label>
+            
+            {generatedImageUrl ? (
+              <div className="space-y-3">
+                <img 
+                  src={generatedImageUrl} 
+                  alt="Generated content image" 
+                  className="w-full max-w-md mx-auto rounded-lg border border-white/10"
+                />
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsImageGeneratorOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                  >
+                    <Wand2 className="h-4 w-4" />
+                    Generar Nueva Imagen
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGeneratedImageUrl(null)}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                    Quitar Imagen
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsImageGeneratorOpen(true)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-lg text-purple-400 hover:from-purple-600/30 hover:to-blue-600/30 transition-all"
+              >
+                <Image className="h-5 w-5" />
+                Generar Imagen con Grok AI
+              </button>
+            )}
+          </div>
+
           <div className="flex justify-end space-x-3 pt-4">
             <button
               type="button"
@@ -278,6 +330,15 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
           </div>
         </form>
       </div>
+
+      {/* Generador de imágenes con Grok */}
+      <GrokImageGenerator
+        isOpen={isImageGeneratorOpen}
+        onClose={() => setIsImageGeneratorOpen(false)}
+        onImageGenerated={handleImageGenerated}
+        contentTitle={formData.title}
+        contentType={formData.type}
+      />
     </div>
   );
 }
