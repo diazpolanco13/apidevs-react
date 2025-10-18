@@ -108,6 +108,52 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
   const handleCreateSuccess = () => {
     // Recargar la cola después de crear contenido
     loadQueue();
+    // Cambiar automáticamente a la pestaña de cola
+    setActiveSubTab('cola');
+  };
+
+  const handleApprove = async (itemId: string) => {
+    try {
+      const response = await fetch(`/api/admin/content-creator/queue/${itemId}/approve`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        loadQueue(); // Recargar cola
+      } else {
+        alert('Error al aprobar contenido');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al aprobar contenido');
+    }
+  };
+
+  const handleReject = async (itemId: string) => {
+    const reason = prompt('¿Por qué rechazas este contenido?');
+    if (!reason) return;
+
+    try {
+      const response = await fetch(`/api/admin/content-creator/queue/${itemId}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      });
+
+      if (response.ok) {
+        loadQueue(); // Recargar cola
+      } else {
+        alert('Error al rechazar contenido');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al rechazar contenido');
+    }
+  };
+
+  const handleView = (item: any) => {
+    // Abrir modal con preview del contenido
+    alert(`Ver contenido: ${item.title}\n\nTODO: Implementar modal de preview`);
   };
 
   const handleSaveSanityConfig = async () => {
@@ -768,15 +814,24 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                         <div className="flex gap-2">
                           {item.status === 'pending_review' && (
                             <>
-                              <button className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded">
+                              <button 
+                                onClick={() => handleApprove(item.id)}
+                                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors"
+                              >
                                 Aprobar
                               </button>
-                              <button className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded">
+                              <button 
+                                onClick={() => handleReject(item.id)}
+                                className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors"
+                              >
                                 Rechazar
                               </button>
                             </>
                           )}
-                          <button className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-xs rounded">
+                          <button 
+                            onClick={() => handleView(item)}
+                            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                          >
                             Ver
                           </button>
                         </div>
