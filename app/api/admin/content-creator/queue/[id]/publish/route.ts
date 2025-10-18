@@ -52,18 +52,27 @@ export async function POST(
     // PASO 1: Subir la imagen a Sanity Assets si existe
     let mainImageAsset = null;
     
-    // Buscar imagen generada en la cola relacionada
+    // Buscar la imagen generada más reciente (las últimas generaciones suelen ser para el último post)
     const { data: imageQueue } = await (supabaseAdmin as any)
       .from('ai_content_queue')
-      .select('generated_content')
+      .select('generated_content, created_at')
       .eq('content_type', 'image')
-      .eq('user_prompt', queueItem.user_prompt)
+      .eq('created_by_admin_id', queueItem.created_by_admin_id)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
+    console.log('Looking for image in queue:', {
+      found: !!imageQueue,
+      hasImageUrl: !!imageQueue?.generated_content?.imageUrl,
+      imageCreatedAt: imageQueue?.created_at,
+      postCreatedAt: queueItem.created_at
+    });
+
     if (imageQueue?.generated_content?.imageUrl) {
       const imageUrl = imageQueue.generated_content.imageUrl;
+      
+      console.log('Found image URL, uploading to Sanity...');
       
       // Si es base64, convertir y subir a Sanity
       if (imageUrl.startsWith('data:image')) {
