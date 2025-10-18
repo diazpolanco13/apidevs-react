@@ -28,9 +28,11 @@ export async function POST(
       return NextResponse.json({ error: 'Queue item not found' }, { status: 404 });
     }
 
-    // Verificar que esté aprobado
-    if (queueItem.status !== 'approved') {
-      return NextResponse.json({ error: 'Content must be approved before publishing' }, { status: 400 });
+    // Verificar que esté aprobado o ya publicado (para republicar)
+    if (queueItem.status !== 'approved' && queueItem.status !== 'published_in_sanity') {
+      return NextResponse.json({ 
+        error: `Content must be approved before publishing. Current status: ${queueItem.status}` 
+      }, { status: 400 });
     }
 
     // Obtener configuración de Sanity
