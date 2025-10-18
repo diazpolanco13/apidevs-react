@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, FileText, Palette, Users, Save, RefreshCw, TestTube, AlertCircle, Clock, CheckCircle, Eye, Plus } from 'lucide-react';
+import { Settings, FileText, Palette, Users, Save, RefreshCw, TestTube, AlertCircle, Clock, CheckCircle, Eye, Plus, Database, Key } from 'lucide-react';
 import { useAIContentSettings, AIContentSettings } from '@/hooks/useAIContentSettings';
+import { useSanityIntegration } from '@/hooks/useSanityIntegration';
 import ContentCreatorPermissions from './ContentCreatorPermissions';
 import CreateContentModal from './CreateContentModal';
 
@@ -24,6 +25,14 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
     loadSettings,
     loadQueue,
   } = useAIContentSettings();
+  
+  const {
+    config: sanityConfig,
+    loading: sanityLoading,
+    error: sanityError,
+    saveConfig: saveSanityConfig,
+    testConnection,
+  } = useSanityIntegration();
 
   const subTabs = [
     {
@@ -307,6 +316,104 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                 </p>
               </div>
             </div>
+
+            {/* Configuración de Sanity */}
+            {permissions.canView && (
+              <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <Database className="h-5 w-5 text-apidevs-primary" />
+                  Configuración de Sanity CMS
+                </h3>
+                
+                {sanityConfig ? (
+                  <div className="space-y-4">
+                    <div className={`p-3 rounded-lg border ${
+                      sanityConfig.isConfigured 
+                        ? 'bg-green-900/20 border-green-500/30' 
+                        : 'bg-yellow-900/20 border-yellow-500/30'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        {sanityConfig.isConfigured ? (
+                          <CheckCircle className="h-4 w-4 text-green-400" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-yellow-400" />
+                        )}
+                        <span className={`text-sm ${
+                          sanityConfig.isConfigured ? 'text-green-400' : 'text-yellow-400'
+                        }`}>
+                          Estado: {sanityConfig.isConfigured ? 'Configurado' : 'No configurado'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Project ID
+                        </label>
+                        <input
+                          type="text"
+                          defaultValue={sanityConfig.projectId || ''}
+                          placeholder="tu-project-id"
+                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Dataset
+                        </label>
+                        <input
+                          type="text"
+                          defaultValue={sanityConfig.dataset || 'production'}
+                          placeholder="production"
+                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        API Token
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="password"
+                          defaultValue={sanityConfig.token === 'not_configured' ? '' : '***configured***'}
+                          placeholder="sk-..."
+                          className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
+                        />
+                        <button 
+                          type="button"
+                          onClick={testConnection}
+                          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
+                        >
+                          <TestTube className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // TODO: Implementar guardado de configuración
+                          console.log('Guardar configuración de Sanity');
+                        }}
+                        className="px-4 py-2 bg-gradient-to-r from-apidevs-primary to-purple-600 hover:from-apidevs-primary/90 hover:to-purple-600/90 text-white rounded-lg transition-all"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        Guardar Configuración
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Database className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400">Cargando configuración de Sanity...</p>
+                  </div>
+                )}
+              </div>
+            )}
           </form>
         )}
 
