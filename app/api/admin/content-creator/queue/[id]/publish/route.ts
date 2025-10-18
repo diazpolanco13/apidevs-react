@@ -35,19 +35,15 @@ export async function POST(
       }, { status: 400 });
     }
 
-    // Obtener configuración de Sanity
-    const { data: sanityConfig } = await (supabaseAdmin as any)
-      .from('system_configuration')
-      .select('key, value')
-      .in('key', ['sanity_project_id', 'sanity_dataset', 'sanity_token']);
+    // Usar variables de entorno directamente (más seguro)
+    const sanityProjectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+    const sanityDataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
+    const sanityToken = process.env.SANITY_API_TOKEN;
 
-    const configMap = sanityConfig?.reduce((acc: any, config: any) => {
-      acc[config.key] = config.value;
-      return acc;
-    }, {}) || {};
-
-    if (!configMap.sanity_project_id || !configMap.sanity_dataset || !configMap.sanity_token) {
-      return NextResponse.json({ error: 'Sanity not configured' }, { status: 400 });
+    if (!sanityProjectId || !sanityDataset || !sanityToken) {
+      return NextResponse.json({ 
+        error: 'Sanity not configured. Check environment variables.' 
+      }, { status: 400 });
     }
 
     // Preparar los datos para crear en Sanity
@@ -93,12 +89,12 @@ export async function POST(
     };
 
     const sanityResponse = await fetch(
-      `https://${configMap.sanity_project_id}.api.sanity.io/v2021-06-07/data/mutate/${configMap.sanity_dataset}`,
+      `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/mutate/${sanityDataset}`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${configMap.sanity_token}`,
+          'Authorization': `Bearer ${sanityToken}`,
         },
         body: JSON.stringify(sanityMutation),
       }
