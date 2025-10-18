@@ -77,8 +77,14 @@ export async function POST(request: NextRequest) {
         content_type: type,
         language,
         user_prompt: user_prompt || '',
+        generated_content: {
+          title,
+          content,
+          type,
+          language
+        },
         status: 'pending_review',
-        created_by: admin.id,
+        created_by_admin_id: admin.id,
         tokens_used: Math.floor(content.length / 4), // Estimación aproximada
         processing_time_ms: 0,
       })
