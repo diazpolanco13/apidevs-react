@@ -39,6 +39,15 @@ export const PERMISSIONS = {
   IA_VIEW: 'ia.view',
   IA_EDIT: 'ia.edit',
   
+  // Content Creator AI
+  CONTENT_AI_VIEW: 'content.ai.view',
+  CONTENT_AI_CREATE_BLOG: 'content.ai.create_blog',
+  CONTENT_AI_CREATE_DOCS: 'content.ai.create_docs',
+  CONTENT_AI_EDIT_INDICATORS: 'content.ai.edit_indicators',
+  CONTENT_AI_TRANSLATE: 'content.ai.translate',
+  CONTENT_AI_IMAGES: 'content.ai.images',
+  CONTENT_AI_PUBLISH_AUTO: 'content.ai.publish_auto',
+  
   // Analytics
   ANALYTICS_VIEW: 'analytics.view',
   
