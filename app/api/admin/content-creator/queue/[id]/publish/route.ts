@@ -65,12 +65,17 @@ export async function POST(
             content: [
               {
                 _type: 'block',
+                _key: `block-${Date.now()}-1`,
+                style: 'normal',
                 children: [
                   {
                     _type: 'span',
-                    text: generatedContent.content || queueItem.content
+                    _key: `span-${Date.now()}-1`,
+                    text: generatedContent.content || queueItem.content,
+                    marks: []
                   }
-                ]
+                ],
+                markDefs: []
               }
             ],
             tags: generatedContent.tags || ['trading'],
