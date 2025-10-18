@@ -18,6 +18,7 @@ export interface AIContentSettings {
   grok_api_key?: string;
   openrouter_api_key?: string;
   openai_api_key?: string;
+  image_model_name?: string;
   seo_optimization_enabled: boolean;
   auto_generate_meta_description: boolean;
   auto_generate_keywords: boolean;

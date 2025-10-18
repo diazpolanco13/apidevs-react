@@ -16,7 +16,8 @@ interface Props {
 export default function CreadorContenidoTab({ config, setConfig }: Props) {
   const [activeSubTab, setActiveSubTab] = useState<'configuracion' | 'cola' | 'templates'>('configuracion');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isModelSelectorOpen, setIsModelSelectorOpen] = useState(false);
+  const [isTextModelSelectorOpen, setIsTextModelSelectorOpen] = useState(false);
+  const [isImageModelSelectorOpen, setIsImageModelSelectorOpen] = useState(false);
   
   // Refs para los inputs de Sanity
   const sanityProjectIdRef = useRef<HTMLInputElement>(null);
@@ -561,7 +562,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                           </div>
                           <button
                             type="button"
-                            onClick={() => setIsModelSelectorOpen(true)}
+                            onClick={() => setIsTextModelSelectorOpen(true)}
                             className="px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white rounded-lg transition-all text-sm"
                           >
                             Cambiar Modelo
@@ -604,55 +605,31 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                       </div>
                     </div>
 
-                    {/* Configuración de OpenAI API para imágenes */}
-                    <div className="mt-6 p-4 bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-xl border border-purple-500/30 rounded-2xl">
+                    {/* Configuración de Modelo para Imágenes */}
+                    <div className="p-4 bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-xl border border-purple-500/30 rounded-2xl">
                       <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                         <Wand2 className="h-5 w-5 text-purple-400" />
-                        Configuración de OpenAI API (DALL-E 3)
+                        Modelo de IA para Generación de Imágenes
                       </h4>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                          OpenAI API Key
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            ref={grokApiKeyRef}
-                            type="password"
-                            defaultValue={sanityConfig?.openai_api_key || ''}
-                            placeholder="sk-..."
-                            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          />
-                          <button 
+                      <p className="text-sm text-gray-300 mb-4">
+                        💡 Usa OpenRouter para imágenes también (una sola facturación). Gemini 2.5 Flash Image es GRATIS.
+                      </p>
+                      
+                      {/* Modelo actual y botón para abrir modal */}
+                      <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs text-gray-400 mb-1">Modelo actual:</p>
+                            <p className="text-sm text-white font-medium">{settings?.image_model_name || 'google/gemini-2.5-flash-image'}</p>
+                          </div>
+                          <button
                             type="button"
-                            onClick={handleTestGrokConnection}
-                            disabled={testingGrokConnection}
-                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                            onClick={() => setIsImageModelSelectorOpen(true)}
+                            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg transition-all text-sm"
                           >
-                            {testingGrokConnection ? (
-                              <RefreshCw className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <TestTube className="h-4 w-4" />
-                            )}
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={handleSaveOpenAIConfig}
-                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-                          >
-                            <Save className="h-4 w-4" />
+                            Cambiar Modelo
                           </button>
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">
-                          Necesaria para generar imágenes con DALL-E 3 directamente
-                        </p>
-                        {sanityConfig?.openai_api_key && sanityConfig.openai_api_key.length > 0 && (
-                          <div className="mt-2 p-2 bg-green-900/20 border border-green-500/30 rounded-lg">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-green-400" />
-                              <span className="text-green-400 text-sm">API key configurada</span>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
 
@@ -861,13 +838,24 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
               onSuccess={handleCreateSuccess}
             />
 
-            {/* Modal para seleccionar modelo */}
+            {/* Modal para seleccionar modelo de TEXTO */}
             <ModelSelectorModal
-              isOpen={isModelSelectorOpen}
-              onClose={() => setIsModelSelectorOpen(false)}
+              isOpen={isTextModelSelectorOpen}
+              onClose={() => setIsTextModelSelectorOpen(false)}
               currentModel={settings?.model_name || 'anthropic/claude-3.5-sonnet'}
               onSave={async (modelId) => {
                 await saveSettings({ model_name: modelId });
+                loadSettings(); // Recargar para mostrar el nuevo modelo
+              }}
+            />
+
+            {/* Modal para seleccionar modelo de IMÁGENES */}
+            <ModelSelectorModal
+              isOpen={isImageModelSelectorOpen}
+              onClose={() => setIsImageModelSelectorOpen(false)}
+              currentModel={settings?.image_model_name || 'google/gemini-2.5-flash-image'}
+              onSave={async (modelId) => {
+                await saveSettings({ image_model_name: modelId });
                 loadSettings(); // Recargar para mostrar el nuevo modelo
               }}
             />
