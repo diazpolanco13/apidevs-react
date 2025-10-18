@@ -132,6 +132,38 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
     }
   };
 
+  const handleSaveOpenAIConfig = async () => {
+    try {
+      const openaiApiKey = grokApiKeyRef.current?.value;
+
+      if (!openaiApiKey) {
+        alert('Por favor ingresa la API key de OpenAI');
+        return;
+      }
+
+      // Guardar la API key en system_configuration
+      const response = await fetch('/api/admin/content-creator/sanity/config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          openai_api_key: openaiApiKey
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al guardar la API key');
+      }
+
+      alert('API key de OpenAI guardada exitosamente');
+    } catch (error) {
+      console.error('Error saving OpenAI config:', error);
+      alert('Error al guardar la API key de OpenAI');
+    }
+  };
+
   const handleTestConnection = async () => {
     try {
       setTestingConnection(true);
@@ -562,6 +594,13 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                             ) : (
                               <TestTube className="h-4 w-4" />
                             )}
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={handleSaveOpenAIConfig}
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                          >
+                            <Save className="h-4 w-4" />
                           </button>
                         </div>
                         <p className="text-xs text-gray-400 mt-1">

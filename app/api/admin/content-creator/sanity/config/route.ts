@@ -49,14 +49,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Obtener configuración de Sanity desde system_configuration
+    // Obtener configuración de Sanity y OpenAI desde system_configuration
     const { data: configs, error: configError } = await (supabaseAdmin as any)
       .from('system_configuration')
       .select('key, value')
-      .in('key', ['sanity_project_id', 'sanity_dataset', 'sanity_api_version', 'sanity_token']);
+      .in('key', ['sanity_project_id', 'sanity_dataset', 'sanity_api_version', 'sanity_token', 'openai_api_key']);
 
     if (configError) {
-      console.error('Error loading Sanity config:', configError);
+      console.error('Error loading config:', configError);
     }
 
     // Convertir array de configs a objeto
@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
       dataset: configMap.sanity_dataset || 'production',
       apiVersion: configMap.sanity_api_version || '2023-05-03',
       token: configMap.sanity_token ? '***configured***' : 'not_configured',
+      openai_api_key: configMap.openai_api_key ? '***configured***' : 'not_configured',
       isConfigured: !!(configMap.sanity_project_id && configMap.sanity_dataset && configMap.sanity_token),
     };
 
@@ -89,7 +90,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectId, dataset, apiVersion, token } = await request.json();
+    const { projectId, dataset, apiVersion, token, openai_api_key } = await request.json();
 
     // Verificar que el usuario esté autenticado
     const supabase = await createClient();
@@ -137,12 +138,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Guardar configuración en system_configuration
-    const configs = [
-      { key: 'sanity_project_id', value: projectId, category: 'integrations' },
-      { key: 'sanity_dataset', value: dataset, category: 'integrations' },
-      { key: 'sanity_api_version', value: apiVersion, category: 'integrations' },
-      { key: 'sanity_token', value: token, category: 'integrations' },
-    ];
+    const configs = [];
+    
+    // Agregar configuración de Sanity si se proporciona
+    if (projectId && dataset && apiVersion && token) {
+      configs.push(
+        { key: 'sanity_project_id', value: projectId, category: 'integrations' },
+        { key: 'sanity_dataset', value: dataset, category: 'integrations' },
+        { key: 'sanity_api_version', value: apiVersion, category: 'integrations' },
+        { key: 'sanity_token', value: token, category: 'integrations' }
+      );
+    }
+    
+    // Agregar configuración de OpenAI si se proporciona
+    if (openai_api_key) {
+      configs.push({
+        key: 'openai_api_key',
+        value: openai_api_key,
+        category: 'integrations'
+      });
+    }
 
     for (const config of configs) {
       const { error } = await (supabaseAdmin as any)
