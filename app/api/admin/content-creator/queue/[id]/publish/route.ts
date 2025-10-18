@@ -49,48 +49,109 @@ export async function POST(
     // Preparar los datos para crear en Sanity
     const generatedContent = queueItem.generated_content || {};
     
-    // Crear documento en Sanity usando la API HTTP
+    // PASO 1: Subir la imagen a Sanity Assets si existe
+    let mainImageAsset = null;
+    
+    // Buscar imagen generada en la cola relacionada
+    const { data: imageQueue } = await (supabaseAdmin as any)
+      .from('ai_content_queue')
+      .select('generated_content')
+      .eq('content_type', 'image')
+      .eq('user_prompt', queueItem.user_prompt)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (imageQueue?.generated_content?.imageUrl) {
+      const imageUrl = imageQueue.generated_content.imageUrl;
+      
+      // Si es base64, convertir y subir a Sanity
+      if (imageUrl.startsWith('data:image')) {
+        try {
+          // Extraer el base64
+          const base64Data = imageUrl.split(',')[1];
+          const imageBuffer = Buffer.from(base64Data, 'base64');
+          
+          // Subir a Sanity Assets API
+          const uploadResponse = await fetch(
+            `https://${sanityProjectId}.api.sanity.io/v2021-06-07/assets/images/${sanityDataset}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'image/png',
+                'Authorization': `Bearer ${sanityToken}`,
+              },
+              body: imageBuffer,
+            }
+          );
+
+          if (uploadResponse.ok) {
+            const uploadResult = await uploadResponse.json();
+            mainImageAsset = {
+              _type: 'image',
+              asset: {
+                _type: 'reference',
+                _ref: uploadResult.document._id
+              },
+              alt: generatedContent.mainImage?.alt || queueItem.title,
+              caption: generatedContent.mainImage?.caption || ''
+            };
+            
+            console.log('Image uploaded to Sanity:', uploadResult.document._id);
+          }
+        } catch (uploadError) {
+          console.error('Error uploading image:', uploadError);
+        }
+      }
+    }
+    
+    // PASO 2: Crear documento en Sanity usando la API HTTP
+    const documentData: any = {
+      _type: 'post',
+      language: queueItem.language,
+      title: queueItem.title,
+      slug: {
+        _type: 'slug',
+        current: generatedContent.slug || queueItem.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+      },
+      excerpt: generatedContent.excerpt || queueItem.user_prompt.substring(0, 200),
+      content: [
+        {
+          _type: 'block',
+          _key: `block-${Date.now()}-1`,
+          style: 'normal',
+          children: [
+            {
+              _type: 'span',
+              _key: `span-${Date.now()}-1`,
+              text: generatedContent.content || queueItem.content,
+              marks: []
+            }
+          ],
+          markDefs: []
+        }
+      ],
+      tags: generatedContent.tags || ['trading'],
+      readingTime: generatedContent.readingTime || 5,
+      status: 'draft',
+      visibility: 'public',
+      seo: {
+        _type: 'object',
+        metaTitle: generatedContent.seo?.metaTitle || queueItem.title,
+        metaDescription: generatedContent.seo?.metaDescription || generatedContent.excerpt,
+        keywords: generatedContent.seo?.keywords || []
+      }
+    };
+
+    // Agregar mainImage solo si se subió exitosamente
+    if (mainImageAsset) {
+      documentData.mainImage = mainImageAsset;
+    }
+
     const sanityMutation = {
       mutations: [
         {
-          create: {
-            _type: 'post',
-            language: queueItem.language,
-            title: queueItem.title,
-            slug: {
-              _type: 'slug',
-              current: generatedContent.slug || queueItem.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-            },
-            excerpt: generatedContent.excerpt || queueItem.user_prompt.substring(0, 200),
-            content: [
-              {
-                _type: 'block',
-                _key: `block-${Date.now()}-1`,
-                style: 'normal',
-                children: [
-                  {
-                    _type: 'span',
-                    _key: `span-${Date.now()}-1`,
-                    text: generatedContent.content || queueItem.content,
-                    marks: []
-                  }
-                ],
-                markDefs: []
-              }
-            ],
-            tags: generatedContent.tags || ['trading'],
-            readingTime: generatedContent.readingTime || 5,
-            status: 'draft',
-            visibility: 'public',
-            seo: {
-              _type: 'object',
-              metaTitle: generatedContent.seo?.metaTitle || queueItem.title,
-              metaDescription: generatedContent.seo?.metaDescription || generatedContent.excerpt,
-              keywords: generatedContent.seo?.keywords || []
-            },
-            // TODO: Agregar mainImage cuando tengamos la URL de la imagen generada
-            // Por ahora, el campo queda vacío y el usuario puede agregar la imagen en Sanity Studio
-          }
+          create: documentData
         }
       ]
     };
