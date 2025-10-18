@@ -53,11 +53,17 @@ export async function POST(
     // Preparar los datos para crear en Sanity
     const generatedContent = queueItem.generated_content || {};
     
-    // CREAR DOCUMENTO EN SANITY DIRECTAMENTE (simulado por ahora)
-    // TODO: Implementar MCP de Sanity cuando esté configurado
-    const sanityDocumentId = `draft.${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    // Por ahora, marcar como publicado
+    // La integración real con Sanity MCP se implementará en el siguiente paso
+    const sanityDocumentId = `draft.post-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
-    // Actualizar el item en la cola con el ID real de Sanity
+    console.log('Marking content as published:', {
+      queueItemId: id,
+      title: queueItem.title,
+      sanityId: sanityDocumentId
+    });
+
+    // Actualizar el item en la cola
     const { error: updateError } = await (supabaseAdmin as any)
       .from('ai_content_queue')
       .update({
@@ -75,7 +81,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       sanityDocumentId: sanityDocumentId,
-      message: 'Content marked as published (Sanity integration pending)'
+      message: 'Content marked as published. Sanity integration pending.'
     });
 
   } catch (error) {
