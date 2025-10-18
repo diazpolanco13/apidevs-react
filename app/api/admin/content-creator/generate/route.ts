@@ -142,11 +142,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       title: parsedContent.title || 'Título generado',
-      content: parsedContent.content || generatedContent,
-      metaDescription: parsedContent.metaDescription || '',
-      keywords: parsedContent.keywords || [],
       slug: parsedContent.slug || '',
       excerpt: parsedContent.excerpt || '',
+      content: parsedContent.content || generatedContent,
+      mainImage: parsedContent.mainImage || null,
+      tags: parsedContent.tags || [],
+      readingTime: parsedContent.readingTime || 5,
+      seo: parsedContent.seo || {
+        metaTitle: parsedContent.title || '',
+        metaDescription: parsedContent.metaDescription || '',
+        keywords: parsedContent.keywords || []
+      },
       tokens_used: data.usage?.total_tokens || 0,
     });
 
@@ -191,17 +197,28 @@ OPTIMIZACIÓN SEO:
 - Estructura optimizada para búsqueda
 - Contenido único y de valor
 
-IMPORTANTE: Responde SOLO con un JSON en el siguiente formato:
+IMPORTANTE: Responde SOLO con un JSON COMPLETO que cumpla con el schema de Sanity en el siguiente formato:
 {
-  "title": "Título atractivo y optimizado SEO (60-70 caracteres)",
-  "content": "Contenido completo en formato markdown (mínimo 800 palabras)",
-  "metaDescription": "Meta description optimizada (150-160 caracteres)",
-  "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
+  "title": "Título atractivo y optimizado SEO (máximo 150 caracteres)",
   "slug": "url-amigable-para-seo",
-  "excerpt": "Resumen breve del contenido (2-3 líneas)"
+  "excerpt": "Resumen corto para cards y preview (50-250 caracteres)",
+  "content": "Contenido completo en formato markdown (mínimo 800 palabras)",
+  "mainImage": {
+    "prompt": "Descripción detallada para generar imagen principal",
+    "alt": "Texto alternativo descriptivo para la imagen",
+    "caption": "Caption opcional para la imagen"
+  },
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+  "readingTime": 8,
+  "seo": {
+    "metaTitle": "Título SEO optimizado (máximo 60 caracteres)",
+    "metaDescription": "Meta description optimizada (máximo 160 caracteres)",
+    "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
+  }
 }
 
-NO incluyas ningún texto adicional fuera del JSON.`;
+NO incluyas ningún texto adicional fuera del JSON.
+ASEGÚRATE de que el JSON sea VÁLIDO y completo.`;
 }
 
 function generateUserPrompt(userPrompt: string, type: string, language: string): string {
