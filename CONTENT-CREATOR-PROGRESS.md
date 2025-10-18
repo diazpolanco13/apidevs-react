@@ -4,7 +4,7 @@
 
 **Objetivo**: Crear un módulo de creación de contenido con IA integrado con Sanity CMS para el sistema APIDevs Trading Platform.
 
-**Estado**: 85% completado - Funcionalidad principal implementada, pendiente corrección de persistencia de API key.
+**Estado**: 95% completado - Funcionalidad principal 100% implementada y funcional. Sistema de generación automática operativo.
 
 ---
 
@@ -52,27 +52,19 @@
 
 ---
 
-## ⚠️ PROBLEMAS IDENTIFICADOS
+## ✅ PROBLEMAS RESUELTOS
 
-### 1. **API Key de OpenAI NO se persiste** 🔴
-**Problema**: La API key se guarda en `system_configuration` pero no se carga correctamente en la UI.
+### 1. **API Keys se persisten correctamente** ✅
+**Problema resuelto**: Ambas API keys (OpenAI y OpenRouter) se guardan y cargan correctamente.
 
-**Síntomas**:
-- Test funciona (pasa API key en body)
-- Modal funciona (obtiene API key de configuración)
-- UI no muestra que está configurada al refrescar
-- Campo aparece vacío después de guardar
+**Solución implementada**:
+- API route devuelve valores reales en lugar de `***configured***`
+- Inputs con `type="password"` ocultan automáticamente las keys
+- Refs para capturar valores de ambos inputs
+- Función `handleSaveSanityConfig` guarda ambas keys
+- `system_configuration` almacena correctamente ambas keys
 
-**Código problemático**:
-```typescript
-// En CreadorContenidoTab.tsx línea 582
-defaultValue={sanityConfig?.openai_api_key === '***configured***' ? '' : (sanityConfig?.openai_api_key || '')}
-```
-
-**Archivos involucrados**:
-- `components/admin/ia-config/CreadorContenidoTab.tsx`
-- `hooks/useSanityIntegration.ts`
-- `app/api/admin/content-creator/sanity/config/route.ts`
+**Estado**: ✅ **FUNCIONANDO AL 100%**
 
 ---
 
@@ -133,20 +125,26 @@ CREATE TABLE system_configuration (
 
 ---
 
+### 6. **Generación Automática de Contenido con IA** ✅
+- **Nueva API route**: `/api/admin/content-creator/generate`
+- **Generación completa**: Título + Contenido automáticamente
+- **Integración con OpenRouter**: Usa Claude 3.5 Sonnet
+- **System prompts optimizados** para cada tipo de contenido
+- **UI reorganizada**: Sección de generación automática separada
+- **Usuario solo escribe prompt**: La IA genera TODO
+- **Herramienta agregada** al sistema de Tools en Avanzado
+
+### 7. **Persistencia de API Keys** ✅
+- **OpenAI API key**: Se guarda y carga correctamente
+- **OpenRouter API key**: Se guarda y carga correctamente
+- **Ambas persisten** al refrescar la página
+- **Indicadores visuales** de configuración
+
+---
+
 ## 🚀 PRÓXIMAS FASES PENDIENTES
 
-### **Fase 1: Arreglar Persistencia API Key** 🔴 URGENTE
-1. **Debuggear carga de configuración**:
-   - Verificar que `sanityConfig.openai_api_key` se carga correctamente
-   - Revisar si el problema está en el GET de la API route
-   - Verificar que el valor se guarda correctamente en `system_configuration`
-
-2. **Posibles soluciones**:
-   - Usar `useEffect` para cargar configuración al montar componente
-   - Cambiar `defaultValue` por `value` controlado
-   - Verificar que la API route devuelve `openai_api_key` correctamente
-
-### **Fase 2: Cola de Contenido** 🟡 PENDIENTE
+### **Fase 1: Cola de Contenido Funcional** 🟡 PENDIENTE
 - **Implementar vista de cola** con filtros y búsqueda
 - **Acciones de aprobación/rechazo** para contenido pendiente
 - **Sistema de notificaciones** para admins
