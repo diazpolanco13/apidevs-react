@@ -174,17 +174,17 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
       setTestingGrokConnection(true);
       setGrokTestResult(null);
 
-      const openrouterApiKey = grokApiKeyRef.current?.value;
+      const openaiApiKey = grokApiKeyRef.current?.value;
 
-      if (!openrouterApiKey) {
+      if (!openaiApiKey) {
         setGrokTestResult({
           success: false,
-          message: 'Por favor ingresa la API key de OpenRouter'
+          message: 'Por favor ingresa la API key de OpenAI'
         });
         return;
       }
 
-      // Test simple de generación de imagen con OpenRouter
+      // Test simple de generación de imagen con OpenAI
       const response = await fetch('/api/admin/content-creator/grok/images', {
         method: 'POST',
         headers: {
@@ -195,7 +195,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
           style: 'realistic',
           size: '1024x1024',
           quality: 'standard',
-          apiKey: openrouterApiKey // Pass API key for testing
+          apiKey: openaiApiKey // Pass API key for testing
         }),
       });
 
@@ -204,12 +204,12 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
       if (result.success) {
         setGrokTestResult({
           success: true,
-          message: 'Conexión con OpenRouter DALL-E 3 API exitosa'
+          message: 'Conexión con OpenAI DALL-E 3 API exitosa'
         });
       } else {
         setGrokTestResult({
           success: false,
-          message: result.error || 'Error al conectar con OpenRouter DALL-E 3 API'
+          message: result.error || 'Error al conectar con OpenAI DALL-E 3 API'
         });
       }
 
@@ -221,7 +221,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
     } catch (error) {
       setGrokTestResult({
         success: false,
-        message: error instanceof Error ? error.message : 'Error al probar la conexión con OpenRouter DALL-E 3'
+        message: error instanceof Error ? error.message : 'Error al probar la conexión con OpenAI DALL-E 3'
       });
     } finally {
       setTestingGrokConnection(false);
@@ -533,22 +533,22 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                       </div>
                     </div>
 
-                    {/* Configuración de OpenRouter API para imágenes */}
+                    {/* Configuración de OpenAI API para imágenes */}
                     <div className="mt-6 p-4 bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-xl border border-purple-500/30 rounded-2xl">
                       <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                         <Wand2 className="h-5 w-5 text-purple-400" />
-                        Configuración de OpenRouter API (DALL-E 3)
+                        Configuración de OpenAI API (DALL-E 3)
                       </h4>
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                          OpenRouter API Key
+                          OpenAI API Key
                         </label>
                         <div className="flex gap-2">
                           <input
                             ref={grokApiKeyRef}
                             type="password"
-                            defaultValue={settings?.openrouter_api_key || ''}
-                            placeholder="sk-or-..."
+                            defaultValue={settings?.openai_api_key || ''}
+                            placeholder="sk-..."
                             className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           />
                           <button 
@@ -565,7 +565,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                           </button>
                         </div>
                         <p className="text-xs text-gray-400 mt-1">
-                          Necesaria para generar imágenes con DALL-E 3 via OpenRouter
+                          Necesaria para generar imágenes con DALL-E 3 directamente
                         </p>
                       </div>
                     </div>
