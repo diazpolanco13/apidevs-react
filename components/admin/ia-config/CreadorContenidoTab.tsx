@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Settings, FileText, Palette, Users, Save, RefreshCw, TestTube, AlertCircle, Clock, CheckCircle, Eye, Plus, Database, Key } from 'lucide-react';
 import { useAIContentSettings, AIContentSettings } from '@/hooks/useAIContentSettings';
 import { useSanityIntegration } from '@/hooks/useSanityIntegration';
@@ -15,6 +15,11 @@ interface Props {
 export default function CreadorContenidoTab({ config, setConfig }: Props) {
   const [activeSubTab, setActiveSubTab] = useState<'configuracion' | 'cola' | 'templates'>('configuracion');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  
+  // Refs para los inputs de Sanity
+  const sanityProjectIdRef = useRef<HTMLInputElement>(null);
+  const sanityDatasetRef = useRef<HTMLInputElement>(null);
+  const sanityTokenRef = useRef<HTMLInputElement>(null);
   const {
     settings,
     queue,
@@ -93,6 +98,32 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
   const handleCreateSuccess = () => {
     // Recargar la cola después de crear contenido
     loadQueue();
+  };
+
+  const handleSaveSanityConfig = async () => {
+    try {
+      // Obtener los valores de los inputs usando refs
+      const projectId = sanityProjectIdRef.current?.value;
+      const dataset = sanityDatasetRef.current?.value;
+      const token = sanityTokenRef.current?.value;
+
+      if (!projectId || !dataset || !token) {
+        alert('Por favor completa todos los campos de Sanity');
+        return;
+      }
+
+      await saveSanityConfig({
+        projectId,
+        dataset,
+        apiVersion: '2023-05-03',
+        token,
+      });
+
+      alert('Configuración de Sanity guardada exitosamente');
+    } catch (error) {
+      console.error('Error saving Sanity config:', error);
+      alert('Error al guardar la configuración de Sanity');
+    }
   };
 
   if (loading) {
@@ -352,6 +383,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                           Project ID
                         </label>
                         <input
+                          ref={sanityProjectIdRef}
                           type="text"
                           defaultValue={sanityConfig.projectId || ''}
                           placeholder="tu-project-id"
@@ -363,6 +395,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                           Dataset
                         </label>
                         <input
+                          ref={sanityDatasetRef}
                           type="text"
                           defaultValue={sanityConfig.dataset || 'production'}
                           placeholder="production"
@@ -377,6 +410,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                       </label>
                       <div className="flex gap-2">
                         <input
+                          ref={sanityTokenRef}
                           type="password"
                           defaultValue={sanityConfig.token === 'not_configured' ? '' : '***configured***'}
                           placeholder="sk-..."
@@ -395,14 +429,16 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                     <div className="flex justify-end">
                       <button
                         type="button"
-                        onClick={() => {
-                          // TODO: Implementar guardado de configuración
-                          console.log('Guardar configuración de Sanity');
-                        }}
-                        className="px-4 py-2 bg-gradient-to-r from-apidevs-primary to-purple-600 hover:from-apidevs-primary/90 hover:to-purple-600/90 text-white rounded-lg transition-all"
+                        onClick={handleSaveSanityConfig}
+                        disabled={sanityLoading}
+                        className="px-4 py-2 bg-gradient-to-r from-apidevs-primary to-purple-600 hover:from-apidevs-primary/90 hover:to-purple-600/90 text-white rounded-lg transition-all disabled:opacity-50"
                       >
-                        <Save className="h-4 w-4 mr-2" />
-                        Guardar Configuración
+                        {sanityLoading ? (
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Save className="h-4 w-4 mr-2" />
+                        )}
+                        {sanityLoading ? 'Guardando...' : 'Guardar Configuración'}
                       </button>
                     </div>
                   </div>
