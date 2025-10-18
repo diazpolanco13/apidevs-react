@@ -804,11 +804,15 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                       <div className="flex items-start gap-3 p-3">
                         {/* Preview de imagen si existe */}
                         <div className="flex-shrink-0 w-20 h-20">
-                          {item.generated_content?.mainImage || item.content_type === 'image' ? (
-                            <div className="w-full h-full bg-gray-700 rounded-lg overflow-hidden border border-purple-500/30">
-                              <div className="w-full h-full flex items-center justify-center text-purple-400">
-                                <ImageIcon className="h-8 w-8" />
-                              </div>
+                          {item.content_type === 'image' && item.generated_content?.imageUrl ? (
+                            <img 
+                              src={item.generated_content.imageUrl}
+                              alt="Preview"
+                              className="w-full h-full object-cover rounded-lg border border-purple-500/30"
+                            />
+                          ) : item.generated_content?.mainImage?.prompt ? (
+                            <div className="w-full h-full bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-lg overflow-hidden border border-purple-500/30 flex items-center justify-center">
+                              <ImageIcon className="h-8 w-8 text-purple-400" />
                             </div>
                           ) : (
                             <div className="w-full h-full bg-gray-700 rounded-lg flex items-center justify-center border border-gray-600">
