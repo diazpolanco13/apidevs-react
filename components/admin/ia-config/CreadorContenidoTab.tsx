@@ -629,12 +629,15 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                           <input
                             type="number"
                             name="max_tokens"
-                            step="100"
-                            min="1000"
+                            step="1000"
+                            min="4000"
                             max="32000"
-                            defaultValue={settings?.max_tokens || 4000}
+                            defaultValue={settings?.max_tokens || 8000}
                             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50"
                           />
+                          <p className="text-xs text-gray-400 mt-1">
+                            Recomendado: 8000-16000 para contenido completo y detallado
+                          </p>
                         </div>
                       </div>
                     </div>
