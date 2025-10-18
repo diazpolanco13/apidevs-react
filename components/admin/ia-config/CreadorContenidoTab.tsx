@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Settings, FileText, Palette, Users, Save, RefreshCw, TestTube, AlertCircle, Clock, CheckCircle, Eye, Plus, Database, Key, Wand2 } from 'lucide-react';
+import { Settings, FileText, Palette, Users, Save, RefreshCw, TestTube, AlertCircle, Clock, CheckCircle, Eye, Plus, Database, Key, Wand2, Image as ImageIcon } from 'lucide-react';
 import { useAIContentSettings, AIContentSettings } from '@/hooks/useAIContentSettings';
 import { useSanityIntegration } from '@/hooks/useSanityIntegration';
 import ContentCreatorPermissions from './ContentCreatorPermissions';
 import CreateContentModal from './CreateContentModal';
 import ModelSelectorModal from './ModelSelectorModal';
+import ContentPreviewModal from './ContentPreviewModal';
 
 interface Props {
   config: any;
@@ -18,6 +19,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isTextModelSelectorOpen, setIsTextModelSelectorOpen] = useState(false);
   const [isImageModelSelectorOpen, setIsImageModelSelectorOpen] = useState(false);
+  const [previewItem, setPreviewItem] = useState<any>(null);
   
   // Refs para los inputs de Sanity
   const sanityProjectIdRef = useRef<HTMLInputElement>(null);
@@ -152,8 +154,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
   };
 
   const handleView = (item: any) => {
-    // Abrir modal con preview del contenido
-    alert(`Ver contenido: ${item.title}\n\nTODO: Implementar modal de preview`);
+    setPreviewItem(item);
   };
 
   const handlePublish = async (itemId: string) => {
@@ -797,74 +798,86 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {queue.map((item) => (
-                    <div key={item.id} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                    <div key={item.id} className="bg-gray-800/50 rounded-lg border border-gray-700 hover:border-gray-600 transition-all">
+                      <div className="flex items-start gap-3 p-3">
+                        {/* Preview de imagen si existe */}
+                        <div className="flex-shrink-0 w-20 h-20">
+                          {item.generated_content?.mainImage || item.content_type === 'image' ? (
+                            <div className="w-full h-full bg-gray-700 rounded-lg overflow-hidden border border-purple-500/30">
+                              <div className="w-full h-full flex items-center justify-center text-purple-400">
+                                <ImageIcon className="h-8 w-8" />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="w-full h-full bg-gray-700 rounded-lg flex items-center justify-center border border-gray-600">
+                              <FileText className="h-8 w-8 text-gray-500" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Contenido */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                               item.status === 'pending_review' ? 'bg-yellow-500/20 text-yellow-400' :
                               item.status === 'approved' ? 'bg-green-500/20 text-green-400' :
                               item.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-                              item.status === 'published' ? 'bg-blue-500/20 text-blue-400' :
+                              item.status === 'published_in_sanity' ? 'bg-blue-500/20 text-blue-400' :
                               'bg-gray-500/20 text-gray-400'
                             }`}>
-                              {item.status}
+                              {item.status.replace('_', ' ').toUpperCase()}
                             </span>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-[10px] text-gray-500">
                               {item.content_type} • {item.language}
                             </span>
                           </div>
-                          <h4 className="text-white font-medium mb-1">
+                          <h4 className="text-white font-medium text-sm mb-1 truncate">
                             {item.title || 'Sin título'}
                           </h4>
-                          <p className="text-gray-400 text-sm mb-2">
+                          <p className="text-gray-400 text-xs line-clamp-2">
                             {item.user_prompt}
                           </p>
-                          <div className="flex items-center gap-4 text-xs text-gray-500">
-                            <span>Creado: {new Date(item.created_at).toLocaleDateString()}</span>
-                            {item.tokens_used > 0 && (
-                              <span>Tokens: {item.tokens_used}</span>
-                            )}
-                            {item.processing_time_ms && (
-                              <span>Tiempo: {item.processing_time_ms}ms</span>
-                            )}
+                          <div className="flex items-center gap-3 text-[10px] text-gray-500 mt-2">
+                            <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                            {item.tokens_used > 0 && <span>{item.tokens_used} tokens</span>}
                           </div>
                         </div>
-                        <div className="flex gap-2">
+
+                        {/* Botones compactos */}
+                        <div className="flex flex-shrink-0 gap-1">
                           {item.status === 'pending_review' && (
                             <>
                               <button 
                                 onClick={() => handleApprove(item.id)}
-                                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors"
+                                className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-[10px] rounded"
+                                title="Aprobar"
                               >
                                 Aprobar
                               </button>
                               <button 
                                 onClick={() => handleReject(item.id)}
-                                className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors"
+                                className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-[10px] rounded"
+                                title="Rechazar"
                               >
                                 Rechazar
                               </button>
                             </>
                           )}
-                          {(item.status === 'approved' || item.status === 'published_in_sanity') && (
+                          {(item.status === 'approved' || item.status === 'published_in_sanity') && !item.sanity_document_id && (
                             <button 
                               onClick={() => handlePublish(item.id)}
-                              className="px-3 py-1 bg-gradient-to-r from-apidevs-primary to-purple-600 hover:from-apidevs-primary/90 hover:to-purple-600/90 text-white text-xs rounded transition-colors font-bold"
+                              className="px-2 py-1 bg-gradient-to-r from-apidevs-primary to-purple-600 text-white text-[10px] rounded font-bold"
+                              title="Publicar en Sanity"
                             >
-                              {item.sanity_document_id ? '🔄 Republicar' : '🚀 Publicar'} en Sanity
+                              🚀 Publicar
                             </button>
-                          )}
-                          {item.sanity_document_id && (
-                            <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded border border-blue-500/30" title={`ID: ${item.sanity_document_id}`}>
-                              ✅ En Sanity
-                            </span>
                           )}
                           <button 
                             onClick={() => handleView(item)}
-                            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                            className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] rounded"
+                            title="Ver preview completo"
                           >
                             Ver
                           </button>
@@ -947,6 +960,13 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                 await saveSettings({ image_model_name: modelId });
                 loadSettings(); // Recargar para mostrar el nuevo modelo
               }}
+            />
+
+            {/* Modal de preview de contenido */}
+            <ContentPreviewModal
+              isOpen={!!previewItem}
+              onClose={() => setPreviewItem(null)}
+              item={previewItem}
             />
           </div>
         );
