@@ -59,7 +59,7 @@ export function useSanityIntegration() {
         throw new Error(result.error || 'Failed to save Sanity config');
       }
 
-      // Recargar configuración
+      // Recargar configuración inmediatamente
       await loadConfig();
       return result;
     } catch (err) {

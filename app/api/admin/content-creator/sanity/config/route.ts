@@ -49,13 +49,28 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Obtener configuración de Sanity desde variables de entorno
+    // Obtener configuración de Sanity desde system_configuration
+    const { data: configs, error: configError } = await (supabaseAdmin as any)
+      .from('system_configuration')
+      .select('key, value')
+      .in('key', ['sanity_project_id', 'sanity_dataset', 'sanity_api_version', 'sanity_token']);
+
+    if (configError) {
+      console.error('Error loading Sanity config:', configError);
+    }
+
+    // Convertir array de configs a objeto
+    const configMap = configs?.reduce((acc: any, config: any) => {
+      acc[config.key] = config.value;
+      return acc;
+    }, {}) || {};
+
     const sanityConfig = {
-      projectId: process.env.SANITY_PROJECT_ID || '',
-      dataset: process.env.SANITY_DATASET || 'production',
-      apiVersion: process.env.SANITY_API_VERSION || '2023-05-03',
-      token: process.env.SANITY_TOKEN ? '***configured***' : 'not_configured',
-      isConfigured: !!(process.env.SANITY_PROJECT_ID && process.env.SANITY_DATASET),
+      projectId: configMap.sanity_project_id || '',
+      dataset: configMap.sanity_dataset || 'production',
+      apiVersion: configMap.sanity_api_version || '2023-05-03',
+      token: configMap.sanity_token ? '***configured***' : 'not_configured',
+      isConfigured: !!(configMap.sanity_project_id && configMap.sanity_dataset && configMap.sanity_token),
     };
 
     return NextResponse.json({
