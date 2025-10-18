@@ -120,9 +120,6 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
       });
 
       alert('Configuración de Sanity guardada exitosamente');
-      
-      // Recargar la configuración para actualizar el estado
-      window.location.reload();
     } catch (error) {
       console.error('Error saving Sanity config:', error);
       alert('Error al guardar la configuración de Sanity');
