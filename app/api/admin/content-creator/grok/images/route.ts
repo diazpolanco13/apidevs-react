@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
           language: 'es',
           user_prompt: prompt,
           status: 'pending_review',
-          created_by: admin.id,
+          created_by_admin_id: admin.id,
           tokens_used: 0, // Las imágenes no usan tokens de texto
           processing_time_ms: 0,
         })
