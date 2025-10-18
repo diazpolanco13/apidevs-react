@@ -189,13 +189,14 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
       if (imageResult.success && imageResult.imageUrl) {
         setGeneratedImageUrl(imageResult.imageUrl);
         
-        // Actualizar mainImage con los datos del Director de Arte
+        // Actualizar mainImage con los datos del Director de Arte Y la URL
         setFormData(prev => ({
           ...prev,
           mainImage: {
             prompt: improveResult.prompt,
             alt: improveResult.alt,
-            caption: improveResult.caption
+            caption: improveResult.caption,
+            imageUrl: imageResult.imageUrl // Guardar URL de la imagen
           }
         }));
       }
