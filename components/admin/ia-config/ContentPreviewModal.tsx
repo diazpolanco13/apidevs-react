@@ -82,31 +82,39 @@ export default function ContentPreviewModal({ isOpen, onClose, item }: ContentPr
             {/* Imagen */}
             <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
               <h4 className="text-sm font-bold text-apidevs-primary mb-3">🖼️ Imagen Principal</h4>
-              {generatedContent.mainImage || item.generated_images?.[0] ? (
+              {generatedContent.mainImage?.imageUrl ? (
                 <div className="space-y-3">
-                  {item.generated_images?.[0]?.url && (
-                    <img 
-                      src={item.generated_images[0].url} 
-                      alt={generatedContent.mainImage?.alt || 'Generated image'}
-                      className="w-full rounded-lg border border-purple-500/30"
-                    />
-                  )}
+                  <img 
+                    src={generatedContent.mainImage.imageUrl} 
+                    alt={generatedContent.mainImage.alt || 'Generated image'}
+                    className="w-full rounded-lg border-2 border-purple-500/50 shadow-lg"
+                  />
                   <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-3">
-                    <p className="text-xs text-purple-400 font-bold mb-2">Metadatos:</p>
-                    <p className="text-xs text-gray-300">
-                      <span className="text-gray-400">Alt:</span> {generatedContent.mainImage?.alt || 'N/A'}
+                    <p className="text-xs text-purple-400 font-bold mb-2">📋 Metadatos de la imagen:</p>
+                    <p className="text-xs text-gray-300 mb-1">
+                      <span className="text-gray-400">Alt:</span> {generatedContent.mainImage.alt || 'N/A'}
                     </p>
-                    {generatedContent.mainImage?.caption && (
-                      <p className="text-xs text-gray-300 mt-1">
+                    {generatedContent.mainImage.caption && (
+                      <p className="text-xs text-gray-300">
                         <span className="text-gray-400">Caption:</span> {generatedContent.mainImage.caption}
                       </p>
                     )}
                   </div>
                 </div>
+              ) : item.content_type === 'image' && generatedContent.imageUrl ? (
+                <div className="space-y-3">
+                  <img 
+                    src={generatedContent.imageUrl} 
+                    alt="Generated image"
+                    className="w-full rounded-lg border-2 border-purple-500/50 shadow-lg"
+                  />
+                  <p className="text-xs text-gray-400">Imagen generada standalone</p>
+                </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-30" />
                   <p className="text-sm">Sin imagen</p>
+                  <p className="text-xs text-gray-400 mt-1">La imagen se generará automáticamente al crear contenido</p>
                 </div>
               )}
             </div>
