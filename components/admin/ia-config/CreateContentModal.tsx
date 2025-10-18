@@ -35,6 +35,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isImprovingPrompt, setIsImprovingPrompt] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [sanityResult, setSanityResult] = useState<any>(null);
@@ -43,6 +44,46 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
   const [showPreview, setShowPreview] = useState(false);
   
   const { createContent, config, loading: sanityLoading } = useSanityIntegration();
+
+  const handleImprovePrompt = async () => {
+    if (!formData.user_prompt.trim()) {
+      setError('Por favor ingresa un prompt para mejorar');
+      return;
+    }
+
+    setIsImprovingPrompt(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/admin/content-creator/improve-prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userPrompt: formData.user_prompt,
+          language: formData.language,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error mejorando prompt');
+      }
+
+      // Actualizar el prompt con la versión mejorada
+      setFormData(prev => ({
+        ...prev,
+        user_prompt: result.improvedPrompt
+      }));
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error mejorando prompt');
+    } finally {
+      setIsImprovingPrompt(false);
+    }
+  };
 
   const handleGenerateWithAI = async () => {
     if (!formData.user_prompt.trim()) {
@@ -316,7 +357,20 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
               </p>
             </div>
 
-            <div className="flex justify-end mt-4">
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                type="button"
+                onClick={handleImprovePrompt}
+                disabled={isImprovingPrompt || !formData.user_prompt.trim()}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white rounded-lg transition-all disabled:opacity-50"
+              >
+                {isImprovingPrompt ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Wand2 className="h-4 w-4" />
+                )}
+                {isImprovingPrompt ? 'Mejorando...' : '✨ Mejorar Prompt'}
+              </button>
               <button
                 type="button"
                 onClick={handleGenerateWithAI}
