@@ -579,7 +579,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                           <input
                             ref={grokApiKeyRef}
                             type="password"
-                            defaultValue={sanityConfig?.openai_api_key === '***configured***' ? '' : (sanityConfig?.openai_api_key || '')}
+                            defaultValue={sanityConfig?.openai_api_key || ''}
                             placeholder="sk-..."
                             className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           />
@@ -606,7 +606,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                         <p className="text-xs text-gray-400 mt-1">
                           Necesaria para generar imágenes con DALL-E 3 directamente
                         </p>
-                        {sanityConfig?.openai_api_key === '***configured***' && (
+                        {sanityConfig?.openai_api_key && sanityConfig.openai_api_key.length > 0 && (
                           <div className="mt-2 p-2 bg-green-900/20 border border-green-500/30 rounded-lg">
                             <div className="flex items-center gap-2">
                               <CheckCircle className="h-4 w-4 text-green-400" />

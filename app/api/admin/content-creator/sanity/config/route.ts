@@ -69,8 +69,8 @@ export async function GET(request: NextRequest) {
       projectId: configMap.sanity_project_id || '',
       dataset: configMap.sanity_dataset || 'production',
       apiVersion: configMap.sanity_api_version || '2023-05-03',
-      token: configMap.sanity_token ? '***configured***' : 'not_configured',
-      openai_api_key: configMap.openai_api_key ? '***configured***' : 'not_configured',
+      token: configMap.sanity_token || '',
+      openai_api_key: configMap.openai_api_key || '',
       isConfigured: !!(configMap.sanity_project_id && configMap.sanity_dataset && configMap.sanity_token),
     };
 
