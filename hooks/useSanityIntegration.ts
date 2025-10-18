@@ -5,6 +5,7 @@ interface SanityConfig {
   dataset: string;
   apiVersion: string;
   token: string;
+  openai_api_key?: string;
   isConfigured: boolean;
 }
 
