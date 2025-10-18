@@ -342,13 +342,37 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
       {/* Sub-tab Content */}
       <div className="mt-6">
         {activeSubTab === 'configuracion' && settings && (
-          <form id="ai-content-form" className="space-y-6">
-            {/* Modo de Publicación */}
-            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <Settings className="h-5 w-5 text-apidevs-primary" />
-                Modo de Publicación
-              </h3>
+                <form id="ai-content-form" className="space-y-6">
+                    {/* Estado del Content Creator */}
+                    <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                            <Settings className="h-5 w-5 text-apidevs-primary" />
+                            Content Creator AI
+                          </h3>
+                          <p className="text-sm text-gray-400 mt-1">
+                            Habilita o deshabilita la creación automática de contenido
+                          </p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            name="enabled"
+                            defaultChecked={settings.enabled}
+                            className="sr-only peer" 
+                          />
+                          <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-apidevs-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-apidevs-primary"></div>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Modo de Publicación */}
+                    <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                      <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <Settings className="h-5 w-5 text-apidevs-primary" />
+                        Modo de Publicación
+                      </h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
                   <label className="flex items-center">
@@ -562,6 +586,29 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                             <TestTube className="h-4 w-4" />
                           )}
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Configuración de OpenRouter para generación de texto */}
+                    <div className="mt-6 p-4 bg-gradient-to-r from-green-600/20 to-teal-600/20 backdrop-blur-xl border border-green-500/30 rounded-2xl">
+                      <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                        <Settings className="h-5 w-5 text-green-400" />
+                        OpenRouter API (Generación de Contenido)
+                      </h4>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          OpenRouter API Key
+                        </label>
+                        <input
+                          type="password"
+                          name="openrouter_api_key"
+                          defaultValue={settings?.openrouter_api_key || ''}
+                          placeholder="sk-or-..."
+                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">
+                          Necesaria para generar contenido automáticamente con IA
+                        </p>
                       </div>
                     </div>
 
