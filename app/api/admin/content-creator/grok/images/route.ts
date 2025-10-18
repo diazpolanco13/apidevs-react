@@ -131,12 +131,12 @@ export async function POST(request: NextRequest) {
 
       if (!response.ok) {
         let errorData;
+        const responseText = await response.text();
         try {
-          errorData = await response.json();
+          errorData = JSON.parse(responseText);
         } catch (jsonError) {
-          // Si no es JSON válido, usar el texto de la respuesta
-          const textResponse = await response.text();
-          errorData = { message: textResponse || 'Unknown error' };
+          // Si no es JSON válido, usar el texto directo
+          errorData = { message: responseText || 'Unknown error' };
         }
         
         console.error('OpenRouter Image API error:', {
