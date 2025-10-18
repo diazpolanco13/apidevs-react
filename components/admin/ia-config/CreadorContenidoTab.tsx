@@ -6,6 +6,7 @@ import { useAIContentSettings, AIContentSettings } from '@/hooks/useAIContentSet
 import { useSanityIntegration } from '@/hooks/useSanityIntegration';
 import ContentCreatorPermissions from './ContentCreatorPermissions';
 import CreateContentModal from './CreateContentModal';
+import ContentCreatorModelSelector from './ContentCreatorModelSelector';
 
 interface Props {
   config: any;
@@ -595,69 +596,45 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                         Modelo de IA para Generación de Contenido
                       </h4>
                       <p className="text-xs text-gray-300 mb-4">
-                        💡 Usa la misma OpenRouter API key del chat, pero selecciona un modelo premium para contenido de calidad
+                        💡 Usa la misma OpenRouter API key del chat. Selecciona un modelo premium para contenido de máxima calidad o uno gratuito para pruebas.
                       </p>
                       
-                      <div className="space-y-4">
+                      <ContentCreatorModelSelector
+                        selectedModel={settings?.model_name || 'anthropic/claude-3.5-sonnet'}
+                        onModelChange={(modelId) => {
+                          // Actualizar el settings con el nuevo modelo
+                          saveSettings({ model_name: modelId });
+                        }}
+                      />
+
+                      <div className="grid grid-cols-2 gap-4 mt-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Proveedor de Modelo
+                            Temperatura
                           </label>
                           <input
-                            type="text"
-                            name="model_provider"
-                            defaultValue={settings?.model_provider || 'openrouter'}
-                            placeholder="openrouter"
-                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50"
-                            readOnly
+                            type="number"
+                            name="temperature"
+                            step="0.1"
+                            min="0"
+                            max="2"
+                            defaultValue={settings?.temperature || 0.7}
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50"
                           />
                         </div>
-
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Modelo Específico
+                            Max Tokens
                           </label>
                           <input
-                            type="text"
-                            name="model_name"
-                            defaultValue={settings?.model_name || 'anthropic/claude-3.5-sonnet'}
-                            placeholder="anthropic/claude-3.5-sonnet"
-                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50"
+                            type="number"
+                            name="max_tokens"
+                            step="100"
+                            min="1000"
+                            max="32000"
+                            defaultValue={settings?.max_tokens || 4000}
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50"
                           />
-                          <p className="text-xs text-gray-400 mt-1">
-                            Ejemplos de modelos premium: anthropic/claude-3.5-sonnet, openai/gpt-4o, google/gemini-pro-1.5
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                              Temperatura
-                            </label>
-                            <input
-                              type="number"
-                              name="temperature"
-                              step="0.1"
-                              min="0"
-                              max="2"
-                              defaultValue={settings?.temperature || 0.7}
-                              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                              Max Tokens
-                            </label>
-                            <input
-                              type="number"
-                              name="max_tokens"
-                              step="100"
-                              min="1000"
-                              max="32000"
-                              defaultValue={settings?.max_tokens || 4000}
-                              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50"
-                            />
-                          </div>
                         </div>
                       </div>
                     </div>
