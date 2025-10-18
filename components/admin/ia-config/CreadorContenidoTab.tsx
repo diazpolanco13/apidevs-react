@@ -156,6 +156,27 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
     alert(`Ver contenido: ${item.title}\n\nTODO: Implementar modal de preview`);
   };
 
+  const handlePublish = async (itemId: string) => {
+    if (!confirm('¿Publicar este contenido en Sanity?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/content-creator/queue/${itemId}/publish`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        alert('¡Contenido publicado en Sanity exitosamente!');
+        loadQueue(); // Recargar cola
+      } else {
+        const result = await response.json();
+        alert(`Error al publicar: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al publicar contenido');
+    }
+  };
+
   const handleSaveSanityConfig = async () => {
     try {
       // Obtener los valores de los inputs usando refs
@@ -827,6 +848,19 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                                 Rechazar
                               </button>
                             </>
+                          )}
+                          {item.status === 'approved' && !item.sanity_document_id && (
+                            <button 
+                              onClick={() => handlePublish(item.id)}
+                              className="px-3 py-1 bg-gradient-to-r from-apidevs-primary to-purple-600 hover:from-apidevs-primary/90 hover:to-purple-600/90 text-white text-xs rounded transition-colors font-bold"
+                            >
+                              🚀 Publicar en Sanity
+                            </button>
+                          )}
+                          {item.sanity_document_id && (
+                            <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded border border-blue-500/30">
+                              ✅ En Sanity
+                            </span>
                           )}
                           <button 
                             onClick={() => handleView(item)}
