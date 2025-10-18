@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Plus, FileText, BookOpen, BarChart3, Loader2, Upload, CheckCircle, Image, Wand2 } from 'lucide-react';
+import { X, Plus, FileText, BookOpen, BarChart3, Loader2, Upload, CheckCircle, Image, Wand2, RefreshCw } from 'lucide-react';
 import { useSanityIntegration } from '@/hooks/useSanityIntegration';
 import GrokImageGenerator from './GrokImageGenerator';
 
@@ -36,6 +36,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isImprovingPrompt, setIsImprovingPrompt] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [sanityResult, setSanityResult] = useState<any>(null);
@@ -115,22 +116,95 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
       }
 
       // Actualizar formData con el contenido generado
-      setFormData(prev => ({
-        ...prev,
-        title: result.title || '',
-        slug: result.slug || '',
-        excerpt: result.excerpt || '',
-        content: result.content || '',
-        mainImage: result.mainImage || prev.mainImage,
-        tags: result.tags || [],
-        readingTime: result.readingTime || 0,
-        seo: result.seo || prev.seo,
-      }));
+      setFormData(prev => {
+        const generatedData = {
+          title: result.title || '',
+          slug: result.slug || '',
+          excerpt: result.excerpt || '',
+          content: result.content || '',
+          mainImage: result.mainImage || prev.mainImage,
+          tags: result.tags || [],
+          readingTime: result.readingTime || 0,
+          seo: result.seo || prev.seo,
+        };
+
+        // ENCADENAR: Generar prompt de imagen automáticamente
+        generateImageAutomatically(generatedData);
+
+        return {
+          ...prev,
+          ...generatedData
+        };
+      });
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error generando contenido');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const generateImageAutomatically = async (articleData: any) => {
+    setIsGeneratingImage(true);
+    try {
+      // PASO 1: Mejorar el prompt de imagen con Director de Arte
+      const improveResponse = await fetch('/api/admin/content-creator/improve-image-prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          articleData: {
+            title: articleData.title,
+            slug: articleData.slug,
+            excerpt: articleData.excerpt,
+            content: articleData.content.substring(0, 2000), // Primeros 2000 caracteres
+          }
+        }),
+      });
+
+      const improveResult = await improveResponse.json();
+
+      if (!improveResponse.ok) {
+        console.error('Error mejorando prompt de imagen:', improveResult.error);
+        return;
+      }
+
+      // PASO 2: Generar la imagen con el prompt mejorado
+      const imageResponse = await fetch('/api/admin/content-creator/grok/images', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: improveResult.prompt,
+          style: 'realistic',
+          size: '1024x1024',
+          quality: 'hd'
+        }),
+      });
+
+      const imageResult = await imageResponse.json();
+
+      if (imageResult.success && imageResult.imageUrl) {
+        setGeneratedImageUrl(imageResult.imageUrl);
+        
+        // Actualizar mainImage con los datos del Director de Arte
+        setFormData(prev => ({
+          ...prev,
+          mainImage: {
+            prompt: improveResult.prompt,
+            alt: improveResult.alt,
+            caption: improveResult.caption
+          }
+        }));
+      }
+
+    } catch (error) {
+      console.error('Error generando imagen automáticamente:', error);
+      // No mostrar error al usuario, es opcional
+    } finally {
+      setIsGeneratingImage(false);
     }
   };
 
@@ -458,28 +532,75 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             
             {generatedImageUrl ? (
               <div className="space-y-3">
-                <img 
-                  src={generatedImageUrl} 
-                  alt="Generated content image" 
-                  className="w-full max-w-md mx-auto rounded-lg border border-white/10"
-                />
+                <div className="relative group">
+                  <img 
+                    src={generatedImageUrl} 
+                    alt={formData.mainImage.alt || "Generated image"} 
+                    className="w-full rounded-lg border-2 border-purple-500/30 shadow-lg hover:border-purple-500/60 transition-all"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-end p-4">
+                    <div className="text-white text-xs">
+                      <p className="font-bold">{formData.mainImage.alt}</p>
+                      {formData.mainImage.caption && (
+                        <p className="text-gray-300 mt-1 italic">{formData.mainImage.caption}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Info de la imagen */}
+                {formData.mainImage.alt && (
+                  <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-3">
+                    <p className="text-xs text-purple-400 font-bold mb-1">🖼️ Metadatos de la imagen:</p>
+                    <p className="text-xs text-gray-300"><span className="text-gray-400">Alt:</span> {formData.mainImage.alt}</p>
+                    {formData.mainImage.caption && (
+                      <p className="text-xs text-gray-300 mt-1"><span className="text-gray-400">Caption:</span> {formData.mainImage.caption}</p>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      // Regenerar imagen automáticamente
+                      await generateImageAutomatically(formData);
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Regenerar Imagen
+                  </button>
                   <button
                     type="button"
                     onClick={() => setIsImageGeneratorOpen(true)}
                     className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
                   >
                     <Wand2 className="h-4 w-4" />
-                    Generar Nueva Imagen
+                    Prompt Manual
                   </button>
                   <button
                     type="button"
-                    onClick={() => setGeneratedImageUrl(null)}
+                    onClick={() => {
+                      setGeneratedImageUrl(null);
+                      setFormData(prev => ({
+                        ...prev,
+                        mainImage: { prompt: '', alt: '', caption: '' }
+                      }));
+                    }}
                     className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
                   >
                     <X className="h-4 w-4" />
-                    Quitar Imagen
+                    Quitar
                   </button>
+                </div>
+              </div>
+            ) : isGeneratingImage ? (
+              <div className="w-full flex flex-col items-center justify-center gap-3 px-4 py-8 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-lg">
+                <Loader2 className="h-8 w-8 text-purple-400 animate-spin" />
+                <div className="text-center">
+                  <p className="text-sm text-purple-400 font-bold">🎨 Generando imagen automáticamente...</p>
+                  <p className="text-xs text-gray-400 mt-1">Director de Arte IA analizando el artículo</p>
                 </div>
               </div>
             ) : (
@@ -489,7 +610,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-lg text-purple-400 hover:from-purple-600/30 hover:to-blue-600/30 transition-all"
               >
                 <Image className="h-5 w-5" />
-                Generar Imagen con IA
+                Generar Imagen con IA (Manual)
               </button>
             )}
             </div>
