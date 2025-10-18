@@ -14,7 +14,21 @@ interface CreateContentModalProps {
 export default function CreateContentModal({ isOpen, onClose, onSuccess }: CreateContentModalProps) {
   const [formData, setFormData] = useState({
     title: '',
+    slug: '',
+    excerpt: '',
     content: '',
+    mainImage: {
+      prompt: '',
+      alt: '',
+      caption: ''
+    },
+    tags: [] as string[],
+    readingTime: 0,
+    seo: {
+      metaTitle: '',
+      metaDescription: '',
+      keywords: [] as string[]
+    },
     type: 'blog' as 'blog' | 'docs' | 'indicators',
     language: 'es' as 'es' | 'en',
     user_prompt: '',
@@ -62,7 +76,13 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
       setFormData(prev => ({
         ...prev,
         title: result.title || '',
+        slug: result.slug || '',
+        excerpt: result.excerpt || '',
         content: result.content || '',
+        mainImage: result.mainImage || prev.mainImage,
+        tags: result.tags || [],
+        readingTime: result.readingTime || 0,
+        seo: result.seo || prev.seo,
       }));
 
     } catch (err) {
@@ -110,7 +130,13 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             // Reset form
             setFormData({
               title: '',
+              slug: '',
+              excerpt: '',
               content: '',
+              mainImage: { prompt: '', alt: '', caption: '' },
+              tags: [],
+              readingTime: 0,
+              seo: { metaTitle: '', metaDescription: '', keywords: [] },
               type: 'blog',
               language: 'es',
               user_prompt: '',
@@ -129,7 +155,13 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
         setTimeout(() => {
           setFormData({
             title: '',
+            slug: '',
+            excerpt: '',
             content: '',
+            mainImage: { prompt: '', alt: '', caption: '' },
+            tags: [],
+            readingTime: 0,
+            seo: { metaTitle: '', metaDescription: '', keywords: [] },
             type: 'blog',
             language: 'es',
             user_prompt: '',
@@ -300,48 +332,77 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             </div>
           </div>
 
-          {/* GRID 2 COLUMNAS: Contenido + Imagen */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* COLUMNA 1: Contenido Generado */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <FileText className="h-5 w-5 text-apidevs-primary" />
-                Contenido Generado
+          {/* UI SEGMENTADA SEGÚN SCHEMA DE SANITY */}
+          <div className="space-y-4">
+            {/* SECCIÓN 1: Información Básica */}
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+              <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                📝 Información Básica {formData.title && '✅'}
               </h3>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Título {formData.title && '✅'}
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="Se generará automáticamente..."
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
-                  readOnly={isGenerating}
-                />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    Título (máx 150 caracteres) *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Se generará automáticamente..."
+                    maxLength={150}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">{formData.title.length}/150</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    Slug URL *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.slug}
+                    onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                    placeholder="url-amigable"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
+                  />
+                </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Contenido {formData.content && '✅'}
+              <div className="mt-3">
+                <label className="block text-xs font-medium text-gray-400 mb-1">
+                  Excerpt / Resumen (50-250 caracteres) *
                 </label>
                 <textarea
-                  name="content"
-                  value={formData.content}
-                  onChange={handleChange}
-                  placeholder="Se generará automáticamente..."
-                  rows={12}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none"
-                  readOnly={isGenerating}
+                  value={formData.excerpt}
+                  onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
+                  placeholder="Resumen corto para cards y preview..."
+                  rows={2}
+                  maxLength={250}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none"
                 />
+                <p className="text-xs text-gray-500 mt-1">{formData.excerpt.length}/250</p>
               </div>
             </div>
 
-            {/* COLUMNA 2: Generación de imágenes */}
-            <div>
+            {/* SECCIÓN 2: Contenido Principal + Imagen */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Contenido */}
+              <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+                <h3 className="text-sm font-bold text-white mb-3">📄 Contenido Principal {formData.content && '✅'}</h3>
+                <textarea
+                  value={formData.content}
+                  onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                  placeholder="Se generará automáticamente..."
+                  rows={16}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none font-mono"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.content ? `~${Math.ceil(formData.content.split(' ').length / 200)} min lectura` : 'Markdown soportado'}
+                </p>
+              </div>
+
+              {/* Imagen Principal */}
+              <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+                <h3 className="text-sm font-bold text-white mb-3">🖼️ Imagen Principal</h3>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Imagen (Opcional)
             </label>
@@ -382,6 +443,93 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
                 Generar Imagen con IA
               </button>
             )}
+              </div>
+            </div>
+          </div>
+
+          {/* SECCIÓN 3: Tags y Metadata */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Tags */}
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+              <h3 className="text-sm font-bold text-white mb-3">🏷️ Tags {formData.tags.length > 0 && '✅'}</h3>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {formData.tags.map((tag, index) => (
+                  <span key={index} className="px-2 py-1 bg-apidevs-primary/20 text-apidevs-primary text-xs rounded-lg border border-apidevs-primary/30 flex items-center gap-1">
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, tags: prev.tags.filter((_, i) => i !== index) }))}
+                      className="hover:text-red-400"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mb-2">Tags: {formData.tags.length}/10</p>
+            </div>
+
+            {/* Tiempo de lectura */}
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+              <h3 className="text-sm font-bold text-white mb-3">⏱️ Tiempo de Lectura</h3>
+              <input
+                type="number"
+                value={formData.readingTime}
+                onChange={(e) => setFormData(prev => ({ ...prev, readingTime: parseInt(e.target.value) || 0 }))}
+                placeholder="Minutos"
+                min="1"
+                max="60"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
+              />
+              <p className="text-xs text-gray-400 mt-1">Minutos estimados de lectura</p>
+            </div>
+          </div>
+
+          {/* SECCIÓN 4: SEO */}
+          <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+            <h3 className="text-sm font-bold text-white mb-3">🚀 Optimización SEO {formData.seo.metaDescription && '✅'}</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1">
+                  Meta Título (máx 60 caracteres)
+                </label>
+                <input
+                  type="text"
+                  value={formData.seo.metaTitle}
+                  onChange={(e) => setFormData(prev => ({ ...prev, seo: { ...prev.seo, metaTitle: e.target.value } }))}
+                  placeholder="Título SEO..."
+                  maxLength={60}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
+                />
+                <p className="text-xs text-gray-500 mt-1">{formData.seo.metaTitle.length}/60</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1">
+                  Keywords SEO
+                </label>
+                <div className="flex flex-wrap gap-1">
+                  {formData.seo.keywords.map((keyword, index) => (
+                    <span key={index} className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded border border-blue-500/30">
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-400 mt-1">{formData.seo.keywords.length} keywords</p>
+              </div>
+            </div>
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-gray-400 mb-1">
+                Meta Descripción (máx 160 caracteres)
+              </label>
+              <textarea
+                value={formData.seo.metaDescription}
+                onChange={(e) => setFormData(prev => ({ ...prev, seo: { ...prev.seo, metaDescription: e.target.value } }))}
+                placeholder="Meta descripción optimizada..."
+                rows={2}
+                maxLength={160}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none"
+              />
+              <p className="text-xs text-gray-500 mt-1">{formData.seo.metaDescription.length}/160</p>
             </div>
           </div>
 
