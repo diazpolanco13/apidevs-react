@@ -849,16 +849,16 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                               </button>
                             </>
                           )}
-                          {item.status === 'approved' && !item.sanity_document_id && (
+                          {item.status === 'approved' && (
                             <button 
                               onClick={() => handlePublish(item.id)}
                               className="px-3 py-1 bg-gradient-to-r from-apidevs-primary to-purple-600 hover:from-apidevs-primary/90 hover:to-purple-600/90 text-white text-xs rounded transition-colors font-bold"
                             >
-                              🚀 Publicar en Sanity
+                              {item.sanity_document_id ? '🔄 Republicar' : '🚀 Publicar'} en Sanity
                             </button>
                           )}
                           {item.sanity_document_id && (
-                            <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded border border-blue-500/30">
+                            <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded border border-blue-500/30" title={`ID: ${item.sanity_document_id}`}>
                               ✅ En Sanity
                             </span>
                           )}
