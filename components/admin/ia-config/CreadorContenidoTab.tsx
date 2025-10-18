@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, FileText, Palette, Users, Save, RefreshCw, TestTube, AlertCircle } from 'lucide-react';
+import { Settings, FileText, Palette, Users, Save, RefreshCw, TestTube, AlertCircle, Clock, CheckCircle, Eye, Plus } from 'lucide-react';
 import { useAIContentSettings, AIContentSettings } from '@/hooks/useAIContentSettings';
 import ContentCreatorPermissions from './ContentCreatorPermissions';
+import CreateContentModal from './CreateContentModal';
 
 interface Props {
   config: any;
@@ -12,6 +13,7 @@ interface Props {
 
 export default function CreadorContenidoTab({ config, setConfig }: Props) {
   const [activeSubTab, setActiveSubTab] = useState<'configuracion' | 'cola' | 'templates'>('configuracion');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const {
     settings,
     queue,
@@ -20,6 +22,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
     error,
     saveSettings,
     loadSettings,
+    loadQueue,
   } = useAIContentSettings();
 
   const subTabs = [
@@ -76,6 +79,11 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
     } catch (error) {
       console.error('Error saving settings:', error);
     }
+  };
+
+  const handleCreateSuccess = () => {
+    // Recargar la cola después de crear contenido
+    loadQueue();
   };
 
   if (loading) {
@@ -305,10 +313,19 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
         {activeSubTab === 'cola' && (
           <div className="space-y-6">
             <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <FileText className="h-5 w-5 text-apidevs-primary" />
-                Cola de Contenido ({queue.length} elementos)
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-apidevs-primary" />
+                  Cola de Contenido ({queue.length} elementos)
+                </h3>
+                <button 
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-apidevs-primary to-purple-600 hover:from-apidevs-primary/90 hover:to-purple-600/90 text-white rounded-lg transition-all"
+                >
+                  <Plus className="h-4 w-4" />
+                  Crear Contenido
+                </button>
+              </div>
               
               {queue.length === 0 ? (
                 <div className="text-center py-12">
@@ -419,6 +436,13 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                 Guardar Cambios
               </button>
             </div>
+
+            {/* Modal para crear contenido */}
+            <CreateContentModal
+              isOpen={isCreateModalOpen}
+              onClose={() => setIsCreateModalOpen(false)}
+              onSuccess={handleCreateSuccess}
+            />
           </div>
         );
       }}
