@@ -75,12 +75,12 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
       const formData = new FormData(document.getElementById('ai-content-form') as HTMLFormElement);
       
       const updates: Partial<AIContentSettings> = {
-        enabled: formData.get('enabled') === 'on',
+        enabled: true, // Siempre habilitado cuando se guarda
         default_language: formData.get('default_language') as 'es' | 'en',
-        model_provider: formData.get('model_provider') as string,
-        model_name: formData.get('model_name') as string,
-        temperature: parseFloat(formData.get('temperature') as string),
-        max_tokens: parseInt(formData.get('max_tokens') as string),
+        model_provider: formData.get('model_provider') as string || 'openrouter',
+        model_name: formData.get('model_name') as string || 'anthropic/claude-3.5-sonnet',
+        temperature: parseFloat(formData.get('temperature') as string) || 0.7,
+        max_tokens: parseInt(formData.get('max_tokens') as string) || 4000,
         auto_publish_mode: formData.get('auto_publish_mode') as 'draft' | 'review' | 'published',
         require_admin_approval: formData.get('require_admin_approval') === 'on',
         image_generation_enabled: formData.get('image_generation_enabled') === 'on',
@@ -588,27 +588,77 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                       </div>
                     </div>
 
-                    {/* Configuración de OpenRouter para generación de texto */}
+                    {/* Configuración del Modelo de IA para Contenido */}
                     <div className="mt-6 p-4 bg-gradient-to-r from-green-600/20 to-teal-600/20 backdrop-blur-xl border border-green-500/30 rounded-2xl">
                       <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                         <Settings className="h-5 w-5 text-green-400" />
-                        OpenRouter API (Generación de Contenido)
+                        Modelo de IA para Generación de Contenido
                       </h4>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                          OpenRouter API Key
-                        </label>
-                        <input
-                          ref={openrouterApiKeyRef}
-                          type="password"
-                          name="openrouter_api_key"
-                          defaultValue={sanityConfig?.openrouter_api_key || ''}
-                          placeholder="sk-or-..."
-                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50"
-                        />
-                        <p className="text-xs text-gray-400 mt-1">
-                          Necesaria para generar contenido automáticamente con IA
-                        </p>
+                      <p className="text-xs text-gray-300 mb-4">
+                        💡 Usa la misma OpenRouter API key del chat, pero selecciona un modelo premium para contenido de calidad
+                      </p>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                            Proveedor de Modelo
+                          </label>
+                          <input
+                            type="text"
+                            name="model_provider"
+                            defaultValue={settings?.model_provider || 'openrouter'}
+                            placeholder="openrouter"
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50"
+                            readOnly
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                            Modelo Específico
+                          </label>
+                          <input
+                            type="text"
+                            name="model_name"
+                            defaultValue={settings?.model_name || 'anthropic/claude-3.5-sonnet'}
+                            placeholder="anthropic/claude-3.5-sonnet"
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50"
+                          />
+                          <p className="text-xs text-gray-400 mt-1">
+                            Ejemplos de modelos premium: anthropic/claude-3.5-sonnet, openai/gpt-4o, google/gemini-pro-1.5
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                              Temperatura
+                            </label>
+                            <input
+                              type="number"
+                              name="temperature"
+                              step="0.1"
+                              min="0"
+                              max="2"
+                              defaultValue={settings?.temperature || 0.7}
+                              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                              Max Tokens
+                            </label>
+                            <input
+                              type="number"
+                              name="max_tokens"
+                              step="100"
+                              min="1000"
+                              max="32000"
+                              defaultValue={settings?.max_tokens || 4000}
+                              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
