@@ -6,6 +6,7 @@ interface SanityConfig {
   apiVersion: string;
   token: string;
   openai_api_key?: string;
+  openrouter_api_key?: string;
   isConfigured: boolean;
 }
 

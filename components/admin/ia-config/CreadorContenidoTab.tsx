@@ -20,6 +20,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
   const sanityProjectIdRef = useRef<HTMLInputElement>(null);
   const sanityDatasetRef = useRef<HTMLInputElement>(null);
   const sanityTokenRef = useRef<HTMLInputElement>(null);
+  const openrouterApiKeyRef = useRef<HTMLInputElement>(null);
   const grokApiKeyRef = useRef<HTMLInputElement>(null);
   const {
     settings,
@@ -112,23 +113,26 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
       const projectId = sanityProjectIdRef.current?.value;
       const dataset = sanityDatasetRef.current?.value;
       const token = sanityTokenRef.current?.value;
+      const openrouterApiKey = openrouterApiKeyRef.current?.value;
 
       if (!projectId || !dataset || !token) {
         alert('Por favor completa todos los campos de Sanity');
         return;
       }
 
+      // Guardar configuración de Sanity y OpenRouter
       await saveSanityConfig({
         projectId,
         dataset,
         apiVersion: '2023-05-03',
         token,
+        openrouter_api_key: openrouterApiKey,
       });
 
-      alert('Configuración de Sanity guardada exitosamente');
+      alert('Configuración guardada exitosamente');
     } catch (error) {
       console.error('Error saving Sanity config:', error);
-      alert('Error al guardar la configuración de Sanity');
+      alert('Error al guardar la configuración');
     }
   };
 
@@ -595,9 +599,10 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                           OpenRouter API Key
                         </label>
                         <input
+                          ref={openrouterApiKeyRef}
                           type="password"
                           name="openrouter_api_key"
-                          defaultValue={settings?.openrouter_api_key || ''}
+                          defaultValue={sanityConfig?.openrouter_api_key || ''}
                           placeholder="sk-or-..."
                           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50"
                         />

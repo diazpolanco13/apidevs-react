@@ -49,11 +49,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Obtener configuración de Sanity y OpenAI desde system_configuration
+    // Obtener configuración de Sanity, OpenAI y OpenRouter desde system_configuration
     const { data: configs, error: configError } = await (supabaseAdmin as any)
       .from('system_configuration')
       .select('key, value')
-      .in('key', ['sanity_project_id', 'sanity_dataset', 'sanity_api_version', 'sanity_token', 'openai_api_key']);
+      .in('key', ['sanity_project_id', 'sanity_dataset', 'sanity_api_version', 'sanity_token', 'openai_api_key', 'openrouter_api_key']);
 
     if (configError) {
       console.error('Error loading config:', configError);
@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
       apiVersion: configMap.sanity_api_version || '2023-05-03',
       token: configMap.sanity_token || '',
       openai_api_key: configMap.openai_api_key || '',
+      openrouter_api_key: configMap.openrouter_api_key || '',
       isConfigured: !!(configMap.sanity_project_id && configMap.sanity_dataset && configMap.sanity_token),
     };
 
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectId, dataset, apiVersion, token, openai_api_key } = await request.json();
+    const { projectId, dataset, apiVersion, token, openai_api_key, openrouter_api_key } = await request.json();
 
     // Verificar que el usuario esté autenticado
     const supabase = await createClient();
@@ -155,6 +156,15 @@ export async function POST(request: NextRequest) {
       configs.push({
         key: 'openai_api_key',
         value: openai_api_key,
+        category: 'integrations'
+      });
+    }
+    
+    // Agregar configuración de OpenRouter si se proporciona
+    if (openrouter_api_key) {
+      configs.push({
+        key: 'openrouter_api_key',
+        value: openrouter_api_key,
         category: 'integrations'
       });
     }
