@@ -143,6 +143,10 @@ export async function POST(request: NextRequest) {
       success: true,
       title: parsedContent.title || 'Título generado',
       content: parsedContent.content || generatedContent,
+      metaDescription: parsedContent.metaDescription || '',
+      keywords: parsedContent.keywords || [],
+      slug: parsedContent.slug || '',
+      excerpt: parsedContent.excerpt || '',
       tokens_used: data.usage?.total_tokens || 0,
     });
 
@@ -161,19 +165,40 @@ function generateSystemPrompt(type: string, language: string): string {
   const basePrompt = `Eres un experto creador de contenido para una plataforma de trading e indicadores técnicos. Tu tarea es generar contenido de alta calidad, profesional y optimizado para SEO.`;
 
   const typePrompts = {
-    blog: `Genera un artículo de blog completo y profesional en ${lang}. El artículo debe ser informativo, educativo y atractivo para traders de todos los niveles.`,
-    docs: `Genera documentación técnica clara y precisa en ${lang}. La documentación debe ser fácil de seguir, con ejemplos prácticos y explicaciones detalladas.`,
-    indicators: `Genera una descripción completa de un indicador técnico en ${lang}. Incluye qué es, cómo funciona, cómo se calcula y cómo usarlo en trading.`,
+    blog: `Genera un artículo de blog COMPLETO y PROFESIONAL en ${lang}. El artículo debe ser informativo, educativo y atractivo para traders de todos los niveles.`,
+    docs: `Genera documentación técnica CLARA y PRECISA en ${lang}. La documentación debe ser fácil de seguir, con ejemplos prácticos y explicaciones detalladas.`,
+    indicators: `Genera una descripción COMPLETA de un indicador técnico en ${lang}. Incluye qué es, cómo funciona, cómo se calcula y cómo usarlo en trading.`,
   };
 
   return `${basePrompt}
 
 ${typePrompts[type as keyof typeof typePrompts]}
 
+REQUISITOS OBLIGATORIOS:
+- Mínimo 800-1200 palabras
+- Formato Markdown profesional
+- Incluir estadísticas o datos relevantes
+- Ejemplos prácticos y casos reales
+- Subtítulos descriptivos (H2, H3)
+- Listas y bullet points
+- Conclusión con llamada a la acción
+- Tono profesional pero accesible
+
+OPTIMIZACIÓN SEO:
+- Título atractivo con palabras clave
+- Meta description de 150-160 caracteres
+- 5-7 keywords relevantes
+- Estructura optimizada para búsqueda
+- Contenido único y de valor
+
 IMPORTANTE: Responde SOLO con un JSON en el siguiente formato:
 {
-  "title": "Título atractivo y descriptivo",
-  "content": "Contenido completo en formato markdown"
+  "title": "Título atractivo y optimizado SEO (60-70 caracteres)",
+  "content": "Contenido completo en formato markdown (mínimo 800 palabras)",
+  "metaDescription": "Meta description optimizada (150-160 caracteres)",
+  "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
+  "slug": "url-amigable-para-seo",
+  "excerpt": "Resumen breve del contenido (2-3 líneas)"
 }
 
 NO incluyas ningún texto adicional fuera del JSON.`;
