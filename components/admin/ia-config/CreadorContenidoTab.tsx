@@ -532,22 +532,22 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                       </div>
                     </div>
 
-                    {/* Configuración de Grok API */}
+                    {/* Configuración de OpenRouter API para imágenes */}
                     <div className="mt-6 p-4 bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-xl border border-purple-500/30 rounded-2xl">
                       <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                         <Wand2 className="h-5 w-5 text-purple-400" />
-                        Configuración de Grok API (Imágenes)
+                        Configuración de OpenRouter API (DALL-E 3)
                       </h4>
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                          Grok API Key
+                          OpenRouter API Key
                         </label>
                         <div className="flex gap-2">
                           <input
                             ref={grokApiKeyRef}
                             type="password"
-                            defaultValue={settings?.grok_api_key || ''}
-                            placeholder="xai-..."
+                            defaultValue={settings?.openrouter_api_key || ''}
+                            placeholder="sk-or-..."
                             className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           />
                           <button 
@@ -564,7 +564,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                           </button>
                         </div>
                         <p className="text-xs text-gray-400 mt-1">
-                          Necesaria para generar imágenes con Grok AI
+                          Necesaria para generar imágenes con DALL-E 3 via OpenRouter
                         </p>
                       </div>
                     </div>

@@ -16,6 +16,7 @@ export interface AIContentSettings {
   image_generation_enabled: boolean;
   image_provider: 'grok' | 'dalle' | 'midjourney';
   grok_api_key?: string;
+  openrouter_api_key?: string;
   seo_optimization_enabled: boolean;
   auto_generate_meta_description: boolean;
   auto_generate_keywords: boolean;
