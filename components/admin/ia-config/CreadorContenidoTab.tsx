@@ -343,29 +343,20 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
       <div className="mt-6">
         {activeSubTab === 'configuracion' && settings && (
                 <form id="ai-content-form" className="space-y-6">
-                    {/* Estado del Content Creator */}
-                    <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                            <Settings className="h-5 w-5 text-apidevs-primary" />
-                            Content Creator AI
-                          </h3>
-                          <p className="text-sm text-gray-400 mt-1">
-                            Habilita o deshabilita la creación automática de contenido
-                          </p>
+                    {/* Información sobre habilitación */}
+                    {!settings.enabled && (
+                      <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="h-5 w-5 text-yellow-400 mt-0.5" />
+                          <div>
+                            <p className="text-yellow-400 font-medium">Content Creator AI deshabilitado</p>
+                            <p className="text-yellow-300 text-sm mt-1">
+                              Para habilitar la creación de contenido, ve al tab <strong>"Avanzado"</strong> y activa el toggle <strong>"Habilitar Herramientas (Tools)"</strong>
+                            </p>
+                          </div>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input 
-                            type="checkbox" 
-                            name="enabled"
-                            defaultChecked={settings.enabled}
-                            className="sr-only peer" 
-                          />
-                          <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-apidevs-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-apidevs-primary"></div>
-                        </label>
                       </div>
-                    </div>
+                    )}
 
                     {/* Modo de Publicación */}
                     <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
