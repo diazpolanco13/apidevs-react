@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Bot, Settings, MessageSquare, Wrench, BarChart3, History } from 'lucide-react';
+import { Bot, Settings, MessageSquare, Wrench, BarChart3, History, FileText } from 'lucide-react';
 import ConfiguracionTab from './ConfiguracionTab';
 import ConversacionesTab from './ConversacionesTab';
 import ToolsTab from './ToolsTab';
 import EstadisticasTab from './EstadisticasTab';
 import HistorialTab from './HistorialTab';
+import CreadorContenidoTab from './CreadorContenidoTab';
 
 export interface AIConfig {
   id: string;
@@ -59,7 +60,7 @@ export interface AIConfig {
   admin_instructions?: any;
 }
 
-type TabType = 'configuracion' | 'conversaciones' | 'tools' | 'estadisticas' | 'historial';
+type TabType = 'configuracion' | 'conversaciones' | 'tools' | 'estadisticas' | 'historial' | 'creador-contenido';
 
 interface Props {
   initialConfig: AIConfig | null;
@@ -106,6 +107,13 @@ export default function IAMainView({ initialConfig }: Props) {
       icon: History,
       count: null,
       badge: 'Por Desarrollar',
+    },
+    {
+      id: 'creador-contenido' as TabType,
+      name: 'Creador de Contenido',
+      description: 'Generación automática de contenido',
+      icon: FileText,
+      count: null,
     },
   ];
 
@@ -237,6 +245,9 @@ export default function IAMainView({ initialConfig }: Props) {
         {activeTab === 'tools' && <ToolsTab />}
         {activeTab === 'estadisticas' && <EstadisticasTab />}
         {activeTab === 'historial' && <HistorialTab />}
+        {activeTab === 'creador-contenido' && (
+          <CreadorContenidoTab config={config} setConfig={setConfig} />
+        )}
       </div>
     </div>
   );
