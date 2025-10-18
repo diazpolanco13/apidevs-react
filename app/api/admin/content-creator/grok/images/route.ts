@@ -175,6 +175,15 @@ export async function POST(request: NextRequest) {
             imageUrl: imageUrl,
             generatedAt: new Date().toISOString()
           }),
+          generated_content: {
+            type: 'image',
+            prompt: prompt,
+            style: style,
+            size: size,
+            quality: quality,
+            imageUrl: imageUrl,
+            generatedAt: new Date().toISOString()
+          },
           content_type: 'image',
           language: 'es',
           user_prompt: prompt,
