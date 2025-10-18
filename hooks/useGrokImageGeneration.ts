@@ -23,14 +23,14 @@ export function useGrokImageGeneration() {
       setGenerating(true);
       setLastResult(null);
 
-      // Obtener la API key de OpenAI desde la configuración
+      // Obtener la API key de OpenRouter desde la configuración
       const configResponse = await fetch('/api/admin/content-creator/sanity/config');
       const configData = await configResponse.json();
       
-      if (!configData.success || !configData.config?.openai_api_key || configData.config.openai_api_key.length === 0) {
+      if (!configData.success || !configData.config?.openrouter_api_key || configData.config.openrouter_api_key.length === 0) {
         const errorResult = {
           success: false,
-          error: 'OpenAI API key not configured for image generation',
+          error: 'OpenRouter API key not configured for image generation',
           details: null
         };
         setLastResult(errorResult);
@@ -44,7 +44,7 @@ export function useGrokImageGeneration() {
         },
         body: JSON.stringify({
           ...request,
-          apiKey: configData.config.openai_api_key
+          apiKey: configData.config.openrouter_api_key
         }),
       });
 
