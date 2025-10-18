@@ -4,7 +4,8 @@ import { supabaseAdmin } from '@/utils/supabase/admin';
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, content, type, language, user_prompt } = await request.json();
+    const body = await request.json();
+    const { title, content, type, language, user_prompt, slug, excerpt, mainImage, tags, readingTime, seo } = body;
 
     if (!title || !content || !type || !language) {
       return NextResponse.json(
@@ -79,7 +80,13 @@ export async function POST(request: NextRequest) {
         user_prompt: user_prompt || '',
         generated_content: {
           title,
+          slug,
+          excerpt,
           content,
+          mainImage,
+          tags: tags || [],
+          readingTime: readingTime || 0,
+          seo: seo || {},
           type,
           language
         },
