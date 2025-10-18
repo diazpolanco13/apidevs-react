@@ -20,6 +20,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
     user_prompt: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [sanityResult, setSanityResult] = useState<any>(null);
@@ -27,6 +28,49 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   
   const { createContent, config, loading: sanityLoading } = useSanityIntegration();
+
+  const handleGenerateWithAI = async () => {
+    if (!formData.user_prompt.trim()) {
+      setError('Por favor ingresa un prompt para generar el contenido');
+      return;
+    }
+
+    setIsGenerating(true);
+    setError('');
+
+    try {
+      // Llamar a la API para generar contenido con IA
+      const response = await fetch('/api/admin/content-creator/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: formData.user_prompt,
+          type: formData.type,
+          language: formData.language,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error generando contenido');
+      }
+
+      // Actualizar formData con el contenido generado
+      setFormData(prev => ({
+        ...prev,
+        title: result.title || '',
+        content: result.content || '',
+      }));
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error generando contenido');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,83 +226,116 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Tipo de Contenido
-              </label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
-                required
-              >
-                <option value="blog">📝 Blog Post</option>
-                <option value="docs">📚 Documentación</option>
-                <option value="indicators">📊 Indicadores</option>
-              </select>
+          {/* GENERACIÓN AUTOMÁTICA CON IA */}
+          <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-purple-400" />
+              Generación Automática con IA
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Tipo de Contenido
+                </label>
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                >
+                  <option value="blog">📝 Blog Post</option>
+                  <option value="docs">📚 Documentación</option>
+                  <option value="indicators">📊 Indicadores</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Idioma
+                </label>
+                <select
+                  name="language"
+                  value={formData.language}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                >
+                  <option value="es">🇪🇸 Español</option>
+                  <option value="en">🇺🇸 English</option>
+                </select>
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Idioma
+                Prompt para la IA ✨
               </label>
-              <select
-                name="language"
-                value={formData.language}
+              <textarea
+                name="user_prompt"
+                value={formData.user_prompt}
                 onChange={handleChange}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
-                required
+                placeholder="Ejemplo: Escribe un artículo sobre cómo usar MACD para identificar tendencias en el mercado..."
+                rows={3}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                La IA generará automáticamente el título y el contenido completo
+              </p>
+            </div>
+
+            <div className="flex justify-end mt-4">
+              <button
+                type="button"
+                onClick={handleGenerateWithAI}
+                disabled={isGenerating || !formData.user_prompt.trim()}
+                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg transition-all disabled:opacity-50"
               >
-                <option value="es">🇪🇸 Español</option>
-                <option value="en">🇺🇸 English</option>
-              </select>
+                {isGenerating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Wand2 className="h-4 w-4" />
+                )}
+                {isGenerating ? 'Generando con IA...' : 'Generar con IA'}
+              </button>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Título
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              placeholder="Título del contenido..."
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
-              required
-            />
-          </div>
+          {/* CAMPOS GENERADOS (se llenan automáticamente) */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <FileText className="h-5 w-5 text-apidevs-primary" />
+              Contenido Generado
+            </h3>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Prompt del Usuario (Opcional)
-            </label>
-            <textarea
-              name="user_prompt"
-              value={formData.user_prompt}
-              onChange={handleChange}
-              placeholder="Describe qué tipo de contenido quieres crear..."
-              rows={3}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Título {formData.title && '✅'}
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="Se generará automáticamente..."
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
+                readOnly={isGenerating}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Contenido
-            </label>
-            <textarea
-              name="content"
-              value={formData.content}
-              onChange={handleChange}
-              placeholder="Escribe el contenido aquí..."
-              rows={8}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none"
-              required
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Contenido {formData.content && '✅'}
+              </label>
+              <textarea
+                name="content"
+                value={formData.content}
+                onChange={handleChange}
+                placeholder="Se generará automáticamente..."
+                rows={8}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none"
+                readOnly={isGenerating}
+              />
+            </div>
           </div>
 
           {/* Generación de imágenes */}
