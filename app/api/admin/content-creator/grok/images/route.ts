@@ -160,12 +160,13 @@ export async function POST(request: NextRequest) {
 
       const data = await response.json();
       
-      // Log para debugging
+      // Log para debugging COMPLETO
       console.log('OpenRouter image generation response:', {
         model: imageModel,
         prompt: prompt.substring(0, 50) + '...',
         hasChoices: !!data.choices,
-        response: data
+        message: data.choices?.[0]?.message,
+        fullResponse: JSON.stringify(data, null, 2)
       });
 
       // Según la documentación de OpenRouter, la imagen está en message.images
