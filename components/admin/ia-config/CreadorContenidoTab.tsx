@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, FileText, Palette, Users, Save, RefreshCw, TestTube } from 'lucide-react';
+import { Settings, FileText, Palette, Users, Save, RefreshCw, TestTube, AlertCircle } from 'lucide-react';
+import { useAIContentSettings, AIContentSettings } from '@/hooks/useAIContentSettings';
+import ContentCreatorPermissions from './ContentCreatorPermissions';
 
 interface Props {
   config: any;
@@ -10,7 +12,15 @@ interface Props {
 
 export default function CreadorContenidoTab({ config, setConfig }: Props) {
   const [activeSubTab, setActiveSubTab] = useState<'configuracion' | 'cola' | 'templates'>('configuracion');
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    settings,
+    queue,
+    loading,
+    saving,
+    error,
+    saveSettings,
+    loadSettings,
+  } = useAIContentSettings();
 
   const subTabs = [
     {
@@ -34,15 +44,78 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
   ];
 
   const handleSave = async () => {
-    setIsLoading(true);
-    // TODO: Implementar guardado de configuración
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    if (!settings) return;
+    
+    try {
+      // Recopilar datos del formulario
+      const formData = new FormData(document.getElementById('ai-content-form') as HTMLFormElement);
+      
+      const updates: Partial<AIContentSettings> = {
+        enabled: formData.get('enabled') === 'on',
+        default_language: formData.get('default_language') as 'es' | 'en',
+        model_provider: formData.get('model_provider') as string,
+        model_name: formData.get('model_name') as string,
+        temperature: parseFloat(formData.get('temperature') as string),
+        max_tokens: parseInt(formData.get('max_tokens') as string),
+        auto_publish_mode: formData.get('auto_publish_mode') as 'draft' | 'review' | 'published',
+        require_admin_approval: formData.get('require_admin_approval') === 'on',
+        image_generation_enabled: formData.get('image_generation_enabled') === 'on',
+        image_provider: formData.get('image_provider') as 'grok' | 'dalle' | 'midjourney',
+        grok_api_key: formData.get('grok_api_key') as string,
+        seo_optimization_enabled: formData.get('seo_optimization_enabled') === 'on',
+        auto_generate_meta_description: formData.get('auto_generate_meta_description') === 'on',
+        auto_generate_keywords: formData.get('auto_generate_keywords') === 'on',
+        target_keyword_density: parseFloat(formData.get('target_keyword_density') as string),
+        auto_translate_enabled: formData.get('auto_translate_enabled') === 'on',
+        translate_after_publish: formData.get('translate_after_publish') === 'on',
+        max_posts_per_day: parseInt(formData.get('max_posts_per_day') as string),
+        max_tokens_per_day: parseInt(formData.get('max_tokens_per_day') as string),
+      };
+
+      await saveSettings(updates);
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-apidevs-primary"></div>
+        <span className="ml-3 text-gray-400">Cargando configuración...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 flex items-center gap-3">
+        <AlertCircle className="h-5 w-5 text-red-400" />
+        <div>
+          <p className="text-red-400 font-medium">Error al cargar configuración</p>
+          <p className="text-red-300 text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <ContentCreatorPermissions>
+      {(permissions) => {
+        if (!permissions.canView) {
+          return (
+            <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4 flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-yellow-400" />
+              <div>
+                <p className="text-yellow-400 font-medium">Acceso denegado</p>
+                <p className="text-yellow-300 text-sm">No tienes permisos para acceder al Content Creator AI</p>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="space-y-6">
       {/* Sub-tabs Navigation */}
       <div className="border-b border-gray-800">
         <nav className="flex space-x-1 -mb-px">
@@ -86,8 +159,8 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
 
       {/* Sub-tab Content */}
       <div className="mt-6">
-        {activeSubTab === 'configuracion' && (
-          <div className="space-y-6">
+        {activeSubTab === 'configuracion' && settings && (
+          <form id="ai-content-form" className="space-y-6">
             {/* Modo de Publicación */}
             <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -99,9 +172,9 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                   <label className="flex items-center">
                     <input
                       type="radio"
-                      name="publishMode"
+                      name="auto_publish_mode"
                       value="draft"
-                      defaultChecked
+                      defaultChecked={settings.auto_publish_mode === 'draft'}
                       className="h-4 w-4 text-apidevs-primary focus:ring-apidevs-primary border-gray-600 bg-gray-700"
                     />
                     <span className="ml-2 text-gray-300">Modo Borrador (Recomendado)</span>
@@ -115,8 +188,25 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                   <label className="flex items-center">
                     <input
                       type="radio"
-                      name="publishMode"
-                      value="auto"
+                      name="auto_publish_mode"
+                      value="review"
+                      defaultChecked={settings.auto_publish_mode === 'review'}
+                      className="h-4 w-4 text-apidevs-primary focus:ring-apidevs-primary border-gray-600 bg-gray-700"
+                    />
+                    <span className="ml-2 text-gray-300">Modo Revisión</span>
+                  </label>
+                </div>
+                <p className="text-sm text-gray-400 ml-6">
+                  Crea en cola de revisión para aprobación
+                </p>
+                
+                <div className="flex items-center space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="auto_publish_mode"
+                      value="published"
+                      defaultChecked={settings.auto_publish_mode === 'published'}
                       className="h-4 w-4 text-apidevs-primary focus:ring-apidevs-primary border-gray-600 bg-gray-700"
                     />
                     <span className="ml-2 text-gray-300">Modo Automático</span>
@@ -129,40 +219,49 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
             </div>
 
             {/* Generación de Imágenes */}
-            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <Palette className="h-5 w-5 text-apidevs-primary" />
-                Generación de Imágenes con Grok
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <label className="text-sm font-medium text-gray-300">Habilitar generación automática</label>
-                    <p className="text-xs text-gray-400">Genera imágenes para posts de blog automáticamente</p>
+            {permissions.canGenerateImages && (
+              <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-apidevs-primary" />
+                  Generación de Imágenes con Grok
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-sm font-medium text-gray-300">Habilitar generación automática</label>
+                      <p className="text-xs text-gray-400">Genera imágenes para posts de blog automáticamente</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        name="image_generation_enabled"
+                        defaultChecked={settings.image_generation_enabled}
+                        className="sr-only peer" 
+                      />
+                      <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-apidevs-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-apidevs-primary"></div>
+                    </label>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" />
-                    <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-apidevs-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-apidevs-primary"></div>
-                  </label>
-                </div>
-                
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium text-gray-300">
-                    API Key de Grok
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="password"
-                      placeholder="Ingresa tu API key de Grok..."
-                      className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-transparent"
-                    />
-                    <button className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors">
-                      Test
-                    </button>
+                  
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-300">
+                      API Key de Grok
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="password"
+                        name="grok_api_key"
+                        defaultValue={settings.grok_api_key || ''}
+                        placeholder="Ingresa tu API key de Grok..."
+                        className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-transparent"
+                      />
+                      <button type="button" className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors">
+                        Test
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Límites de Seguridad */}
             <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
@@ -177,7 +276,8 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                   </label>
                   <input
                     type="number"
-                    defaultValue={10}
+                    name="max_posts_per_day"
+                    defaultValue={settings.max_posts_per_day}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
                   />
                 </div>
@@ -187,18 +287,19 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                   </label>
                   <input
                     type="number"
-                    defaultValue={100000}
+                    name="max_tokens_per_day"
+                    defaultValue={settings.max_tokens_per_day}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
                   />
                 </div>
               </div>
               <div className="mt-4 p-3 bg-gray-700/50 rounded-lg">
                 <p className="text-sm text-gray-300">
-                  <span className="text-apidevs-primary">Usados hoy:</span> 3/10 posts | 12,450 tokens
+                  <span className="text-apidevs-primary">Usados hoy:</span> 3/{settings.max_posts_per_day} posts | 12,450/{settings.max_tokens_per_day.toLocaleString()} tokens
                 </p>
               </div>
             </div>
-          </div>
+          </form>
         )}
 
         {activeSubTab === 'cola' && (
@@ -206,15 +307,73 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
             <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <FileText className="h-5 w-5 text-apidevs-primary" />
-                Cola de Contenido
+                Cola de Contenido ({queue.length} elementos)
               </h3>
-              <div className="text-center py-12">
-                <FileText className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">No hay contenido pendiente de revisión</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  El contenido generado aparecerá aquí para revisión
-                </p>
-              </div>
+              
+              {queue.length === 0 ? (
+                <div className="text-center py-12">
+                  <FileText className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">No hay contenido pendiente de revisión</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    El contenido generado aparecerá aquí para revisión
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {queue.map((item) => (
+                    <div key={item.id} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              item.status === 'pending_review' ? 'bg-yellow-500/20 text-yellow-400' :
+                              item.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                              item.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                              item.status === 'published' ? 'bg-blue-500/20 text-blue-400' :
+                              'bg-gray-500/20 text-gray-400'
+                            }`}>
+                              {item.status}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {item.content_type} • {item.language}
+                            </span>
+                          </div>
+                          <h4 className="text-white font-medium mb-1">
+                            {item.title || 'Sin título'}
+                          </h4>
+                          <p className="text-gray-400 text-sm mb-2">
+                            {item.user_prompt}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <span>Creado: {new Date(item.created_at).toLocaleDateString()}</span>
+                            {item.tokens_used > 0 && (
+                              <span>Tokens: {item.tokens_used}</span>
+                            )}
+                            {item.processing_time_ms && (
+                              <span>Tiempo: {item.processing_time_ms}ms</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          {item.status === 'pending_review' && (
+                            <>
+                              <button className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded">
+                                Aprobar
+                              </button>
+                              <button className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded">
+                                Rechazar
+                              </button>
+                            </>
+                          )}
+                          <button className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-xs rounded">
+                            Ver
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -238,28 +397,31 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
         )}
       </div>
 
-      {/* Quick Actions */}
-      <div className="flex justify-end space-x-3">
-        <button
-          onClick={() => window.location.reload()}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Recargar
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={isLoading}
-          className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-apidevs-primary to-purple-600 hover:from-apidevs-primary/90 hover:to-purple-600/90 text-white rounded-lg transition-all disabled:opacity-50"
-        >
-          {isLoading ? (
-            <RefreshCw className="h-4 w-4 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4" />
-          )}
-          Guardar Cambios
-        </button>
-      </div>
-    </div>
+            {/* Quick Actions */}
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Recargar
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-apidevs-primary to-purple-600 hover:from-apidevs-primary/90 hover:to-purple-600/90 text-white rounded-lg transition-all disabled:opacity-50"
+              >
+                {saving ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        );
+      }}
+    </ContentCreatorPermissions>
   );
 }
