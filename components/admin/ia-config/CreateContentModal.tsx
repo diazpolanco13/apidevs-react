@@ -40,6 +40,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
   const [sanityResult, setSanityResult] = useState<any>(null);
   const [isImageGeneratorOpen, setIsImageGeneratorOpen] = useState(false);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
   
   const { createContent, config, loading: sanityLoading } = useSanityIntegration();
 
@@ -332,77 +333,71 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             </div>
           </div>
 
-          {/* UI SEGMENTADA SEGÚN SCHEMA DE SANITY */}
-          <div className="space-y-4">
-            {/* SECCIÓN 1: Información Básica */}
-            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
-              <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                📝 Información Básica {formData.title && '✅'}
-              </h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
-                    Título (máx 150 caracteres) *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Se generará automáticamente..."
-                    maxLength={150}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">{formData.title.length}/150</p>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
-                    Slug URL *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.slug}
-                    onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                    placeholder="url-amigable"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
-                  />
-                </div>
+          {/* VISTA RESUMIDA DEL CONTENIDO GENERADO */}
+          {formData.title && (
+            <div className="bg-gradient-to-br from-green-800/20 to-blue-800/20 border border-green-500/30 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  ✅ Contenido Generado Exitosamente
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(true)}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition-colors"
+                >
+                  👁️ Preview Completo
+                </button>
               </div>
-              <div className="mt-3">
-                <label className="block text-xs font-medium text-gray-400 mb-1">
-                  Excerpt / Resumen (50-250 caracteres) *
-                </label>
-                <textarea
-                  value={formData.excerpt}
-                  onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
-                  placeholder="Resumen corto para cards y preview..."
-                  rows={2}
-                  maxLength={250}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none"
-                />
-                <p className="text-xs text-gray-500 mt-1">{formData.excerpt.length}/250</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                <div>
+                  <p className="text-gray-400">Título:</p>
+                  <p className="text-white font-medium truncate">{formData.title}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Tags:</p>
+                  <p className="text-white">{formData.tags.length} etiquetas</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Lectura:</p>
+                  <p className="text-white">{formData.readingTime} min</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Excerpt:</p>
+                  <p className="text-white truncate">{formData.excerpt.substring(0, 50)}...</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">SEO Keywords:</p>
+                  <p className="text-white">{formData.seo.keywords.length} keywords</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Contenido:</p>
+                  <p className="text-white">{formData.content.split(' ').length} palabras</p>
+                </div>
               </div>
             </div>
+          )}
 
-            {/* SECCIÓN 2: Contenido Principal + Imagen */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Contenido */}
-              <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
-                <h3 className="text-sm font-bold text-white mb-3">📄 Contenido Principal {formData.content && '✅'}</h3>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                  placeholder="Se generará automáticamente..."
-                  rows={16}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none font-mono"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {formData.content ? `~${Math.ceil(formData.content.split(' ').length / 200)} min lectura` : 'Markdown soportado'}
-                </p>
-              </div>
+          {/* GRID 2 COLUMNAS: Contenido + Imagen */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Contenido Principal */}
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+              <h3 className="text-sm font-bold text-white mb-3">📄 Contenido Markdown {formData.content && '✅'}</h3>
+              <textarea
+                value={formData.content}
+                onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="Se generará automáticamente..."
+                rows={12}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none font-mono"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {formData.content ? `~${formData.content.split(' ').length} palabras` : 'Markdown soportado'}
+              </p>
+            </div>
 
-              {/* Imagen Principal */}
-              <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
-                <h3 className="text-sm font-bold text-white mb-3">🖼️ Imagen Principal</h3>
+            {/* Imagen Principal */}
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+              <h3 className="text-sm font-bold text-white mb-3">🖼️ Imagen Principal</h3>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Imagen (Opcional)
             </label>
@@ -443,93 +438,6 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
                 Generar Imagen con IA
               </button>
             )}
-              </div>
-            </div>
-          </div>
-
-          {/* SECCIÓN 3: Tags y Metadata */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Tags */}
-            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
-              <h3 className="text-sm font-bold text-white mb-3">🏷️ Tags {formData.tags.length > 0 && '✅'}</h3>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {formData.tags.map((tag, index) => (
-                  <span key={index} className="px-2 py-1 bg-apidevs-primary/20 text-apidevs-primary text-xs rounded-lg border border-apidevs-primary/30 flex items-center gap-1">
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, tags: prev.tags.filter((_, i) => i !== index) }))}
-                      className="hover:text-red-400"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-              <p className="text-xs text-gray-400 mb-2">Tags: {formData.tags.length}/10</p>
-            </div>
-
-            {/* Tiempo de lectura */}
-            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
-              <h3 className="text-sm font-bold text-white mb-3">⏱️ Tiempo de Lectura</h3>
-              <input
-                type="number"
-                value={formData.readingTime}
-                onChange={(e) => setFormData(prev => ({ ...prev, readingTime: parseInt(e.target.value) || 0 }))}
-                placeholder="Minutos"
-                min="1"
-                max="60"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
-              />
-              <p className="text-xs text-gray-400 mt-1">Minutos estimados de lectura</p>
-            </div>
-          </div>
-
-          {/* SECCIÓN 4: SEO */}
-          <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
-            <h3 className="text-sm font-bold text-white mb-3">🚀 Optimización SEO {formData.seo.metaDescription && '✅'}</h3>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">
-                  Meta Título (máx 60 caracteres)
-                </label>
-                <input
-                  type="text"
-                  value={formData.seo.metaTitle}
-                  onChange={(e) => setFormData(prev => ({ ...prev, seo: { ...prev.seo, metaTitle: e.target.value } }))}
-                  placeholder="Título SEO..."
-                  maxLength={60}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50"
-                />
-                <p className="text-xs text-gray-500 mt-1">{formData.seo.metaTitle.length}/60</p>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">
-                  Keywords SEO
-                </label>
-                <div className="flex flex-wrap gap-1">
-                  {formData.seo.keywords.map((keyword, index) => (
-                    <span key={index} className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded border border-blue-500/30">
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-400 mt-1">{formData.seo.keywords.length} keywords</p>
-              </div>
-            </div>
-            <div className="mt-3">
-              <label className="block text-xs font-medium text-gray-400 mb-1">
-                Meta Descripción (máx 160 caracteres)
-              </label>
-              <textarea
-                value={formData.seo.metaDescription}
-                onChange={(e) => setFormData(prev => ({ ...prev, seo: { ...prev.seo, metaDescription: e.target.value } }))}
-                placeholder="Meta descripción optimizada..."
-                rows={2}
-                maxLength={160}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none"
-              />
-              <p className="text-xs text-gray-500 mt-1">{formData.seo.metaDescription.length}/160</p>
             </div>
           </div>
 
@@ -558,6 +466,123 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
           </div>
         </form>
       </div>
+
+      {/* MODAL DE PREVIEW */}
+      {showPreview && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-6 border-b border-gray-700">
+              <h3 className="text-xl font-bold text-white">👁️ Preview del Contenido Generado</h3>
+              <button
+                type="button"
+                onClick={() => setShowPreview(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Información Básica */}
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Título:</p>
+                  <p className="text-lg text-white font-bold">{formData.title}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Slug:</p>
+                  <p className="text-sm text-apidevs-primary font-mono">{formData.slug}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Excerpt:</p>
+                  <p className="text-sm text-gray-300 italic">{formData.excerpt}</p>
+                </div>
+              </div>
+
+              {/* Tags */}
+              {formData.tags.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-2">Tags:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.tags.map((tag, index) => (
+                      <span key={index} className="px-3 py-1 bg-apidevs-primary/20 text-apidevs-primary text-sm rounded-lg border border-apidevs-primary/30">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* SEO */}
+              <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+                <p className="text-sm font-bold text-blue-400 mb-3">🚀 SEO</p>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <p className="text-xs text-gray-400">Meta Título:</p>
+                    <p className="text-white">{formData.seo.metaTitle || 'No definido'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Meta Descripción:</p>
+                    <p className="text-gray-300">{formData.seo.metaDescription || 'No definido'}</p>
+                  </div>
+                  {formData.seo.keywords.length > 0 && (
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Keywords:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {formData.seo.keywords.map((keyword, index) => (
+                          <span key={index} className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded">
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Contenido Principal */}
+              <div>
+                <p className="text-xs text-gray-400 mb-2">Contenido Principal:</p>
+                <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 max-h-96 overflow-y-auto">
+                  <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono">{formData.content}</pre>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  📊 {formData.content.split(' ').length} palabras • ⏱️ {formData.readingTime} min lectura
+                </p>
+              </div>
+
+              {/* JSON Completo */}
+              <div>
+                <p className="text-xs text-gray-400 mb-2">JSON para Sanity:</p>
+                <div className="bg-black border border-gray-700 rounded-lg p-4 max-h-64 overflow-y-auto">
+                  <pre className="text-xs text-green-400 whitespace-pre-wrap font-mono">
+                    {JSON.stringify({
+                      title: formData.title,
+                      slug: formData.slug,
+                      excerpt: formData.excerpt,
+                      content: formData.content,
+                      mainImage: formData.mainImage,
+                      tags: formData.tags,
+                      readingTime: formData.readingTime,
+                      seo: formData.seo
+                    }, null, 2)}
+                  </pre>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end p-6 border-t border-gray-700">
+              <button
+                type="button"
+                onClick={() => setShowPreview(false)}
+                className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+              >
+                Cerrar Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Generador de imágenes con Grok */}
       <GrokImageGenerator
