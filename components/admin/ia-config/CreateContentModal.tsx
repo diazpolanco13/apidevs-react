@@ -187,10 +187,19 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
 
       const imageResult = await imageResponse.json();
 
+      console.log('🖼️ Image generation result:', {
+        success: imageResult.success,
+        hasImages: !!imageResult.images,
+        imageCount: imageResult.images?.length || 0,
+        images: imageResult.images
+      });
+
       if (imageResult.success && imageResult.images && imageResult.images.length > 0) {
         // Guardar TODAS las imágenes generadas
         setGeneratedImages(imageResult.images);
         setSelectedImageIndex(0); // Seleccionar la primera por defecto
+        
+        console.log('✅ Saved images to state:', imageResult.images.length, 'images');
         
         // Actualizar mainImage con los datos del Director de Arte Y la URL de la primera
         setFormData(prev => ({
@@ -202,6 +211,8 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             imageUrl: imageResult.images[0].url // Usar la primera imagen por defecto
           }
         }));
+      } else {
+        console.warn('⚠️ No images received or invalid response:', imageResult);
       }
 
     } catch (error) {
@@ -545,6 +556,11 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             
             {generatedImages.length > 0 ? (
               <div className="space-y-3">
+                {/* DEBUG: Mostrar cantidad de imágenes */}
+                <div className="text-xs text-gray-500 mb-2">
+                  🐛 DEBUG: {generatedImages.length} imagen(es) disponible(s)
+                </div>
+                
                 {/* Selector de imágenes (si hay más de 1) */}
                 {generatedImages.length > 1 && (
                   <div className="flex items-center gap-2 mb-3">
