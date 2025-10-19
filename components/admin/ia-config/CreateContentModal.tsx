@@ -574,7 +574,10 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
                       {generatedImages.map((img, idx) => (
                         <button
                           key={idx}
-                          onClick={() => {
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             setSelectedImageIndex(idx);
                             setFormData(prev => ({
                               ...prev,
@@ -586,7 +589,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
                           }}
                           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                             selectedImageIndex === idx
-                              ? 'bg-apidevs-primary text-gray-900'
+                              ? 'bg-apidevs-primary text-gray-900 font-bold'
                               : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                           }`}
                         >
