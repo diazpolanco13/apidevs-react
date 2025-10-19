@@ -145,12 +145,24 @@ export async function POST(
       ],
       tags: generatedContent.tags || ['trading'],
       readingTime: generatedContent.readingTime || 5,
+      author: {
+        _type: 'reference',
+        _ref: 'e7c2446c-5865-4ca3-9bb7-40f99387cec6' // Carlos Diaz (autor por defecto)
+      },
+      categories: [
+        {
+          _type: 'reference',
+          _ref: '2add6624-9310-4f1a-8f50-6434b5fdf436', // Gestión de Riesgo (categoría por defecto)
+          _key: `cat-${Date.now()}`
+        }
+      ],
+      publishedAt: new Date().toISOString(),
       status: 'draft',
       visibility: 'public',
       seo: {
         _type: 'object',
-        metaTitle: generatedContent.seo?.metaTitle || queueItem.title,
-        metaDescription: generatedContent.seo?.metaDescription || generatedContent.excerpt,
+        metaTitle: (generatedContent.seo?.metaTitle || queueItem.title).substring(0, 60),
+        metaDescription: (generatedContent.seo?.metaDescription || generatedContent.excerpt || '').substring(0, 160),
         keywords: generatedContent.seo?.keywords || []
       }
     };
