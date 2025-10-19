@@ -521,18 +521,17 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
           )}
 
           {/* GRID 2 COLUMNAS: Contenido + Imagen */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ height: 'calc(100vh - 400px)', minHeight: '500px' }}>
             {/* Contenido Principal */}
-            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4 flex flex-col">
               <h3 className="text-sm font-bold text-white mb-3">📄 Contenido Markdown {formData.content && '✅'}</h3>
               <textarea
                 value={formData.content}
                 onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                 placeholder="Se generará automáticamente..."
-                rows={12}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none font-mono"
+                className="flex-1 w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 resize-none font-mono"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-2">
                 {formData.content ? `~${formData.content.split(' ').length} palabras` : 'Markdown soportado'}
               </p>
             </div>
@@ -610,17 +609,19 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
                     type="button"
                     onClick={async () => {
                       // Regenerar imagen automáticamente
+                      setIsGeneratingImage(true);
                       await generateImageAutomatically(formData);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all"
+                    disabled={isGeneratingImage}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <RefreshCw className="h-4 w-4" />
-                    Regenerar Imagen
+                    <RefreshCw className={`h-4 w-4 ${isGeneratingImage ? 'animate-spin' : ''}`} />
+                    {isGeneratingImage ? 'Generando...' : 'Regenerar'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsImageGeneratorOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-apidevs-primary hover:bg-apidevs-primary-dark text-gray-900 font-semibold rounded-lg transition-all shadow-lg shadow-apidevs-primary/20 hover:shadow-apidevs-primary/40"
                   >
                     <Wand2 className="h-4 w-4" />
                     Prompt Manual
@@ -635,7 +636,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
                         mainImage: { prompt: '', alt: '', caption: '' }
                       }));
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg transition-all shadow-lg shadow-red-500/20 hover:shadow-red-500/40"
                   >
                     <X className="h-4 w-4" />
                     Quitar
