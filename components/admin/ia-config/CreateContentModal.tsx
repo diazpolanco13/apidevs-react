@@ -688,18 +688,18 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             </div>
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+              className="w-full sm:w-auto px-6 py-2.5 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting || success}
-              className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-apidevs-primary to-purple-600 hover:from-apidevs-primary/90 hover:to-purple-600/90 text-white rounded-lg transition-all disabled:opacity-50"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-apidevs-primary to-purple-600 hover:from-apidevs-primary/90 hover:to-purple-600/90 text-gray-900 font-bold rounded-lg transition-all disabled:opacity-50 shadow-lg shadow-apidevs-primary/30 hover:shadow-apidevs-primary/50"
             >
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -708,7 +708,9 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
               ) : (
                 <Plus className="h-4 w-4" />
               )}
-              {isSubmitting ? 'Creando...' : success ? '¡Creado!' : 'Crear Contenido'}
+              <span className="whitespace-nowrap">
+                {isSubmitting ? 'Creando...' : success ? '¡Creado!' : 'Crear Contenido'}
+              </span>
             </button>
           </div>
         </form>
