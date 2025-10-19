@@ -41,7 +41,8 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
   const [success, setSuccess] = useState(false);
   const [sanityResult, setSanityResult] = useState<any>(null);
   const [isImageGeneratorOpen, setIsImageGeneratorOpen] = useState(false);
-  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
+  const [generatedImages, setGeneratedImages] = useState<Array<{url: string, index: number}>>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [showPreview, setShowPreview] = useState(false);
   
   const { createContent, config, loading: sanityLoading } = useSanityIntegration();
@@ -186,17 +187,19 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
 
       const imageResult = await imageResponse.json();
 
-      if (imageResult.success && imageResult.imageUrl) {
-        setGeneratedImageUrl(imageResult.imageUrl);
+      if (imageResult.success && imageResult.images && imageResult.images.length > 0) {
+        // Guardar TODAS las imágenes generadas
+        setGeneratedImages(imageResult.images);
+        setSelectedImageIndex(0); // Seleccionar la primera por defecto
         
-        // Actualizar mainImage con los datos del Director de Arte Y la URL
+        // Actualizar mainImage con los datos del Director de Arte Y la URL de la primera
         setFormData(prev => ({
           ...prev,
           mainImage: {
             prompt: improveResult.prompt,
             alt: improveResult.alt,
             caption: improveResult.caption,
-            imageUrl: imageResult.imageUrl // Guardar URL de la imagen
+            imageUrl: imageResult.images[0].url // Usar la primera imagen por defecto
           }
         }));
       }
@@ -260,6 +263,8 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             });
             setSuccess(false);
             setSanityResult(null);
+            setGeneratedImages([]);
+            setSelectedImageIndex(0);
             onSuccess();
             onClose();
           }, 2000);
@@ -284,6 +289,8 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             user_prompt: '',
           });
           setSuccess(false);
+          setGeneratedImages([]);
+          setSelectedImageIndex(0);
           onSuccess();
           onClose();
         }, 2000);
@@ -303,8 +310,14 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
     }));
   };
 
-  const handleImageGenerated = (imageUrl: string) => {
-    setGeneratedImageUrl(imageUrl);
+  const handleImageGenerated = (imageUrl: string, allImages?: Array<{url: string, index: number}>) => {
+    if (allImages && allImages.length > 0) {
+      setGeneratedImages(allImages);
+      setSelectedImageIndex(0);
+    } else {
+      setGeneratedImages([{url: imageUrl, index: 0}]);
+      setSelectedImageIndex(0);
+    }
     setIsImageGeneratorOpen(false);
   };
 
@@ -531,11 +544,43 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
               Imagen (Opcional)
             </label>
             
-            {generatedImageUrl ? (
+            {generatedImages.length > 0 ? (
               <div className="space-y-3">
+                {/* Selector de imágenes (si hay más de 1) */}
+                {generatedImages.length > 1 && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-sm text-gray-400">Elige una imagen:</span>
+                    <div className="flex gap-2">
+                      {generatedImages.map((img, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setSelectedImageIndex(idx);
+                            setFormData(prev => ({
+                              ...prev,
+                              mainImage: {
+                                ...prev.mainImage,
+                                imageUrl: img.url
+                              }
+                            }));
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                            selectedImageIndex === idx
+                              ? 'bg-apidevs-primary text-gray-900'
+                              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          }`}
+                        >
+                          Opción {idx + 1}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Imagen seleccionada */}
                 <div className="relative group">
                   <img 
-                    src={generatedImageUrl} 
+                    src={generatedImages[selectedImageIndex]?.url || generatedImages[0]?.url} 
                     alt={formData.mainImage.alt || "Generated image"} 
                     className="w-full rounded-lg border-2 border-purple-500/30 shadow-lg hover:border-purple-500/60 transition-all"
                   />
@@ -583,7 +628,8 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
                   <button
                     type="button"
                     onClick={() => {
-                      setGeneratedImageUrl(null);
+                      setGeneratedImages([]);
+                      setSelectedImageIndex(0);
                       setFormData(prev => ({
                         ...prev,
                         mainImage: { prompt: '', alt: '', caption: '' }
