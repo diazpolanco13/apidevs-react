@@ -870,34 +870,89 @@ export default async function PurchasesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30">
-            <Package className="w-6 h-6 text-green-400" />
-          </div>
-          <h1 className="text-3xl font-bold text-white">
-            Compras
-          </h1>
-        </div>
-        <p className="text-gray-400">
-          Gestión completa de compras, suscripciones y analytics
-        </p>
-      </div>
+    <>
+      {/* Custom Scrollbar Styles */}
+      <style jsx global>{`
+        /* Scrollbar personalizado para la página de compras */
+        .purchases-scrollbar::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        
+        .purchases-scrollbar::-webkit-scrollbar-track {
+          background: #1a1a1a;
+          border-radius: 10px;
+        }
+        
+        .purchases-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #9333ea 0%, #7e22ce 100%);
+          border-radius: 10px;
+          border: 1px solid #1a1a1a;
+          transition: all 0.3s ease;
+        }
+        
+        .purchases-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #a855f7 0%, #9333ea 100%);
+          box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+        }
+        
+        /* Firefox */
+        .purchases-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #9333ea #1a1a1a;
+        }
+        
+        /* Aplicar a todas las tablas con scroll horizontal */
+        .overflow-x-auto::-webkit-scrollbar {
+          height: 6px;
+        }
+        
+        .overflow-x-auto::-webkit-scrollbar-track {
+          background: #1a1a1a;
+          border-radius: 10px;
+        }
+        
+        .overflow-x-auto::-webkit-scrollbar-thumb {
+          background: linear-gradient(90deg, #9333ea 0%, #7e22ce 100%);
+          border-radius: 10px;
+          border: 1px solid #1a1a1a;
+        }
+        
+        .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(90deg, #a855f7 0%, #9333ea 100%);
+          box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+        }
+      `}</style>
 
-      {/* Tabs */}
-      <PurchasesTabs
-        metrics={metrics}
-        overviewView={<OverviewTab overviewData={overviewData} />}
-        allPurchasesView={<AllPurchasesTab purchases={overviewData.allPurchases} />}
-        subscriptionsView={<SubscriptionsTab subscriptionsData={subscriptionsData} />}
-        oneTimeView={<OneTimeTab oneTimeData={oneTimeData} />}
-        refundsView={<RefundsTab refundsData={refundsData} />}
-        analyticsView={<AnalyticsTab />}
-        cancellationsView={<CancellationsTab />}
-      />
-    </div>
+      <div className="space-y-6 purchases-scrollbar">
+        {/* Header */}
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30">
+              <Package className="w-6 h-6 text-green-400" />
+            </div>
+            <h1 className="text-3xl font-bold text-white">
+              Compras
+            </h1>
+          </div>
+          <p className="text-gray-400">
+            Gestión completa de compras, suscripciones y analytics
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <PurchasesTabs
+          metrics={metrics}
+          overviewView={<OverviewTab overviewData={overviewData} />}
+          allPurchasesView={<AllPurchasesTab purchases={overviewData.allPurchases} />}
+          subscriptionsView={<SubscriptionsTab subscriptionsData={subscriptionsData} />}
+          oneTimeView={<OneTimeTab oneTimeData={oneTimeData} />}
+          refundsView={<RefundsTab refundsData={refundsData} />}
+          analyticsView={<AnalyticsTab />}
+          cancellationsView={<CancellationsTab />}
+        />
+      </div>
+    </>
   );
 }
 
