@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 
     const imageModel = imageSettings?.image_model_name || 'google/gemini-2.5-flash-image';
 
-    // Generar imagen con OpenRouter (usa chat/completions endpoint)
+    // Generar 2 imágenes en paralelo con el mismo prompt
     try {
       const openrouterApiUrl = 'https://openrouter.ai/api/v1/chat/completions';
       
@@ -112,11 +112,10 @@ export async function POST(request: NextRequest) {
             content: prompt
           }
         ],
-        modalities: ['image', 'text'], // REQUERIDO para generación de imágenes
-        n: 2 // Generar 2 variaciones de la imagen
+        modalities: ['image', 'text'] // REQUERIDO para generación de imágenes
       };
 
-      console.log('Generating image with OpenRouter:', {
+      console.log('🎨 Generating 2 images in parallel with OpenRouter:', {
         model: imageModel,
         prompt: prompt.substring(0, 100) + '...',
         style,
@@ -124,76 +123,93 @@ export async function POST(request: NextRequest) {
         quality
       });
 
-      const response = await fetch(openrouterApiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openrouterApiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://apidevs.io',
-          'X-Title': 'APIDevs Content Creator'
-        },
-        body: JSON.stringify(requestBody),
-      });
+      // Hacer 2 llamadas en paralelo para obtener 2 variaciones
+      const [response1, response2] = await Promise.all([
+        fetch(openrouterApiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openrouterApiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://apidevs.io',
+            'X-Title': 'APIDevs Content Creator - Image 1'
+          },
+          body: JSON.stringify(requestBody),
+        }),
+        fetch(openrouterApiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openrouterApiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://apidevs.io',
+            'X-Title': 'APIDevs Content Creator - Image 2'
+          },
+          body: JSON.stringify(requestBody),
+        })
+      ]);
 
-      if (!response.ok) {
-        let errorData;
-        const responseText = await response.text();
-        try {
-          errorData = JSON.parse(responseText);
-        } catch (jsonError) {
-          // Si no es JSON válido, usar el texto directo
-          errorData = { message: responseText || 'Unknown error' };
-        }
-        
-        console.error('OpenRouter Image API error:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorData,
-          model: imageModel
-        });
+      // Verificar que ambas respuestas sean exitosas
+      if (!response1.ok || !response2.ok) {
+        const failedResponse = !response1.ok ? response1 : response2;
+        const errorText = await failedResponse.text();
+        console.error('One or both image requests failed:', errorText);
         
         return NextResponse.json({
           success: false,
-          error: `OpenRouter Image API error: ${response.status} ${response.statusText}`,
-          details: errorData
+          error: `Image generation failed: ${failedResponse.status}`,
+          details: errorText
         });
       }
 
-      const data = await response.json();
+      // Parsear ambas respuestas
+      const [data1, data2] = await Promise.all([
+        response1.json(),
+        response2.json()
+      ]);
       
-      // Log para debugging COMPLETO
-      console.log('OpenRouter image generation response:', {
-        model: imageModel,
-        prompt: prompt.substring(0, 50) + '...',
-        hasChoices: !!data.choices,
-        choicesCount: data.choices?.length || 0,
-        firstMessage: data.choices?.[0]?.message,
-        allChoices: data.choices
+      // Log para debugging
+      console.log('🎨 Image generation responses:', {
+        response1: {
+          hasChoices: !!data1.choices,
+          choicesCount: data1.choices?.length || 0,
+          hasImages: !!data1.choices?.[0]?.message?.images
+        },
+        response2: {
+          hasChoices: !!data2.choices,
+          choicesCount: data2.choices?.length || 0,
+          hasImages: !!data2.choices?.[0]?.message?.images
+        }
       });
 
-      // Recopilar TODAS las imágenes de TODOS los choices
+      // Recopilar imágenes de AMBAS respuestas
       const allImages = [];
       
-      if (data.choices && data.choices.length > 0) {
-        for (const choice of data.choices) {
+      // Imágenes de la primera respuesta
+      if (data1.choices && data1.choices.length > 0) {
+        for (const choice of data1.choices) {
           const choiceImages = choice.message?.images || [];
           allImages.push(...choiceImages);
         }
       }
       
-      console.log(`📊 Total images found: ${allImages.length} from ${data.choices?.length || 0} choices`);
+      // Imágenes de la segunda respuesta
+      if (data2.choices && data2.choices.length > 0) {
+        for (const choice of data2.choices) {
+          const choiceImages = choice.message?.images || [];
+          allImages.push(...choiceImages);
+        }
+      }
+      
+      console.log(`📊 Total images collected: ${allImages.length} (from 2 parallel requests)`);
       
       if (allImages.length === 0) {
-        console.error('No images in response:', {
-          hasChoices: !!data.choices,
-          hasMessage: !!data.choices?.[0]?.message,
-          hasImages: !!data.choices?.[0]?.message?.images,
-          fullResponse: data
+        console.error('No images in any response:', {
+          response1: data1,
+          response2: data2
         });
         return NextResponse.json({
           success: false,
-          error: 'No images generated',
-          details: data
+          error: 'No images generated from either request',
+          details: { data1, data2 }
         });
       }
 
