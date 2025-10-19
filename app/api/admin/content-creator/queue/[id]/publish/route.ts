@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { supabaseAdmin } from '@/utils/supabase/admin';
+import { markdownToPortableText } from '@/utils/markdown-to-portable-text';
 
 export async function POST(
   request: NextRequest,
@@ -117,7 +118,16 @@ export async function POST(
       }
     }
     
-    // PASO 2: Crear documento en Sanity usando la API HTTP
+    // PASO 2: Convertir markdown a Portable Text
+    const markdownContent = generatedContent.content || queueItem.content || '';
+    const portableTextContent = markdownToPortableText(markdownContent);
+    
+    console.log('✅ Converted markdown to Portable Text:', {
+      originalLength: markdownContent.length,
+      blocksCreated: portableTextContent.length
+    });
+    
+    // PASO 3: Crear documento en Sanity usando la API HTTP
     const documentData: any = {
       _type: 'post',
       language: queueItem.language,
@@ -127,22 +137,7 @@ export async function POST(
         current: generatedContent.slug || queueItem.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
       },
       excerpt: generatedContent.excerpt || queueItem.user_prompt.substring(0, 200),
-      content: [
-        {
-          _type: 'block',
-          _key: `block-${Date.now()}-1`,
-          style: 'normal',
-          children: [
-            {
-              _type: 'span',
-              _key: `span-${Date.now()}-1`,
-              text: generatedContent.content || queueItem.content,
-              marks: []
-            }
-          ],
-          markDefs: []
-        }
-      ],
+      content: portableTextContent,
       tags: generatedContent.tags || ['trading'],
       readingTime: generatedContent.readingTime || 5,
       author: {
