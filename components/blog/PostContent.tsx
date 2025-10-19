@@ -138,22 +138,37 @@ const portableTextComponents = {
   },
   
   block: {
-    h2: ({ children }: any) => (
-      <h2 className="text-3xl font-bold text-white mt-12 mb-6 flex items-center gap-3">
-        <span className="w-1 h-8 bg-gradient-to-b from-apidevs-primary to-purple-400 rounded-full" />
-        {children}
-      </h2>
-    ),
-    h3: ({ children }: any) => (
-      <h3 className="text-2xl font-bold text-white mt-10 mb-4">
-        {children}
-      </h3>
-    ),
-    h4: ({ children }: any) => (
-      <h4 className="text-xl font-semibold text-white mt-8 mb-3">
-        {children}
-      </h4>
-    ),
+    h2: ({ children }: any) => {
+      headingCounter++;
+      const headingId = `heading-${headingCounter}`;
+      
+      return (
+        <h2 id={headingId} className="text-3xl font-bold text-white mt-12 mb-6 flex items-center gap-3 scroll-mt-20">
+          <span className="w-1 h-8 bg-gradient-to-b from-apidevs-primary to-purple-400 rounded-full" />
+          {children}
+        </h2>
+      );
+    },
+    h3: ({ children }: any) => {
+      headingCounter++;
+      const headingId = `heading-${headingCounter}`;
+      
+      return (
+        <h3 id={headingId} className="text-2xl font-bold text-white mt-10 mb-4 scroll-mt-20">
+          {children}
+        </h3>
+      );
+    },
+    h4: ({ children }: any) => {
+      headingCounter++;
+      const headingId = `heading-${headingCounter}`;
+      
+      return (
+        <h4 id={headingId} className="text-xl font-semibold text-white mt-8 mb-3 scroll-mt-20">
+          {children}
+        </h4>
+      );
+    },
     blockquote: ({ children }: any) => (
       <blockquote className="my-6 pl-6 border-l-4 border-apidevs-primary italic text-gray-300">
         {children}
@@ -235,6 +250,9 @@ interface PostContentProps {
   hasLifetimeAccess: boolean;
 }
 
+// Crear un contador global para los headings
+let headingCounter = -1;
+
 export default function PostContent({ 
   content, 
   visibility = 'public',
@@ -243,6 +261,9 @@ export default function PostContent({
   subscription,
   hasLifetimeAccess 
 }: PostContentProps) {
+  // Resetear el contador al inicio del render
+  headingCounter = -1;
+  
   if (!content || content.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
