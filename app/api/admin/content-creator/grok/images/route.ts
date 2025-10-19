@@ -112,7 +112,8 @@ export async function POST(request: NextRequest) {
             content: prompt
           }
         ],
-        modalities: ['image', 'text'] // REQUERIDO para generación de imágenes
+        modalities: ['image', 'text'], // REQUERIDO para generación de imágenes
+        n: 2 // Generar 2 variaciones de la imagen
       };
 
       console.log('Generating image with OpenRouter:', {
@@ -165,14 +166,24 @@ export async function POST(request: NextRequest) {
         model: imageModel,
         prompt: prompt.substring(0, 50) + '...',
         hasChoices: !!data.choices,
-        message: data.choices?.[0]?.message,
-        fullResponse: JSON.stringify(data, null, 2)
+        choicesCount: data.choices?.length || 0,
+        firstMessage: data.choices?.[0]?.message,
+        allChoices: data.choices
       });
 
-      // Según la documentación de OpenRouter, pueden haber múltiples imágenes
-      const images = data.choices?.[0]?.message?.images || [];
+      // Recopilar TODAS las imágenes de TODOS los choices
+      const allImages = [];
       
-      if (images.length === 0) {
+      if (data.choices && data.choices.length > 0) {
+        for (const choice of data.choices) {
+          const choiceImages = choice.message?.images || [];
+          allImages.push(...choiceImages);
+        }
+      }
+      
+      console.log(`📊 Total images found: ${allImages.length} from ${data.choices?.length || 0} choices`);
+      
+      if (allImages.length === 0) {
         console.error('No images in response:', {
           hasChoices: !!data.choices,
           hasMessage: !!data.choices?.[0]?.message,
@@ -186,10 +197,10 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      console.log(`✅ Generated ${images.length} image(s)`);
+      console.log(`✅ Generated ${allImages.length} image(s)`);
 
       // Obtener TODAS las URLs de imágenes
-      const imageUrls = images.map((img: any) => img.image_url?.url).filter(Boolean);
+      const imageUrls = allImages.map((img: any) => img.image_url?.url).filter(Boolean);
 
       // SUBIR TODAS LAS IMÁGENES A SUPABASE STORAGE
       const uploadedImages = [];
