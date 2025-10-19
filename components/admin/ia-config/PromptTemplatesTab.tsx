@@ -27,13 +27,13 @@ export default function PromptTemplatesTab() {
   async function loadTemplates() {
     try {
       const supabase = createClient();
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('ai_prompt_templates')
         .select('*')
         .order('category', { ascending: true });
 
       if (error) throw error;
-      setTemplates(data || []);
+      setTemplates(data as PromptTemplate[] || []);
     } catch (error) {
       console.error('Error loading templates:', error);
     } finally {
@@ -55,7 +55,7 @@ export default function PromptTemplatesTab() {
     setSaving(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('ai_prompt_templates')
         .update({
           prompt_content: editedContent,
