@@ -8,6 +8,7 @@ import ContentCreatorPermissions from './ContentCreatorPermissions';
 import CreateContentModal from './CreateContentModal';
 import ModelSelectorModal from './ModelSelectorModal';
 import ContentPreviewModal from './ContentPreviewModal';
+import PromptTemplatesTab from './PromptTemplatesTab';
 
 interface Props {
   config: any;
@@ -903,19 +904,7 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
 
         {activeSubTab === 'templates' && (
           <div className="space-y-6">
-            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <Palette className="h-5 w-5 text-apidevs-primary" />
-                Templates de Contenido
-              </h3>
-              <div className="text-center py-12">
-                <Palette className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Templates personalizados</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Configura plantillas para diferentes tipos de contenido
-                </p>
-              </div>
-            </div>
+            <PromptTemplatesTab />
           </div>
         )}
       </div>

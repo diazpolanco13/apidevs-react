@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { supabaseAdmin } from '@/utils/supabase/admin';
+import { getGenerateContentTemplate } from '@/utils/ai/prompt-templates';
 
 interface GenerateContentRequest {
   prompt: string;
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generar contenido con IA usando OpenRouter
-    const systemPrompt = generateSystemPrompt(type, language);
+    const systemPrompt = await getGenerateContentTemplate(type, language);
     const userPrompt = generateUserPrompt(prompt, type, language);
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -194,62 +195,6 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-function generateSystemPrompt(type: string, language: string): string {
-  const lang = language === 'es' ? 'español' : 'inglés';
-  
-  const basePrompt = `Eres un experto creador de contenido para una plataforma de trading e indicadores técnicos. Tu tarea es generar contenido de alta calidad, profesional y optimizado para SEO.`;
-
-  const typePrompts = {
-    blog: `Genera un artículo de blog COMPLETO y PROFESIONAL en ${lang}. El artículo debe ser informativo, educativo y atractivo para traders de todos los niveles.`,
-    docs: `Genera documentación técnica CLARA y PRECISA en ${lang}. La documentación debe ser fácil de seguir, con ejemplos prácticos y explicaciones detalladas.`,
-    indicators: `Genera una descripción COMPLETA de un indicador técnico en ${lang}. Incluye qué es, cómo funciona, cómo se calcula y cómo usarlo en trading.`,
-  };
-
-  return `${basePrompt}
-
-${typePrompts[type as keyof typeof typePrompts]}
-
-REQUISITOS OBLIGATORIOS:
-- Mínimo 800-1200 palabras
-- Formato Markdown profesional
-- Incluir estadísticas o datos relevantes
-- Ejemplos prácticos y casos reales
-- Subtítulos descriptivos (H2, H3)
-- Listas y bullet points
-- Conclusión con llamada a la acción
-- Tono profesional pero accesible
-
-OPTIMIZACIÓN SEO:
-- Título atractivo con palabras clave
-- Meta description de 150-160 caracteres
-- 5-7 keywords relevantes
-- Estructura optimizada para búsqueda
-- Contenido único y de valor
-
-IMPORTANTE: Responde SOLO con un JSON COMPLETO que cumpla con el schema de Sanity en el siguiente formato:
-{
-  "title": "Título atractivo y optimizado SEO (máximo 150 caracteres)",
-  "slug": "url-amigable-para-seo",
-  "excerpt": "Resumen corto para cards y preview (50-250 caracteres)",
-  "content": "Contenido completo en formato markdown (mínimo 800 palabras)",
-  "mainImage": {
-    "prompt": "Descripción detallada para generar imagen principal",
-    "alt": "Texto alternativo descriptivo para la imagen",
-    "caption": "Caption opcional para la imagen"
-  },
-  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
-  "readingTime": 8,
-  "seo": {
-    "metaTitle": "Título SEO optimizado (máximo 60 caracteres)",
-    "metaDescription": "Meta description optimizada (máximo 160 caracteres)",
-    "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
-  }
-}
-
-NO incluyas ningún texto adicional fuera del JSON.
-ASEGÚRATE de que el JSON sea VÁLIDO y completo.`;
 }
 
 function generateUserPrompt(userPrompt: string, type: string, language: string): string {
