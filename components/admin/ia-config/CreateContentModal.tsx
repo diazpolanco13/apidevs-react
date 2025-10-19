@@ -191,15 +191,20 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
         success: imageResult.success,
         hasImages: !!imageResult.images,
         imageCount: imageResult.images?.length || 0,
-        images: imageResult.images
+        images: imageResult.images,
+        imageUrls: imageResult.images?.map((img: any) => img.url)
       });
 
       if (imageResult.success && imageResult.images && imageResult.images.length > 0) {
-        // Guardar TODAS las imágenes generadas
-        setGeneratedImages(imageResult.images);
+        // Guardar TODAS las imágenes generadas (pueden ser múltiples en el array)
+        const newImages = imageResult.images;
+        setGeneratedImages(newImages);
         setSelectedImageIndex(0); // Seleccionar la primera por defecto
         
-        console.log('✅ Saved images to state:', imageResult.images.length, 'images');
+        console.log('✅ Saved images to state:', {
+          count: newImages.length,
+          urls: newImages.map((img: any) => img.url)
+        });
         
         // Actualizar mainImage con los datos del Director de Arte Y la URL de la primera
         setFormData(prev => ({
@@ -208,7 +213,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             prompt: improveResult.prompt,
             alt: improveResult.alt,
             caption: improveResult.caption,
-            imageUrl: imageResult.images[0].url // Usar la primera imagen por defecto
+            imageUrl: newImages[0].url // Usar la primera imagen
           }
         }));
       } else {

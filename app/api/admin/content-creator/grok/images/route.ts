@@ -201,6 +201,8 @@ export async function POST(request: NextRequest) {
 
       // Obtener TODAS las URLs de imágenes
       const imageUrls = allImages.map((img: any) => img.image_url?.url).filter(Boolean);
+      
+      console.log('📸 Image URLs to upload:', imageUrls);
 
       // SUBIR TODAS LAS IMÁGENES A SUPABASE STORAGE
       const uploadedImages = [];
