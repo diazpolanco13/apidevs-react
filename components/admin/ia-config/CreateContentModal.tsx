@@ -338,10 +338,9 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
   };
 
   if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 border border-white/10 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-15">
+      <div className="bg-gray-800 border border-white/10 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto pb-5 mb-15">
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <h2 className="text-xl font-semibold text-white flex items-center gap-2">
             <Plus className="h-5 w-5 text-apidevs-primary" />
@@ -537,9 +536,9 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
           )}
 
           {/* GRID 2 COLUMNAS: Contenido + Imagen */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ height: 'calc(100vh - 400px)', minHeight: '500px' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
             {/* Contenido Principal */}
-            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4 flex flex-col">
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4 flex flex-col min-h-[400px] max-h-[600px]">
               <h3 className="text-sm font-bold text-white mb-3">📄 Contenido Markdown {formData.content && '✅'}</h3>
               <textarea
                 value={formData.content}
@@ -553,7 +552,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             </div>
 
             {/* Imagen Principal */}
-            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4 min-h-[400px]">
               <h3 className="text-sm font-bold text-white mb-3">🖼️ Imagen Principal</h3>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Imagen (Opcional)
@@ -628,7 +627,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
                   <button
                     type="button"
                     onClick={async () => {
@@ -688,11 +687,12 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
             </div>
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
+          {/* BOTONES DE ACCIÓN AL FINAL */}
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 mt-4 border-t border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="w-full sm:w-auto px-6 py-2.5 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all"
+              className="w-full sm:w-auto px-6 py-2.5 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all border border-gray-600"
             >
               Cancelar
             </button>
@@ -709,7 +709,7 @@ export default function CreateContentModal({ isOpen, onClose, onSuccess }: Creat
                 <Plus className="h-4 w-4" />
               )}
               <span className="whitespace-nowrap">
-                {isSubmitting ? 'Creando...' : success ? '¡Creado!' : 'Crear Contenido'}
+                {isSubmitting ? 'Creando...' : success ? '¡Creado!' : '+ Crear Contenido'}
               </span>
             </button>
           </div>
