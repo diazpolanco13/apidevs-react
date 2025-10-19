@@ -112,27 +112,31 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
     <>
       {/* FILTROS PEGADOS AL NAVBAR - RESPONSIVE MEJORADO */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 mb-10">
-        {/* Contenedor con scroll horizontal en mobile */}
-        <div className="border-b border-gray-800/50 pb-4 relative">
-          {/* Layout en 2 filas en mobile, 1 fila en desktop */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            {/* Categorías con scroll horizontal en mobile - Con indicador visual */}
-            <div className="relative lg:flex-1">
-              {/* Gradiente indicador de scroll a la derecha (solo mobile) */}
-              <div className="absolute right-0 top-0 bottom-3 w-16 bg-gradient-to-l from-black via-black/80 to-transparent pointer-events-none z-10 lg:hidden"></div>
+        <div className="space-y-4">
+          {/* Categorías */}
+          <div className="border-b border-gray-800/50 pb-4 relative">
+            <div className="relative">
+              {/* Gradientes indicadores de scroll (solo mobile) */}
+              <div className="absolute left-0 top-0 bottom-3 w-12 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none z-10 lg:hidden"></div>
+              <div className="absolute right-0 top-0 bottom-3 w-12 bg-gradient-to-l from-black via-black/80 to-transparent pointer-events-none z-10 lg:hidden"></div>
               
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide lg:flex-wrap pb-3 scroll-smooth">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-3 scroll-smooth snap-x snap-mandatory lg:snap-none px-2 lg:px-0">
                 <button
                   onClick={() => setSelectedCategory(null)}
-                  className={`relative px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
+                  className={`relative px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 snap-start ${
                     selectedCategory === null
-                      ? 'text-white bg-gray-800/50 rounded-lg'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg'
+                      ? 'text-white bg-gray-800/50 rounded-lg scale-105 shadow-lg'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg hover:scale-105'
                   }`}
                 >
-                  Recent
+                  <span className="flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Recent
+                  </span>
                   {selectedCategory === null && (
-                    <span className="absolute -bottom-3 left-0 right-0 h-0.5 bg-apidevs-primary"></span>
+                    <span className="absolute -bottom-3 left-0 right-0 h-0.5 bg-apidevs-primary rounded-full"></span>
                   )}
                 </button>
                 
@@ -140,53 +144,69 @@ export default function BlogContent({ featuredPosts, recentPosts, categories }: 
                   <button
                     key={category._id}
                     onClick={() => setSelectedCategory(category._id)}
-                    className={`relative px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
+                    className={`relative px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 snap-start ${
                       selectedCategory === category._id
-                        ? 'text-white bg-gray-800/50 rounded-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg'
+                        ? 'text-white bg-gray-800/50 rounded-lg scale-105 shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800/30 rounded-lg hover:scale-105'
                     }`}
                   >
-                    {category.title}
+                    <span className="flex items-center gap-1.5">
+                      {category.icon && <span className="text-base sm:text-lg">{category.icon}</span>}
+                      {category.title}
+                    </span>
                     {selectedCategory === category._id && (
-                      <span className="absolute -bottom-3 left-0 right-0 h-0.5 bg-apidevs-primary"></span>
+                      <span className="absolute -bottom-3 left-0 right-0 h-0.5 bg-apidevs-primary rounded-full"></span>
                     )}
                   </button>
                 ))}
                 
                 {/* Padding al final para que la última categoría sea visible */}
-                <div className="w-4 flex-shrink-0 lg:hidden"></div>
+                <div className="w-8 flex-shrink-0 lg:hidden"></div>
               </div>
-            </div>
-
-            {/* SEARCH BAR - Ahora en flexbox normal */}
-            <div className="relative group flex-shrink-0 lg:ml-auto">
-              {/* Glow effect cuando está en focus */}
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-apidevs-primary/20 via-purple-500/20 to-apidevs-primary/20 rounded-xl opacity-0 group-focus-within:opacity-100 blur-lg transition-all duration-500"></div>
               
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
-                  <svg className="h-4 w-4 sm:h-5 sm:w-5 text-apidevs-primary/70 group-focus-within:text-apidevs-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              {/* Indicador de swipe en mobile */}
+              <div className="flex justify-center mt-2 lg:hidden">
+                <div className="flex items-center gap-1 text-xs text-gray-600">
+                  <svg className="w-3 h-3 animate-bounce-horizontal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span>Desliza para más categorías</span>
+                  <svg className="w-3 h-3 animate-bounce-horizontal-reverse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Buscar artículos..."
-                  className="w-full lg:w-72 pl-10 sm:pl-11 pr-10 py-2 sm:py-2.5 bg-gray-900/80 backdrop-blur-sm border-2 border-gray-700/50 rounded-xl text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-apidevs-primary/50 focus:bg-gray-900 transition-all shadow-lg hover:border-gray-600/50"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-apidevs-primary transition-colors"
-                  >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
               </div>
+            </div>
+          </div>
+
+          {/* SEARCH BAR - Debajo de las categorías */}
+          <div className="relative group">
+            {/* Glow effect cuando está en focus */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-apidevs-primary/20 via-purple-500/20 to-apidevs-primary/20 rounded-xl opacity-0 group-focus-within:opacity-100 blur-lg transition-all duration-500"></div>
+            
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                <svg className="h-4 w-4 sm:h-5 sm:w-5 text-apidevs-primary/70 group-focus-within:text-apidevs-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar artículos..."
+                className="w-full pl-10 sm:pl-11 pr-10 py-2.5 sm:py-3 bg-gray-900/80 backdrop-blur-sm border-2 border-gray-700/50 rounded-xl text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-apidevs-primary/50 focus:border-apidevs-primary/50 focus:bg-gray-900 transition-all shadow-lg hover:border-gray-600/50"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-apidevs-primary transition-colors"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
         </div>

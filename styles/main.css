@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Animaciones personalizadas para categorías del blog */
+@keyframes bounce-horizontal {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-4px);
+  }
+}
+
+@keyframes bounce-horizontal-reverse {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-bounce-horizontal {
+  animation: bounce-horizontal 1.5s ease-in-out infinite;
+}
+
+.animate-bounce-horizontal-reverse {
+  animation: bounce-horizontal-reverse 1.5s ease-in-out infinite;
+}
+
 /* Estilos personalizados para PhoneInput - APIDevs Theme */
 .phone-input-container .PhoneInput {
   display: flex !important;
