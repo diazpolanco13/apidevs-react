@@ -936,9 +936,191 @@ npm install uuid @types/uuid
 
 ---
 
-**Última actualización**: 19 de octubre de 2025, 03:45 AM  
-**Desarrollado por**: API Admin Master  
-**Estado**: ✅ COMPLETO Y FUNCIONAL - **FORMATO PERFECTO**
+---
 
-**Commits importantes**:
-- `460121e` - feat: Markdown to Portable Text converter for AI Content Creator
+## 🤖 DELEGACIÓN AL CHATBOT DE APIDEVS
+
+### **Contexto para IA Asistente**
+
+Este sistema permite que el chatbot de APIDevs genere contenido automáticamente. El chatbot debe conocer:
+
+### **1. ENDPOINTS DISPONIBLES**
+
+#### **Generar Contenido**
+```bash
+POST /api/admin/content-creator/generate
+Content-Type: application/json
+
+{
+  "prompt": "Texto del usuario sobre qué escribir",
+  "type": "blog",
+  "language": "es"
+}
+```
+
+**Respuesta**:
+```json
+{
+  "success": true,
+  "title": "...",
+  "slug": "...",
+  "excerpt": "...",
+  "content": "... (markdown)",
+  "mainImage": { "prompt": "...", "alt": "...", "caption": "..." },
+  "tags": [...],
+  "readingTime": 9,
+  "seo": { ... },
+  "tokens_used": 2500
+}
+```
+
+#### **Mejorar Prompt**
+```bash
+POST /api/admin/content-creator/improve-prompt
+Content-Type: application/json
+
+{
+  "userPrompt": "prompt del usuario",
+  "language": "es"
+}
+```
+
+#### **Generar Imagen**
+```bash
+POST /api/admin/content-creator/grok/images
+Content-Type: application/json
+
+{
+  "prompt": "Descripción de la imagen",
+  "style": "realistic",
+  "size": "1024x1024",
+  "quality": "hd"
+}
+```
+
+#### **Crear en Cola**
+```bash
+POST /api/admin/content-creator/create
+Content-Type: application/json
+
+{
+  "title": "...",
+  "content": "...",
+  "type": "blog",
+  "language": "es",
+  "user_prompt": "prompt original",
+  "slug": "...",
+  "excerpt": "...",
+  "mainImage": { ... },
+  "tags": [...],
+  "readingTime": 8,
+  "seo": { ... }
+}
+```
+
+#### **Publicar en Sanity**
+```bash
+POST /api/admin/content-creator/queue/[id]/publish
+```
+
+### **2. FLUJO AUTOMATIZADO PARA EL CHATBOT**
+
+Cuando un usuario pida al chatbot: **"Escribe un artículo sobre [TEMA]"**
+
+**El chatbot debe**:
+
+1. **Llamar a `/improve-prompt`** con el tema del usuario
+2. **Llamar a `/generate`** con el prompt mejorado
+3. **Llamar a `/improve-image-prompt`** con el contenido generado
+4. **Llamar a `/grok/images`** con el prompt de imagen
+5. **Llamar a `/create`** con todos los datos combinados
+6. **Responder al usuario**: "✅ Artículo creado y enviado a revisión. Puedes verlo en el Admin Panel."
+
+### **3. EJEMPLO COMPLETO DE CONVERSACIÓN**
+
+**Usuario**: "Escribe un artículo sobre el indicador RSI"
+
+**Chatbot**:
+```
+1. Mejorando tu prompt...
+   ✅ Prompt optimizado con E-E-A-T
+
+2. Generando artículo completo...
+   ✅ 1,200 palabras generadas
+   ✅ 4 enlaces a fuentes de autoridad incluidos
+
+3. Generando imagen profesional...
+   ✅ Imagen creada y subida a Supabase
+
+4. Creando en la cola de revisión...
+   ✅ Artículo #12345 creado
+
+📝 Artículo: "RSI: La Guía Definitiva del Indicador Técnico Más Popular"
+🏷️ Tags: RSI, indicadores, análisis técnico, trading
+⏱️ Lectura: 9 minutos
+🖼️ Imagen: Generada automáticamente
+
+✅ El artículo está en la cola de revisión.
+   Puedes verlo en: Admin Panel → Asistente IA → Cola de Contenido
+
+👉 Un administrador debe aprobar y publicar el contenido.
+```
+
+### **4. AUTENTICACIÓN Y PERMISOS**
+
+**Requisitos**:
+- Usuario debe estar autenticado (Supabase Auth)
+- Usuario debe ser admin con permiso: `content.ai.create.blog`
+- O ser `super-admin`
+
+**Verificar permisos**:
+```bash
+POST /api/admin/check-permissions
+{
+  "requiredPermission": "content.ai.create.blog"
+}
+```
+
+### **5. LIMITACIONES Y MANEJO DE ERRORES**
+
+**Timeouts**:
+- Generación de contenido: ~10-60 segundos
+- Generación de imagen: ~10-25 segundos
+- Total proceso: ~40-90 segundos
+
+**El chatbot debe**:
+- Mostrar indicador de "Generando..." al usuario
+- Manejar errores gracefully
+- Si falla, explicar qué salió mal
+
+**Errores comunes**:
+- API key no configurada → "Configurar OpenRouter API key en Admin Panel"
+- Sin permisos → "Requiere permisos de administrador"
+- Sanity no configurado → "Configurar Sanity CMS primero"
+
+### **6. CONFIGURACIÓN REQUERIDA**
+
+**Antes de usar, verificar**:
+```bash
+GET /api/admin/content-creator/sanity/config
+```
+
+**Debe retornar**:
+```json
+{
+  "configured": true,
+  "sanityProjectId": "mpxhkyzk",
+  "sanityDataset": "production",
+  "hasToken": true,
+  "hasOpenRouterKey": true
+}
+```
+
+**Si no está configurado**, el chatbot debe decir:
+"❌ El Content Creator no está configurado. Por favor, contacta a un administrador."
+
+---
+
+**Última actualización**: 19 de octubre de 2025  
+**Desarrollado por**: API Admin Master  
+**Estado**: ✅ COMPLETO Y FUNCIONAL - **LISTO PARA DELEGACIÓN AL CHATBOT**
