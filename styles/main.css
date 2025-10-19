@@ -474,3 +474,57 @@ p a {
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
+
+/* ========================================== */
+/* Custom Scrollbar - Purchases Page */
+/* ========================================== */
+
+/* Scrollbar personalizado morado para la página de compras */
+.purchases-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.purchases-scrollbar::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 10px;
+}
+
+.purchases-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #9333ea 0%, #7e22ce 100%);
+  border-radius: 10px;
+  border: 1px solid #1a1a1a;
+  transition: all 0.3s ease;
+}
+
+.purchases-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #a855f7 0%, #9333ea 100%);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+}
+
+/* Firefox */
+.purchases-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #9333ea #1a1a1a;
+}
+
+/* Aplicar a todas las tablas con scroll horizontal en purchases */
+.purchases-scrollbar .overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
+}
+
+.purchases-scrollbar .overflow-x-auto::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 10px;
+}
+
+.purchases-scrollbar .overflow-x-auto::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #9333ea 0%, #7e22ce 100%);
+  border-radius: 10px;
+  border: 1px solid #1a1a1a;
+}
+
+.purchases-scrollbar .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #a855f7 0%, #9333ea 100%);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+}
