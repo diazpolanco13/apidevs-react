@@ -52,35 +52,35 @@ export async function POST(
     // PASO 1: Subir la imagen a Sanity Assets si existe
     let mainImageAsset = null;
     
-    // Buscar la imagen generada más reciente (las últimas generaciones suelen ser para el último post)
-    const { data: imageQueue } = await (supabaseAdmin as any)
-      .from('ai_content_queue')
-      .select('generated_content, created_at')
-      .eq('content_type', 'image')
-      .eq('created_by_admin_id', queueItem.created_by_admin_id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // La imagen está en generatedContent.mainImage.imageUrl
+    const imageUrl = generatedContent.mainImage?.imageUrl;
 
-    console.log('Looking for image in queue:', {
-      found: !!imageQueue,
-      hasImageUrl: !!imageQueue?.generated_content?.imageUrl,
-      imageCreatedAt: imageQueue?.created_at,
-      postCreatedAt: queueItem.created_at
+    console.log('Checking for image:', {
+      hasMainImage: !!generatedContent.mainImage,
+      hasImageUrl: !!imageUrl,
+      imageUrl: imageUrl?.substring(0, 50)
     });
 
-    if (imageQueue?.generated_content?.imageUrl) {
-      const imageUrl = imageQueue.generated_content.imageUrl;
-      
+    if (imageUrl) {
       console.log('Found image URL, uploading to Sanity...');
       
-      // Si es base64, convertir y subir a Sanity
-      if (imageUrl.startsWith('data:image')) {
-        try {
-          // Extraer el base64
+      try {
+        let imageBuffer;
+        
+        // Si es base64, convertir directamente
+        if (imageUrl.startsWith('data:image')) {
           const base64Data = imageUrl.split(',')[1];
-          const imageBuffer = Buffer.from(base64Data, 'base64');
-          
+          imageBuffer = Buffer.from(base64Data, 'base64');
+        } 
+        // Si es URL de Supabase, descargar primero
+        else if (imageUrl.startsWith('http')) {
+          const imageResponse = await fetch(imageUrl);
+          const arrayBuffer = await imageResponse.arrayBuffer();
+          imageBuffer = Buffer.from(arrayBuffer);
+          console.log('✅ Downloaded image from URL');
+        }
+        
+        if (imageBuffer) {
           // Subir a Sanity Assets API
           const uploadResponse = await fetch(
             `https://${sanityProjectId}.api.sanity.io/v2021-06-07/assets/images/${sanityDataset}`,
@@ -106,11 +106,14 @@ export async function POST(
               caption: generatedContent.mainImage?.caption || ''
             };
             
-            console.log('Image uploaded to Sanity:', uploadResult.document._id);
+            console.log('✅ Image uploaded to Sanity Assets:', uploadResult.document._id);
+          } else {
+            const errorText = await uploadResponse.text();
+            console.error('Error uploading to Sanity:', errorText);
           }
-        } catch (uploadError) {
-          console.error('Error uploading image:', uploadError);
         }
+      } catch (uploadError) {
+        console.error('Error processing image upload:', uploadError);
       }
     }
     

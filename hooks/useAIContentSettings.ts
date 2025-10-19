@@ -97,21 +97,46 @@ export function useAIContentSettings() {
     }
   };
 
-  // Cargar cola de contenido
+  // Cargar cola de contenido (solo campos necesarios para evitar timeout)
   const loadQueue = async () => {
     try {
+      // Solo seleccionar campos necesarios (NO el content completo que es muy grande)
       const { data, error } = await (supabase as any)
         .from('ai_content_queue')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, title, content_type, language, status, created_at, user_prompt, tokens_used, processing_time_ms, created_by_admin_id, sanity_document_id, published_at, generated_content')
+        .order('created_at', { ascending: false })
+        .limit(100); // Aumentado a 100 ya que no cargamos el content pesado
 
       if (error) {
+        console.error('❌ Supabase error:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        
+        // Si aún da timeout, intentar sin generated_content
+        if (error.code === '57014') {
+          console.log('🔧 Timeout detected, trying without generated_content...');
+          const { data: data2, error: error2 } = await (supabase as any)
+            .from('ai_content_queue')
+            .select('id, title, content_type, language, status, created_at, user_prompt, tokens_used, processing_time_ms')
+            .order('created_at', { ascending: false })
+            .limit(50);
+          
+          if (!error2 && data2) {
+            console.log(`✅ Queue loaded (lightweight): ${data2.length} items`);
+            setQueue(data2);
+            return;
+          }
+        }
+        
         throw error;
       }
 
+      console.log(`✅ Queue loaded: ${data?.length || 0} items`);
       setQueue(data || []);
-    } catch (err) {
-      console.error('Error loading content queue:', err);
+    } catch (err: any) {
+      console.error('❌ Error loading content queue:', err);
+      // No romper la UI, mostrar cola vacía
+      setQueue([]);
     }
   };
 
