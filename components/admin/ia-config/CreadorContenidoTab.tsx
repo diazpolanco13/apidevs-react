@@ -21,6 +21,8 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
   const [isTextModelSelectorOpen, setIsTextModelSelectorOpen] = useState(false);
   const [isImageModelSelectorOpen, setIsImageModelSelectorOpen] = useState(false);
   const [previewItem, setPreviewItem] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   
   // Refs para los inputs de Sanity
   const sanityProjectIdRef = useRef<HTMLInputElement>(null);
@@ -176,6 +178,31 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
     } catch (error) {
       console.error('Error:', error);
       alert('Error al publicar contenido');
+    }
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    if (!confirm('¿Estás seguro de eliminar este contenido? Esta acción no se puede deshacer.')) return;
+
+    try {
+      const response = await fetch(`/api/admin/content-creator/queue/${itemId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('✅ Contenido eliminado exitosamente');
+        loadQueue(); // Recargar cola
+        // Si estamos en una página que quedó vacía, volver a la anterior
+        if (queue.filter(q => q.id !== itemId).length <= (currentPage - 1) * itemsPerPage && currentPage > 1) {
+          setCurrentPage(p => p - 1);
+        }
+      } else {
+        const result = await response.json();
+        alert(`Error al eliminar: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al eliminar contenido');
     }
   };
 
@@ -799,8 +826,11 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                   </p>
                 </div>
               ) : (
+                <>
                 <div className="space-y-3">
-                  {queue.map((item) => (
+                  {queue
+                    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                    .map((item) => (
                     <div key={item.id} className="bg-gray-800/50 rounded-lg border border-gray-700 hover:border-gray-600 transition-all">
                       <div className="flex items-start gap-3 p-3">
                         {/* Preview de imagen si existe */}
@@ -892,11 +922,47 @@ export default function CreadorContenidoTab({ config, setConfig }: Props) {
                           >
                             Ver
                           </button>
+                          <button 
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-[10px] rounded"
+                            title="Eliminar"
+                          >
+                            🗑️
+                          </button>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
+                
+                {/* Paginador */}
+                {queue.length > itemsPerPage && (
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-700">
+                    <p className="text-sm text-gray-400">
+                      Mostrando {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, queue.length)} de {queue.length}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        ← Anterior
+                      </button>
+                      <span className="text-sm text-gray-400">
+                        Página {currentPage} de {Math.ceil(queue.length / itemsPerPage)}
+                      </span>
+                      <button
+                        onClick={() => setCurrentPage(p => Math.min(Math.ceil(queue.length / itemsPerPage), p + 1))}
+                        disabled={currentPage === Math.ceil(queue.length / itemsPerPage)}
+                        className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Siguiente →
+                      </button>
+                    </div>
+                  </div>
+                )}
+                </>
               )}
             </div>
           </div>
