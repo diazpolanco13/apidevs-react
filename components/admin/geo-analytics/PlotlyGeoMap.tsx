@@ -6,6 +6,15 @@ import dynamic from 'next/dynamic';
 // Importar Plotly dinámicamente para evitar SSR issues
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
+// Declaración de tipos para Plotly global
+declare global {
+  interface Window {
+    Plotly?: {
+      purge: (element: HTMLElement) => void;
+    };
+  }
+}
+
 // Types para Plotly
 type PlotParams = {
   data: any[];
@@ -39,9 +48,27 @@ export default function PlotlyGeoMap({ countries }: PlotlyGeoMapProps) {
     // Dar tiempo extra para que Plotly se inicialice completamente
     const timer = setTimeout(() => {
       setPlotReady(true);
-    }, 100);
+    }, 200); // Aumentado a 200ms para mayor estabilidad
 
     return () => clearTimeout(timer);
+  }, []);
+
+  // Limpiar Plotly al desmontar para evitar memory leaks
+  useEffect(() => {
+    return () => {
+      // Limpiar cualquier instancia de Plotly pendiente
+      if (typeof window !== 'undefined' && window.Plotly) {
+        try {
+          // Buscar por clase en lugar de ID
+          const plotElement = document.querySelector('.js-plotly-plot');
+          if (plotElement) {
+            window.Plotly.purge(plotElement as HTMLElement);
+          }
+        } catch (error) {
+          console.warn('Error cleaning up Plotly:', error);
+        }
+      }
+    };
   }, []);
 
   if (!isMounted || !plotReady) {
@@ -204,7 +231,7 @@ export default function PlotlyGeoMap({ countries }: PlotlyGeoMapProps) {
     responsive: true,
     displayModeBar: true,
     displaylogo: false,
-    modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d', 'resetScale2d'],
+    modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d', 'resetScale2d', 'pan2d', 'zoom2d'],
     toImageButtonOptions: {
       format: 'png',
       filename: 'geo-analytics-map',
@@ -212,10 +239,16 @@ export default function PlotlyGeoMap({ countries }: PlotlyGeoMapProps) {
       width: 1920,
       scale: 2
     },
-    // Deshabilitamos scrollZoom para evitar el error _scrollZoom en React 19
+    // Configuración más robusta para evitar errores de scrollZoom
     scrollZoom: false,
     doubleClick: 'reset',
     staticPlot: false,
+    // Deshabilitar interacciones que pueden causar problemas
+    editable: false,
+    editSelection: false,
+    // Configuración específica para React 19
+    queueLength: 0,
+    fillFrame: false,
   };
 
   return (
@@ -232,6 +265,12 @@ export default function PlotlyGeoMap({ countries }: PlotlyGeoMapProps) {
         }}
         onInitialized={() => {
           // Componente inicializado correctamente
+        }}
+        onUpdate={() => {
+          // Callback para actualizaciones
+        }}
+        onPurge={() => {
+          // Callback para limpieza
         }}
       />
 
