@@ -269,13 +269,6 @@ export function ChatSimpleV2() {
           )}
         </div>
 
-        {/* Footer Sidebar */}
-        <div className="p-4 border-t border-gray-800">
-          <div className="text-xs text-gray-600 text-center">
-            <p className="mb-1">APIDevs Trading Platform</p>
-            <p>Powered by AI</p>
-          </div>
-        </div>
       </div>
 
       {/* Main Chat Area */}
@@ -283,15 +276,13 @@ export function ChatSimpleV2() {
         {/* Header */}
         <div className="h-16 border-b border-gray-800 bg-[#0f0f0f] flex items-center justify-between px-6">
           <div className="flex items-center gap-4">
+            {/* Botón toggle sidebar minimalista */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-800 rounded-lg transition-colors group"
+              title={sidebarOpen ? "Ocultar historial" : "Mostrar historial"}
             >
-              {sidebarOpen ? (
-                <X className="w-5 h-5 text-gray-400" />
-              ) : (
-                <Menu className="w-5 h-5 text-gray-400" />
-              )}
+              <Menu className="w-5 h-5 text-gray-400 group-hover:text-[#C9D92E]" />
             </button>
             
             <div className="flex items-center gap-3">
@@ -301,7 +292,7 @@ export function ChatSimpleV2() {
               <div>
                 <h1 className="text-white font-bold text-lg">Charti</h1>
                 <p className="text-gray-500 text-xs">
-                  {currentConversationId ? 'Conversación activa' : 'Asistente de IA'} • v1.0
+                  Asistente de IA • v1.0
                 </p>
               </div>
             </div>
