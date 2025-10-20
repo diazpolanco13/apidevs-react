@@ -228,6 +228,65 @@ body {
   @apply text-white bg-apidevs-dark antialiased;
 }
 
+/* ========================================== */
+/* Scrollbar Global - Casi Invisible */
+/* ========================================== */
+
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Scrollbar para elementos específicos con más visibilidad */
+.scrollbar-visible::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-visible::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: rgba(201, 217, 46, 0.3);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 217, 46, 0.5);
+}
+
+.scrollbar-visible {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 217, 46, 0.3) rgba(0, 0, 0, 0.1);
+}
+
 /* Ocultar SOLO el Navbar cuando estamos en la ruta /docs */
 body:has(.docs-layout) > nav {
   display: none !important;
