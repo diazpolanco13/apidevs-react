@@ -284,10 +284,10 @@ export function ChatSimpleV2() {
         {!sidebarOpen && (
           <button
             onClick={() => setSidebarOpen(true)}
-            className="absolute top-20 left-4 z-10 p-2 bg-gray-800/80 hover:bg-gray-700 backdrop-blur-sm rounded-lg transition-colors shadow-lg"
+            className="absolute top-4 left-4 z-10 p-3 bg-gray-800/90 hover:bg-gray-700 backdrop-blur-sm rounded-xl transition-all shadow-xl border border-gray-700 hover:border-[#C9D92E]/50"
             title="Mostrar historial"
           >
-            <Menu className="w-5 h-5 text-gray-400 hover:text-white" />
+            <Menu className="w-5 h-5 text-gray-300" />
           </button>
         )}
 
@@ -295,11 +295,11 @@ export function ChatSimpleV2() {
         <div className="flex-1 overflow-y-auto p-6">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-32 h-32 rounded-2xl overflow-hidden mb-6 shadow-2xl shadow-[#C9D92E]/20">
+              <div className="w-32 h-32 rounded-full overflow-hidden mb-6 shadow-2xl shadow-[#C9D92E]/20 bg-[#C9D92E]">
                 <img 
                   src="https://zzieiqxlxfydvexalbsr.supabase.co/storage/v1/object/public/static-assets/animations/buho-leyendo.webp"
                   alt="Charti"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               </div>
               <h2 className="text-white text-2xl font-bold mb-2">¡Hola! Soy Charti</h2>
