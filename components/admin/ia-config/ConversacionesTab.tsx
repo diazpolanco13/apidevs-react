@@ -35,32 +35,40 @@ export default function ConversacionesTab() {
     try {
       const supabase = createClient();
       
-      // Obtener conversaciones con información del usuario
+      // Obtener conversaciones
       const { data: convData, error } = await supabase
         .from('chat_conversations')
-        .select(`
-          id,
-          user_id,
-          title,
-          created_at,
-          updated_at,
-          users (
-            email,
-            full_name
-          )
-        `)
+        .select('id, user_id, title, created_at, updated_at')
         .order('updated_at', { ascending: false })
         .limit(100);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching conversations:', error);
+        throw error;
+      }
 
-      // Contar mensajes por conversación
+      // Obtener información de usuarios únicos
+      const userIdsSet = new Set((convData || []).map(c => c.user_id).filter(Boolean));
+      const userIds = Array.from(userIdsSet) as string[];
+      
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('id, email, full_name')
+        .in('id', userIds);
+
+      const usersMap = new Map(
+        (usersData || []).map(u => [u.id, { email: u.email, full_name: u.full_name }])
+      );
+
+      // Contar mensajes por conversación y combinar con info de usuario
       const conversationsWithCount = await Promise.all(
-        (convData || []).map(async (conv: any) => {
+        (convData || []).map(async (conv) => {
           const { count } = await supabase
             .from('chat_messages')
             .select('*', { count: 'exact', head: true })
             .eq('conversation_id', conv.id);
+
+          const userInfo = conv.user_id ? usersMap.get(conv.user_id) : null;
 
           return {
             id: conv.id,
@@ -69,8 +77,8 @@ export default function ConversacionesTab() {
             created_at: conv.created_at,
             updated_at: conv.updated_at,
             message_count: count || 0,
-            user_email: conv.users?.email || 'Usuario eliminado',
-            user_name: conv.users?.full_name || 'Usuario eliminado'
+            user_email: userInfo?.email || 'Usuario eliminado',
+            user_name: userInfo?.full_name || 'Usuario eliminado'
           };
         })
       );
