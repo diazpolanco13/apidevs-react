@@ -191,7 +191,7 @@ export function ChatSimpleV2() {
   };
 
   return (
-    <div className="flex h-screen bg-[#1a1a1a]">
+    <div className="flex h-full bg-[#1a1a1a]">
       {/* Sidebar - Historial */}
       <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 overflow-hidden border-r border-gray-800 bg-[#0f0f0f] flex flex-col`}>
         {/* Header Sidebar */}
