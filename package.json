@@ -86,6 +86,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@modelcontextprotocol/server-github": "^2025.4.8",
     "@next/bundle-analyzer": "^15.5.5",
     "@sanity/eslint-config-studio": "^4.0.0",
     "@types/canvas-confetti": "^1.9.0",

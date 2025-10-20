@@ -5,6 +5,11 @@ import { chatLimiter } from "@/lib/rate-limit";
 import { chatRequestSchema, validateSchema } from "@/lib/validation";
 import { getAIModel, getDefaultModelConfig, type ModelConfig } from "@/lib/ai/providers";
 import { buildSystemPrompt, type UserProfile, type AdminAccessData, type AIConfiguration } from "@/lib/ai/prompt-builder";
+import { 
+  getOrCreateConversation, 
+  saveMessage, 
+  generateConversationTitle 
+} from "@/lib/ai/conversation-manager";
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -71,6 +76,28 @@ export async function POST(request: Request) {
     }
 
     const { messages } = validation.data;
+
+    // 💾 PERSISTENCIA: Obtener o crear conversación
+    const conversationId = await getOrCreateConversation(user?.id || null, isGuest ? true : false);
+    
+    console.log(conversationId 
+      ? `💾 Conversación ID: ${conversationId}` 
+      : '👤 Modo invitado: no se guardará la conversación'
+    );
+
+    // 💾 PERSISTENCIA: Guardar mensaje del usuario
+    const lastUserMessage = messages[messages.length - 1];
+    if (conversationId && lastUserMessage && lastUserMessage.role === 'user') {
+      await saveMessage(conversationId, {
+        role: 'user',
+        content: lastUserMessage.content
+      });
+      
+      // Si es el primer mensaje, generar título automático
+      if (messages.length === 1) {
+        await generateConversationTitle(conversationId, lastUserMessage.content);
+      }
+    }
 
     // Verificar si es una consulta administrativa no autorizada
     const lastMessage = messages[messages.length - 1]?.content?.toLowerCase() || '';
@@ -481,6 +508,16 @@ export async function POST(request: Request) {
             system: systemPrompt,
             messages,
             tools: availableTools,
+            onFinish: async (completion) => {
+              // 💾 PERSISTENCIA: Guardar respuesta del asistente cuando termina
+              if (conversationId && completion.text) {
+                await saveMessage(conversationId, {
+                  role: 'assistant',
+                  content: completion.text
+                });
+                console.log(`💾 Respuesta del asistente guardada en conversación ${conversationId}`);
+              }
+            }
           });
 
           console.log(`🔄 Stream iniciado para ${modelConfig.provider}/${modelConfig.model}`);
@@ -654,6 +691,16 @@ IMPORTANTE GENERAL:
         system: systemPrompt,
         messages,
         tools: availableTools,
+        onFinish: async (completion) => {
+          // 💾 PERSISTENCIA: Guardar respuesta del asistente cuando termina
+          if (conversationId && completion.text) {
+            await saveMessage(conversationId, {
+              role: 'assistant',
+              content: completion.text
+            });
+            console.log(`💾 Respuesta del asistente guardada en conversación ${conversationId}`);
+          }
+        }
       });
 
       console.log(`🔄 Stream iniciado para ${modelConfig.provider}/${modelConfig.model}`);
