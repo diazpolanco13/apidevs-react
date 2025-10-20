@@ -206,6 +206,13 @@ export function ChatSimpleV2() {
                 <p className="text-gray-500 text-xs">v1.0</p>
               </div>
             </div>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-1.5 hover:bg-gray-800 rounded-lg transition-colors"
+              title="Cerrar"
+            >
+              <X className="w-4 h-4 text-gray-500 hover:text-white" />
+            </button>
           </div>
           
           <button
@@ -272,32 +279,17 @@ export function ChatSimpleV2() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header - Minimalista */}
-        <div className="h-14 bg-[#0f0f0f] flex items-center justify-between px-4">
-          {/* Toggle sidebar */}
+      <div className="flex-1 flex flex-col relative">
+        {/* Botón toggle sidebar flotante */}
+        {!sidebarOpen && (
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors"
-            title={sidebarOpen ? "Ocultar historial" : "Mostrar historial"}
+            onClick={() => setSidebarOpen(true)}
+            className="absolute top-4 left-4 z-10 p-2 bg-gray-800/80 hover:bg-gray-700 backdrop-blur-sm rounded-lg transition-colors shadow-lg"
+            title="Mostrar historial"
           >
-            <Menu className="w-5 h-5 text-gray-500 hover:text-gray-300" />
+            <Menu className="w-5 h-5 text-gray-400 hover:text-white" />
           </button>
-          
-          {/* Logo y título centrados */}
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#C9D92E] flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-black" />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-white font-semibold">Charti</span>
-              <span className="text-gray-600 text-xs">v1.0</span>
-            </div>
-          </div>
-          
-          {/* Espacio vacío para balance */}
-          <div className="w-9"></div>
-        </div>
+        )}
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-6">
