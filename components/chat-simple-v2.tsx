@@ -395,54 +395,37 @@ export function ChatSimpleV2() {
           )}
         </div>
 
-        {/* Input Area */}
-        <div className="border-t border-gray-800 bg-[#0f0f0f] p-4">
+        {/* Input Area - Estilo Gemini */}
+        <div className="border-t border-gray-800 bg-[#0f0f0f] p-6">
           <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-            <div className="relative flex items-end gap-3">
-              <div className="flex-1 relative">
-                <textarea
-                  value={input}
-                  onChange={(e) => {
-                    setInput(e.target.value);
-                    e.target.style.height = 'auto';
-                    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSubmit(e);
-                    }
-                  }}
-                  placeholder="Escribe tu mensaje... (Enter para enviar, Shift+Enter para nueva línea)"
-                  disabled={isLoading}
-                  rows={1}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C9D92E] focus:border-transparent resize-none disabled:opacity-50"
-                  style={{ minHeight: '48px', maxHeight: '120px' }}
-                />
-              </div>
+            <div className="relative">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
+                placeholder="Pregúntale a Charti..."
+                disabled={isLoading}
+                className="w-full pl-6 pr-14 py-4 bg-gray-800 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C9D92E] focus:border-transparent disabled:opacity-50 text-base"
+              />
               
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="flex-shrink-0 px-6 py-3 bg-[#C9D92E] hover:bg-[#B8C428] text-black font-bold rounded-xl transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#C9D92E]/20 hover:shadow-xl hover:shadow-[#C9D92E]/30 hover:scale-105"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-[#C9D92E] hover:bg-[#B8C428] text-black rounded-full transition-all flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-[#C9D92E]"
               >
                 {isLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                    <span>Enviando...</span>
-                  </>
+                  <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
                 ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    <span>Enviar</span>
-                  </>
+                  <Send className="w-5 h-5" />
                 )}
               </button>
             </div>
-            
-            <p className="text-xs text-gray-600 mt-2 text-center">
-              Charti puede cometer errores. Verifica la información importante.
-            </p>
           </form>
         </div>
       </div>
