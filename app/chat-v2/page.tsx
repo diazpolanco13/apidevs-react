@@ -11,9 +11,5 @@ export default async function ChatV2Page() {
     redirect("/auth/login");
   }
 
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <ChatSimpleV2 />
-    </div>
-  );
+  return <ChatSimpleV2 />;
 }

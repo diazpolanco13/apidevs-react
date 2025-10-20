@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { MessageSquare, Plus, Trash2, Send, Sparkles, Menu, X } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 interface Message {
   id: string;
@@ -8,10 +10,113 @@ interface Message {
   content: string;
 }
 
+interface Conversation {
+  id: string;
+  title: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  message_count?: number;
+}
+
 export function ChatSimpleV2() {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Cargar historial de conversaciones
+  const loadConversations = async () => {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('chat_conversations')
+        .select('id, title, created_at, updated_at')
+        .order('updated_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      // Contar mensajes
+      const conversationsWithCount = await Promise.all(
+        (data || []).map(async (conv) => {
+          const { count } = await supabase
+            .from('chat_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('conversation_id', conv.id);
+
+          return { ...conv, message_count: count || 0 };
+        })
+      );
+
+      setConversations(conversationsWithCount);
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+    }
+  };
+
+  // Cargar mensajes de conversación
+  const loadConversationMessages = async (convId: string) => {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('role, parts, created_at')
+        .eq('conversation_id', convId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      const formattedMessages = (data || []).map(msg => ({
+        id: msg.created_at || Date.now().toString(),
+        role: msg.role as 'user' | 'assistant',
+        content: typeof msg.parts === 'object' && msg.parts !== null && 'content' in msg.parts
+          ? String((msg.parts as any).content)
+          : ''
+      }));
+
+      setMessages(formattedMessages);
+      setCurrentConversationId(convId);
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    }
+  };
+
+  // Nueva conversación
+  const newConversation = () => {
+    setMessages([]);
+    setCurrentConversationId(null);
+  };
+
+  // Eliminar conversación
+  const deleteConversation = async (convId: string) => {
+    if (!confirm('¿Eliminar esta conversación?')) return;
+
+    try {
+      const supabase = createClient();
+      await supabase.from('chat_messages').delete().eq('conversation_id', convId);
+      await supabase.from('chat_conversations').delete().eq('id', convId);
+      
+      if (currentConversationId === convId) {
+        newConversation();
+      }
+      loadConversations();
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+    }
+  };
+
+  // Cargar conversaciones al montar
+  useEffect(() => {
+    loadConversations();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +147,6 @@ export function ChatSimpleV2() {
         throw new Error("Error en la respuesta");
       }
 
-      // Crear mensaje vacío del asistente
       const assistantMessageId = (Date.now() + 1).toString();
       setMessages(prev => [...prev, {
         id: assistantMessageId,
@@ -50,7 +154,6 @@ export function ChatSimpleV2() {
         content: "",
       }]);
 
-      // Leer la respuesta como texto plano
       const reader = response.body?.getReader();
       if (!reader) {
         throw new Error("No se pudo leer la respuesta");
@@ -63,18 +166,17 @@ export function ChatSimpleV2() {
         if (done) break;
 
         const chunk = new TextDecoder().decode(value);
-        console.log('Chunk recibido:', chunk);
-        
-        // Agregar el chunk directamente al mensaje
         fullResponse += chunk;
         
-        // Actualizar el mensaje en tiempo real
         setMessages(prev => prev.map(msg => 
           msg.id === assistantMessageId 
             ? { ...msg, content: fullResponse }
             : msg
         ));
       }
+
+      // Recargar conversaciones después de completar
+      setTimeout(() => loadConversations(), 1000);
 
     } catch (error) {
       console.error("Error:", error);
@@ -89,68 +191,261 @@ export function ChatSimpleV2() {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-4xl mx-auto p-4">
-      {/* Header */}
-      <div className="bg-blue-600 text-white p-4 rounded-t-lg">
-        <h1 className="text-xl font-bold">🤖 Asistente APIDevs V2</h1>
-        <p className="text-sm opacity-90">Versión simplificada - Tu asistente virtual para consultas sobre planes y indicadores</p>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4">
-        {messages.length === 0 && (
-          <div className="text-center text-gray-700 mt-8">
-            <p className="text-lg font-medium">¡Hola! Soy tu asistente de APIDevs. ¿En qué puedo ayudarte?</p>
-          </div>
-        )}
-        
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${
-              message.role === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                message.role === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-white text-black border-2 border-gray-200 shadow-sm"
-              }`}
-            >
-              <p className="text-sm whitespace-pre-wrap font-medium">{message.content}</p>
+    <div className="flex h-screen bg-[#1a1a1a]">
+      {/* Sidebar - Historial */}
+      <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 overflow-hidden border-r border-gray-800 bg-[#0f0f0f] flex flex-col`}>
+        {/* Header Sidebar */}
+        <div className="p-4 border-b border-gray-800">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#C9D92E] to-[#A5B125] flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-black" />
+              </div>
+              <div>
+                <h2 className="text-white font-bold text-sm">Charti</h2>
+                <p className="text-gray-500 text-xs">v1.0</p>
+              </div>
             </div>
           </div>
-        ))}
-        
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-white text-black border-2 border-gray-200 shadow-sm px-4 py-2 rounded-lg">
-              <p className="text-sm font-medium">🤔 Pensando...</p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Input */}
-      <form onSubmit={handleSubmit} className="p-4 bg-white border-t-2 border-gray-200">
-        <div className="flex gap-2">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Pregunta sobre planes, indicadores, o tu cuenta..."
-            className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black placeholder-gray-500"
-            disabled={isLoading}
-          />
+          
           <button
-            type="submit"
-            disabled={isLoading || !input.trim()}
-            className="px-6 py-3 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            onClick={newConversation}
+            className="w-full px-4 py-2.5 bg-[#C9D92E] hover:bg-[#B8C428] text-black font-semibold rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#C9D92E]/20"
           >
-            {isLoading ? "..." : "Enviar"}
+            <Plus className="w-4 h-4" />
+            Nueva conversación
           </button>
         </div>
-      </form>
+
+        {/* Lista de conversaciones */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-1">
+          {conversations.length === 0 ? (
+            <div className="text-center py-8 text-gray-500 text-sm">
+              <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              Sin conversaciones
+            </div>
+          ) : (
+            conversations.map((conv) => (
+              <div
+                key={conv.id}
+                onClick={() => loadConversationMessages(conv.id)}
+                className={`group relative p-3 rounded-lg cursor-pointer transition-all ${
+                  currentConversationId === conv.id
+                    ? 'bg-gray-800 border border-[#C9D92E]/30'
+                    : 'hover:bg-gray-800/50'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate mb-1">
+                      {conv.title || 'Nueva conversación'}
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <MessageSquare className="w-3 h-3" />
+                      <span>{conv.message_count || 0} msgs</span>
+                      <span>•</span>
+                      <span>
+                        {conv.updated_at
+                          ? new Date(conv.updated_at).toLocaleDateString('es-ES', {
+                              day: '2-digit',
+                              month: 'short'
+                            })
+                          : 'Hoy'}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteConversation(conv.id);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-600 rounded transition-all"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-white" />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Footer Sidebar */}
+        <div className="p-4 border-t border-gray-800">
+          <div className="text-xs text-gray-600 text-center">
+            <p className="mb-1">APIDevs Trading Platform</p>
+            <p>Powered by AI</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="h-16 border-b border-gray-800 bg-[#0f0f0f] flex items-center justify-between px-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+            >
+              {sidebarOpen ? (
+                <X className="w-5 h-5 text-gray-400" />
+              ) : (
+                <Menu className="w-5 h-5 text-gray-400" />
+              )}
+            </button>
+            
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#C9D92E] to-[#A5B125] flex items-center justify-center shadow-lg shadow-[#C9D92E]/20">
+                <Sparkles className="w-5 h-5 text-black" />
+              </div>
+              <div>
+                <h1 className="text-white font-bold text-lg">Charti</h1>
+                <p className="text-gray-500 text-xs">
+                  {currentConversationId ? 'Conversación activa' : 'Asistente de IA'} • v1.0
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs">
+            <div className="px-3 py-1.5 bg-gray-800 rounded-full text-gray-400 border border-gray-700">
+              APIDevs Platform
+            </div>
+          </div>
+        </div>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#C9D92E] to-[#A5B125] flex items-center justify-center mb-6 shadow-2xl shadow-[#C9D92E]/20">
+                <Sparkles className="w-10 h-10 text-black" />
+              </div>
+              <h2 className="text-white text-2xl font-bold mb-2">¡Hola! Soy Charti</h2>
+              <p className="text-gray-400 max-w-md mb-8">
+                Tu asistente virtual de APIDevs. Pregúntame sobre planes, indicadores, tu cuenta o cualquier duda técnica.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl">
+                <button
+                  onClick={() => setInput("¿Qué planes tienen disponibles?")}
+                  className="p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-[#C9D92E]/50 rounded-xl text-left transition-all group"
+                >
+                  <p className="text-white font-medium mb-1 group-hover:text-[#C9D92E]">Planes disponibles</p>
+                  <p className="text-gray-500 text-sm">Ver opciones de suscripción</p>
+                </button>
+                <button
+                  onClick={() => setInput("¿Qué indicadores tengo activos?")}
+                  className="p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-[#C9D92E]/50 rounded-xl text-left transition-all group"
+                >
+                  <p className="text-white font-medium mb-1 group-hover:text-[#C9D92E]">Mis indicadores</p>
+                  <p className="text-gray-500 text-sm">Ver accesos activos</p>
+                </button>
+                <button
+                  onClick={() => setInput("¿Cómo activo un indicador en TradingView?")}
+                  className="p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-[#C9D92E]/50 rounded-xl text-left transition-all group"
+                >
+                  <p className="text-white font-medium mb-1 group-hover:text-[#C9D92E]">Activar indicador</p>
+                  <p className="text-gray-500 text-sm">Guía de activación</p>
+                </button>
+                <button
+                  onClick={() => setInput("¿Tengo descuentos como cliente legacy?")}
+                  className="p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-[#C9D92E]/50 rounded-xl text-left transition-all group"
+                >
+                  <p className="text-white font-medium mb-1 group-hover:text-[#C9D92E]">Descuentos legacy</p>
+                  <p className="text-gray-500 text-sm">Beneficios especiales</p>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6 max-w-4xl mx-auto">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div className={`flex gap-3 max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+                    {/* Avatar */}
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
+                      msg.role === "user"
+                        ? "bg-gray-700"
+                        : "bg-gradient-to-br from-[#C9D92E] to-[#A5B125] shadow-lg shadow-[#C9D92E]/20"
+                    }`}>
+                      {msg.role === "user" ? (
+                        <span className="text-white text-sm font-bold">TÚ</span>
+                      ) : (
+                        <Sparkles className="w-4 h-4 text-black" />
+                      )}
+                    </div>
+                    
+                    {/* Message */}
+                    <div className={`px-4 py-3 rounded-2xl ${
+                      msg.role === "user"
+                        ? "bg-gray-800 text-white"
+                        : "bg-gray-800/50 text-gray-100 border border-gray-700"
+                    }`}>
+                      <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                        {msg.content}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
+
+        {/* Input Area */}
+        <div className="border-t border-gray-800 bg-[#0f0f0f] p-4">
+          <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+            <div className="relative flex items-end gap-3">
+              <div className="flex-1 relative">
+                <textarea
+                  value={input}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit(e);
+                    }
+                  }}
+                  placeholder="Escribe tu mensaje... (Enter para enviar, Shift+Enter para nueva línea)"
+                  disabled={isLoading}
+                  rows={1}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C9D92E] focus:border-transparent resize-none disabled:opacity-50"
+                  style={{ minHeight: '48px', maxHeight: '120px' }}
+                />
+              </div>
+              
+              <button
+                type="submit"
+                disabled={!input.trim() || isLoading}
+                className="flex-shrink-0 px-6 py-3 bg-[#C9D92E] hover:bg-[#B8C428] text-black font-bold rounded-xl transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#C9D92E]/20 hover:shadow-xl hover:shadow-[#C9D92E]/30 hover:scale-105"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                    <span>Enviando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>Enviar</span>
+                  </>
+                )}
+              </button>
+            </div>
+            
+            <p className="text-xs text-gray-600 mt-2 text-center">
+              Charti puede cometer errores. Verifica la información importante.
+            </p>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
