@@ -193,10 +193,10 @@ export function ChatSimpleV2() {
   return (
     <div className="flex h-full bg-[#1a1a1a]">
       {/* Sidebar - Historial */}
-      <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 overflow-hidden border-r border-gray-800 bg-[#0f0f0f] flex flex-col`}>
+      <div className={`${sidebarOpen ? 'w-full sm:w-80' : 'w-0'} transition-all duration-300 overflow-hidden border-r border-gray-800 bg-[#0f0f0f] flex flex-col ${sidebarOpen ? 'fixed sm:relative inset-0 z-50 sm:z-auto' : ''}`}>
         {/* Header Sidebar */}
         <div className="p-4 border-b border-gray-800">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 mt-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#C9D92E] to-[#A5B125] flex items-center justify-center">
                 <Sparkles className="w-4 h-4 text-black" />
@@ -284,7 +284,7 @@ export function ChatSimpleV2() {
         {!sidebarOpen && (
           <button
             onClick={() => setSidebarOpen(true)}
-            className="absolute top-4 right-4 z-10 p-3 bg-gray-800/90 hover:bg-gray-700 backdrop-blur-sm rounded-xl transition-all shadow-xl border border-gray-700 hover:border-[#C9D92E]/50"
+            className="absolute top-6 right-4 z-10 p-3 bg-gray-800/90 hover:bg-gray-700 backdrop-blur-sm rounded-xl transition-all shadow-xl border border-gray-700 hover:border-[#C9D92E]/50"
             title="Mostrar historial"
           >
             <Menu className="w-5 h-5 text-gray-300" />
@@ -306,45 +306,45 @@ export function ChatSimpleV2() {
               <p className="text-gray-400 max-w-md mb-8">
                 Tu asistente virtual de APIDevs. Pregúntame sobre planes, indicadores, tu cuenta o cualquier duda técnica.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl px-4">
                 <button
                   onClick={() => setInput("¿Qué planes tienen disponibles?")}
-                  className="p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-[#C9D92E]/50 rounded-xl text-left transition-all group"
+                  className="p-3 sm:p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-[#C9D92E]/50 rounded-xl text-left transition-all group"
                 >
-                  <p className="text-white font-medium mb-1 group-hover:text-[#C9D92E]">Planes disponibles</p>
-                  <p className="text-gray-500 text-sm">Ver opciones de suscripción</p>
+                  <p className="text-white font-medium text-sm sm:text-base mb-1 group-hover:text-[#C9D92E]">Planes disponibles</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">Ver opciones de suscripción</p>
                 </button>
                 <button
                   onClick={() => setInput("¿Qué indicadores tengo activos?")}
-                  className="p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-[#C9D92E]/50 rounded-xl text-left transition-all group"
+                  className="p-3 sm:p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-[#C9D92E]/50 rounded-xl text-left transition-all group"
                 >
-                  <p className="text-white font-medium mb-1 group-hover:text-[#C9D92E]">Mis indicadores</p>
-                  <p className="text-gray-500 text-sm">Ver accesos activos</p>
+                  <p className="text-white font-medium text-sm sm:text-base mb-1 group-hover:text-[#C9D92E]">Mis indicadores</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">Ver accesos activos</p>
                 </button>
                 <button
                   onClick={() => setInput("¿Cómo activo un indicador en TradingView?")}
-                  className="p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-[#C9D92E]/50 rounded-xl text-left transition-all group"
+                  className="p-3 sm:p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-[#C9D92E]/50 rounded-xl text-left transition-all group"
                 >
-                  <p className="text-white font-medium mb-1 group-hover:text-[#C9D92E]">Activar indicador</p>
-                  <p className="text-gray-500 text-sm">Guía de activación</p>
+                  <p className="text-white font-medium text-sm sm:text-base mb-1 group-hover:text-[#C9D92E]">Activar indicador</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">Guía de activación</p>
                 </button>
                 <button
                   onClick={() => setInput("¿Tengo descuentos como cliente legacy?")}
-                  className="p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-[#C9D92E]/50 rounded-xl text-left transition-all group"
+                  className="p-3 sm:p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-[#C9D92E]/50 rounded-xl text-left transition-all group"
                 >
-                  <p className="text-white font-medium mb-1 group-hover:text-[#C9D92E]">Descuentos legacy</p>
-                  <p className="text-gray-500 text-sm">Beneficios especiales</p>
+                  <p className="text-white font-medium text-sm sm:text-base mb-1 group-hover:text-[#C9D92E]">Descuentos legacy</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">Beneficios especiales</p>
                 </button>
               </div>
             </div>
           ) : (
-            <div className="space-y-6 max-w-4xl mx-auto">
+            <div className="space-y-6 max-w-4xl mx-auto px-2 sm:px-0">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
-                  <div className={`flex gap-3 max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+                  <div className={`flex gap-2 sm:gap-3 max-w-[90%] sm:max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
                     {/* Avatar */}
                     <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
                       msg.role === "user"
