@@ -84,7 +84,6 @@ export default function IAMainView({ initialConfig }: Props) {
       description: 'Historial de chats',
       icon: MessageSquare,
       count: null,
-      badge: 'Por Desarrollar',
     },
     {
       id: 'tools' as TabType,
