@@ -273,36 +273,30 @@ export function ChatSimpleV2() {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="h-16 border-b border-gray-800 bg-[#0f0f0f] flex items-center justify-between px-6">
-          <div className="flex items-center gap-4">
-            {/* Botón toggle sidebar minimalista */}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors group"
-              title={sidebarOpen ? "Ocultar historial" : "Mostrar historial"}
-            >
-              <Menu className="w-5 h-5 text-gray-400 group-hover:text-[#C9D92E]" />
-            </button>
-            
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#C9D92E] to-[#A5B125] flex items-center justify-center shadow-lg shadow-[#C9D92E]/20">
-                <Sparkles className="w-5 h-5 text-black" />
-              </div>
-              <div>
-                <h1 className="text-white font-bold text-lg">Charti</h1>
-                <p className="text-gray-500 text-xs">
-                  Asistente de IA • v1.0
-                </p>
-              </div>
+        {/* Header - Minimalista */}
+        <div className="h-14 bg-[#0f0f0f] flex items-center justify-between px-4">
+          {/* Toggle sidebar */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors"
+            title={sidebarOpen ? "Ocultar historial" : "Mostrar historial"}
+          >
+            <Menu className="w-5 h-5 text-gray-500 hover:text-gray-300" />
+          </button>
+          
+          {/* Logo y título centrados */}
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[#C9D92E] flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-black" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-white font-semibold">Charti</span>
+              <span className="text-gray-600 text-xs">v1.0</span>
             </div>
           </div>
-
-          <div className="flex items-center gap-2 text-xs">
-            <div className="px-3 py-1.5 bg-gray-800 rounded-full text-gray-400 border border-gray-700">
-              APIDevs Platform
-            </div>
-          </div>
+          
+          {/* Espacio vacío para balance */}
+          <div className="w-9"></div>
         </div>
 
         {/* Messages Area */}
