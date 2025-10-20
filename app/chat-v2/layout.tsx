@@ -4,7 +4,7 @@ export default function ChatV2Layout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="h-screen overflow-hidden">
+    <div className="fixed inset-0 overflow-hidden" style={{ paddingTop: 'var(--navbar-height, 64px)' }}>
       {children}
     </div>
   );
