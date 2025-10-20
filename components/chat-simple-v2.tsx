@@ -225,7 +225,13 @@ export function ChatSimpleV2() {
         </div>
 
         {/* Lista de conversaciones */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-1 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
+        <div 
+          className="flex-1 overflow-y-auto p-3 space-y-1"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#4a4a4a transparent'
+          }}
+        >
           {conversations.length === 0 ? (
             <div className="text-center py-8 text-gray-500 text-sm">
               <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
@@ -292,7 +298,13 @@ export function ChatSimpleV2() {
         )}
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent hover:scrollbar-thumb-gray-600">
+        <div 
+          className="flex-1 overflow-y-auto p-6"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#4a4a4a transparent'
+          }}
+        >
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="w-32 h-32 rounded-full overflow-hidden mb-6 shadow-2xl shadow-[#C9D92E]/20 bg-[#C9D92E]">
