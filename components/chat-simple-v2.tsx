@@ -284,7 +284,7 @@ export function ChatSimpleV2() {
         {!sidebarOpen && (
           <button
             onClick={() => setSidebarOpen(true)}
-            className="absolute top-4 left-4 z-10 p-2 bg-gray-800/80 hover:bg-gray-700 backdrop-blur-sm rounded-lg transition-colors shadow-lg"
+            className="absolute top-20 left-4 z-10 p-2 bg-gray-800/80 hover:bg-gray-700 backdrop-blur-sm rounded-lg transition-colors shadow-lg"
             title="Mostrar historial"
           >
             <Menu className="w-5 h-5 text-gray-400 hover:text-white" />
@@ -295,8 +295,12 @@ export function ChatSimpleV2() {
         <div className="flex-1 overflow-y-auto p-6">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#C9D92E] to-[#A5B125] flex items-center justify-center mb-6 shadow-2xl shadow-[#C9D92E]/20">
-                <Sparkles className="w-10 h-10 text-black" />
+              <div className="w-32 h-32 rounded-2xl overflow-hidden mb-6 shadow-2xl shadow-[#C9D92E]/20">
+                <img 
+                  src="https://zzieiqxlxfydvexalbsr.supabase.co/storage/v1/object/public/static-assets/animations/buho-leyendo.webp"
+                  alt="Charti"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <h2 className="text-white text-2xl font-bold mb-2">¡Hola! Soy Charti</h2>
               <p className="text-gray-400 max-w-md mb-8">
@@ -400,7 +404,7 @@ export function ChatSimpleV2() {
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="absolute right-2 bottom-2 w-10 h-10 bg-[#C9D92E] hover:bg-[#B8C428] text-black rounded-full transition-all flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-[#C9D92E]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-[#C9D92E] hover:bg-[#B8C428] text-black rounded-full transition-all flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-[#C9D92E]"
               >
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
