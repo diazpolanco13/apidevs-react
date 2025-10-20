@@ -399,25 +399,31 @@ export function ChatSimpleV2() {
         <div className="border-t border-gray-800 bg-[#0f0f0f] p-6">
           <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
             <div className="relative">
-              <input
-                type="text"
+              <textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  // Auto-expand como Gemini (sin scroll)
+                  e.target.style.height = 'auto';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+                }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     handleSubmit(e);
                   }
                 }}
                 placeholder="Pregúntale a Charti..."
                 disabled={isLoading}
-                className="w-full pl-6 pr-14 py-4 bg-gray-800 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C9D92E] focus:border-transparent disabled:opacity-50 text-base"
+                rows={1}
+                className="w-full pl-6 pr-14 py-4 bg-gray-800 border border-gray-700 rounded-3xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C9D92E] focus:border-transparent disabled:opacity-50 text-base resize-none overflow-hidden"
+                style={{ minHeight: '56px', maxHeight: '200px' }}
               />
               
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-[#C9D92E] hover:bg-[#B8C428] text-black rounded-full transition-all flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-[#C9D92E]"
+                className="absolute right-2 bottom-2 w-10 h-10 bg-[#C9D92E] hover:bg-[#B8C428] text-black rounded-full transition-all flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-[#C9D92E]"
               >
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
